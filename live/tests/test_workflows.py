@@ -10,7 +10,7 @@ WORKFLOWS = Path(__file__).resolve().parents[2] / ".github" / "workflows"
 
 # file -> (cron, job name passed to live/jobs.py)
 SPECS = {
-    "now.yml": ("0 */6 * * *", "now"),
+    "now.yml": ("0 */3 * * *", "now"),
     "nisar.yml": ("30 6 * * *", "nisar"),
     "validation.yml": ("0 7 * * *", "validation"),
     "reference.yml": ("0 8 * * 1", "reference"),
@@ -99,10 +99,10 @@ def test_fallback_publish_and_permissions(name, cron, job):
 
 def test_now_cron():
     _, doc = _load("now.yml")
-    assert _on(doc)["schedule"] == [{"cron": "0 */6 * * *"}]
+    assert _on(doc)["schedule"] == [{"cron": "0 */3 * * *"}]
 
 
 def test_now_header_comment_matches_cron():
     text, _ = _load("now.yml")
     header = text.split("on:", 1)[0]
-    assert "every 6 h" in header and "every 3 h" not in header
+    assert "every 3 h" in header and "every 6 h" not in header

@@ -1,12 +1,12 @@
 name: modo-agora
 
-# Modo Agora — keeps the GEE now/ assets current every 6 h (L8: GEE assets are
+# Modo Agora — keeps the GEE now/ assets current every 3 h (L8: GEE assets are
 # the source of truth; the job also exports the last-good static fallback).
 # On failure the previous commit of data/ stays live.
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */3 * * *"
   workflow_dispatch:
 
 permissions:
