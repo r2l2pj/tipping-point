@@ -142,8 +142,19 @@ names on `fetch.swot` — no network, no real ee/storage.
 - Idempotent skip on same hash (zero contract calls), re-ingest on
   changed hash, `--force` re-ingest (`force=True` forwarded).
 - `main(["--case", ..., "--dry-run"])` end-to-end; no-records SystemExit.
+# impl-grefassets — L8a reference layers -> GEE table assets
 
-## Commands run
+Branch `unit/ref-assets`, worktree `tipping-point-data-wt/ref-assets`.
+Commit `bce9bba` (amended after review NEEDS-FIX) — 4 files, +691/-11.
+NOT pushed/merged.
+
+Review fix: `--window` was a store_true that passed `event['window']` (the
+full event window) into the GLC query — broader than the configured filter.
+Now `--window START,END` takes explicit ISO dates (argparse `type=`
+validation, rejects bad input); without it `glc_catalog` falls back to
+`event['glc_window']` as before.
+
+## Files
 
 - `uv sync` (via $UV run): 119 packages, `tp` editable install OK.
 - `uv run pytest pipeline/tests/test_fetch_swot.py -q` → **11 passed**.
@@ -237,3 +248,94 @@ No network in tests: earthaccess, rasterio(.mask/.warp), and
 fetch.ingest are all faked via `sys.modules`.
 
 Commit: files above on `unit/opera-dswx`, not pushed.
+- `pipeline/fetch/reference.py` (new, ~287 lines) — library + CLI per the
+  interface update: `python -m pipeline.fetch.reference --kind
+  glc|inventory|boundaries|all [--case id (repeatable) | --all] [--refresh]
+  [--dry-run] [--force] [--window]`. No tools/ file.
+  - Product map: `boundaries` -> `geojson/municipal_boundaries.geojson` ->
+    table asset `municipal_boundaries`; `glc`/`inventory` ->
+    `geojson/landslide_catalog.geojson` -> table asset `landslide_catalog`;
+    under `projects/<GEE_PROJECT>/assets/tipping-point/<case>/`.
+  - `--kind all` = boundaries + the case's catalog source (wa-* -> glc,
+    else inventory — same split as `pipeline/scripts/12_aux_products.py`).
+  - INGEST CONTRACT: `stage_to_gcs` / `ingest_asset` / `append_manifest`
+    imported from `fetch.ingest` inside try/except (relative then absolute)
+    -> `None` when unit/ingest is unmerged; `--dry-run` still works, real
+    runs raise a clean `RuntimeError` naming the module.
+  - `t_utc`: added to catalog feature properties only when a date exists
+    (`t_utc`, then `event_date|date|datetime|timestamp`; ISO strings +
+    epoch s/ms; naive treated as UTC) -> `%Y-%m-%dT%H:%M:%SZ`. Nothing is
+    invented — rs inventory points stay date-less. If no feature gains
+    `t_utc` (boundaries always; undated catalogs) the SOURCE file is staged
+    byte-identical (no staging copy). Attribution props pass through
+    untouched.
+  - Idempotent via `data/<case>/assets.json` (tolerant reader: list,
+    dict-with-`assets`, or name-keyed dict — matches fetch.ingest's
+    `tipping-point/gee-assets@1` doc) -> `skipped` unless `--force`.
+  - `--refresh` re-runs `fetch.{boundaries,glc,inventory}` for every event
+    mapping to the case before ingesting; in `--dry-run` it reports
+    `would re-fetch <ids>` without side effects.
+  - `--window START,END` (with `--refresh --kind glc`): explicit ISO-date
+    filter forwarded to `glc_catalog(window=...)`; without it the fetcher
+    is called bare and `event['glc_window']` applies inside glc.py — the
+    whole `event['window']` is never used.
+  - Env: `GEE_PROJECT` (default `hermes-fesolucoes`), `NOW_GCS_BUCKET`
+    (then `GCS_BUCKET` — same order/gate as fetch.ingest and live/).
+    Missing bucket on a real run -> `RuntimeError` naming the var.
+  - Staging copies, when needed, go to `data/<case>/staging/<file>`.
+
+- `pipeline/fetch/glc.py` (scope addition) — `_query_params` default is now
+  bbox-only (`where: "1=1"`, no `event_date` clause): the GLC is a
+  reference catalog and community reports lag (259 all-time features in the
+  wa bbox vs 0 in Dec-2025). Optional window via `event['glc_window']` or
+  `glc_catalog(event, window=...)`. `event_date` epoch-ms -> ISO
+  normalization kept.
+
+- `pipeline/tests/test_fetch_reference.py` (new, 15 tests incl. 3-param
+  refresh) — a fake `fetch.ingest` module built on fake
+  `google.cloud.storage` (`Client.bucket().blob().upload_from_filename`)
+  and fake `ee.data` (`getAsset`/`startTableIngestion`) injected via
+  `sys.modules["fetch.ingest"]` + `importlib.reload`, proving the real
+  `from .ingest import` contract path. Covers: product->asset mapping +
+  `gs://` staging URI, `t_utc` present on dated / absent on undated
+  features (incl. `event_date: null`), attribution preserved, source staged
+  byte-identical when undated, idempotent skip + `--force`, manifest entry
+  written, `--refresh` calls the matching fetcher per kind, `--window`
+  forwards the event window (glc only), `--kind all --all` mapping,
+  wa -> glc pick, dry-run zero side-effects, dry-run works when ingest
+  names are `None` (+ RuntimeError on real run), missing product, missing
+  bucket env. No network.
+
+- `pipeline/tests/test_fetch_glc.py` — default assert now `where == "1=1"`
+  (no DATE clause); new `test_query_params_window_opt_in` covers both
+  `event['glc_window']` and the explicit `window=` arg.
+
+## Commands & results
+
+- `$UV sync` — ok (editable install; `pipeline/` on sys.path via .pth, so
+  `tp`/`fetch` are top-level and `python -m pipeline.fetch.reference` works
+  through the namespace package).
+- `$UV run pytest pipeline/tests -q` — **108 passed** (was 92 before this
+  unit: +16 new, glc suite updated 4->5).
+- `$UV run pytest pipeline/tests/test_fetch_reference.py -q` — 16 passed.
+- `$UV run ruff check .` — All checks passed (after fixing FURB162 + 2
+  style hits).
+- `python -m pipeline.fetch.reference --kind all --all --dry-run` — prints
+  all four `case/product -> projects/hermes-fesolucoes/assets/tipping-
+  point/<case>/<name>` lines against the real data/.
+- `python -m pipeline.fetch.reference --kind boundaries --case rs_2024`
+  (no ingest.py, no creds) — clean `RuntimeError: fetch.ingest is not
+  importable ... only --dry-run works`.
+- `--dry-run --refresh` — `rs_2024/landslide_catalog: dry-run -> ...
+  (would re-fetch rs-2024-05)`.
+
+## Notes for the lead
+
+- Real ingestion is blocked on `hermes-fesolucoes` not being registered
+  with Earth Engine + no GCS creds in this env — dry-run + fake-SDK tests
+  are the proof, same caveat as unit/ingest.
+- `fetch.ingest` doesn't exist on this branch yet; contract verified
+  against the sibling worktree copy (entry shape `{"schema",
+  "assets":[{name,gee_id,gcs_uri,kind,status,ingested_at,operation?}]}`;
+  staged URI is `gs://<bucket>/staging/<case>/<name><ext>`).
+- No subagents used. Two `todo` items logged (L8a reference unit, glc fix).
