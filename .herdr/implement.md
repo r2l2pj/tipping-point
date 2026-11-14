@@ -431,3 +431,31 @@ variable,h5_path,h5_url,cog}], skipped[{granule_id,reason}]}}}` — plus
   on this branch). All ingest calls verified against the fake module.
 - GDAL_HTTP_BEARER for EARTHDATA_TOKEN assumed (GDAL >=3.9); user/pass path
   reuses tp.nisar._gdal_auth_env unchanged.
+
+## OPERA full-suite isolation follow-up
+
+Rebased unit/opera-dswx onto main (3ae2211), including the ingest library.
+Changed only pipeline/fetch/opera.py, pipeline/tests/test_fetch_opera.py,
+and this report.
+
+- _ingest() now uses call-time importlib.import_module with the current
+  package name. Unlike `from . import ingest`, this respects sys.modules
+  replacement even when the package retains a cached real ingest attribute.
+- The download test patches both fetch.ingest and pipeline.fetch.ingest;
+  monkeypatch restores those entries. Added an explicit cached-package
+  attribute regression test using a disposable sentinel (no real SDK call).
+- Autouse fixture clears all eight requested credential/config variables
+  before every test and registers restoration even for variables created
+  directly by _edl_login (EARTHDATA_USERNAME/PASSWORD).
+- NOW_GCS_BUCKET is validated before Earthdata login for non-deduplicated
+  assets. Regression test verifies a missing bucket causes zero login calls.
+
+Commands/results:
+- git rebase main: successful.
+- $UV run pytest pipeline/tests/test_fetch_opera.py -q: 15 passed.
+- $UV run pytest pipeline/tests live/tests ml/tests -q: 268 passed,
+  27 warnings (raster georeferencing and dependency deprecations).
+- $UV run ruff check .: All checks passed.
+
+The original OPERA commit is already on main behind two other-unit commits;
+this fix is a separate commit rather than amending unrelated HEAD history.

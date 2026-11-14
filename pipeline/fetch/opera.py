@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import importlib
 import json
 import os
 import re
@@ -98,9 +99,7 @@ def _edl_login():
 def _ingest():
     """The unit/ingest contract module, imported lazily + guarded."""
     try:
-        from . import ingest
-
-        return ingest
+        return importlib.import_module(f"{__package__}.ingest")
     except ImportError:
         pass
     try:
@@ -337,12 +336,12 @@ def fetch_scenes(
                        local_path=str(cog) if cog.exists() else None)
             records.append(rec)
             continue
-        if auth is None:
-            auth = _edl_login()
         if not bucket:
             raise RuntimeError(
                 "NOW_GCS_BUCKET is not set; required to stage the COG to "
                 "GCS (or use --no-download for search-only)")
+        if auth is None:
+            auth = _edl_login()
         src = _download_wtr(g, base / "_dl" / name)
         clip_to_aoi(src, target["bbox"], cog)
         ingest = _ingest()

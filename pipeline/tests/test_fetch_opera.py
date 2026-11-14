@@ -121,6 +121,15 @@ def _fake_ingest(calls):
     return mod
 
 
+@pytest.fixture(autouse=True)
+def isolated_environment(monkeypatch):
+    for var in ("EARTHDATA_TOKEN", "EDL_USER", "EDL_PASS",
+                "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+                "GOOGLE_APPLICATION_CREDENTIALS", "GEE_PROJECT", "NOW_GCS_BUCKET"):
+        monkeypatch.setenv(var, os.environ.get(var, ""))
+        monkeypatch.delenv(var, raising=False)
+
+
 def _clear_creds(monkeypatch):
     for var in ("EARTHDATA_TOKEN", "EDL_USER", "EDL_PASS",
                 "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD"):
@@ -214,7 +223,10 @@ def test_fetch_scenes_download_ingests(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "earthaccess", _fake_ea([g], calls))
     for name, mod in _fake_rasterio(calls).items():
         monkeypatch.setitem(sys.modules, name, mod)
-    monkeypatch.setitem(sys.modules, "fetch.ingest", _fake_ingest(calls))
+    fake_ingest = _fake_ingest(calls)
+    monkeypatch.setitem(sys.modules, "fetch.ingest", fake_ingest)
+    monkeypatch.setitem(sys.modules, "pipeline.fetch.ingest", fake_ingest)
+    assert opera._ingest() is fake_ingest
     monkeypatch.setattr(opera, "DATA_DIR", tmp_path)
     monkeypatch.setenv("GEE_PROJECT", "proj")
     monkeypatch.setenv("NOW_GCS_BUCKET", "bkt")
@@ -303,6 +315,27 @@ def test_edl_pair_uses_environment(monkeypatch):
     assert calls == [("login", {"strategy": "environment"})]
     assert os.environ["EARTHDATA_USERNAME"] == "u"
     assert os.environ["EARTHDATA_PASSWORD"] == "p"
+
+
+def test_missing_bucket_precedes_login(monkeypatch, tmp_path):
+    calls = []
+    monkeypatch.setitem(sys.modules, "earthaccess", _fake_ea(
+        [_fake(_opera_id(), "2024-05-03", 5.0)], calls))
+    monkeypatch.setattr(opera, "DATA_DIR", tmp_path)
+    monkeypatch.setenv("GEE_PROJECT", "proj")
+    with pytest.raises(RuntimeError, match="NOW_GCS_BUCKET"):
+        opera.fetch_scenes(TARGET, out_dir=tmp_path / "raw")
+    assert [c[0] for c in calls] == ["search"]
+
+
+def test_ingest_lookup_ignores_cached_package_attribute(monkeypatch):
+    import importlib
+
+    package = importlib.import_module(opera.__package__)
+    monkeypatch.setattr(package, "ingest", object(), raising=False)
+    fake = _fake_ingest([])
+    monkeypatch.setitem(sys.modules, f"{opera.__package__}.ingest", fake)
+    assert opera._ingest() is fake
 
 
 def test_cli_dry_run():
