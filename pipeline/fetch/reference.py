@@ -7,22 +7,22 @@ REFERENCE-ONLY layers (map footer credits, never TPI inputs):
 
 under projects/<GEE_PROJECT>/assets/tipping-point/<case>/.
 
-The GCS staging + GEE ingestion calls come from fetch.ingest (the
-unit/ingest contract); this module is import-safe without it so --dry-run
-works in checkouts where that unit hasn't landed. Landslide catalog points
-gain a `t_utc` property (ISO UTC) only when the source record already
-carries a date — rs inventory points mostly have none, and we don't invent
-one. All other properties (source / license / url / doi attribution) pass
-through untouched. Idempotent: a product already listed in
+The GeoJSON on disk is ingested via fetch.ingest.ingest_table (client-side
+ee.FeatureCollection + Export.table.toAsset — no GCS bucket, ruling L10).
+This module is import-safe without it so --dry-run works in checkouts
+where that unit hasn't landed. Landslide catalog points gain a `t_utc`
+property (ISO UTC) only when the source record already carries a date —
+rs inventory points mostly have none, and we don't invent one. All other
+properties (source / license / url / doi attribution) pass through
+untouched. Idempotent: a product already listed in
 data/<case>/assets.json is skipped unless --force.
 
     uv run python -m pipeline.fetch.reference --kind glc --case wa_2025
     uv run python -m pipeline.fetch.reference --kind all --all --dry-run
 
-Env: GEE_PROJECT (default 'hermes-fesolucoes'), NOW_GCS_BUCKET (staging
-bucket — same upload gate as live/publish.py; GCS_BUCKET alias), plus
-whatever credentials fetch.ingest itself needs
-(GOOGLE_APPLICATION_CREDENTIALS / ee).
+Env: GEE_PROJECT (default 'hermes-fesolucoes'), plus whatever credentials
+fetch.ingest itself needs (GOOGLE_APPLICATION_CREDENTIALS / GCP_SA_KEY).
+No bucket env is needed.
 """
 from __future__ import annotations
 
@@ -39,15 +39,14 @@ except ImportError:  # `python -m pipeline.fetch.reference` without .pth
     from pipeline.tp.events import DATA_DIR, case_key, list_events, load_event
 
 try:  # package context (`fetch.reference` / `pipeline.fetch.reference`)
-    from .ingest import append_manifest, ingest_asset, stage_to_gcs
+    from .ingest import append_manifest, ingest_table
 except ImportError:
     try:  # plain-script / PYTHONPATH context
-        from fetch.ingest import append_manifest, ingest_asset, stage_to_gcs
+        from fetch.ingest import append_manifest, ingest_table
     except ImportError:  # unit/ingest not landed yet — --dry-run still works
-        append_manifest = ingest_asset = stage_to_gcs = None
+        append_manifest = ingest_table = None
 
 DEFAULT_GEE_PROJECT = "hermes-fesolucoes"
-BUCKET_ENV_VARS = ("NOW_GCS_BUCKET", "GCS_BUCKET")  # same order as fetch.ingest
 MANIFEST_NAME = "assets.json"
 STAGING_DIRNAME = "staging"
 
@@ -183,10 +182,10 @@ def _kinds_for(case: str, kind: str) -> list[str]:
     return ["boundaries", catalog]
 
 
-def ingest_product(case: str, kind: str, *, project: str, bucket: str | None,
+def ingest_product(case: str, kind: str, *, project: str,
                    dry_run: bool, force: bool, refresh: bool,
                    window: dict | None) -> dict:
-    """Stage + ingest one reference product for a case; return a status dict."""
+    """Ingest one reference product for a case; return a status dict."""
     spec = KINDS[kind]
     name = spec["asset"]
     src = DATA_DIR / case / "geojson" / spec["filename"]
@@ -217,28 +216,22 @@ def ingest_product(case: str, kind: str, *, project: str, bucket: str | None,
         return {**result, "status": "skipped",
                 "detail": f"{name} already in data/{case}/{MANIFEST_NAME}"}
     if dry_run:
-        result["bucket"] = bucket or f"({BUCKET_ENV_VARS[0]} unset)"
         return {**result, "status": "dry-run"}
 
-    if ingest_asset is None or stage_to_gcs is None or append_manifest is None:
+    if ingest_table is None or append_manifest is None:
         raise RuntimeError(
             "fetch.ingest is not importable (it lands on unit/ingest) — "
             "only --dry-run works in this checkout")
-    if not bucket:
-        raise RuntimeError(
-            f"{BUCKET_ENV_VARS[0]} is not set — cannot stage to gs://")
 
     staged = prepare_geojson(src, kind, DATA_DIR / case / STAGING_DIRNAME)
-    gcs_uri = stage_to_gcs(staged, bucket=bucket, case=case, name=name)
-    ingest = ingest_asset(gcs_uri, asset_id=asset_id, kind="table",
-                          force=force) or {}
+    ingest = ingest_table(staged, asset_id=asset_id, force=force) or {}
     # fetch.ingest returns the manifest entry; these defaults only fill gaps
-    entry = {"name": name, "gee_id": asset_id, "gcs_uri": gcs_uri,
-             "kind": "table", "status": "ingested",
+    entry = {"name": name, "gee_id": asset_id, "kind": "table",
+             "status": "ingested",
              "ingested_at": datetime.now(UTC).strftime(_ISO), **ingest}
     append_manifest(case, entry)
     return {**result, "status": entry.get("status", "ingested"),
-            "gcs_uri": gcs_uri, "entry": entry}
+            "entry": entry}
 
 
 def _all_cases() -> list[str]:
@@ -249,16 +242,13 @@ def run(argv: list[str] | None = None) -> list[dict]:
     """CLI entry — returns one status dict per (case, product)."""
     args = _parser().parse_args(argv)
     project = os.environ.get("GEE_PROJECT", DEFAULT_GEE_PROJECT)
-    bucket = next(
-        (os.environ.get(v) for v in BUCKET_ENV_VARS if os.environ.get(v)),
-        None)
     cases = (sorted({case_key(c) for c in args.case})
              if args.case else _all_cases())
     results = []
     for case in cases:
         for kind in _kinds_for(case, args.kind):
             results.append(ingest_product(
-                case, kind, project=project, bucket=bucket,
+                case, kind, project=project,
                 dry_run=args.dry_run, force=args.force, refresh=args.refresh,
                 window=args.window))
     return results

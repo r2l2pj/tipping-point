@@ -1,6 +1,7 @@
-"""Offline tests for fetch.reference — a fake fetch.ingest module (backed by
-fake ee.data + fake google.cloud.storage objects) is injected through
-sys.modules. No network, no real ee/GCS calls, no credentials needed."""
+"""Offline tests for fetch.reference — a fake fetch.ingest module (an
+ingest_table + append_manifest stand-in) is injected through sys.modules.
+L10: no gs:// staging anywhere — no network, no real ee calls, no bucket
+env, no credentials needed."""
 from __future__ import annotations
 
 import importlib
@@ -13,69 +14,17 @@ import pytest
 from fetch import reference as ref
 
 
-# --- fake SDK objects --------------------------------------------------------
-class _FakeBlob:
-    def __init__(self, calls, name):
-        self._calls, self.name = calls, name
-
-    def upload_from_filename(self, path):
-        self._calls["uploads"].append((self.name, Path(path).name))
-
-
-class _FakeBucket:
-    def __init__(self, calls, name):
-        self._calls, self._name = calls, name
-
-    def blob(self, path):
-        return _FakeBlob(self._calls, f"gs://{self._name}/{path}")
-
-
-class _FakeStorageClient:  # stands in for google.cloud.storage.Client
-    def __init__(self, calls):
-        self._calls = calls
-
-    def bucket(self, name):
-        return _FakeBucket(self._calls, name)
-
-
-class _FakeEEData:  # stands in for ee.data
-    def __init__(self, calls):
-        self._calls, self.assets = calls, {}
-
-    def getAsset(self, asset_id):
-        return self.assets.get(asset_id)
-
-    def startTableIngestion(self, request_id, params):
-        self._calls["table_ingestions"].append(params)
-        self.assets[params["name"]] = {"name": params["name"]}
-        return {"name": f"operations/fake-{request_id}"}
-
-
 def _fake_ingest_module(calls):
-    """A fake fetch.ingest implementing the unit/ingest contract on top of
-    the fake storage/ee objects above."""
-    storage = _FakeStorageClient(calls)
-    ee_data = _FakeEEData(calls)
+    """A fake fetch.ingest implementing the L10 ingest contract."""
     mod = types.ModuleType("fetch.ingest")
 
-    def stage_to_gcs(local_path, *, bucket, case, name):
-        uri = f"gs://{bucket}/staging/{case}/{name}{Path(local_path).suffix}"
-        blob_name = uri.removeprefix(f"gs://{bucket}/")
-        storage.bucket(bucket).blob(blob_name).upload_from_filename(
-            str(local_path))
-        return uri
-
-    def ingest_asset(gcs_uri, *, asset_id, kind, force=False):
-        if kind != "table":
-            raise AssertionError("reference layers are table ingests")
-        entry = {"name": asset_id.rsplit("/", 1)[-1], "gee_id": asset_id,
-                 "gcs_uri": gcs_uri, "kind": kind}
-        if not force and ee_data.getAsset(asset_id):
-            return entry | {"status": "exists"}
-        ee_data.startTableIngestion(
-            "req", {"name": asset_id, "sources": [{"uris": [gcs_uri]}]})
-        return entry | {"status": "ingesting",
-                        "ingested_at": "2026-11-14T00:00:00Z"}
+    def ingest_table(geojson_path, *, asset_id, force=False, **kw):
+        calls["tables"].append(
+            {"path": Path(geojson_path), "asset_id": asset_id,
+             "force": force, "kw": kw})
+        return {"name": asset_id.rsplit("/", 1)[-1], "gee_id": asset_id,
+                "kind": "table", "status": "ingesting",
+                "ingested_at": "2026-11-14T00:00:00Z"}
 
     def append_manifest(case, entry):
         calls["manifests"].append((case, dict(entry)))
@@ -91,8 +40,7 @@ def _fake_ingest_module(calls):
         path.write_text(json.dumps(doc, indent=2) + "\n")
         return path
 
-    mod.stage_to_gcs = stage_to_gcs
-    mod.ingest_asset = ingest_asset
+    mod.ingest_table = ingest_table
     mod.append_manifest = append_manifest
     return mod
 
@@ -102,14 +50,15 @@ def _fake_ingest_module(calls):
 def data_dir(tmp_path, monkeypatch):
     d = tmp_path / "data"
     monkeypatch.setattr(ref, "DATA_DIR", d)
-    monkeypatch.setenv("NOW_GCS_BUCKET", "fake-bucket")
+    monkeypatch.delenv("NOW_GCS_BUCKET", raising=False)
+    monkeypatch.delenv("GCS_BUCKET", raising=False)
     monkeypatch.setenv("GEE_PROJECT", "fake-proj")
     return d
 
 
 @pytest.fixture
 def fake_ingest(monkeypatch, data_dir):
-    calls = {"uploads": [], "table_ingestions": [], "manifests": []}
+    calls = {"tables": [], "manifests": []}
     monkeypatch.setitem(sys.modules, "fetch.ingest", _fake_ingest_module(calls))
     importlib.reload(ref)  # bind the fake contract functions via `from .ingest`
     monkeypatch.setattr(ref, "DATA_DIR", data_dir)  # reload reset it
@@ -166,10 +115,9 @@ def test_boundaries_maps_to_municipal_asset(data_dir, fake_ingest):
     asset_id = ("projects/fake-proj/assets/tipping-point/"
                 "rs_2024/municipal_boundaries")
     assert results[0]["asset_id"] == asset_id
-    assert calls["uploads"] == [(
-        "gs://fake-bucket/staging/rs_2024/municipal_boundaries.geojson",
-        "municipal_boundaries.geojson")]
-    assert calls["table_ingestions"][0]["name"] == asset_id
+    (table,), _ = calls["tables"], calls["manifests"]
+    assert table["asset_id"] == asset_id
+    assert table["path"].name == "municipal_boundaries.geojson"
 
 
 def test_glc_catalog_t_utc_and_attribution(data_dir, fake_ingest):
@@ -185,9 +133,10 @@ def test_glc_catalog_t_utc_and_attribution(data_dir, fake_ingest):
 
     assert results[0]["asset_id"].endswith(
         "tipping-point/wa_2025/landslide_catalog")
-    (_blob, staged_name), = calls["uploads"]
-    assert staged_name == "landslide_catalog.geojson"
-    staged = data_dir / "wa_2025" / "staging" / staged_name
+    (table,) = calls["tables"]
+    staged = table["path"]
+    assert staged.name == "landslide_catalog.geojson"
+    assert staged.parent == data_dir / "wa_2025" / "staging"
     dated, undated = json.loads(staged.read_text())["features"]
     assert dated["properties"]["t_utc"] == "2025-12-09T00:00:00Z"
     assert dated["properties"]["source"].startswith("NASA COOLR")
@@ -206,10 +155,9 @@ def test_undated_catalog_stages_source_unchanged(data_dir, fake_ingest):
     results = ref.run(["--kind", "inventory", "--case", "rs_2024"])
 
     assert results[0]["status"] == "ingesting"
-    assert calls["uploads"] == [(
-        "gs://fake-bucket/staging/rs_2024/landslide_catalog.geojson",
-        "landslide_catalog.geojson")]
-    # no staging copy was needed — the source file itself was uploaded
+    (table,) = calls["tables"]
+    assert table["path"] == src  # the source file itself was ingested
+    # no staging copy was needed
     assert not (data_dir / "rs_2024" / "staging").exists()
     for f in json.loads(src.read_text())["features"]:
         assert "t_utc" not in f["properties"]
@@ -226,12 +174,12 @@ def test_idempotent_skip_via_assets_json(data_dir, fake_ingest):
 
     results = ref.run(["--kind", "boundaries", "--case", "rs_2024"])
     assert results[0]["status"] == "skipped"
-    assert calls["uploads"] == [] and calls["table_ingestions"] == []
+    assert calls["tables"] == []
 
     results = ref.run(
         ["--kind", "boundaries", "--case", "rs_2024", "--force"])
     assert results[0]["status"] == "ingesting"
-    assert len(calls["uploads"]) == 1
+    assert calls["tables"][0]["force"] is True
 
 
 def test_manifest_appended_after_ingest(data_dir, fake_ingest):
@@ -244,7 +192,7 @@ def test_manifest_appended_after_ingest(data_dir, fake_ingest):
     assert entry["kind"] == "table"
     assert entry["status"] == "ingesting"
     assert entry["gee_id"].endswith("rs_2024/municipal_boundaries")
-    assert entry["gcs_uri"].startswith("gs://fake-bucket/")
+    assert "gcs_uri" not in entry
 
 
 @pytest.mark.parametrize("kind", ["boundaries", "glc", "inventory"])
@@ -298,15 +246,14 @@ def test_dry_run_makes_no_calls(data_dir, fake_ingest):
 
     results = ref.run(["--kind", "all", "--case", "rs_2024", "--dry-run"])
     assert {r["status"] for r in results} == {"dry-run"}
-    assert calls == {"uploads": [], "table_ingestions": [], "manifests": []}
+    assert calls == {"tables": [], "manifests": []}
     assert not (data_dir / "rs_2024" / "assets.json").exists()
     assert not (data_dir / "rs_2024" / "staging").exists()
 
 
 def test_dry_run_when_ingest_unavailable(data_dir, monkeypatch):
     """--dry-run must work in a checkout without fetch.ingest (unit/ingest)."""
-    monkeypatch.setattr(ref, "stage_to_gcs", None)
-    monkeypatch.setattr(ref, "ingest_asset", None)
+    monkeypatch.setattr(ref, "ingest_table", None)
     monkeypatch.setattr(ref, "append_manifest", None)
     _write_fc(data_dir, "rs_2024", "municipal_boundaries.geojson", [BOUNDARY])
 
@@ -321,15 +268,15 @@ def test_missing_product_reports_missing(data_dir, fake_ingest):
     calls = fake_ingest
     results = ref.run(["--kind", "glc", "--case", "wa_2025"])
     assert results[0]["status"] == "missing"
-    assert calls["uploads"] == []
+    assert calls["tables"] == []
 
 
-def test_missing_bucket_env_raises(data_dir, fake_ingest, monkeypatch):
-    monkeypatch.delenv("NOW_GCS_BUCKET", raising=False)
-    monkeypatch.delenv("GCS_BUCKET", raising=False)
+def test_no_bucket_env_needed(data_dir, fake_ingest):
+    """L10: vector ingest works with no bucket env at all (fixture already
+    deleted NOW_GCS_BUCKET/GCS_BUCKET)."""
     _write_fc(data_dir, "rs_2024", "municipal_boundaries.geojson", [BOUNDARY])
-    with pytest.raises(RuntimeError, match="NOW_GCS_BUCKET"):
-        ref.run(["--kind", "boundaries", "--case", "rs_2024"])
+    results = ref.run(["--kind", "boundaries", "--case", "rs_2024"])
+    assert results[0]["status"] == "ingesting"
 
 
 def test_all_kind_all_cases(data_dir, fake_ingest):

@@ -479,3 +479,149 @@ Diff: 4 files, +9/-46. Commit `acbf002` on `unit/nowbounds`.
   finds children → status `exists`), not via assets.json — real
   `append_manifest` entries key `gee_id`, which `manifest_asset_ids`
   doesn't scan; harmless since ingest_asset itself is idempotent.
+# L10 — no-GCS ingest rework
+
+Ruling L10 applied: vector/table assets ingest bucket-free via a client-side
+`ee.FeatureCollection` + one `ee.batch.Export.table.toAsset` task. Research
+(r-eeupload) confirmed NO bucket-free raster upload exists — the raster
+ingest path was dropped entirely; `--ingest` is warn-only. L10b:
+`fetch/opera.py` deleted (OPERA is in the EE catalog).
+
+## Files changed
+
+- `pipeline/fetch/ingest.py` — now table-only. New `ingest_table(geojson_path,
+  *, asset_id, force=False, chunk_size=TABLE_CHUNK_FEATURES, description=None)`:
+  reads the local GeoJSON FC, wraps features in `ee.Feature` in chunks of
+  5000, merges chunks via `ee.FeatureCollection(fcs).flatten()` (single
+  chunk used directly; empty FC handled), exports with one
+  `Export.table.toAsset` task (`overwrite=force`), `task.start()`, task id
+  recorded as `operation`. Same strict getAsset exists-check / not-found
+  semantics. Removed `ingest_asset`, `stage_to_gcs`, `staging_uri`,
+  `_storage_client`, `_sa_key_path` and the storage/uuid/tempfile imports.
+  `staging_bucket()` kept as a LEGACY env helper only — tp.fallback and
+  geosfp/imerg/smap still resolve it (out of scope; their units rework).
+- `pipeline/fetch/reference.py` — `ingest_product` calls `ingest_table` on
+  the (possibly t_utc-rewritten) staged GeoJSON. `bucket` param/env reads/
+  required check and `gcs_uri` fields removed.
+- `pipeline/fetch/swot.py` — `run()` drops `bucket`/`--bucket`; local
+  staging GeoJSON goes to `ingest_table`; entry drops `gcs_uri`.
+- `pipeline/fetch/nisar.py` — `execute_plan()` downloads + clips locally,
+  manifest entries `status: 'local-only'` with planned `gee_asset`
+  (`<GEE_PROJECT>` placeholder tolerated). `_load_ingest` requires only
+  `append_manifest`. `--ingest` accepted but only warns on stderr:
+  "not supported without a GCS bucket (L10)".
+- `pipeline/fetch/opera.py` + `pipeline/tests/test_fetch_opera.py` —
+  DELETED (ruling L10b: OPERA is in the EE catalog). live/jobs.py
+  untouched (lead-live owns the opera step swap).
+- `pipeline/fetch/edl.py`, `smap.py`, `imerg.py` — docstring mentions of
+  fetch/opera fixed (edl.py listed opera among its users; smap/imerg
+  pointed at opera for the EDL pair rule — now point at edl.py).
+- `tools/ingest_assets.py` — minimal rework: table products via
+  `ingest_table`; image products recorded with planned `gee_id` +
+  `status: 'local-only'`; bucket env and `gs://` staging removed
+  (kept working so its tests stay meaningful).
+- `glc.py`/`inventory.py` — no ingest call sites existed (they only write
+  GeoJSON; reference.py owns the ingest call), nothing to change.
+
+## Tests
+
+- `test_ingest.py`: fake ee (Feature/FeatureCollection/
+  batch.Export.table.toAsset/task.start); ingest_table tests cover export
+  params, single-chunk (no flatten), >10k features → 3 chunks
+  (5000/5000/2345) + 1 merge FC + flatten + exactly one export, exists-skip,
+  force-overwrite, getAsset 404/403/NOT_FOUND semantics, creds, EE-init.
+  CLI tests: dry-run/manifest-only have no gs:// anywhere; real run exports
+  a table; image registry entries get 'local-only'.
+- `test_fetch_reference.py`: fake ingest module = `ingest_table` +
+  `append_manifest`; `test_no_bucket_env_needed` proves no bucket env.
+- `test_fetch_swot.py`: contract fixture patches `ingest_table`.
+- `test_fetch_nisar.py`: fake ingest = append_manifest only; execute is
+  local-only with/without bucket+project env; `--ingest` warns and still
+  records 'local-only'.
+
+## Commands
+
+- `$UV run pytest pipeline/tests -q` → 310 passed
+- `$UV run ruff check pipeline/fetch pipeline/tests pipeline/tp tools` → clean
+
+## Chunk approach
+
+`ingest_table` slices the feature list into `TABLE_CHUNK_FEATURES=5000`
+slices, builds one `ee.FeatureCollection([ee.Feature(f)...])` per chunk
+client-side, combines them via `ee.FeatureCollection(fcs).flatten()`, and
+exports once via `ee.batch.Export.table.toAsset(collection, description,
+assetId=..., overwrite=...)` — signature confirmed on ee 1.7.52.
+
+## Left for other units
+
+- tp/fallback.py, geosfp.py, imerg.py, smap.py still carry gs:// raster
+  code paths — out of scope; `staging_bucket()` was kept so they keep
+  importing cleanly (their stage/ingest calls will hit AttributeError on
+  their own guarded paths until reworked).
+- live/jobs.py still invokes `pipeline.fetch.opera` — lead-live's swap.
+
+
+## Review-fix pass (NEEDS-FIX on 7786ba5)
+
+1. **opera.py restored as DEPRECATED STUB** — module docstring + `main()`
+   printing 'retired (L10b): OPERA DSWx is in the EE catalog
+   (OPERA/DSWX/L3_V1/HLS|S1); no fetch needed' and exiting 0, so
+   live/jobs.py's `python -m pipeline.fetch.opera` step stays green until
+   lead-live drops it. test_fetch_opera.py replaced by a stub test
+   asserting the message + exit 0.
+2. **geosfp/imerg/smap raster ingest removed** — `stage_to_gcs` /
+   `ingest_asset` imports, `--bucket`, `_resolve_bucket`, `DEFAULT_BUCKET`
+   and the gs:// staging calls all deleted. `stage_and_ingest` now prints
+   'raster ingest is not supported without a GCS bucket (L10)' on stderr
+   and records each COG with status `local-only` in assets.json (still
+   idempotent via manifest; `--no-ingest` keeps status `planned`).
+3. **ingest_table chunking reworked** — no more
+   `ee.FeatureCollection(fcs).flatten()` (that still sent every chunk in
+   one request). Each ≤5000-feature chunk is now a client-side
+   ee.FeatureCollection uploaded by its OWN `Export.table.toAsset` task.
+   Single-chunk catalogs land at `asset_id`; larger ones land at
+   `<asset_id>_part00`, `_part01`, … with per-part getAsset idempotency
+   and a `parts` list in the manifest entry.
+
+Tests: 312 passed (new: 3-part export assetIds/descriptions for a
+12,345-feature FC, per-part skip, opera stub). Ruff: clean.
+
+## Review-fix pass 2 (NEEDS-FIX on aa1d165)
+
+**Part assets now live INSIDE a parent** — `<asset_id>_partNN` suffix
+assets were wrong; EE table parts must be children of a container.
+`ingest_table` multi-chunk path now calls `_ensure_parent(ee, asset_id)`
+(getAsset + strict not-found → `ee.data.createAsset({"type": "FOLDER"})`,
+same pattern as live/build_static's `_ensure_collection`) then exports
+each chunk to `<asset_id>/part00`, `part01`, …; per-part getAsset
+idempotency unchanged (parent folder included — existing parent means no
+createAsset call). Single-chunk catalogs still land as a plain table
+asset at `asset_id`. Tests: fake ee gained `createAsset` recording; the
+12,345-feature test asserts the FOLDER creation + `/partNN` ids, and a
+new skip test proves an existing parent+part00 skips both.
+
+Tests: 312 passed. Ruff: clean.
+
+## Rebase onto main (d2526b6+/496666f polygonize)
+
+Rebased `unit/l10-ingest` onto current main. Conflicts resolved keeping
+L10 semantics while preserving main's new signatures:
+
+- `pipeline/fetch/imerg.py`: main's `case` param kept end-to-end —
+  `stage_and_ingest(..., case="now")` -> `collection_path(case)` /
+  `append_manifest(case, entry)`; `run_case`/`plan_case`/`--case` CLI kept
+  with bucket plumbing removed (`_resolve_bucket`, `bucket` args,
+  `args.bucket`, `plan()["bucket"]` all gone — `--bucket` flag was already
+  deleted by L10). ensure_collection getattr import kept; children still
+  record `local-only` with the L10 warning.
+- `pipeline/tests/test_fetch_now.py`: union — main's `--case` hindcast
+  tests kept but reworked to L10 (assert `createAsset(IMAGE_COLLECTION)`
+  once, `startIngestion == []`, `uploads == []`, statuses `local-only`);
+  stage_and_ingest tests keep `local-only` semantics.
+- `pipeline/tests/test_ingest.py`: union fake — HEAD's
+  `create_asset(value, path=None)` ("create" calls) kept, my
+  `("create_asset", ...)` variant dropped and assertions updated;
+  Feature/FeatureCollection/Export.table.toAsset attrs unioned.
+- `.herdr/implement.md`: union-merged.
+
+Post-rebase: `pytest pipeline/tests -q` 344 passed; `ruff check` clean.

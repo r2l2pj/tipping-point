@@ -6,7 +6,7 @@ Precedence at call time (never hardcode credentials):
   3. ~/.netrc entry for 'machine urs.earthdata.nasa.gov'
 
 Used by tp.nisar / tp.hls_fetch / tp.modis_nrt and the fetch modules
-(imerg/smap/opera/nisar). earthaccess and asf_search are imported lazily
+(imerg/smap/nisar). earthaccess and asf_search are imported lazily
 inside the functions that need them.
 """
 from __future__ import annotations

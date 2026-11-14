@@ -1,7 +1,7 @@
 """Offline tests for fetch.ingest + tools.ingest_assets.
 
-Fake ee and fake google.cloud.storage are injected through sys.modules —
-NO network, NO credentials and NO real SDK anywhere below.
+A fake ee is injected through sys.modules — NO network, NO credentials,
+NO GCS and NO real SDK anywhere below (L10: no bucket anywhere).
 """
 import json
 import sys
@@ -21,8 +21,8 @@ from tp import events
 
 def _fake_ee(calls, assets=None, get_error=None):
     """Module-type fake ee: getAsset raises a not-found error for missing
-    ids (or `get_error` unconditionally); start*Ingestion calls are recorded
-    as ('image'|'table', request_id, params)."""
+    ids (or `get_error` unconditionally); Feature/FeatureCollection/
+    Export.table.toAsset calls are recorded."""
     ee = types.ModuleType("ee")
     store = dict(assets or {})
 
@@ -33,13 +33,34 @@ def _fake_ee(calls, assets=None, get_error=None):
             raise RuntimeError(f"{asset_id} not found")
         return store[asset_id]
 
-    def start_ingestion(request_id, params):
-        calls.append(("image", request_id, params))
-        return {"name": "op/image-1"}
+    class Feature:
+        def __init__(self, geojson):
+            self.geojson = geojson
 
-    def start_table(request_id, params):
-        calls.append(("table", request_id, params))
-        return {"name": "op/table-1"}
+    class FeatureCollection:
+        def __init__(self, arg):
+            self.arg = arg
+            calls.append(("fc", len(arg)))
+
+        def flatten(self):
+            calls.append(("flatten",))
+            return self
+
+    class _Task:
+        id = "task-fake-1"
+
+        def start(self):
+            calls.append(("task_start",))
+
+    def to_asset(collection, description, assetId=None, overwrite=False,
+                 **kw):
+        calls.append(("export_table", {
+            "collection": collection,
+            "description": description,
+            "assetId": assetId,
+            "overwrite": overwrite,
+        }))
+        return _Task()
 
     def create_asset(value, path=None, **kw):
         calls.append(("create", value, path))
@@ -47,11 +68,12 @@ def _fake_ee(calls, assets=None, get_error=None):
         return {"name": path}
 
     ee.data = types.SimpleNamespace(
-        getAsset=get_asset,
-        createAsset=create_asset,
-        startIngestion=start_ingestion,
-        startTableIngestion=start_table,
-    )
+        getAsset=get_asset, createAsset=create_asset)
+    ee.Feature = Feature
+    ee.FeatureCollection = FeatureCollection
+    ee.batch = types.SimpleNamespace(
+        Export=types.SimpleNamespace(
+            table=types.SimpleNamespace(toAsset=to_asset)))
     ee.Initialize = lambda **kw: calls.append(("init", kw))
     ee.ServiceAccountCredentials = (
         lambda email, key_file: types.SimpleNamespace(
@@ -59,52 +81,18 @@ def _fake_ee(calls, assets=None, get_error=None):
     return ee
 
 
-def _fake_storage(uploads):
-    """Module-type fake google.cloud.storage: Client().bucket().blob()
-    .upload_from_filename records (bucket, blob, filename)."""
-    mod = types.ModuleType("google.cloud.storage")
-
-    class _Blob:
-        def __init__(self, bucket_name, blob_name):
-            self._bucket, self._name = bucket_name, blob_name
-
-        def upload_from_filename(self, filename):
-            uploads.append((self._bucket, self._name, filename))
-
-    class _Bucket:
-        def __init__(self, name):
-            self._name = name
-
-        def blob(self, name):
-            return _Blob(self._name, name)
-
-    class Client:
-        def bucket(self, name):
-            return _Bucket(name)
-
-        @classmethod
-        def from_service_account_json(cls, path):
-            uploads.append(("from_service_account_json", path))
-            return cls()
-
-    mod.Client = Client
-    return mod
-
-
 def _install_fakes(monkeypatch, assets=None, get_error=None):
-    """Inject fake ee + fake google.cloud.storage; return (uploads, calls).
-    SA-key envs are cleared so ambient credentials can't leak in."""
-    uploads, calls = [], []
+    """Inject fake ee; return calls. SA-key envs are cleared so ambient
+    credentials can't leak in."""
+    calls = []
     monkeypatch.setitem(
         sys.modules, "ee", _fake_ee(calls, assets, get_error))
-    monkeypatch.setitem(
-        sys.modules, "google.cloud.storage", _fake_storage(uploads))
     # gee.common binds `ee` at its own import time — drop the cache so the
     # real helper re-imports under THIS test's fake ee.
     monkeypatch.delitem(sys.modules, "gee.common", raising=False)
     for var in ("GCP_SA_KEY", "GEE_SERVICE_ACCOUNT_KEY"):
         monkeypatch.delenv(var, raising=False)
-    return uploads, calls
+    return calls
 
 
 def _write(path: Path, content=b"x") -> Path:
@@ -113,137 +101,195 @@ def _write(path: Path, content=b"x") -> Path:
     return path
 
 
+def _geojson(path: Path, n: int = 1) -> Path:
+    return _write(path, json.dumps({
+        "type": "FeatureCollection",
+        "features": [
+            {"type": "Feature",
+             "geometry": {"type": "Point", "coordinates": [-51.8, -29.7]},
+             "properties": {}}
+        ] * n,
+    }).encode())
+
+
 # ---------------------------------------------------------------- library
 
 
-def test_stage_to_gcs_uploads_under_staging(monkeypatch, tmp_path):
-    uploads, _ = _install_fakes(monkeypatch)
-    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
-    local = _write(tmp_path / "rs_2024_dswx_wtr_20240502.tif")
-    uri = ingest.stage_to_gcs(local, bucket="tp-data", case="rs_2024",
-                              name="dswx_wtr_20240502")
-    assert uri == "gs://tp-data/staging/rs_2024/dswx_wtr_20240502.tif"
-    assert uploads == [(
-        "tp-data", "staging/rs_2024/dswx_wtr_20240502.tif", str(local))]
-
-
-def test_image_ingest_uses_startIngestion(monkeypatch):
-    _, calls = _install_fakes(monkeypatch)
-    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
-    monkeypatch.setenv("GEE_PROJECT", "proj-x")
-    aid = "projects/proj-x/assets/tipping-point/rs_2024/dswx_wtr_20240502"
-    entry = ingest.ingest_asset(
-        "gs://b/staging/rs_2024/dswx_wtr_20240502.tif",
-        asset_id=aid, kind="image")
-    assert [c[0] for c in calls] == ["init", "image"]
-    params = calls[1][2]
-    assert params["name"] == aid
-    assert params["tilesets"][0]["sources"][0]["uris"] == [
-        "gs://b/staging/rs_2024/dswx_wtr_20240502.tif"]
-    assert entry["status"] == "ingesting"
-    assert entry["gee_id"] == aid
-    assert entry["kind"] == "image"
-    assert entry["ingested_at"]
-
-
-def test_table_ingest_uses_startTableIngestion(monkeypatch):
-    _, calls = _install_fakes(monkeypatch)
+def test_ingest_table_exports_client_side_collection(monkeypatch, tmp_path):
+    """L10: no gs:// staging — features become a client-side
+    ee.FeatureCollection uploaded via Export.table.toAsset."""
+    calls = _install_fakes(monkeypatch)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
     aid = "projects/p/assets/tipping-point/wa_2025/landslide_catalog"
-    entry = ingest.ingest_asset(
-        "gs://b/staging/wa_2025/landslide_catalog.geojson",
-        asset_id=aid, kind="table")
-    assert [c[0] for c in calls] == ["init", "table"]
-    assert calls[1][2]["sources"][0]["uris"] == [
-        "gs://b/staging/wa_2025/landslide_catalog.geojson"]
+    geo = tmp_path / "landslide_catalog.geojson"
+    geo.write_text(json.dumps({"type": "FeatureCollection", "features": [
+        {"type": "Feature",
+         "geometry": {"type": "Point", "coordinates": [-51.8, -29.7]},
+         "properties": {"name": "x"}},
+    ]}))
+    entry = ingest.ingest_table(geo, asset_id=aid)
+    kinds = [c[0] for c in calls]
+    assert kinds[0] == "init"
+    assert "export_table" in kinds
+    assert "task_start" in kinds
+    assert "table" not in kinds        # no startTableIngestion, no bucket
+    export = next(c[1] for c in calls if c[0] == "export_table")
+    assert export["assetId"] == aid
+    assert export["overwrite"] is False
     assert entry["kind"] == "table"
+    assert entry["status"] == "ingesting"
+    assert entry["features"] == 1
+    assert entry["operation"] == "task-fake-1"
+
+
+def test_ingest_table_chunks_large_collections(monkeypatch, tmp_path):
+    """>10k features: per-chunk ee.FeatureCollections, each with its OWN
+    Export.table.toAsset to <asset_id>_partNN — no request ever carries
+    more than chunk_size features (no flattened mega-collection)."""
+    calls = _install_fakes(monkeypatch)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    aid = "projects/p/assets/tipping-point/rs_2024/landslide_catalog"
+    features = [{"type": "Feature", "geometry": None, "properties": {}}
+                for _ in range(12_345)]
+    geo = tmp_path / "big.geojson"
+    geo.write_text(json.dumps(
+        {"type": "FeatureCollection", "features": features}))
+    entry = ingest.ingest_table(geo, asset_id=aid)
+    # 3 client-side collections, each bounded at 5000 features
+    assert [c[1] for c in calls if c[0] == "fc"] == [5000, 5000, 2345]
+    assert ("flatten",) not in calls
+    # FOLDER parent created at asset_id; parts are assets INSIDE it
+    created = [c for c in calls if c[0] == "create"]
+    assert created == [("create", {"type": "FOLDER"}, aid)]
+    exports = [c[1] for c in calls if c[0] == "export_table"]
+    assert [e["assetId"] for e in exports] == [
+        f"{aid}/part00", f"{aid}/part01", f"{aid}/part02"]
+    assert [e["description"] for e in exports] == [
+        "ingest_landslide_catalog_part00",
+        "ingest_landslide_catalog_part01",
+        "ingest_landslide_catalog_part02"]
+    assert len([c for c in calls if c[0] == "task_start"]) == 3
+    assert entry["features"] == 12_345
+    assert entry["status"] == "ingesting"
+    assert [p["gee_id"] for p in entry["parts"]] == [
+        e["assetId"] for e in exports]
+    assert [p["features"] for p in entry["parts"]] == [5000, 5000, 2345]
+
+
+def test_ingest_table_skips_existing_parts(monkeypatch, tmp_path):
+    """Idempotent per part: a part already in EE is not re-exported."""
+    aid = "projects/p/assets/tipping-point/rs_2024/landslide_catalog"
+    calls = _install_fakes(
+        monkeypatch,
+        assets={aid: {"type": "FOLDER"},
+                f"{aid}/part00": {"type": "TABLE"}})
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    geo = _geojson(tmp_path / "x.geojson", n=7)
+    entry = ingest.ingest_table(geo, asset_id=aid, chunk_size=3)
+    exports = [c[1] for c in calls if c[0] == "export_table"]
+    assert [e["assetId"] for e in exports] == [
+        f"{aid}/part01", f"{aid}/part02"]          # part00 skipped
+    assert [c for c in calls if c[0] == "create"] == []
+    assert entry["parts"][0]["status"] == "exists"
     assert entry["status"] == "ingesting"
 
 
-def test_existing_asset_is_skipped(monkeypatch):
-    aid = "projects/p/assets/tipping-point/rs_2024/municipal_boundaries"
-    _, calls = _install_fakes(monkeypatch, assets={aid: {"type": "TABLE"}})
+def test_ingest_table_small_collection_single_chunk(monkeypatch, tmp_path):
+    calls = _install_fakes(monkeypatch)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
-    entry = ingest.ingest_asset("gs://b/x.geojson", asset_id=aid, kind="table")
+    geo = tmp_path / "small.geojson"
+    geo.write_text(json.dumps({"type": "FeatureCollection", "features": [
+        {"type": "Feature", "geometry": None, "properties": {}},
+    ] * 2}))
+    ingest.ingest_table(geo, asset_id="projects/p/assets/a/b/c")
+    assert [c[1] for c in calls if c[0] == "fc"] == [2]
+    exports = [c[1] for c in calls if c[0] == "export_table"]
+    assert [e["assetId"] for e in exports] == ["projects/p/assets/a/b/c"]
+
+
+def test_existing_asset_is_skipped(monkeypatch, tmp_path):
+    aid = "projects/p/assets/tipping-point/rs_2024/municipal_boundaries"
+    calls = _install_fakes(monkeypatch, assets={aid: {"type": "TABLE"}})
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    geo = tmp_path / "x.geojson"
+    geo.write_text(json.dumps({"type": "FeatureCollection", "features": []}))
+    entry = ingest.ingest_table(geo, asset_id=aid)
     assert entry["status"] == "exists"
     assert [c[0] for c in calls] == ["init"]  # no ingestion started
 
 
-def test_force_reingests_existing(monkeypatch):
+def test_force_reingests_existing(monkeypatch, tmp_path):
     aid = "projects/p/assets/tipping-point/rs_2024/municipal_boundaries"
-    _, calls = _install_fakes(monkeypatch, assets={aid: {"type": "TABLE"}})
+    calls = _install_fakes(monkeypatch, assets={aid: {"type": "TABLE"}})
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
-    entry = ingest.ingest_asset("gs://b/x.geojson", asset_id=aid,
-                              kind="table", force=True)
+    geo = tmp_path / "x.geojson"
+    geo.write_text(json.dumps({"type": "FeatureCollection", "features": []}))
+    entry = ingest.ingest_table(geo, asset_id=aid, force=True)
     assert entry["status"] == "ingesting"
-    assert calls[-1][0] == "table"
+    export = next(c[1] for c in calls if c[0] == "export_table")
+    assert export["overwrite"] is True
 
 
-def test_getAsset_non_404_errors_propagate(monkeypatch):
-    _, calls = _install_fakes(
+def test_getAsset_non_404_errors_propagate(monkeypatch, tmp_path):
+    calls = _install_fakes(
         monkeypatch, get_error=RuntimeError("PERMISSION_DENIED"))
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
     with pytest.raises(RuntimeError, match="PERMISSION_DENIED"):
-        ingest.ingest_asset("gs://b/x.tif",
-                            asset_id="projects/p/assets/tipping-point/c/x",
-                            kind="image")
+        ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                            asset_id="projects/p/assets/tipping-point/c/x")
     assert [c[0] for c in calls] == ["init"]  # no ingestion started
 
 
-def test_getAsset_404_status_means_absent(monkeypatch):
+def test_getAsset_404_status_means_absent(monkeypatch, tmp_path):
     err = RuntimeError("weird message")
     err.status_code = 404
-    _, calls = _install_fakes(monkeypatch, get_error=err)
+    calls = _install_fakes(monkeypatch, get_error=err)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
-    entry = ingest.ingest_asset("gs://b/x.tif",
-                                asset_id="projects/p/assets/a/b/c",
-                                kind="image")
+    entry = ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                                asset_id="projects/p/assets/a/b/c")
     assert entry["status"] == "ingesting"
-    assert calls[-1][0] == "image"
+    assert calls[-1][0] == "task_start"
 
 
-def test_getAsset_403_status_propagates(monkeypatch):
+def test_getAsset_403_status_propagates(monkeypatch, tmp_path):
     err = RuntimeError("forbidden")
     err.status_code = 403
     _install_fakes(monkeypatch, get_error=err)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
     with pytest.raises(RuntimeError, match="forbidden"):
-        ingest.ingest_asset("gs://b/x.tif",
-                            asset_id="projects/p/assets/a/b/c",
-                            kind="image")
+        ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                            asset_id="projects/p/assets/a/b/c")
 
 
-def test_getAsset_non_404_status_with_not_found_text_propagates(monkeypatch):
+def test_getAsset_non_404_status_with_not_found_text_propagates(
+        monkeypatch, tmp_path):
     err = RuntimeError("requested entity was not found in project")
     err.status_code = 403
     _install_fakes(monkeypatch, get_error=err)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
     with pytest.raises(RuntimeError, match="not found"):
-        ingest.ingest_asset("gs://b/x.tif",
-                            asset_id="projects/p/assets/a/b/c",
-                            kind="image")
+        ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                            asset_id="projects/p/assets/a/b/c")
 
 
-def test_getAsset_auth_text_with_not_found_propagates(monkeypatch):
+def test_getAsset_auth_text_with_not_found_propagates(monkeypatch, tmp_path):
     err = RuntimeError("Permission denied: asset project not found")
     _install_fakes(monkeypatch, get_error=err)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
     with pytest.raises(RuntimeError, match="not found"):
-        ingest.ingest_asset("gs://b/x.tif",
-                            asset_id="projects/p/assets/a/b/c",
-                            kind="image")
+        ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                            asset_id="projects/p/assets/a/b/c")
 
 
-def test_getAsset_grpc_not_found_code_means_absent(monkeypatch):
+def test_getAsset_grpc_not_found_code_means_absent(monkeypatch, tmp_path):
     err = RuntimeError("rpc error")
     err.code = lambda: "NOT_FOUND"  # grpc-style callable status
-    _, calls = _install_fakes(monkeypatch, get_error=err)
+    calls = _install_fakes(monkeypatch, get_error=err)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
-    entry = ingest.ingest_asset("gs://b/x.tif",
-                                asset_id="projects/p/assets/a/b/c",
-                                kind="image")
+    entry = ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                                asset_id="projects/p/assets/a/b/c")
     assert entry["status"] == "ingesting"
-    assert calls[-1][0] == "image"
+    assert calls[-1][0] == "task_start"
 
 
 def test_invalid_case_and_name_rejected(tmp_path):
@@ -256,23 +302,15 @@ def test_invalid_case_and_name_rejected(tmp_path):
         with pytest.raises(ValueError):
             ingest.asset_id("ok", bad)
     with pytest.raises(ValueError):
-        ingest.staging_uri("bkt", "rs_2024", "../evil")
-    with pytest.raises(ValueError):
-        ingest.staging_uri("bad/bucket", "rs_2024", "x")
-    local = _write(tmp_path / "x.tif")
-    with pytest.raises(ValueError):
-        ingest.stage_to_gcs(local, bucket="b", case="c", name="bad/name")
-    with pytest.raises(ValueError):
-        ingest.ingest_asset("gs://b/x",
-                            asset_id="projects/p/assets/../evil",
-                            kind="image")
+        ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                            asset_id="projects/p/assets/../evil")
     with pytest.raises(ValueError):
         ingest.append_manifest("../escape", {"name": "x"})
 
 
 def test_ensure_collection_creates_container_once(monkeypatch):
     """ensure_collection: createAsset(IMAGE_COLLECTION) once, then exists."""
-    _, calls = _install_fakes(monkeypatch)
+    calls = _install_fakes(monkeypatch)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
     parent = "projects/p/assets/tipping-point/rs_2024/imerg_early"
     e1 = ingest.ensure_collection(parent)
@@ -384,49 +422,24 @@ def test_append_manifest_writes_and_upserts(monkeypatch, tmp_path):
 def test_missing_creds_raise_naming_var(monkeypatch, tmp_path):
     _install_fakes(monkeypatch)  # SA key envs cleared
     monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
-    local = _write(tmp_path / "x.tif")
     with pytest.raises(RuntimeError, match="GOOGLE_APPLICATION_CREDENTIALS"):
-        ingest.stage_to_gcs(local, bucket="b", case="c", name="n")
-    with pytest.raises(RuntimeError, match="GOOGLE_APPLICATION_CREDENTIALS"):
-        ingest.ingest_asset("gs://b/x", asset_id="a", kind="image")
+        ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                            asset_id="a/b")
 
 
 def test_ee_init_via_common_with_sa_key(monkeypatch, tmp_path):
     """gee.common.init builds ServiceAccountCredentials from GCP_SA_KEY and
     passes them to ee.Initialize (real common.init, fake ee underneath)."""
-    _, calls = _install_fakes(monkeypatch)
+    calls = _install_fakes(monkeypatch)
     key = _write(tmp_path / "sa.json", b'{"client_email": "a@b.iam"}')
     monkeypatch.setenv("GCP_SA_KEY", str(key))
     monkeypatch.setenv("GEE_PROJECT", "proj-x")
-    ingest.ingest_asset("gs://b/x.tif",
-                        asset_id="projects/p/assets/a/b/c", kind="image")
+    ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                        asset_id="projects/p/assets/a/b/c")
     assert calls[0][0] == "init"
     assert calls[0][1]["project"] == "proj-x"
     assert calls[0][1]["credentials"].key_file == str(key)
-    assert calls[1][0] == "image"
-
-
-def test_stage_to_gcs_uses_sa_key_when_no_adc(monkeypatch, tmp_path):
-    uploads, _ = _install_fakes(monkeypatch)
-    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
-    key = _write(tmp_path / "sa.json", b'{"client_email": "a@b.iam"}')
-    monkeypatch.setenv("GCP_SA_KEY", str(key))
-    local = _write(tmp_path / "x.tif")
-    uri = ingest.stage_to_gcs(local, bucket="b", case="c", name="n")
-    assert uri == "gs://b/staging/c/n.tif"
-    assert ("from_service_account_json", str(key)) in uploads
-    assert uploads[-1] == ("b", "staging/c/n.tif", str(local))
-
-
-def test_staging_bucket_env_and_alias(monkeypatch):
-    monkeypatch.delenv("NOW_GCS_BUCKET", raising=False)
-    monkeypatch.delenv("GCS_BUCKET", raising=False)
-    with pytest.raises(RuntimeError, match="NOW_GCS_BUCKET"):
-        ingest.staging_bucket()
-    monkeypatch.setenv("GCS_BUCKET", "alias-bucket")
-    assert ingest.staging_bucket() == "alias-bucket"
-    monkeypatch.setenv("NOW_GCS_BUCKET", "primary-bucket")
-    assert ingest.staging_bucket() == "primary-bucket"
+    assert calls[-1][0] == "task_start"
 
 
 # ------------------------------------------------------------------- CLI
@@ -455,8 +468,9 @@ def test_dry_run_needs_no_env(monkeypatch, tmp_path, capsys):
         monkeypatch.delenv(var, raising=False)
     ingest_assets.main(["--event", "rs-2024-05", "--dry-run"])
     out = capsys.readouterr().out
-    assert "staging/rs_2024/landslide_catalog.geojson" in out
+    assert "landslide_catalog.geojson" in out
     assert "tipping-point/rs_2024/landslide_catalog" in out
+    assert "gs://" not in out
     assert not (tmp_path / "rs_2024" / "assets.json").exists()
 
 
@@ -472,8 +486,6 @@ def test_manifest_only_writes_pending(monkeypatch, tmp_path):
         "name": "municipal_boundaries",
         "gee_id": "projects/hermes-fesolucoes/assets/tipping-point/"
                   "wa_2025/municipal_boundaries",
-        "gcs_uri": "gs://<NOW_GCS_BUCKET>/staging/wa_2025/"
-                   "municipal_boundaries.geojson",
         "kind": "table",
         "status": "pending",
         "ingested_at": None,
@@ -481,18 +493,30 @@ def test_manifest_only_writes_pending(monkeypatch, tmp_path):
     }]
 
 
-def test_cli_real_run_stages_ingests_and_manifests(monkeypatch, tmp_path):
-    uploads, calls = _install_fakes(monkeypatch)
+def test_cli_real_run_exports_and_manifests(monkeypatch, tmp_path):
+    calls = _install_fakes(monkeypatch)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
-    monkeypatch.setenv("NOW_GCS_BUCKET", "tp-bucket")
     monkeypatch.setattr(events, "DATA_DIR", tmp_path)
-    geo = _write(tmp_path / "rs_2024" / "geojson"
-                 / "municipal_boundaries.geojson", b"{}")
+    _geojson(tmp_path / "rs_2024" / "geojson"
+             / "municipal_boundaries.geojson")
     ingest_assets.main(["--case", "rs_2024"])
-    assert uploads == [(
-        "tp-bucket", "staging/rs_2024/municipal_boundaries.geojson",
-        str(geo))]
-    assert calls[-1][0] == "table"
+    export = next(c for c in calls if c[0] == "export_table")
+    assert export[1]["assetId"].endswith(
+        "tipping-point/rs_2024/municipal_boundaries")
     doc = json.loads((tmp_path / "rs_2024" / "assets.json").read_text())
     assert doc["assets"][0]["status"] == "ingesting"
     assert doc["assets"][0]["ingested_at"]
+
+
+def test_cli_image_products_recorded_local_only(monkeypatch, tmp_path):
+    """L10: raster registry entries keep their planned gee_id locally."""
+    _install_fakes(monkeypatch)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    monkeypatch.setattr(events, "DATA_DIR", tmp_path)
+    _write(tmp_path / "rs_2024" / "cog" / "rs_2024_dswx_wtr_20240502.tif")
+    ingest_assets.main(["--case", "rs_2024"])
+    doc = json.loads((tmp_path / "rs_2024" / "assets.json").read_text())
+    entry = doc["assets"][0]
+    assert entry["status"] == "local-only"
+    assert entry["kind"] == "image"
+    assert entry["gee_id"].endswith("tipping-point/rs_2024/dswx_wtr_20240502")

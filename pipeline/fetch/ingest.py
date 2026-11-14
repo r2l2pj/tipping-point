@@ -1,11 +1,17 @@
 """GEE asset ingest for pipeline products not in the Earth Engine catalog.
 
-stage_to_gcs uploads a local file to gs://<bucket>/staging/<case>/<name><ext>
-via google.cloud.storage; ingest_asset then starts an Earth Engine
-ingestion — ee.data.startIngestion for rasters/COGs (kind "image") or
-ee.data.startTableIngestion for GeoJSON points/polygons (kind "table") —
-under projects/<GEE_PROJECT>/assets/tipping-point/<case>/<name>, and
-append_manifest upserts the row in data/<case>/assets.json.
+Ruling L10: NO GCS bucket. Table/vector assets go through ingest_table,
+which reads a local GeoJSON FeatureCollection, builds a client-side
+ee.FeatureCollection per chunk of TABLE_CHUNK_FEATURES features, and
+uploads each chunk through its own ee.batch.Export.table.toAsset task so
+no single EE request exceeds chunk_size features. Catalogs larger than
+one chunk land as partNN table assets INSIDE a FOLDER parent created at
+projects/<GEE_PROJECT>/assets/tipping-point/<case>/<name>.
+
+There is NO raster-ingest path: research confirmed no bucket-free raster
+upload exists, so raster fetchers keep their COGs local and record them
+with status 'local-only'. append_manifest upserts the row in
+data/<case>/assets.json either way.
 
 Ingestion is idempotent: when ee.data.getAsset already returns the asset it
 is skipped (status "exists") unless force=True.
@@ -13,19 +19,17 @@ is skipped (status "exists") unless force=True.
 Env vars:
   GEE_PROJECT                     Earth Engine cloud project
                                   (default 'hermes-fesolucoes')
-  NOW_GCS_BUCKET                  staging bucket (GCS_BUCKET accepted alias)
   GCP_SA_KEY                      service-account JSON (path or raw blob —
                                   repo convention, shared with gee.common)
   GEE_SERVICE_ACCOUNT_KEY         fallback SA key env
   GOOGLE_APPLICATION_CREDENTIALS  service-account JSON path (ADC)
 
-Missing creds raise RuntimeError naming what to set. ee,
-google.cloud.storage and gee.common are imported lazily (importlib, so
-tests inject fakes through sys.modules) — --dry-run and the test suite
-need no credentials, no SDK and no network. EE is initialized through the
-shared gee.common.init helper (ServiceAccountCredentials). NOTE:
-hermes-fesolucoes is not registered with Earth Engine yet, so real
-ingestion is blocked until it is.
+Missing creds raise RuntimeError naming what to set. ee and gee.common are
+imported lazily (importlib, so tests inject fakes through sys.modules) —
+--dry-run and the test suite need no credentials, no SDK and no network. EE
+is initialized through the shared gee.common.init helper
+(ServiceAccountCredentials). NOTE: hermes-fesolucoes is not registered
+with Earth Engine yet, so real ingestion is blocked until it is.
 """
 from __future__ import annotations
 
@@ -34,8 +38,6 @@ import json
 import os
 import re
 import sys
-import tempfile
-import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -44,8 +46,12 @@ from tp import events
 DEFAULT_GEE_PROJECT = "hermes-fesolucoes"
 ASSET_ROOT = "tipping-point"
 MANIFEST_SCHEMA = "tipping-point/gee-assets@1"
-BUCKET_ENV_VARS = ("NOW_GCS_BUCKET", "GCS_BUCKET")
+# Features per client-side ee.FeatureCollection chunk (and per export
+# task) in ingest_table; catalogs up to ~20k features must never land in
+# a single inline object OR a single EE request.
+TABLE_CHUNK_FEATURES = 5000
 # D10 convention (gee/common.py): GCP_SA_KEY is canonical for SA creds.
+BUCKET_ENV_VARS = ("NOW_GCS_BUCKET", "GCS_BUCKET")
 SA_KEY_ENV_VARS = ("GCP_SA_KEY", "GEE_SERVICE_ACCOUNT_KEY")
 _SEGMENT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 
@@ -70,7 +76,12 @@ def gee_project() -> str:
 
 
 def staging_bucket() -> str:
-    """Bucket name from NOW_GCS_BUCKET (GCS_BUCKET accepted alias)."""
+    """Bucket name from NOW_GCS_BUCKET (GCS_BUCKET accepted alias).
+
+    LEGACY — no ingest path in this module uses a bucket anymore (L10);
+    kept only because out-of-scope callers (tp.fallback, geosfp/imerg/smap)
+    still resolve it until their units are reworked.
+    """
     for var in BUCKET_ENV_VARS:
         if value := os.environ.get(var):
             return value
@@ -90,33 +101,6 @@ def _require_creds() -> None:
             "GOOGLE_APPLICATION_CREDENTIALS or GCP_SA_KEY "
             "(GEE_SERVICE_ACCOUNT_KEY also works) to the SA JSON key path"
         )
-
-
-def _sa_key_path() -> str | None:
-    """Service-account JSON path from the SA key envs, or None.
-
-    Values may be a file path or a raw JSON blob (written to a temp file —
-    same convention as gee.common._sa_key_file).
-    """
-    for var in SA_KEY_ENV_VARS:
-        value = os.environ.get(var, "").strip()
-        if not value:
-            continue
-        if value.startswith("{"):
-            fd, path = tempfile.mkstemp(suffix=".json", prefix="tp-sa-")
-            with os.fdopen(fd, "w") as f:
-                f.write(value)
-            return path
-        return value
-    return None
-
-
-def _storage_client(storage):
-    """google.cloud.storage.Client: ADC when GOOGLE_APPLICATION_CREDENTIALS
-    is set, otherwise built from the SA key env."""
-    if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        return storage.Client()
-    return storage.Client.from_service_account_json(_sa_key_path())
 
 
 def _init_ee() -> None:
@@ -209,75 +193,116 @@ def asset_id(case: str, name: str, project: str | None = None) -> str:
     return f"projects/{project}/assets/{ASSET_ROOT}/{case}/{name}"
 
 
-def staging_uri(bucket: str, case: str, name: str, suffix: str = "") -> str:
-    _validate_path_safe(bucket, "bucket")
-    _validate_segment(case, "case")
-    _validate_segment(name, "name")
-    if "/" in suffix or "\\" in suffix or ".." in suffix:
-        raise ValueError(f"invalid suffix {suffix!r}")
-    return f"gs://{bucket}/staging/{case}/{name}{suffix}"
+def _ensure_parent(ee, path: str) -> None:
+    """Create `path` as a FOLDER asset if absent (holds table partNN
+    children — ImageCollection only accepts images). Same getAsset +
+    strict not-found semantics as the part idempotency check."""
+    try:
+        ee.data.getAsset(path)
+    except Exception as exc:
+        if not _is_not_found(exc):
+            raise
+        ee.data.createAsset({"type": "FOLDER"}, path)
 
 
-def stage_to_gcs(local_path, *, bucket, case, name) -> str:
-    """Upload local_path to gs://<bucket>/staging/<case>/<name><ext>.
+def _export_table_chunk(ee, features: list, target_id: str,
+                        description: str, force: bool):
+    """Build one client-side ee.FeatureCollection from at most chunk_size
+    GeoJSON feature dicts and start its Export.table.toAsset task."""
+    collection = ee.FeatureCollection([ee.Feature(f) for f in features])
+    task = ee.batch.Export.table.toAsset(
+        collection,
+        description,
+        assetId=target_id,
+        overwrite=bool(force),
+    )
+    task.start()
+    return task
 
-    Returns the staged object's gs:// URI.
+
+def ingest_table(geojson_path, *, asset_id, force=False,
+                 chunk_size=TABLE_CHUNK_FEATURES, description=None) -> dict:
+    """Ingest a local GeoJSON FeatureCollection as GEE table asset(s).
+
+    No GCS bucket (ruling L10). Every client request is bounded: features
+    are split into `chunk_size` chunks, each becomes one client-side
+    ee.FeatureCollection uploaded by its own
+    ee.batch.Export.table.toAsset task. A catalog fitting one chunk lands
+    at `asset_id` as a plain table asset; larger ones get a FOLDER parent
+    created at `asset_id` and land inside it as `<asset_id>/part00`,
+    `part01`, … (the manifest entry lists them under 'parts'). Idempotent
+    via getAsset per target (the parent folder included) — only
+    a 'not found' (404) error means absence; force=True re-exports
+    (overwrite). Returns the manifest entry.
     """
-    local = Path(local_path)
+    _validate_asset_id(asset_id)
+    local = Path(geojson_path)
     if not local.is_file():
         raise FileNotFoundError(local)
-    uri = staging_uri(bucket, case, name, local.suffix)
-    _require_creds()
-    storage = _import("google.cloud.storage")
-    blob_name = uri.removeprefix(f"gs://{bucket}/")
-    client = _storage_client(storage)
-    client.bucket(bucket).blob(blob_name).upload_from_filename(str(local))
-    return uri
-
-
-def ingest_asset(gcs_uri, *, asset_id, kind, force=False) -> dict:
-    """Start a GEE ingestion for a staged file; return the manifest entry.
-
-    kind "image" -> ee.data.startIngestion (COG/raster); kind "table" ->
-    ee.data.startTableIngestion (GeoJSON). Idempotent: when getAsset finds
-    the asset already, a status-"exists" entry is returned and no ingestion
-    is started, unless force=True. Only a 'not found' (404) getAsset error
-    means absence — auth/permission/service errors propagate.
-    """
-    if kind not in ("image", "table"):
-        raise ValueError(f"unknown asset kind {kind!r}; expected image|table")
-    _validate_asset_id(asset_id)
+    doc = json.loads(local.read_text())
+    features = doc.get("features") if isinstance(doc, dict) else None
+    if not isinstance(features, list):
+        raise TypeError(
+            f"{local}: expected a GeoJSON FeatureCollection "
+            "('features' list)")
     _require_creds()
     _init_ee()
     ee = _import("ee")
 
+    name = asset_id.rsplit("/", 1)[-1]
     entry = {
-        "name": asset_id.rsplit("/", 1)[-1],
+        "name": name,
         "gee_id": asset_id,
-        "gcs_uri": gcs_uri,
-        "kind": kind,
+        "kind": "table",
+        "features": len(features),
+        "source": str(local),
     }
-    if not force:
-        try:
-            ee.data.getAsset(asset_id)
-        except Exception as exc:
-            if not _is_not_found(exc):
-                raise
-        else:
-            return entry | {"status": "exists", "ingested_at": _now()}
+    chunk_size = int(chunk_size)
+    if chunk_size < 1:
+        raise ValueError("chunk_size must be >= 1")
+    chunks = [
+        features[i:i + chunk_size]
+        for i in range(0, len(features), chunk_size)
+    ] or [[]]
+    single = len(chunks) == 1
+    targets = (
+        [asset_id] if single
+        else [f"{asset_id}/part{k:02d}" for k in range(len(chunks))]
+    )
+    if not single:
+        _ensure_parent(ee, asset_id)
+    desc = description or f"ingest_{name}"
 
-    params = {"name": asset_id}
-    if kind == "image":
-        params["tilesets"] = [{"sources": [{"uris": [gcs_uri]}]}]
-        op = ee.data.startIngestion(uuid.uuid4().hex, params)
-    else:
-        params["sources"] = [{"uris": [gcs_uri]}]
-        op = ee.data.startTableIngestion(uuid.uuid4().hex, params)
+    parts = []
+    for k, (target, chunk) in enumerate(zip(targets, chunks)):
+        part = {"gee_id": target, "features": len(chunk)}
+        if not force:
+            try:
+                ee.data.getAsset(target)
+            except Exception as exc:
+                if not _is_not_found(exc):
+                    raise
+            else:
+                part["status"] = "exists"
+                parts.append(part)
+                continue
+        task = _export_table_chunk(
+            ee, chunk, target,
+            desc if single else f"{desc}_part{k:02d}", force)
+        part["status"] = "ingesting"
+        if task_id := getattr(task, "id", None):
+            part["operation"] = task_id
+        parts.append(part)
 
-    entry["status"] = "ingesting"
+    entry["status"] = (
+        "ingesting" if any(p["status"] == "ingesting" for p in parts)
+        else "exists")
     entry["ingested_at"] = _now()
-    if isinstance(op, dict) and op.get("name"):
-        entry["operation"] = op["name"]
+    if single:
+        if op := parts[0].get("operation"):
+            entry["operation"] = op
+    else:
+        entry["parts"] = parts
     return entry
 
 

@@ -8,10 +8,15 @@ event["nisar"]["frames"][*]["scenes"] and the nisar_gcov_* assets already
 listed in data/<case>/assets.json.
 
 New scenes are clipped to the AOI as COGs via tp.nisar's /vsicurl/ machinery
-(HHHH backscatter), staged to GCS and ingested as image assets
-nisar_gcov_<yyyymmdd> under
+(HHHH backscatter) and recorded in data/<case>/assets.json with status
+'local-only' — the planned image assets nisar_gcov_<yyyymmdd> live under
 projects/<GEE_PROJECT>/assets/tipping-point/<case>/nisar/. Re-running is
-idempotent: an asset_id already in assets.json is never re-ingested.
+idempotent: an asset_id already in assets.json is never re-downloaded.
+
+Ruling L10: no GCS bucket and no bucket-free raster upload exists, so
+there is NO raster-ingest path — --execute downloads+clips locally only.
+--ingest is accepted but only warns that raster ingest is not supported
+without a GCS bucket (L10).
 
 Usage:
     uv run python -m pipeline.fetch.nisar --case wa_2025 --dry-run
@@ -20,9 +25,7 @@ Usage:
     uv run python -m pipeline.fetch.nisar --execute
 
 --dry-run only needs network (asf metadata search is anonymous). --execute
-needs Earthdata creds (EARTHDATA_TOKEN, else EDL_USER/EDL_PASS or ~/.netrc),
-GEE_PROJECT, NOW_GCS_BUCKET and fetch.ingest (lands separately on
-unit/ingest).
+needs Earthdata creds (EARTHDATA_TOKEN, else EDL_USER/EDL_PASS or ~/.netrc).
 """
 from __future__ import annotations
 
@@ -31,6 +34,7 @@ import importlib
 import json
 import os
 import re
+import sys
 from datetime import UTC, date, datetime
 from pathlib import Path
 
@@ -374,11 +378,11 @@ def _load_ingest():
         except ImportError as e:
             raise RuntimeError(
                 "pipeline/fetch/ingest.py (unit/ingest) is not available — "
-                "stage_to_gcs/ingest_asset/append_manifest are required for "
+                "append_manifest is required for "
                 "--execute; --dry-run needs only the asf metadata search."
             ) from e
     missing = [
-        n for n in ("stage_to_gcs", "ingest_asset", "append_manifest")
+        n for n in ("append_manifest",)
         if not hasattr(ingest, n)
     ]
     if missing:
@@ -390,23 +394,17 @@ def execute_plan(
     plan: dict,
     *,
     data_dir: Path | None = None,
-    bucket: str | None = None,
 ) -> list[dict]:
-    """Download/clip each planned scene, stage to GCS, ingest to GEE.
+    """Download/clip each planned scene; record it in assets.json.
 
-    Re-reads data/<case>/assets.json per case before ingesting so a second
-    run over the same plan is a no-op. Needs Earthdata creds, GEE_PROJECT and
-    NOW_GCS_BUCKET.
+    Ruling L10 — no GCS bucket and no bucket-free raster upload exists, so
+    the COG stays local and the manifest entry records the planned asset
+    id with status 'local-only'. Re-reads data/<case>/assets.json per case
+    before writing so a second run over the same plan is a no-op. Needs
+    Earthdata creds.
     """
-    ingest = _load_ingest()
-    bucket = bucket or os.environ.get("NOW_GCS_BUCKET")
-    if not bucket:
-        raise RuntimeError(
-            "NOW_GCS_BUCKET not set — cannot stage COGs for GEE ingest.")
+    mod = _load_ingest()
     proj = os.environ.get("GEE_PROJECT")
-    if not proj:
-        raise RuntimeError(
-            "GEE_PROJECT not set — cannot build the target asset path.")
     creds = ensure_earthdata()
     gdal_env = gdal_auth_env(creds)
 
@@ -423,27 +421,26 @@ def execute_plan(
             cog = Path(scene["cog"])
             tp_nisar._subset_h5_variable(
                 scene["h5_url"], scene["h5_path"], bbox, cog, gdal_env)
-            uri = ingest.stage_to_gcs(
-                cog, bucket=bucket, case=ck, name=cog.name)
-            gee_asset = scene["gee_asset"].replace("<GEE_PROJECT>", proj)
-            res = ingest.ingest_asset(uri, asset_id=gee_asset, kind="image")
+            gee_asset = scene["gee_asset"].replace(
+                "<GEE_PROJECT>", proj or "<GEE_PROJECT>")
             entry = {
                 "asset_id": scene["asset_id"],
                 "gee_asset": gee_asset,
                 "kind": "image",
-                "gcs_uri": uri,
                 "granule_id": scene["granule_id"],
                 "date": scene["date"],
                 "source": "pipeline.fetch.nisar",
-                "ingest": res,
+                "local_path": str(cog),
+                "status": "local-only",
             }
-            manifest = ingest.append_manifest(ck, entry)
+            manifest = mod.append_manifest(ck, entry)
             known_assets.add(scene["asset_id"])
             results.append({
                 "case": ck,
                 "asset_id": scene["asset_id"],
                 "gee_asset": gee_asset,
-                "gcs_uri": uri,
+                "local_path": str(cog),
+                "status": "local-only",
                 "manifest": str(manifest),
             })
     return results
@@ -468,12 +465,18 @@ def main(argv: list[str] | None = None) -> int:
         help="search only, print the JSON plan (default; no creds needed)")
     mode.add_argument(
         "--execute", action="store_true",
-        help="clip COGs, stage to GCS and ingest to GEE "
-             "(EARTHDATA_TOKEN or EDL_USER/EDL_PASS, GEE_PROJECT, "
-             "NOW_GCS_BUCKET, fetch.ingest)")
+        help="download + clip COGs locally and record 'local-only' "
+             "assets (EARTHDATA_TOKEN or EDL_USER/EDL_PASS)")
+    ap.add_argument(
+        "--ingest", action="store_true",
+        help="deprecated — raster ingest is not supported without a GCS "
+             "bucket (L10); accepted for compatibility and only warns")
     args = ap.parse_args(argv)
 
     try:
+        if args.ingest:
+            print("warning: --ingest is not supported without a GCS "
+                  "bucket (L10) — scenes stay local-only", file=sys.stderr)
         plan = build_plan(case=args.case, since=args.since,
                           alerts_geojson=args.alerts_geojson)
         if args.execute:

@@ -24,27 +24,15 @@ def _case_data(tmp_path: Path, records=RECORDS) -> Path:
     return d
 
 
-class _FakeStorage:
-    """Stands in for the google-cloud-storage upload inside stage_to_gcs."""
-
-    def __init__(self):
-        self.uploads = []
-
-    def stage(self, local_path, *, bucket, case, name):
-        self.uploads.append({"local_path": local_path, "bucket": bucket,
-                             "case": case, "name": name})
-        return f"gs://{bucket}/{case}/{name}.geojson"
-
-
 class _FakeEE:
-    """Stands in for ee.data.startTableIngestion inside ingest_asset."""
+    """Stands in for ingest_table — the L10 bucket-free table export."""
 
     def __init__(self):
         self.ingestions = []
 
-    def ingest(self, gcs_uri, *, asset_id, kind="table", force=False):
-        self.ingestions.append({"gcs_uri": gcs_uri, "asset_id": asset_id,
-                                "kind": kind, "force": force})
+    def ingest(self, geojson_path, *, asset_id, force=False):
+        self.ingestions.append({"path": Path(geojson_path),
+                                "asset_id": asset_id, "force": force})
         return {"id": "OP123", "state": "READY", "asset_id": asset_id}
 
 
@@ -60,11 +48,10 @@ class _FakeManifest:
 @pytest.fixture
 def contract(monkeypatch):
     """Patch the ingest contract names on fetch.swot with fakes."""
-    storage, ee, manifest = _FakeStorage(), _FakeEE(), _FakeManifest()
-    monkeypatch.setattr(swot, "stage_to_gcs", storage.stage)
-    monkeypatch.setattr(swot, "ingest_asset", ee.ingest)
+    ee, manifest = _FakeEE(), _FakeManifest()
+    monkeypatch.setattr(swot, "ingest_table", ee.ingest)
     monkeypatch.setattr(swot, "append_manifest", manifest.append)
-    return storage, ee, manifest
+    return ee, manifest
 
 
 def test_fc_shape_and_props():
@@ -123,17 +110,13 @@ def test_dry_run_writes_geojson_and_plan(tmp_path):
 
 
 def test_ingest_uses_table_contract(tmp_path, contract):
-    storage, ee, manifest = contract
+    ee, manifest = contract
     data = _case_data(tmp_path)
-    plan = swot.run(CASE, data_dir=data, project="proj", bucket="bkt")
-    assert storage.uploads == [{
-        "local_path": Path(plan["staging"]),
-        "bucket": "bkt", "case": CASE, "name": "swot_series",
-    }]
+    plan = swot.run(CASE, data_dir=data, project="proj")
     assert ee.ingestions == [{
-        "gcs_uri": "gs://bkt/rs_2024/swot_series.geojson",
+        "path": Path(plan["staging"]),
         "asset_id": "projects/proj/assets/tipping-point/rs_2024/swot_series",
-        "kind": "table", "force": False,
+        "force": False,
     }]
     (case, entry), = manifest.appended
     assert case == CASE
@@ -143,37 +126,37 @@ def test_ingest_uses_table_contract(tmp_path, contract):
 
 
 def test_idempotent_skip_on_same_hash(tmp_path, contract):
-    storage, ee, manifest = contract
+    ee, manifest = contract
     data = _case_data(tmp_path)
     digest = swot.run(CASE, data_dir=data, dry_run=True)["hash"]
     (data / CASE / "assets.json").write_text(
         json.dumps({"swot_series": {"hash": digest}})
     )
-    plan = swot.run(CASE, data_dir=data, project="p", bucket="b")
+    plan = swot.run(CASE, data_dir=data, project="p")
     assert plan["skipped"] is True
-    assert storage.uploads == ee.ingestions == manifest.appended == []
+    assert ee.ingestions == manifest.appended == []
 
 
 def test_changed_hash_reingests(tmp_path, contract):
-    storage, ee, _ = contract
+    ee, _ = contract
     data = _case_data(tmp_path)
     (data / CASE / "assets.json").write_text(
         json.dumps({"swot_series": {"hash": "stale"}})
     )
-    plan = swot.run(CASE, data_dir=data, project="p", bucket="b")
+    plan = swot.run(CASE, data_dir=data, project="p")
     assert plan["skipped"] is False
-    assert len(storage.uploads) == len(ee.ingestions) == 1
+    assert len(ee.ingestions) == 1
 
 
 def test_force_reingests_same_hash(tmp_path, contract):
-    storage, ee, _ = contract
+    ee, _ = contract
     data = _case_data(tmp_path)
     digest = swot.run(CASE, data_dir=data, dry_run=True)["hash"]
     (data / CASE / "assets.json").write_text(
         json.dumps({"swot_series": {"hash": digest}})
     )
-    swot.run(CASE, data_dir=data, project="p", bucket="b", force=True)
-    assert len(storage.uploads) == 1
+    swot.run(CASE, data_dir=data, project="p", force=True)
+    assert len(ee.ingestions) == 1
     assert ee.ingestions[0]["force"] is True
 
 

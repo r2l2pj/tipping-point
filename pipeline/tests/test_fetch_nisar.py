@@ -94,21 +94,10 @@ def _fake_asf(granules):
 
 
 def _fake_ingest(root: Path):
-    """A stand-in 'fetch.ingest' module honouring the ingest contract."""
+    """A stand-in 'fetch.ingest' module honouring the L10 contract —
+    append_manifest only; there is no raster-ingest path to fake."""
     mod = types.ModuleType("fetch.ingest")
-    calls = {"stage": [], "ingest": [], "manifest": []}
-
-    def stage_to_gcs(local_path, *, bucket, case, name):
-        calls["stage"].append(
-            {"local_path": str(local_path), "bucket": bucket,
-             "case": case, "name": name})
-        return f"gs://{bucket}/{case}/{name}"
-
-    def ingest_asset(gcs_uri, *, asset_id, kind="image", force=False):
-        calls["ingest"].append(
-            {"gcs_uri": gcs_uri, "asset_id": asset_id,
-             "kind": kind, "force": force})
-        return {"asset_id": asset_id, "state": "READY"}
+    calls = {"manifest": []}
 
     def append_manifest(case, entry):
         calls["manifest"].append({"case": case, "entry": entry})
@@ -120,8 +109,6 @@ def _fake_ingest(root: Path):
         path.write_text(json.dumps(data))
         return path
 
-    mod.stage_to_gcs = stage_to_gcs
-    mod.ingest_asset = ingest_asset
     mod.append_manifest = append_manifest
     mod.calls = calls
     return mod
@@ -379,8 +366,11 @@ def _stub_execute(monkeypatch, workspace):
     return events_dir, data_dir, fake_ingest, written
 
 
-def test_execute_stages_ingests_and_appends(monkeypatch, workspace):
-    events_dir, data_dir, fake_ingest, written = _stub_execute(
+def test_execute_downloads_clips_and_records_local_only(
+        monkeypatch, workspace):
+    """L10 default: COG stays local, manifest gets status 'local-only',
+    nothing touches the gs:// path."""
+    events_dir, data_dir, _fake_ingest, written = _stub_execute(
         monkeypatch, workspace)
 
     plan = nisar_update.build_plan(events_dir=events_dir, data_dir=data_dir)
@@ -389,22 +379,19 @@ def test_execute_stages_ingests_and_appends(monkeypatch, workspace):
     assert [Path(s["cog"]).name for s in plan["cases"]["wa_2025"]
             ["new_scenes"]] == ["wa_2025_nisar_gcov_20251228.tif"]
     assert [p.name for p in written] == ["wa_2025_nisar_gcov_20251228.tif"]
-    assert len(fake_ingest.calls["stage"]) == 1
-    stage = fake_ingest.calls["stage"][0]
-    assert stage["bucket"] == "test-bucket" and stage["case"] == "wa_2025"
-    assert len(fake_ingest.calls["ingest"]) == 1
-    ing = fake_ingest.calls["ingest"][0]
-    assert ing["gcs_uri"].startswith("gs://test-bucket/wa_2025/")
-    assert ing["asset_id"] == (
+    res = results[0]
+    assert res["asset_id"] == "nisar_gcov_20251228"
+    assert res["status"] == "local-only"
+    assert res["local_path"].endswith("wa_2025_nisar_gcov_20251228.tif")
+    assert res["gee_asset"] == (
         "projects/test-proj/assets/tipping-point/wa_2025/nisar/"
         "nisar_gcov_20251228")
-    assert ing["kind"] == "image"
-    assert results[0]["asset_id"] == "nisar_gcov_20251228"
 
     manifest = json.loads(
         (data_dir / "wa_2025" / "assets.json").read_text())
     entry = manifest["assets"][0]
     assert entry["asset_id"] == "nisar_gcov_20251228"
+    assert entry["status"] == "local-only"
     assert entry["granule_id"] == G_NEW
     assert entry["kind"] == "image"
 
@@ -418,8 +405,7 @@ def test_execute_is_idempotent(monkeypatch, workspace):
     second = nisar_update.execute_plan(plan, data_dir=data_dir)
 
     assert len(first) == 1 and second == []
-    assert len(fake_ingest.calls["stage"]) == 1   # never re-ingested
-    assert len(fake_ingest.calls["manifest"]) == 1
+    assert len(fake_ingest.calls["manifest"]) == 1  # never re-downloaded
 
 
 def test_execute_requires_creds(monkeypatch, workspace):
@@ -447,20 +433,30 @@ def test_execute_requires_ingest_module(monkeypatch, workspace):
         nisar_update.execute_plan(plan, data_dir=data_dir)
 
 
-def test_execute_requires_bucket_and_project(monkeypatch, workspace):
+def test_execute_local_only_needs_no_bucket_or_project(
+        monkeypatch, workspace):
+    """Default execute works with NOW_GCS_BUCKET and GEE_PROJECT unset —
+    the planned asset id keeps the <GEE_PROJECT> placeholder."""
     events_dir, data_dir = workspace
-    monkeypatch.setitem(sys.modules, "asf_search",
-                        _fake_asf([_FakeProduct(G_NEW)]))
-    fake_ingest = _fake_ingest(data_dir)
-    monkeypatch.setitem(sys.modules, "fetch.ingest", fake_ingest)
-    monkeypatch.setitem(sys.modules, "pipeline.fetch.ingest", fake_ingest)
-    monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
+    _, _, _fake_ingest, _ = _stub_execute(monkeypatch, workspace)
     monkeypatch.delenv("NOW_GCS_BUCKET", raising=False)
-    plan = nisar_update.build_plan(events_dir=events_dir, data_dir=data_dir)
-    with pytest.raises(RuntimeError, match="NOW_GCS_BUCKET"):
-        nisar_update.execute_plan(plan, data_dir=data_dir)
-
-    monkeypatch.setenv("NOW_GCS_BUCKET", "b")
     monkeypatch.delenv("GEE_PROJECT", raising=False)
-    with pytest.raises(RuntimeError, match="GEE_PROJECT"):
-        nisar_update.execute_plan(plan, data_dir=data_dir)
+    plan = nisar_update.build_plan(events_dir=events_dir, data_dir=data_dir)
+    results = nisar_update.execute_plan(plan, data_dir=data_dir)
+    assert len(results) == 1 and results[0]["status"] == "local-only"
+    assert "<GEE_PROJECT>" in results[0]["gee_asset"]
+
+
+def test_ingest_flag_warns_not_supported(monkeypatch, workspace, capsys):
+    """--ingest is accepted but only warns (L10 — no raster path)."""
+    events_dir, data_dir, _, _ = _stub_execute(monkeypatch, workspace)
+    monkeypatch.setattr(events_mod, "EVENTS_DIR", events_dir)
+    monkeypatch.setattr(events_mod, "DATA_DIR", data_dir)
+    plan_rc = nisar_update.main(
+        ["--case", "wa_2025", "--execute", "--ingest"])
+    assert plan_rc == 0
+    assert "not supported without a GCS bucket (L10)" in (
+        capsys.readouterr().err)
+    entry = json.loads(
+        (data_dir / "wa_2025" / "assets.json").read_text())["assets"][0]
+    assert entry["status"] == "local-only"

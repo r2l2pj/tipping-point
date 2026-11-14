@@ -15,12 +15,13 @@ Auth split: the CMR search is anonymous; only the download step needs
 Earthdata credentials — EARTHDATA_TOKEN, or EDL_USER/EDL_PASS mapped onto
 earthaccess's EARTHDATA_USERNAME/PASSWORD env names.
 
-GCS staging + GEE ingest + the data/now/assets.json manifest come from the
-ingest contract (unit/ingest): stage_to_gcs(path, bucket=, case='now', name=),
-ingest_asset(uri, asset_id=, kind='image', force=), append_manifest('now',
-entry). Imported best-effort below — --dry-run and --no-download work without
-it. Runs are idempotent: asset ids already present in assets.json are skipped
-unless --force.
+Ruling L10: no GCS bucket and no bucket-free raster upload exists — there
+is NO raster-ingest path. COGs stay local and the planned asset ids are
+recorded in data/now/assets.json with status 'local-only' via
+append_manifest from the ingest contract (unit/ingest), imported
+best-effort below — --dry-run and --no-download work without it. Runs are
+idempotent: asset ids already present in assets.json are skipped unless
+--force.
 """
 from __future__ import annotations
 
@@ -57,8 +58,6 @@ DEFAULT_COG_DIR = NOW_DIR / "cog" / LEAF
 ASSETS_JSON = NOW_DIR / "assets.json"
 DEFAULT_DAYS = 7                        # same lookback as live/run_now.py
 
-DEFAULT_BUCKET = "tipping-point-data"   # live/config.GCS_BUCKET; NOW_GCS_BUCKET wins
-
 
 def now_bounds() -> tuple:
     """Operational now AOI (west, south, east, north).
@@ -89,20 +88,17 @@ def _load_ingest():
             mod = importlib.import_module(name)
         except ImportError:
             continue
-        if all(callable(getattr(mod, f, None))
-               for f in ("stage_to_gcs", "ingest_asset", "append_manifest")):
+        if callable(getattr(mod, "append_manifest", None)):
             return mod
     return None
 
 
 try:
     _ing = _load_ingest()
-    stage_to_gcs = _ing.stage_to_gcs if _ing else None
-    ingest_asset = _ing.ingest_asset if _ing else None
     append_manifest = _ing.append_manifest if _ing else None
     ensure_collection = getattr(_ing, "ensure_collection", None) if _ing else None
 except Exception:  # noqa: BLE001 — a broken ingest must never break fetch/dry-run
-    stage_to_gcs = ingest_asset = append_manifest = ensure_collection = None
+    append_manifest = ensure_collection = None
 
 
 # --------------------------------------------------------------------------- #
@@ -114,7 +110,7 @@ def _edl_login():
     CMR search is anonymous. EARTHDATA_TOKEN bearer first; then the
     EDL_USER/EDL_PASS pair — mapped onto EARTHDATA_USERNAME/PASSWORD only
     when BOTH are set (partial credentials are rejected, same rule as
-    fetch/opera.py); then a ~/.netrc entry.
+    fetch/edl.py); then a ~/.netrc entry.
     """
     import earthaccess
 
@@ -409,10 +405,19 @@ def scan_cogs(cog_dir: Path) -> list[dict]:
     return out
 
 
-def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
+def stage_and_ingest(assets: list[dict], *, project: str,
                      force: bool = False, assets_json: Path = ASSETS_JSON,
                      ingest: bool = True, case: str = "now") -> list[dict]:
-    """GCS-stage + GEE-ingest each COG; idempotent via assets.json."""
+    """Record each COG's planned asset id in assets.json; idempotent.
+
+    L10: no raster-ingest path exists — with ingest=True the assets are
+    marked 'local-only' (a one-line warning is printed), with ingest=False
+    they stay 'planned'.
+    """
+    if ingest:
+        print(f"warning: raster ingest is not supported without a GCS "
+              f"bucket (L10) — {LEAF} assets stay local-only",
+              file=sys.stderr)
     done = manifest_asset_ids(assets_json)
     entries = []
     for a in assets:
@@ -427,12 +432,6 @@ def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
         if not ingest:
             a["status"] = "planned"
             continue
-        if stage_to_gcs is None or ingest_asset is None:
-            a["status"] = "ingest_unavailable"
-            continue
-        uri = stage_to_gcs(Path(a["cog"]), bucket=bucket, case=case,
-                           name=f"cog-{LEAF}-{Path(a['cog']).stem}")
-        ingest_asset(uri, asset_id=aid, kind="image", force=force)
         entry = {
             "asset_id": aid,
             "collection": f"projects/{project}/assets/{collection_path(case)}",
@@ -441,15 +440,15 @@ def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
             "tag": a["tag"],
             "date": a.get("date"),
             "product": a.get("product"),
-            "gcs_uri": uri,
             "cog": str(a["cog"]),
             "source": a.get("source"),
+            "status": "local-only",
             "ingested_at": dt.datetime.now(dt.UTC).isoformat()
             .replace("+00:00", "Z"),
         }
         if append_manifest is not None:
             append_manifest(case, entry)
-        a["status"] = "ingested"
+        a["status"] = "local-only"
         entries.append(entry)
     return entries
 
@@ -461,22 +460,17 @@ def _resolve_project(project: str | None) -> str:
     return p
 
 
-def _resolve_bucket(bucket: str | None) -> str:
-    return bucket or os.environ.get("NOW_GCS_BUCKET") or DEFAULT_BUCKET
-
-
 def _time_label(da, i: int) -> str:
     return np.datetime_as_string(da.time.values[i], unit="D")
 
 
 def run(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
-        out_dir: Path, bucket=None, project=None, download: bool = True,
+        out_dir: Path, project=None, download: bool = True,
         force: bool = False, assets_json: Path = ASSETS_JSON,
         ingest: bool = True) -> list[dict]:
-    """Fetch + aggregate + write + ingest; returns the asset list with status."""
+    """Fetch + aggregate + write + record; returns the asset list+status."""
     bounds = tuple(bounds) if bounds is not None else now_bounds()
     project = _resolve_project(project)
-    bucket = _resolve_bucket(bucket)
     assets: list[dict] = []
     if download:
         daily, rain3, steps = fetch_daily(bounds, date, days, Path(out_dir))
@@ -498,13 +492,13 @@ def run(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
                                "product": "3day", "source": meta})
     else:
         assets = scan_cogs(out_dir)
-    stage_and_ingest(assets, bucket=bucket, project=project, force=force,
+    stage_and_ingest(assets, project=project, force=force,
                      assets_json=assets_json, ingest=ingest)
     return assets
 
 
 def run_case(case: str, start: dt.date, end: dt.date, bounds=None, *,
-             out_dir: Path, bucket=None, project=None, download: bool = True,
+             out_dir: Path, project=None, download: bool = True,
              force: bool = False, assets_json: Path = ASSETS_JSON,
              ingest: bool = True) -> list[dict]:
     """Case-window hindcast: one COG + one image asset per half-hourly
@@ -512,14 +506,13 @@ def run_case(case: str, start: dt.date, end: dt.date, bounds=None, *,
 
     Bounds come from events/<case>.json unless given; the parent
     IMAGE_COLLECTION container is created once via ensure_collection before
-    the children ingest.
+    the children are recorded.
     """
     bounds = tuple(bounds) if bounds is not None else case_bounds(case)
     if bounds is None:
         raise RuntimeError(
             f"no aoi in events file for case {case!r}; pass --bounds")
     project = _resolve_project(project)
-    bucket = _resolve_bucket(bucket)
     assets: list[dict] = []
     if download:
         granules = search_granules_range(bounds, start, end)
@@ -545,13 +538,13 @@ def run_case(case: str, start: dt.date, end: dt.date, bounds=None, *,
     if ingest and assets and ensure_collection is not None:
         ensure_collection(
             f"projects/{project}/assets/{collection_path(case)}")
-    stage_and_ingest(assets, bucket=bucket, project=project, force=force,
+    stage_and_ingest(assets, project=project, force=force,
                      assets_json=assets_json, ingest=ingest, case=case)
     return assets
 
 
 def plan(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
-         out_dir: Path, bucket=None, project=None) -> dict:
+         out_dir: Path, project=None) -> dict:
     """The --dry-run document: projected assets, no network or credentials."""
     bounds = tuple(bounds) if bounds is not None else now_bounds()
     proj = project or os.environ.get("GEE_PROJECT") or "<GEE_PROJECT>"
@@ -573,7 +566,6 @@ def plan(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
         "date": date.isoformat(),
         "bounds": list(bounds),
         "days": days,
-        "bucket": _resolve_bucket(bucket),
         "assets_json": str(ASSETS_JSON),
         "auth": "search anonymous; download needs EARTHDATA_TOKEN or "
                 "EDL_USER/EDL_PASS",
@@ -582,7 +574,7 @@ def plan(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
 
 
 def plan_case(case: str, start: dt.date, end: dt.date, bounds=None, *,
-              out_dir: Path, bucket=None, project=None) -> dict:
+              out_dir: Path, project=None) -> dict:
     """The --case --dry-run document: projected per-granule assets."""
     bounds = tuple(bounds) if bounds is not None else case_bounds(case)
     proj = project or os.environ.get("GEE_PROJECT") or "<GEE_PROJECT>"
@@ -595,7 +587,6 @@ def plan_case(case: str, start: dt.date, end: dt.date, bounds=None, *,
         "short_name": f"{SHORT_NAME}.{VERSION}",
         "window": [start.isoformat(), end.isoformat()],
         "bounds": list(bounds) if bounds else None,
-        "bucket": _resolve_bucket(bucket),
         "assets_json": str(ASSETS_JSON),
         "granule_asset": f"{parent}/<yyyymmddThhmm>",
         "auth": "search anonymous; download needs EARTHDATA_TOKEN or "
@@ -618,16 +609,15 @@ def parse_args(argv=None):
                    help="lookback days for daily precip (default: 7)")
     p.add_argument("--out-dir", type=Path, default=DEFAULT_COG_DIR)
     p.add_argument("--assets-json", type=Path, default=ASSETS_JSON)
-    p.add_argument("--bucket", default=None,
-                   help="GCS staging bucket (default: $NOW_GCS_BUCKET)")
     p.add_argument("--project", default=None,
                    help="GEE project (default: $GEE_PROJECT)")
     p.add_argument("--dry-run", action="store_true",
                    help="print the plan JSON; no network, creds or writes")
     p.add_argument("--no-download", action="store_true",
-                   help="skip fetch; stage+ingest COGs already in --out-dir")
+                   help="skip fetch; record COGs already in --out-dir")
     p.add_argument("--no-ingest", action="store_true",
-                   help="fetch + write COGs but skip GCS/GEE staging")
+                   help="fetch + write COGs but skip the assets.json "
+                        "record (raster ingest itself is unsupported, L10)")
     p.add_argument("--force", action="store_true",
                    help="re-ingest assets already in assets.json")
     p.add_argument("--case", default=None, metavar="CASE_ID",
@@ -656,11 +646,11 @@ def main(argv=None) -> None:
         if args.dry_run:
             print(json.dumps(
                 plan_case(args.case, start, end, bounds,
-                          out_dir=args.out_dir, bucket=args.bucket,
+                          out_dir=args.out_dir,
                           project=args.project), indent=2))
             return
         assets = run_case(args.case, start, end, bounds,
-                          out_dir=args.out_dir, bucket=args.bucket,
+                          out_dir=args.out_dir,
                           project=args.project,
                           download=not args.no_download, force=args.force,
                           assets_json=args.assets_json,
@@ -675,12 +665,11 @@ def main(argv=None) -> None:
     bounds = tuple(args.bounds) if args.bounds is not None else now_bounds()
     if args.dry_run:
         print(json.dumps(plan(args.date, bounds, args.days,
-                              out_dir=args.out_dir, bucket=args.bucket,
-                              project=args.project),
+                              out_dir=args.out_dir, project=args.project),
                          indent=2))
         return
     assets = run(args.date, bounds, args.days,
-                 out_dir=args.out_dir, bucket=args.bucket,
+                 out_dir=args.out_dir,
                  project=args.project, download=not args.no_download,
                  force=args.force, assets_json=args.assets_json,
                  ingest=not args.no_ingest)

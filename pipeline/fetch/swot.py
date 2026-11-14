@@ -8,11 +8,11 @@ record, else the reach endpoints from the event 'swot' block, else null
 (the asset still ingests as a plain table). Feature properties:
 {reach_id, t_utc (ISO), river_m, source: 'SWOT Hydrocron'}.
 
-The staged GeoJSON is pushed to GCS and ingested as the table asset
-projects/<GEE_PROJECT>/assets/tipping-point/<case>/swot_series via
-ee.data.startTableIngestion, through the shared ingest contract
-(stage_to_gcs / ingest_asset / append_manifest — lands on unit/ingest as
-pipeline/fetch/ingest.py). The import is optional so --dry-run works
+The staged GeoJSON is ingested as the table asset
+projects/<GEE_PROJECT>/assets/tipping-point/<case>/swot_series through the
+shared ingest contract — ingest_table (client-side ee.FeatureCollection +
+Export.table.toAsset, no GCS bucket, ruling L10) and append_manifest
+(pipeline/fetch/ingest.py). The import is optional so --dry-run works
 without it.
 
 Idempotent: the run is skipped when data/<case>/assets.json already
@@ -22,7 +22,8 @@ Usage:
     uv run python -m pipeline.fetch.swot --case rs_2024 --dry-run
     uv run python -m pipeline.fetch.swot --event rs-2024-05 --force
 
-Env: GEE_PROJECT (asset project), NOW_GCS_BUCKET (staging bucket).
+Env: GEE_PROJECT (asset project) + EE credentials (see fetch.ingest).
+No bucket env is needed.
 """
 from __future__ import annotations
 
@@ -44,14 +45,13 @@ ASSET_ROOT = "projects/{project}/assets/tipping-point/{case}"
 for _modname in ("pipeline.fetch.ingest", "fetch.ingest", "tp.ingest"):
     try:  # ingest contract — lands on unit/ingest; absent -> --dry-run only
         _m = importlib.import_module(_modname)
-        stage_to_gcs = _m.stage_to_gcs
-        ingest_asset = _m.ingest_asset
+        ingest_table = _m.ingest_table
         append_manifest = _m.append_manifest
         break
     except (ImportError, AttributeError):
         continue
 else:
-    stage_to_gcs = ingest_asset = append_manifest = None
+    ingest_table = append_manifest = None
 
 _LON_LAT_KEYS = (
     ("lon", "lat"),
@@ -302,13 +302,12 @@ def run(
     *,
     event: dict | None = None,
     project: str | None = None,
-    bucket: str | None = None,
     dry_run: bool = False,
     force: bool = False,
     data_dir: Path | None = None,
     out_path: Path | None = None,
 ) -> dict:
-    """Build -> (maybe skip) -> stage -> ingest -> manifest. Returns the plan."""
+    """Build -> (maybe skip) -> stage locally -> ingest -> manifest."""
     records, reaches = collect_records(case_id, data_dir)
     if not records:
         raise SystemExit(
@@ -349,35 +348,28 @@ def run(
         )
         return plan
 
-    if stage_to_gcs is None or ingest_asset is None or append_manifest is None:
+    if ingest_table is None or append_manifest is None:
         raise SystemExit(
             "ingest contract unavailable (pipeline/fetch/ingest.py lands on "
             "unit/ingest) — merge that unit first, or re-run --dry-run"
         )
     if not (project or os.environ.get("GEE_PROJECT")):
         raise SystemExit("GEE_PROJECT unset (env or --project)")
-    if not (bucket or os.environ.get("NOW_GCS_BUCKET")):
-        raise SystemExit("NOW_GCS_BUCKET unset (env or --bucket)")
 
     stage.parent.mkdir(parents=True, exist_ok=True)
     stage.write_text(json.dumps(fc))
-    gcs_uri = stage_to_gcs(
-        stage, bucket=bucket or os.environ["NOW_GCS_BUCKET"],
-        case=case_id, name=ASSET_NAME,
-    )
-    ingest_asset(gcs_uri, asset_id=aid, kind="table", force=force)
+    ingest_table(stage, asset_id=aid, force=force)
     entry = {
         "name": ASSET_NAME,
         "asset_id": aid,
         "kind": "table",
-        "gcs_uri": gcs_uri,
         "hash": digest,
         "features": len(fc["features"]),
         "source": str(stage),
         "ingested_at": datetime.now(UTC).isoformat(timespec="seconds"),
     }
     manifest_file = append_manifest(case_id, entry)
-    plan.update({"gcs_uri": gcs_uri, "manifest": str(manifest_file)})
+    plan.update({"manifest": str(manifest_file)})
     print(json.dumps(plan, indent=2))
     return plan
 
@@ -394,19 +386,17 @@ def main(argv: list[str] | None = None) -> int:
                                      "reach geometry")
     ap.add_argument("--dry-run", action="store_true",
                     help="write the staging GeoJSON locally and print the plan; "
-                         "no GCS/EE access needed")
+                         "no EE access needed")
     ap.add_argument("--force", action="store_true",
                     help="ingest even when the recorded content hash is unchanged")
     ap.add_argument("--project", default=os.environ.get("GEE_PROJECT"),
                     help="GEE cloud project (env GEE_PROJECT)")
-    ap.add_argument("--bucket", default=os.environ.get("NOW_GCS_BUCKET"),
-                    help="staging bucket (env NOW_GCS_BUCKET)")
     args = ap.parse_args(argv)
 
     case_id = case_key(args.event or args.case)
     event = load_event(args.event) if args.event else _default_event(case_id)
     run(
-        case_id, event=event, project=args.project, bucket=args.bucket,
+        case_id, event=event, project=args.project,
         dry_run=args.dry_run, force=args.force,
     )
     return 0

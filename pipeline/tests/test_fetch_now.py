@@ -139,18 +139,12 @@ def _fake_requests(monkeypatch, handler):
 
 
 def _fake_ingest(monkeypatch, module, manifest=None):
-    """Patch the unit/ingest contract callables on a fetch module."""
-    calls = {"stage": [], "ingest": [], "manifest": []}
+    """Patch the unit/ingest append_manifest on a fetch module.
 
-    def stage(local_path, *, bucket, case, name):
-        calls["stage"].append({"path": str(local_path), "bucket": bucket,
-                               "case": case, "name": name})
-        return f"gs://{bucket}/{case}/{name}"
-
-    def ingest(uri, *, asset_id, kind="image", force=False):
-        calls["ingest"].append({"uri": uri, "asset_id": asset_id,
-                                "kind": kind, "force": force})
-        return {"asset_id": asset_id, "state": "uploading"}
+    L10: there is no raster-ingest path — only the manifest contract is
+    left; assets are recorded 'local-only'.
+    """
+    calls = {"manifest": []}
 
     def append(case, entry):
         calls["manifest"].append((case, entry))
@@ -162,8 +156,6 @@ def _fake_ingest(monkeypatch, module, manifest=None):
             manifest.write_text(json.dumps({"entries": entries}))
         return manifest
 
-    monkeypatch.setattr(module, "stage_to_gcs", stage)
-    monkeypatch.setattr(module, "ingest_asset", ingest)
     monkeypatch.setattr(module, "append_manifest", append)
     return calls
 
@@ -356,50 +348,49 @@ def test_manifest_asset_ids(tmp_path):
         "projects/x/assets/tipping-point/now/imerg_early/20261114", "other"}
 
 
-def test_stage_and_ingest_skip_and_force(tmp_path, monkeypatch):
+def test_stage_and_ingest_records_local_only(tmp_path, monkeypatch,
+                                             capsys):
+    """L10: no raster-ingest path — assets are recorded 'local-only' with
+    a warning, still idempotent via assets.json."""
     cog = tmp_path / "imerg_early_20261114.tif"
     cog.write_bytes(b"x")
     manifest = tmp_path / "assets.json"
     calls = _fake_ingest(monkeypatch, imerg, manifest)
 
     a1 = [{"tag": "20261114", "cog": cog}]
-    imerg.stage_and_ingest(a1, bucket="bkt", project="proj",
-                           assets_json=manifest)
-    assert a1[0]["status"] == "ingested"
-    assert calls["stage"][0]["case"] == "now"
-    assert calls["stage"][0]["bucket"] == "bkt"
-    assert calls["stage"][0]["name"] == "cog-imerg_early-imerg_early_20261114"
-    aid = calls["ingest"][0]["asset_id"]
-    assert aid == "projects/proj/assets/tipping-point/now/imerg_early/20261114"
-    assert calls["manifest"][0][0] == "now"
+    imerg.stage_and_ingest(a1, project="proj", assets_json=manifest)
+    assert a1[0]["status"] == "local-only"
+    assert "not supported without a GCS bucket (L10)" in \
+        capsys.readouterr().err
+    case, entry = calls["manifest"][0]
+    assert case == "now"
+    assert (entry["asset_id"] ==
+            "projects/proj/assets/tipping-point/now/imerg_early/20261114")
+    assert entry["status"] == "local-only"
+    assert "gcs_uri" not in entry
 
     a2 = [{"tag": "20261114", "cog": cog}]
-    imerg.stage_and_ingest(a2, bucket="bkt", project="proj",
-                           assets_json=manifest)
+    imerg.stage_and_ingest(a2, project="proj", assets_json=manifest)
     assert a2[0]["status"] == "skipped_existing"     # idempotent via manifest
-    assert len(calls["stage"]) == 1
+    assert len(calls["manifest"]) == 1
 
     a3 = [{"tag": "20261114", "cog": cog}]
-    imerg.stage_and_ingest(a3, bucket="bkt", project="proj", force=True,
+    imerg.stage_and_ingest(a3, project="proj", force=True,
                            assets_json=manifest)
-    assert a3[0]["status"] == "ingested"
-    assert calls["ingest"][-1]["force"] is True
-    assert len(calls["stage"]) == 2
+    assert a3[0]["status"] == "local-only"
+    assert len(calls["manifest"]) == 2
+
+    a4 = [{"tag": "20261115", "cog": cog}]
+    imerg.stage_and_ingest(a4, project="proj", ingest=False,
+                           assets_json=manifest)
+    assert a4[0]["status"] == "planned"
 
 
-def test_stage_and_ingest_missing_and_unavailable(tmp_path, monkeypatch):
-    for name in ("stage_to_gcs", "ingest_asset", "append_manifest"):
-        monkeypatch.setattr(smap, name, None)
+def test_stage_and_ingest_missing_cog(tmp_path):
     miss = [{"tag": "t", "cog": tmp_path / "nope.tif"}]
-    smap.stage_and_ingest(miss, bucket="b", project="p",
+    smap.stage_and_ingest(miss, project="p",
                           assets_json=tmp_path / "m.json")
     assert miss[0]["status"] == "missing_cog"
-    cog = tmp_path / "smap_l4_20261113.tif"
-    cog.write_bytes(b"x")
-    a = [{"tag": "t", "cog": cog}]
-    smap.stage_and_ingest(a, bucket="b", project="p",
-                          assets_json=tmp_path / "m.json")
-    assert a[0]["status"] == "ingest_unavailable"    # unit/ingest absent
 
 
 def test_scan_cogs(tmp_path):
@@ -422,11 +413,11 @@ def test_imerg_run_end_to_end(tmp_path, monkeypatch):
         imerg, "fetch_daily",
         lambda b, e, d, w: imerg.daily_and_3day(_halfhourly()))
     assets = imerg.run(dt.date(2026, 11, 12), BOUNDS, 3,
-                       out_dir=tmp_path / "cog", bucket="bkt", project="proj",
+                       out_dir=tmp_path / "cog", project="proj",
                        assets_json=manifest)
     assert [a["tag"] for a in assets] == [
         "20261110", "20261111", "20261112", "20261112_3day"]
-    assert all(a["status"] == "ingested" for a in assets)
+    assert all(a["status"] == "local-only" for a in assets)
     assert assets[0]["source"]["hh_steps"] == 48
     names = sorted(Path(w["path"]).name for w in rio.writes)
     assert names == ["imerg_early_20261110.tif", "imerg_early_20261111.tif",
@@ -435,12 +426,12 @@ def test_imerg_run_end_to_end(tmp_path, monkeypatch):
     written = json.loads(manifest.read_text())["entries"]
     assert written[-1]["asset_id"].endswith("imerg_early/20261112_3day")
 
-    # second run: same asset ids -> everything skipped, nothing re-staged
+    # second run: same asset ids -> everything skipped
     assets2 = imerg.run(dt.date(2026, 11, 12), BOUNDS, 3,
-                        out_dir=tmp_path / "cog", bucket="bkt",
+                        out_dir=tmp_path / "cog",
                         project="proj", assets_json=manifest)
     assert {a["status"] for a in assets2} == {"skipped_existing"}
-    assert len(calls["stage"]) == 4
+    assert len(calls["manifest"]) == 4
 
 
 def test_smap_run_end_to_end(tmp_path, monkeypatch):
@@ -453,11 +444,11 @@ def test_smap_run_end_to_end(tmp_path, monkeypatch):
             np.full((2, 2), 0.66),
             {"product_date": "2026-11-13", "native_id": "SMAP_L4_SM_x"}))
     assets = smap.run(dt.date(2026, 11, 14), BOUNDS, 10,
-                      out_dir=tmp_path / "cog", bucket="bkt", project="proj",
+                      out_dir=tmp_path / "cog", project="proj",
                       assets_json=manifest)
     assert [a["tag"] for a in assets] == ["20261113"]
-    assert assets[0]["status"] == "ingested"
-    assert calls["ingest"][0]["asset_id"].endswith("smap_l4/20261113")
+    assert assets[0]["status"] == "local-only"
+    assert calls["manifest"][0][1]["asset_id"].endswith("smap_l4/20261113")
 
 
 def test_geosfp_run_end_to_end(tmp_path, monkeypatch):
@@ -471,11 +462,11 @@ def test_geosfp_run_end_to_end(tmp_path, monkeypatch):
             [np.full((2, 2), k + 1.0) for k in range(3)], days,
             "2026-11-14T00:00:00Z", "tavg1_2d_flx_Nx.20261114_00"))
     assets = geosfp.run(dt.date(2026, 11, 14), BOUNDS, 3,
-                        out_dir=tmp_path / "cog", bucket="bkt", project="proj",
+                        out_dir=tmp_path / "cog", project="proj",
                         assets_json=manifest)
     assert [a["tag"] for a in assets] == ["20261115", "20261116", "20261117"]
     assert [a["source"]["lead"] for a in assets] == [1, 2, 3]
-    assert all(a["status"] == "ingested" for a in assets)
+    assert all(a["status"] == "local-only" for a in assets)
     assert len(calls["manifest"]) == 3
 
 
@@ -488,9 +479,10 @@ def test_no_download_scans_cogs(tmp_path, monkeypatch):
     (out / "geosfp_20261115.tif").write_bytes(b"x")
     (out / "geosfp_20261116.tif").write_bytes(b"x")
     assets = geosfp.run(dt.date(2026, 11, 14), BOUNDS, 3, out_dir=out,
-                        bucket="b", project="p", download=False,
+                        project="p", download=False,
                         assets_json=manifest)
     assert [a["tag"] for a in assets] == ["20261115", "20261116"]
+    assert all(a["status"] == "local-only" for a in assets)
 
 
 # --------------------------------------------------------------------------- #
@@ -602,7 +594,7 @@ def test_imerg_case_run_creates_collection_and_children(tmp_path, monkeypatch):
     calls, uploads, _, ea = _case_setup(monkeypatch, tmp_path)
     assets = imerg.run_case(
         "rs-2024-05", dt.date(2024, 5, 1), dt.date(2024, 5, 2),
-        out_dir=tmp_path / "cog", bucket="bkt",
+        out_dir=tmp_path / "cog",
         assets_json=tmp_path / "assets.json")
     parent = "projects/proj/assets/tipping-point/rs-2024-05/imerg_early"
     # --start/--end window honored (+1 day end-exclusive convention)
@@ -611,35 +603,34 @@ def test_imerg_case_run_creates_collection_and_children(tmp_path, monkeypatch):
     assert ea.calls["search"][0]["bounding_box"] == (-52.5, -30.5, -50.5, -29.0)
     # IMAGE_COLLECTION container created exactly once, before children
     assert calls["createAsset"] == [({"type": "IMAGE_COLLECTION"}, parent)]
+    # L10: no raster ingest and no GCS staging — children stay local-only
+    assert calls["startIngestion"] == []
+    assert uploads == []
     # per-granule asset ids are the granule start time YYYYMMDDThhmm
-    assert [p["name"] for p in calls["startIngestion"]] == [
+    assert [a["tag"] for a in assets] == [
+        "20240501T0000", "20240501T0030", "20240501T0100"]
+    assert [a["asset_id"] for a in assets] == [
         f"{parent}/20240501T0000",
         f"{parent}/20240501T0030",
         f"{parent}/20240501T0100"]
-    assert [a["tag"] for a in assets] == [
-        "20240501T0000", "20240501T0030", "20240501T0100"]
-    assert all(a["status"] == "ingested" for a in assets)
-    # GCS staging under the case, not "now"
-    assert all(b == "bkt" and n.startswith("staging/rs-2024-05/cog-imerg_early-")
-               for b, n, _ in uploads)
-    assert len(uploads) == 3
+    assert all(a["status"] == "local-only" for a in assets)
 
 
 def test_imerg_case_run_idempotent_second_run(tmp_path, monkeypatch):
     calls, _, _, _ = _case_setup(monkeypatch, tmp_path)
-    kw = {"out_dir": tmp_path / "cog", "bucket": "bkt",
+    kw = {"out_dir": tmp_path / "cog",
           "assets_json": tmp_path / "assets.json"}
     imerg.run_case("rs-2024-05", dt.date(2024, 5, 1), dt.date(2024, 5, 2), **kw)
     imerg.run_case("rs-2024-05", dt.date(2024, 5, 1), dt.date(2024, 5, 2), **kw)
     assert len(calls["createAsset"]) == 1        # collection made once
-    assert len(calls["startIngestion"]) == 3     # existing children skipped
+    assert calls["startIngestion"] == []
 
 
 def test_imerg_case_bounds_override(tmp_path, monkeypatch):
     _, _, _, ea = _case_setup(monkeypatch, tmp_path)
     b = (-53.0, -30.0, -51.0, -29.0)
     imerg.run_case("rs-2024-05", dt.date(2024, 5, 1), dt.date(2024, 5, 1),
-                   bounds=b, out_dir=tmp_path / "cog", bucket="bkt",
+                   bounds=b, out_dir=tmp_path / "cog",
                    assets_json=tmp_path / "assets.json")
     assert ea.calls["search"][0]["bounding_box"] == b
 

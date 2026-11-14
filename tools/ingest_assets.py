@@ -1,11 +1,12 @@
 """Batch-ingest local pipeline products as Earth Engine assets.
 
-ASSET_REGISTRY maps canonical products to glob patterns under data/; each
-matched file is staged to gs://<bucket>/staging/<case>/<name><ext> and
-ingested (pipeline/fetch/ingest.py) under
-projects/<GEE_PROJECT>/assets/tipping-point/<case>/<name>, with the row
-upserted into data/<case>/assets.json. Idempotent — existing assets are
-skipped unless --force.
+ASSET_REGISTRY maps canonical products to glob patterns under data/.
+Table products are ingested via ingest_table (client-side
+ee.FeatureCollection + Export.table.toAsset — no bucket, ruling L10)
+under projects/<GEE_PROJECT>/assets/tipping-point/<case>/<name>, with the
+row upserted into data/<case>/assets.json. Image products have no ingest
+path (no bucket-free raster upload exists) and are recorded with status
+'local-only'. Idempotent — existing assets are skipped unless --force.
 
 Usage:
   uv run python tools/ingest_assets.py --case rs_2024 --dry-run
@@ -15,12 +16,11 @@ Usage:
 
 Env: GEE_PROJECT (default hermes-fesolucoes — not registered with Earth
 Engine yet, so real runs are blocked; --dry-run is the demo path),
-NOW_GCS_BUCKET (GCS_BUCKET alias), GOOGLE_APPLICATION_CREDENTIALS.
+GOOGLE_APPLICATION_CREDENTIALS / GCP_SA_KEY. No bucket env is needed.
 """
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import sys
 from pathlib import Path
@@ -77,12 +77,10 @@ def resolve_registry(case, data_dir, registry=ASSET_REGISTRY) -> list[dict]:
     return entries
 
 
-def _planned_entry(case, e, status, bucket) -> dict:
+def _planned_entry(case, e, status) -> dict:
     return {
         "name": e["name"],
         "gee_id": ingest.asset_id(case, e["name"]),
-        "gcs_uri": ingest.staging_uri(bucket, case, e["name"],
-                                     e["path"].suffix),
         "kind": e["kind"],
         "status": status,
         "ingested_at": None,
@@ -98,11 +96,10 @@ def main(argv=None) -> None:
     grp.add_argument("--event", help="event id, e.g. rs-2024-05 "
                                    "(resolved via tp.events.case_key)")
     ap.add_argument("--dry-run", action="store_true",
-                    help="print the plan only; no creds, upload or "
-                         "manifest write")
+                    help="print the plan only; no creds or manifest write")
     ap.add_argument("--manifest-only", action="store_true",
                     help="write assets.json rows (status pending) without "
-                         "staging or ingesting")
+                         "ingesting")
     ap.add_argument("--force", action="store_true",
                     help="re-ingest even when ee.data.getAsset finds the "
                          "asset")
@@ -110,34 +107,32 @@ def main(argv=None) -> None:
 
     case = args.case or events.case_key(args.event)
     entries = resolve_registry(case, events.DATA_DIR)
-    bucket = (os.environ.get("NOW_GCS_BUCKET") or os.environ.get("GCS_BUCKET")
-              or "<NOW_GCS_BUCKET>")
     if not entries:
         print(f"no registry files matched under data/ for case {case}")
         return
 
     if args.dry_run:
         for e in entries:
-            p = _planned_entry(case, e, "dry_run", bucket)
-            print(f"{p['kind']:5s} {e['path']}\n      -> {p['gcs_uri']}"
-                  f"\n      -> {p['gee_id']}")
+            p = _planned_entry(case, e, "dry_run")
+            print(f"{p['kind']:5s} {e['path']}\n      -> {p['gee_id']}")
         print(f"{len(entries)} asset(s) would be ingested for {case}")
         return
 
     if args.manifest_only:
         for e in entries:
             path = ingest.append_manifest(
-                case, _planned_entry(case, e, "pending", bucket))
+                case, _planned_entry(case, e, "pending"))
         print(f"{path}: {len(entries)} pending asset(s)")
         return
 
-    bucket = ingest.staging_bucket()
     for e in entries:
-        gcs_uri = ingest.stage_to_gcs(e["path"], bucket=bucket, case=case,
-                                      name=e["name"])
-        entry = ingest.ingest_asset(
-            gcs_uri, asset_id=ingest.asset_id(case, e["name"]),
-            kind=e["kind"], force=args.force)
+        gee_id = ingest.asset_id(case, e["name"])
+        if e["kind"] == "table":
+            entry = ingest.ingest_table(
+                e["path"], asset_id=gee_id, force=args.force)
+        else:  # L10: no raster-ingest path — record the planned asset
+            entry = _planned_entry(case, e, "local-only")
+            entry["gee_id"] = gee_id
         entry["source"] = str(e["path"])
         ingest.append_manifest(case, entry)
         print(f"{entry['kind']:5s} {entry['status']:<10} {entry['gee_id']}")

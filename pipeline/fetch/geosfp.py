@@ -15,12 +15,13 @@ The .ascii parsing is adapted (condensed) from live/fetch.py — kept local so
 this entry point also works where the top-level live/ package is not
 importable. No credentials are needed anywhere in this module.
 
-GCS staging + GEE ingest + the data/now/assets.json manifest come from the
-ingest contract (unit/ingest): stage_to_gcs(path, bucket=, case='now', name=),
-ingest_asset(uri, asset_id=, kind='image', force=), append_manifest('now',
-entry). Imported best-effort below — --dry-run and --no-download work without
-it. Runs are idempotent: asset ids already present in assets.json are skipped
-unless --force.
+Ruling L10: no GCS bucket and no bucket-free raster upload exists — there
+is NO raster-ingest path. COGs stay local and the planned asset ids are
+recorded in data/now/assets.json with status 'local-only' via
+append_manifest from the ingest contract (unit/ingest), imported
+best-effort below — --dry-run and --no-download work without it. Runs are
+idempotent: asset ids already present in assets.json are skipped unless
+--force.
 """
 from __future__ import annotations
 
@@ -46,8 +47,6 @@ NOW_DIR = REPO_ROOT / "data" / "now"
 DEFAULT_COG_DIR = NOW_DIR / "cog" / LEAF
 ASSETS_JSON = NOW_DIR / "assets.json"
 DEFAULT_LEAD_DAYS = 3                   # D+1..D+3, like live/run_now FORECAST_DAYS
-
-DEFAULT_BUCKET = "tipping-point-data"   # live/config.GCS_BUCKET; NOW_GCS_BUCKET wins
 
 _GDS_BASE = ("https://opendap.nccs.nasa.gov/dods/GEOS-5/fp/0.25_deg/fcast/"
              "tavg1_2d_flx_Nx")
@@ -86,19 +85,16 @@ def _load_ingest():
             mod = importlib.import_module(name)
         except ImportError:
             continue
-        if all(callable(getattr(mod, f, None))
-               for f in ("stage_to_gcs", "ingest_asset", "append_manifest")):
+        if callable(getattr(mod, "append_manifest", None)):
             return mod
     return None
 
 
 try:
     _ing = _load_ingest()
-    stage_to_gcs = _ing.stage_to_gcs if _ing else None
-    ingest_asset = _ing.ingest_asset if _ing else None
     append_manifest = _ing.append_manifest if _ing else None
 except Exception:  # noqa: BLE001 — a broken ingest must never break fetch/dry-run
-    stage_to_gcs = ingest_asset = append_manifest = None
+    append_manifest = None
 
 
 # --------------------------------------------------------------------------- #
@@ -315,10 +311,19 @@ def scan_cogs(cog_dir: Path) -> list[dict]:
     return out
 
 
-def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
+def stage_and_ingest(assets: list[dict], *, project: str,
                      force: bool = False, assets_json: Path = ASSETS_JSON,
                      ingest: bool = True) -> list[dict]:
-    """GCS-stage + GEE-ingest each COG; idempotent via assets.json."""
+    """Record each COG's planned asset id in assets.json; idempotent.
+
+    L10: no raster-ingest path exists — with ingest=True the assets are
+    marked 'local-only' (a one-line warning is printed), with ingest=False
+    they stay 'planned'.
+    """
+    if ingest:
+        print(f"warning: raster ingest is not supported without a GCS "
+              f"bucket (L10) — {LEAF} assets stay local-only",
+              file=sys.stderr)
     done = manifest_asset_ids(assets_json)
     entries = []
     for a in assets:
@@ -333,12 +338,6 @@ def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
         if not ingest:
             a["status"] = "planned"
             continue
-        if stage_to_gcs is None or ingest_asset is None:
-            a["status"] = "ingest_unavailable"
-            continue
-        uri = stage_to_gcs(Path(a["cog"]), bucket=bucket, case="now",
-                           name=f"cog/{LEAF}/{Path(a['cog']).name}")
-        ingest_asset(uri, asset_id=aid, kind="image", force=force)
         entry = {
             "asset_id": aid,
             "collection": f"projects/{project}/assets/{COLLECTION}",
@@ -347,15 +346,15 @@ def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
             "tag": a["tag"],
             "date": a.get("date"),
             "product": a.get("product"),
-            "gcs_uri": uri,
             "cog": str(a["cog"]),
             "source": a.get("source"),
+            "status": "local-only",
             "ingested_at": dt.datetime.now(dt.UTC).isoformat()
             .replace("+00:00", "Z"),
         }
         if append_manifest is not None:
             append_manifest("now", entry)
-        a["status"] = "ingested"
+        a["status"] = "local-only"
         entries.append(entry)
     return entries
 
@@ -367,18 +366,13 @@ def _resolve_project(project: str | None) -> str:
     return p
 
 
-def _resolve_bucket(bucket: str | None) -> str:
-    return bucket or os.environ.get("NOW_GCS_BUCKET") or DEFAULT_BUCKET
-
-
 def run(date: dt.date, bounds=None, lead_days: int = DEFAULT_LEAD_DAYS, *,
-        out_dir: Path, bucket=None, project=None, download: bool = True,
+        out_dir: Path, project=None, download: bool = True,
         force: bool = False, assets_json: Path = ASSETS_JSON,
         ingest: bool = True) -> list[dict]:
-    """Fetch + write + ingest; returns the asset list with status."""
+    """Fetch + write + record assets; returns the list with status."""
     bounds = tuple(bounds) if bounds is not None else now_bounds()
     project = _resolve_project(project)
-    bucket = _resolve_bucket(bucket)
     if download:
         lats, lons, slabs, days, issued_iso, run_name = fetch_daily(
             bounds, date, lead_days)
@@ -393,13 +387,13 @@ def run(date: dt.date, bounds=None, lead_days: int = DEFAULT_LEAD_DAYS, *,
                                       "lead": k + 1}})
     else:
         assets = scan_cogs(out_dir)
-    stage_and_ingest(assets, bucket=bucket, project=project, force=force,
+    stage_and_ingest(assets, project=project, force=force,
                      assets_json=assets_json, ingest=ingest)
     return assets
 
 
 def plan(date: dt.date, bounds=None, lead_days: int = DEFAULT_LEAD_DAYS, *,
-         out_dir: Path, bucket=None, project=None) -> dict:
+         out_dir: Path, project=None) -> dict:
     """The --dry-run document: projected assets, no network or credentials."""
     bounds = tuple(bounds) if bounds is not None else now_bounds()
     proj = project or os.environ.get("GEE_PROJECT") or "<GEE_PROJECT>"
@@ -416,7 +410,6 @@ def plan(date: dt.date, bounds=None, lead_days: int = DEFAULT_LEAD_DAYS, *,
         "issued": date.isoformat(),
         "bounds": list(bounds),
         "lead_days": lead_days,
-        "bucket": _resolve_bucket(bucket),
         "assets_json": str(ASSETS_JSON),
         "auth": "none — public GDS HTTP",
         "assets": assets,
@@ -439,16 +432,15 @@ def parse_args(argv=None):
                    help="forecast lead days D+1..D+N (default: 3)")
     p.add_argument("--out-dir", type=Path, default=DEFAULT_COG_DIR)
     p.add_argument("--assets-json", type=Path, default=ASSETS_JSON)
-    p.add_argument("--bucket", default=None,
-                   help="GCS staging bucket (default: $NOW_GCS_BUCKET)")
     p.add_argument("--project", default=None,
                    help="GEE project (default: $GEE_PROJECT)")
     p.add_argument("--dry-run", action="store_true",
                    help="print the plan JSON; no network, creds or writes")
     p.add_argument("--no-download", action="store_true",
-                   help="skip fetch; stage+ingest COGs already in --out-dir")
+                   help="skip fetch; record COGs already in --out-dir")
     p.add_argument("--no-ingest", action="store_true",
-                   help="fetch + write COGs but skip GCS/GEE staging")
+                   help="fetch + write COGs but skip the assets.json "
+                        "record (raster ingest itself is unsupported, L10)")
     p.add_argument("--force", action="store_true",
                    help="re-ingest assets already in assets.json")
     return p.parse_args(argv)
@@ -459,12 +451,11 @@ def main(argv=None) -> None:
     bounds = tuple(args.bounds) if args.bounds is not None else now_bounds()
     if args.dry_run:
         print(json.dumps(plan(args.date, bounds, args.days,
-                              out_dir=args.out_dir, bucket=args.bucket,
-                              project=args.project),
+                              out_dir=args.out_dir, project=args.project),
                          indent=2))
         return
     assets = run(args.date, bounds, args.days,
-                 out_dir=args.out_dir, bucket=args.bucket,
+                 out_dir=args.out_dir,
                  project=args.project, download=not args.no_download,
                  force=args.force, assets_json=args.assets_json,
                  ingest=not args.no_ingest)
