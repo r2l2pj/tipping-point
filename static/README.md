@@ -11,7 +11,8 @@ Built once by `uv run python live/build_static.py` (needs `GCP_SA_KEY` +
 | `t_slide`      | (H, W)       | NASADEM slope rescaled 15-30 deg |
 | `t_flood`      | (H, W)       | 1 - HAND proxy rescaled 5-15 m, 0 where slope > 5 deg |
 | `slope_deg`, `hand_m` | (H, W) | intermediates |
-| `pop`          | (H, W)       | GHSL 2020 population count (people_exposed in summary.json) |
+| `pop`          | (H, W)       | GPWv4.11 population count, nearest epoch (NASA SEDAC/CIESIN `CIESIN/GPWv411/GPW_Population_Count`; people_exposed in summary.json) |
+| `pop_year`, `pop_source` | scalar | GPW provenance: epoch year and collection id |
 | `lats`, `lons` | (H,), (W,)   | grid coordinates |
 
 The npz is not committed (large); each Actions runner downloads it from

@@ -5,14 +5,15 @@ Computes over the south-Brazil grid (~1 km):
     same windows as gee/01_tpi_index.js: +-30 days around mid-month, step 3)
   - terrain scores T_slide / T_flood from NASADEM slope + HAND proxy
     (dem - focalMin(1500 m), matching the GEE script)
-  - GHSL population count, used for people_exposed in summary.json
+  - GPWv4.11 population count (NASA SEDAC/CIESIN, latest epoch), used for
+    people_exposed in summary.json
 
 Run once with credentials in env:
     GCP_SA_KEY=<service-account json> GEE_PROJECT=<project> \
         uv run python live/build_static.py
 
 Output: static/sul_static.npz with keys p90/p95/p99 (12,H,W), t_slide,
-t_flood, slope_deg, hand_m, pop, lats, lons.
+t_flood, slope_deg, hand_m, pop, pop_year, pop_source, lats, lons.
 """
 from __future__ import annotations
 
@@ -37,6 +38,8 @@ from live.config import (
 
 YEARS = range(2001, 2024)
 OFFSETS = range(-30, 31, 3)
+POP_COLLECTION = "CIESIN/GPWv411/GPW_Population_Count"
+POP_BAND = "population_count"
 
 
 def _ee_init():
@@ -87,9 +90,11 @@ def _terrain(ee):
     hand = dem.subtract(dem.focalMin(radius=HAND_PROXY_RADIUS_M, units="meters"))
     t_slide = slope.unitScale(15, 30).clamp(0, 1)
     t_flood = ee.Image(1).subtract(hand.unitScale(5, 15)).clamp(0, 1).where(slope.gt(5), 0)
-    pop = ee.Image("JRC/GHSL/P2023A/GHS_POP/2020").select("population_count")
+    pop_img = ee.Image(
+        ee.ImageCollection(POP_COLLECTION).sort("system:time_start", False).first()
+    ).select(POP_BAND)
     return t_slide.rename("t_slide"), t_flood.rename("t_flood"), slope.rename("slope_deg"), \
-        hand.rename("hand_m"), pop.rename("pop")
+        hand.rename("hand_m"), pop_img.rename("pop")
 
 
 def main() -> None:
@@ -111,10 +116,14 @@ def main() -> None:
         print(f"climatology month {m:02d} done")
     out.update(p90=p90, p95=p95, p99=p99)
 
+    terrain = _terrain(ee)
     for name, img in zip(
-            ("t_slide", "t_flood", "slope_deg", "hand_m", "pop"), _terrain(ee)):
+            ("t_slide", "t_flood", "slope_deg", "hand_m", "pop"), terrain):
         out[name] = _download_band(ee, img, name)
         print(f"terrain {name} done")
+    pop_img = terrain[-1]
+    out["pop_year"] = int(pop_img.date().get("year").getInfo())
+    out["pop_source"] = POP_COLLECTION
 
     STATIC_DIR.mkdir(parents=True, exist_ok=True)
     path = STATIC_DIR / STATIC_NPZ
