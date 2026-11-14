@@ -6,8 +6,11 @@ multiband series COG — every consumer labels it
 ``forecast_source: "perfect-forecast"``. Modo Agora keeps live GEOS-FP; this
 module is replay-only.
 
+Outputs go to ``data/<case-id>/cog/`` (case-id dirs, spec delta L4): both
+``rs-2024-05`` and ``rs_2024`` resolve to case ``rs_2024``.
+
     uv run python pipeline/scripts/07_forecast.py --event rs-2024-05 \
-        --series data/rs-2024-05/cog/rs_2024_tpi_slide_20240502.tif
+        --series data/rs_2024/cog/rs_2024_tpi_slide_20240502.tif
 """
 from __future__ import annotations
 
@@ -17,12 +20,28 @@ from pathlib import Path
 
 import rasterio
 
-from .events import artifact_stem, event_data_dir
+from . import events
 from .metrics import merge_metrics
 
 log = logging.getLogger(__name__)
 
 FORECAST_SOURCE = "perfect-forecast"
+
+
+def case_id(any_id: str) -> str:
+    """Canonical case key: 'rs-2024-05' or 'rs_2024' → 'rs_2024' (L4)."""
+    return "_".join(any_id.split("-")[:2])
+
+
+def resolve_event_id(any_id: str) -> str:
+    """Event id for either form: 'rs-2024-05' stays; 'rs_2024' → its event id."""
+    if (events.EVENTS_DIR / f"{any_id}.json").exists():
+        return any_id
+    cid = case_id(any_id)
+    matches = [e for e in events.list_events() if case_id(e) == cid]
+    if not matches:
+        raise KeyError(f"no event for {any_id!r}; events/: {events.list_events()}")
+    return matches[0]
 
 
 def _band_dates(src) -> dict[str, int]:
@@ -46,12 +65,15 @@ def perfect_forecast(
 
     The d<k> image is the observed TPI band of ``issue_date + k`` from
     ``series_cog`` (float TPI series, bands named YYYYMMDD); ``AAAAMMDD`` in
-    the filename is the *issue* date. A date with no band writes nothing and
-    is reported under ``"missing"``. ``forecast_source`` is merged into
-    metrics.json either way — the missing-band report is the honest record.
+    the filename is the *issue* date. ``event_id`` accepts either the event
+    id (``rs-2024-05``) or the case id (``rs_2024``); outputs default to
+    ``data/<case-id>/cog/`` (L4). A date with no band writes nothing and is
+    reported under ``"missing"``. ``forecast_source`` is merged via
+    ``tp.metrics.merge_metrics`` (event id — the helper routes it).
     """
+    event_id = resolve_event_id(event_id)
     issue = date.fromisoformat(str(issue_date))
-    out_dir = Path(out_dir) if out_dir else event_data_dir(event_id) / "cog"
+    out_dir = Path(out_dir) if out_dir else events.event_data_dir(case_id(event_id)) / "cog"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     written: list[str] = []
@@ -71,7 +93,7 @@ def perfect_forecast(
                 log.warning("no band %s in %s — skipping d%d", target, series_cog, k)
                 continue
             band = src.read(idx)
-            out_path = out_dir / f"{artifact_stem(event_id, f'tpi_forecast_d{k}', issue.isoformat())}.tif"
+            out_path = out_dir / f"{events.artifact_stem(event_id, f'tpi_forecast_d{k}', issue.isoformat())}.tif"
             with rasterio.open(out_path, "w", **profile) as dst:
                 dst.write(band, 1)
                 dst.set_band_description(1, target)

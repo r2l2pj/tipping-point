@@ -5,17 +5,27 @@
 - `pipeline/tp/forecast.py` (new): `perfect_forecast(series_cog, event_id,
   issue_date, days=(1,2,3), out_dir, metrics_path)`. Reads a float TPI series
   COG (bands named YYYYMMDD); for each k writes
-  `cog/<caso>_tpi_forecast_d<k>_<AAAAMMDD>.tif` (AAAAMMDD = issue date) as a
-  single-band COG whose pixels are the observed band of issue+k; the output
-  band keeps the depicted date as its description. Missing band → nothing
-  written for that k, reported under `missing` in the returned dict.
+  `data/<case-id>/cog/<caso>_tpi_forecast_d<k>_<AAAAMMDD>.tif` (AAAAMMDD =
+  issue date) as a single-band COG whose pixels are the observed band of
+  issue+k; the output band keeps the depicted date as its description.
+  Missing band → nothing written for that k, reported under `missing`.
   `forecast_source: "perfect-forecast"` is merged via
   `tp.metrics.merge_metrics` on every run. (The plan's sketch named the 2nd
   param `event_date`; implemented as `event_id` — `<caso>` stem and the
   metrics merge both need it.)
+- **Spec delta L4** (applied 2026-11-14): outputs route to
+  `data/<case-id>/cog/` (`rs_2024`, `wa_2025`), not `data/<event-id>/`.
+  `tp.config.case_id()` does not exist in this worktree yet, so forecast.py
+  carries `case_id()` (either form → underscore case key) and
+  `resolve_event_id()` (case id → event id via `events/*.json`, needed for
+  `load_event`/`artifact_stem` and for `merge_metrics`, which keeps its
+  signature and takes the event id — the helper routes to root
+  `data/metrics.json` keyed by case once its L4 update lands; metrics.py is
+  outside my write scope). `perfect_forecast` accepts either id form.
 - `pipeline/scripts/07_forecast.py` (new): CLI `--event --series [--issue]
-  [--days 1,2,3]`; issue defaults to `events/<event>.json` `reference_date`;
-  writes into `event_data_dir(event)/cog`.
+  [--days 1,2,3]`; `--event` accepts event or case id; issue defaults to
+  `events/<event>.json` `reference_date`; writes into
+  `data/<case-id>/cog/` via `event_data_dir(case_id)`.
 - `ml/lead_time.py`: accepts float TPI series — dtype auto-detect
   (`is_float_series`) or `--tpi`; TPI values used as-is (no /100 scaling),
   default threshold 0.6 (Alto cut). New label-point flow (`--labels` CSV,
@@ -32,8 +42,10 @@
   tmp+replace write.
 - `pipeline/tests/test_forecast.py` (new): 16-band synthetic float series;
   d1–d3 rasters equal the shifted observed bands; missing date → report +
-  no file; nodata preserved; metrics.json gets `perfect-forecast`; CLI
-  `--help` resolves.
+  no file; nodata preserved; metrics.json gets `perfect-forecast`; L4 case
+  routing — default out_dir lands at `data/rs_2024/cog/...` (DATA_DIR
+  monkeypatched) and case-id input resolves to the event; CLI `--help`
+  resolves.
 - `ml/tests/test_pipeline.py`: new `test_lead_time_tpi_series_label_points` —
   4-frame float series, hand-computed leads (48/72/24 h), pos/neg/null
   classes, summaries, and end-to-end `main()` → metrics.json.
@@ -41,7 +53,7 @@
 ## Commands run + results
 
 - `uv sync` — ok.
-- `uv run pytest pipeline/tests ml/tests live/tests -q` — **64 passed**
+- `uv run pytest pipeline/tests ml/tests live/tests -q` — **65 passed**
   (baseline was 46).
 - `uv run ruff check .` — **All checks passed**.
 - `uv run python pipeline/scripts/07_forecast.py --help` — resolves.

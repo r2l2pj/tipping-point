@@ -68,6 +68,21 @@ def test_forecast_missing_band_writes_nothing_and_reports(tmp_path):
         assert (tmp_path / "cog" / f"rs_2024_tpi_forecast_d{k}_20240502.tif").exists()
 
 
+def test_default_out_dir_routes_to_case_dir(tmp_path, monkeypatch):
+    """L4: no out_dir → data/<case-id>/cog/; either id form resolves."""
+    import tp.events
+
+    dates = [START + timedelta(days=i) for i in range(16)]
+    series = _write_series(tmp_path / "series.tif", dates)
+    monkeypatch.setattr(tp.events, "DATA_DIR", tmp_path / "data")
+
+    report = perfect_forecast(series, "rs_2024", ISSUE, days=(1,),
+                              metrics_path=tmp_path / "m" / "metrics.json")
+    out = tmp_path / "data" / "rs_2024" / "cog" / "rs_2024_tpi_forecast_d1_20240502.tif"
+    assert out.exists()
+    assert report["written"] == [str(out)]
+
+
 def test_forecast_preserves_nodata(tmp_path):
     dates = [START + timedelta(days=i) for i in range(16)]
     series = _write_series(tmp_path / "series.tif", dates)
