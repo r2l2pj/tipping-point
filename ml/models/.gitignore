@@ -1,0 +1,5 @@
+# Trained model artifacts are not committed — regenerate with `python -m ml.train`.
+*.json
+*.ubj
+*.meta.json
+!model_card.md
