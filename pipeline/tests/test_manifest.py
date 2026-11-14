@@ -10,10 +10,11 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 LEGEND = ["Baixo", "Moderado", "Alto", "Crítico"]
 
 # data/SCHEMA.md per-case node + layer field lists.
-NODE_KEYS = {"event_id", "mode", "bounds", "forecast_source", "layers",
+NODE_KEYS = {"event_id", "mode", "bounds", "forecast_source", "data_basis", "layers",
              "metrics", "data_dates", "products", "_null_reasons"}
 LAYER_KEYS = {"id", "date", "png", "cog", "legend", "bounds", "forecast"}
 PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
+                 "swot_reference",
                  "priority_zones", "permanent_water", "flood_confirmed",
                  "landslide_candidates"}
 

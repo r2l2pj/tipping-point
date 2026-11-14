@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-14T21:47:26Z",
+  "updated_at": "2026-11-14T22:13:57Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -809,7 +809,8 @@
         "priority_zones": "rs_2024/geojson/priority_zones.geojson",
         "permanent_water": null,
         "flood_confirmed": null,
-        "landslide_candidates": null
+        "landslide_candidates": null,
+        "swot_reference": "rs_2024/series/swot_reference.json"
       },
       "_null_reasons": {
         "permanent_water": "not yet produced",
@@ -863,6 +864,42 @@
             46.998783,
             -121.49758,
             48.500042
+          ]
+        },
+        {
+          "id": "nisar_post",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/nisar_post_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_nisar_post_20251216_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.612107,
+            46.990446,
+            -121.455602,
+            48.509603
+          ]
+        },
+        {
+          "id": "nisar_pre",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/nisar_pre_20251204.png",
+          "cog": "wa_2025/cog/wa_2025_nisar_pre_20251204_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.612107,
+            46.990446,
+            -121.455602,
+            48.509603
           ]
         },
         {
@@ -1817,7 +1854,8 @@
         "priority_zones": "wa_2025/geojson/priority_zones.geojson",
         "permanent_water": "wa_2025/geojson/permanent_water.geojson",
         "flood_confirmed": "wa_2025/geojson/flood_confirmed.geojson",
-        "landslide_candidates": null
+        "landslide_candidates": null,
+        "swot_reference": "wa_2025/series/swot_reference.json"
       },
       "_null_reasons": {
         "landslide_candidates": "no landslide candidate product yet"
@@ -1826,15 +1864,172 @@
     "now": {
       "schema": "tipping-point/now@2",
       "mode": "live",
-      "updated_at": null,
+      "updated_at": "2026-11-14T22:08:35.513754Z",
       "bounds": [
         -58.0,
         -34.0,
         -48.0,
         -22.5
       ],
-      "data_dates": {},
-      "layers": [],
+      "data_dates": {
+        "imerg": "2026-11-14T00Z",
+        "smap": "SMAP_L4_SM_gph_20261110T223000_Vv8013_001.h5_u9loH5HD",
+        "geos_fp_issued": "2026-11-14T12:00:00Z"
+      },
+      "layers": [
+        {
+          "id": "tpi_slide_d0",
+          "date": "2026-11-14",
+          "png": "png/tpi_slide_d0.png",
+          "cog": "cog/tpi_slide_today.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -58.0,
+            -33.999842,
+            -48.001818,
+            -22.5
+          ],
+          "forecast": false
+        },
+        {
+          "id": "tpi_slide_d1",
+          "date": "2026-11-15",
+          "png": "png/tpi_slide_d1.png",
+          "cog": "cog/tpi_slide_d1.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -58.0,
+            -33.999842,
+            -48.001818,
+            -22.5
+          ],
+          "forecast": true
+        },
+        {
+          "id": "tpi_slide_d2",
+          "date": "2026-11-16",
+          "png": "png/tpi_slide_d2.png",
+          "cog": null,
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -58.0,
+            -33.999842,
+            -48.001818,
+            -22.5
+          ],
+          "forecast": true
+        },
+        {
+          "id": "tpi_slide_d3",
+          "date": "2026-11-17",
+          "png": "png/tpi_slide_d3.png",
+          "cog": null,
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -58.0,
+            -33.999842,
+            -48.001818,
+            -22.5
+          ],
+          "forecast": true
+        },
+        {
+          "id": "tpi_flood_d0",
+          "date": "2026-11-14",
+          "png": "png/tpi_flood_d0.png",
+          "cog": "cog/tpi_flood_today.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -58.0,
+            -33.999842,
+            -48.001818,
+            -22.5
+          ],
+          "forecast": false
+        },
+        {
+          "id": "tpi_flood_d1",
+          "date": "2026-11-15",
+          "png": "png/tpi_flood_d1.png",
+          "cog": "cog/tpi_flood_d1.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -58.0,
+            -33.999842,
+            -48.001818,
+            -22.5
+          ],
+          "forecast": true
+        },
+        {
+          "id": "tpi_flood_d2",
+          "date": "2026-11-16",
+          "png": "png/tpi_flood_d2.png",
+          "cog": null,
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -58.0,
+            -33.999842,
+            -48.001818,
+            -22.5
+          ],
+          "forecast": true
+        },
+        {
+          "id": "tpi_flood_d3",
+          "date": "2026-11-17",
+          "png": "png/tpi_flood_d3.png",
+          "cog": null,
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -58.0,
+            -33.999842,
+            -48.001818,
+            -22.5
+          ],
+          "forecast": true
+        }
+      ],
       "products": {
         "critical_areas": "geojson/critical_areas.geojson",
         "summary": "summary.json",
@@ -2530,51 +2725,8 @@
           "acquired": "2026-11-01T21:23:57Z",
           "path": 125,
           "direction": "DESCENDING"
-        },
-        {
-          "granule": "NISAR_L0_PR_RRSD_034_111_D_148S_20261031T220453_20261031T220818_P05036_F_J_001",
-          "acquired": "2026-10-31T22:04:53Z",
-          "path": 111,
-          "direction": "DESCENDING"
-        },
-        {
-          "granule": "NISAR_L2_PR_GSLC_034_111_D_101_2005_DHDH_A_20261031T220559_20261031T220634_P05036_N_F_J_001",
-          "acquired": "2026-10-31T22:05:59Z",
-          "path": 111,
-          "direction": "DESCENDING"
-        },
-        {
-          "granule": "NISAR_L2_PR_GCOV_034_111_D_101_2005_DHDH_A_20261031T220559_20261031T220634_P05036_N_F_J_001",
-          "acquired": "2026-10-31T22:05:59Z",
-          "path": 111,
-          "direction": "DESCENDING"
-        },
-        {
-          "granule": "NISAR_L1_PR_RSLC_034_111_D_101_2005_DHDH_A_20261031T220559_20261031T220634_P05036_N_F_J_001",
-          "acquired": "2026-10-31T22:05:59Z",
-          "path": 111,
-          "direction": "DESCENDING"
-        },
-        {
-          "granule": "NISAR_L2_PR_GSLC_034_111_D_100_2005_DHDH_A_20261031T220526_20261031T220600_P05036_N_F_J_001",
-          "acquired": "2026-10-31T22:05:26Z",
-          "path": 111,
-          "direction": "DESCENDING"
-        },
-        {
-          "granule": "NISAR_L2_PR_GCOV_034_111_D_100_2005_DHDH_A_20261031T220526_20261031T220600_P05036_N_F_J_001",
-          "acquired": "2026-10-31T22:05:26Z",
-          "path": 111,
-          "direction": "DESCENDING"
-        },
-        {
-          "granule": "NISAR_L1_PR_RSLC_034_111_D_100_2005_DHDH_A_20261031T220526_20261031T220600_P05036_N_F_J_001",
-          "acquired": "2026-10-31T22:05:26Z",
-          "path": 111,
-          "direction": "DESCENDING"
         }
-      ],
-      "note": "Seed manifest — populated by live/run_now.py every 3 h via .github/workflows/now.yml"
+      ]
     }
   }
 }

@@ -239,6 +239,250 @@ def _fetch(url) -> bytes:
     return requests.get(url, timeout=600).content
 
 
+# ---------------------------------------------------------------------------
+# Client-side run: no <case>_tpi_slide_series asset — the critical mask comes
+# from the local 90 m COG (data/<case>/cog/<case>_tpi_slide_*.tif event-day
+# band); NTL means are pulled via getDownloadURL and everything is reduced
+# locally with rasterio/numpy. Metrics land in data/<case>/impact_metrics.json
+# (NOT data/metrics.json); PNGs + _index.json layer entries go to png/.
+# ---------------------------------------------------------------------------
+
+
+def _tpi_slide_critical(case_id: str):
+    """(uint8 critical mask, transform, crs) event-day TPI_slide > CRITICAL
+    from the local COG — replaces the missing tpi_slide_series EE asset."""
+    import numpy as np
+    import rasterio
+
+    cfg = case_cfg(case_id)
+    band = _event_band_index(case_id, cfg) + 1  # rasterio bands are 1-based
+    path = DATA_DIR / case_id / "cog" / f"{artifact_stem(_event_id(case_id), 'tpi_slide')}.tif"
+    with rasterio.open(path) as ds:
+        arr = ds.read(band, masked=True).filled(np.nan)
+        return (arr > CRITICAL).astype(np.uint8), ds.transform, ds.crs
+
+
+def _flood_geojson_path(case_id: str) -> Path | None:
+    """Local geojson that backs the flood_nisar* table asset."""
+    from tp.config import REPO_ROOT
+
+    candidates = []
+    try:
+        doc = json.loads((DATA_DIR / case_id / "assets.json").read_text())
+        for row in doc.get("assets", []):
+            if (isinstance(row, dict) and "flood" in str(row.get("name", ""))
+                    and row.get("kind") == "table" and row.get("source")):
+                candidates.append(Path(row["source"]))
+    except (OSError, json.JSONDecodeError):
+        pass
+    cands = [REPO_ROOT / c if not c.is_absolute() else c for c in candidates]
+    cands += sorted((REPO_ROOT / "intermediate" / case_id).glob("*flood*.geojson"))
+    cands += sorted((DATA_DIR / case_id / "geojson").glob("*flood*.geojson"))
+    return next((p for p in cands if p.exists()), None)
+
+
+def _flood_mask_native(case_id: str):
+    """(uint8 mask, transform, crs) NISAR flood polygons rasterized on the
+    local flood COG grid (10 m); None when the case has no flood polygons."""
+    if case_id != "wa_2025":
+        return None
+    import numpy as np
+    import rasterio
+    from rasterio.features import rasterize
+
+    gj = _flood_geojson_path(case_id)
+    if gj is None:
+        return None
+    feats = json.loads(gj.read_text()).get("features", [])
+    geoms = [f["geometry"] for f in feats if f.get("geometry")]
+    if not geoms:
+        return None
+    cog = DATA_DIR / case_id / "cog" / f"{artifact_stem(_event_id(case_id), 'flood_nisar')}.tif"
+    if cog.exists():
+        with rasterio.open(cog) as ds:
+            shape, transform, crs = (ds.height, ds.width), ds.transform, ds.crs
+    else:
+        from rasterio.features import bounds as feat_bounds
+        from rasterio.transform import from_origin
+
+        w, s, e, n = feat_bounds({"type": "FeatureCollection", "features": feats})
+        res = 0.0001  # ~10 m
+        transform = from_origin(w, n, res, res)
+        shape = (max(1, int((n - s) / res)), max(1, int((e - w) / res)))
+        crs = rasterio.crs.CRS.from_epsg(4326)
+    mask = rasterize(geoms, out_shape=shape, transform=transform, fill=0,
+                     dtype="uint8", all_touched=True)
+    return mask, transform, crs
+
+
+def _frac_on(src, src_transform, src_crs, dst_shape, dst_transform, dst_crs):
+    """Fraction of each dst cell covered by src>0 (average resampling)."""
+    import numpy as np
+    from rasterio.warp import Resampling, reproject
+
+    dst = np.zeros(dst_shape, dtype=np.float32)
+    reproject(source=src.astype(np.float32), destination=dst,
+              src_transform=src_transform, src_crs=src_crs,
+              dst_transform=dst_transform, dst_crs=dst_crs,
+              resampling=Resampling.average)
+    return dst
+
+
+def _ntl_array(img, aoi):
+    """getDownloadURL GeoTIFF -> (masked array, transform, crs, bounds)."""
+    import io
+    import zipfile
+
+    import numpy as np
+    import rasterio
+
+    url = img.clip(aoi).getDownloadURL(
+        {"region": aoi, "scale": NTL_SCALE, "format": "GEO_TIFF"})
+    blob = _fetch(url)
+    if blob[:2] == b"PK":  # older responses come back zipped
+        with zipfile.ZipFile(io.BytesIO(blob)) as z:
+            name = next(n for n in z.namelist() if n.endswith(".tif"))
+            blob = z.read(name)
+    raw = blob
+    with rasterio.io.MemoryFile(raw) as mem, mem.open() as ds:
+        arr = ds.read(1, masked=True)
+        arr = np.ma.masked_invalid(np.ma.filled(arr, np.nan))
+        return arr, ds.transform, ds.crs, list(ds.bounds)
+
+
+def _pop_sum_frac(pop_arr, frac) -> float:
+    import numpy as np
+
+    pop = np.asarray(pop_arr, dtype=np.float64)
+    pop = np.where(np.isfinite(pop) & (pop >= 0), pop, 0.0)
+    return float(np.sum(pop * frac))
+
+
+def _cell_area_km2(transform, height: int) -> float:
+    """km2 of one cell of a EPSG:4326 grid at its row-centre latitude (mean)."""
+    import math
+
+    res = abs(transform.a)
+    lats = [transform.f + (i + 0.5) * transform.e for i in range(height)]
+    import numpy as np
+
+    m = 111320.0
+    areas = [(res * m) * (res * m * math.cos(math.radians(lat))) for lat in lats]
+    return float(np.mean(areas) / 1e6)
+
+
+def run_local(case_id: str, metrics_path: Path | None = None) -> dict:
+    """Client-side impact run: NTL means via getDownloadURL, all masks local."""
+    import numpy as np
+    import rasterio
+
+    from tp.bundle import _gray_png_3857
+
+    _common_ready()
+    init()
+    cfg = case_cfg(case_id)
+    eid = _event_id(case_id)
+    aoi = aoi_geom(case_id)
+    ref = ee.Date(str(cfg["event_date"]))
+    event_day = str(cfg["event_date"])
+    ymd = event_day.replace("-", "")
+    case_dir = DATA_DIR / case_id
+
+    crit, crit_tr, crit_crs = _tpi_slide_critical(case_id)
+    flood_native = _flood_mask_native(case_id)
+    flood_reason = None
+    if case_id == "wa_2025" and flood_native is None:
+        flood_reason = ("NISAR flood polygons geojson not found — "
+                        "run 06_polygonize.py first")
+
+    # -- Task A: NTL pre/post means over the affected area (crit ∪ flood) ----
+    ntl = {}
+    for name, (b, a) in (("pre", (NTL_PRE_NIGHTS, 0)), ("post", (0, NTL_POST_NIGHTS))):
+        ntl[name] = _ntl_array(_ntl_mean(ref, b, a), aoi)
+    arr0, ntl_tr, ntl_crs, ntl_bounds = ntl["pre"]
+    shape = arr0.shape
+    crit_frac = _frac_on(crit, crit_tr, crit_crs, shape, ntl_tr, ntl_crs)
+    aff = crit_frac > 0
+    flood_frac_ntl = None
+    if flood_native is not None:
+        fm, ftr, fcrs = flood_native
+        flood_frac_ntl = _frac_on(fm, ftr, fcrs, shape, ntl_tr, ntl_crs)
+        aff |= flood_frac_ntl > 0
+    means = {}
+    for name, (arr, *_rest) in ntl.items():
+        vals = arr.filled(np.nan)[aff]
+        vals = vals[np.isfinite(vals)]
+        means[name] = float(np.mean(vals)) if vals.size else None
+    drop = None
+    if means["pre"] and means["post"] is not None and means["pre"] > 0:
+        drop = (means["pre"] - means["post"]) / means["pre"] * 100.0
+
+    # -- Task B: grey-stretch PNGs + _index.json layer entries ---------------
+    png_dir = case_dir / "png"
+    png_dir.mkdir(parents=True, exist_ok=True)
+    index_path = png_dir / "_index.json"
+    layers = []
+    if index_path.exists():
+        layers = json.loads(index_path.read_text()).get("layers", [])
+    layers = [ly for ly in layers
+              if not (ly.get("id") in ("night_lights_pre", "night_lights_post")
+                      and ly.get("date") == event_day)]
+    for name, (arr, tr, crs, _bounds) in ntl.items():
+        png_bytes, bounds = _gray_png_3857(arr.filled(np.nan), tr, crs, None)
+        png_path = png_dir / f"night_lights_{name}_{ymd}.png"
+        png_path.write_bytes(png_bytes)
+        layers.append({"id": f"night_lights_{name}", "date": event_day,
+                       "png": str(png_path.relative_to(DATA_DIR)),
+                       "cog": None, "bounds": bounds})
+    index_path.write_text(json.dumps({"layers": layers}, indent=2) + "\n")
+
+    # -- population sums on the local GPW COG --------------------------------
+    pop_path = case_dir / "cog" / f"{artifact_stem(eid, 'pop_gpw')}.tif"
+    flat = {"gpw_year": 2020,  # GPWv411 latest epoch; nearest for both events
+          "people_critical": None,
+          "people_flooded": None,
+          "flooded_km2": None,
+          "flood_source": None,
+          "ntl_mean_before": means["pre"],
+          "ntl_mean_after": means["post"],
+          "night_light_drop_pct": drop}
+    reasons = dict(_null_reasons(case_id)) if case_id == "wa_2025" else {}
+    if pop_path.exists():
+        with rasterio.open(pop_path) as ds:
+            pop = ds.read(1)
+            pshape, ptr, pcrs = (ds.height, ds.width), ds.transform, ds.crs
+        flat["people_critical"] = _pop_sum_frac(
+            pop, _frac_on(crit, crit_tr, crit_crs, pshape, ptr, pcrs))
+        if flood_native is not None:
+            fm, ftr, fcrs = flood_native
+            flood_frac = _frac_on(fm, ftr, fcrs, pshape, ptr, pcrs)
+            flat["people_flooded"] = _pop_sum_frac(pop, flood_frac)
+            flat["flooded_km2"] = float(np.sum(fm > 0)) * _cell_area_km2(
+                ftr, fm.shape[0])
+            flat["flood_source"] = "nisar"
+    else:
+        reasons["people_critical"] = f"local GPW COG missing: {pop_path}"
+        if case_id == "wa_2025":
+            reasons.setdefault("people_flooded", reasons["people_critical"])
+            reasons.setdefault("flooded_km2", reasons["people_critical"])
+    if case_id == "wa_2025":
+        if flood_reason:
+            reasons.update({"people_flooded": flood_reason,
+                            "flooded_km2": flood_reason,
+                            "flood_source": flood_reason})
+    else:
+        reasons = _null_reasons(case_id)
+
+    out = {"case": case_id, "event": eid,
+           **{k: v for k, v in flat.items()},
+           "_null_reasons": {k: r for k, r in reasons.items()
+                             if flat.get(k) is None}}
+    mpath = Path(metrics_path) if metrics_path else case_dir / "impact_metrics.json"
+    mpath.parent.mkdir(parents=True, exist_ok=True)
+    mpath.write_text(json.dumps(out, indent=2) + "\n")
+    return out
+
+
 def _write_cog(zip_bytes: bytes, path: Path) -> None:
     """getDownloadURL payload (zipped GeoTIFF) -> COG at `path` (plain tif if
     the GDAL COG driver is unavailable)."""
@@ -345,10 +589,18 @@ def main(argv=None) -> int:
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--dry-run", action="store_true", help="print planned computes+exports; no EE init")
     g.add_argument("--tasks", action="store_true", help="run + pull COGs; skip metrics merge")
+    g.add_argument("--local", action="store_true",
+                 help="client-side run: local COG masks + getDownloadURL NTL; "
+                      "writes data/<case>/impact_metrics.json + night_lights PNGs")
     ap.add_argument("--metrics-path", type=Path, default=None, help="metrics.json override (testing)")
     args = ap.parse_args(argv)
     if args.dry_run:
         print(plan(args.case))
+        return 0
+    if args.local:
+        out = run_local(args.case, metrics_path=args.metrics_path)
+        for k, v in out.items():
+            print(f"  {k}: {v}")
         return 0
     out = run(args.case, metrics_path=args.metrics_path, merge=not args.tasks)
     for k, v in out["metrics"].items():

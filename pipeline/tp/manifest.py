@@ -205,6 +205,11 @@ def _products(event_id: str, case_id: str, case_dir: Path) -> tuple[dict, dict]:
         else:
             products[name] = None
             reasons[name] = _missing_reason(event_id, name)
+    swot = case_dir / "series" / "swot_reference.json"
+    products["swot_reference"] = (
+        f"{case_id}/series/swot_reference.json" if swot.exists() else None)
+    if not swot.exists():
+        reasons["swot_reference"] = "no SWOT pass in the case window"
     return products, reasons
 
 

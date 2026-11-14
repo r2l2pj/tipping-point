@@ -493,6 +493,30 @@
         -28.999504
       ],
       "forecast": true
+    },
+    {
+      "id": "night_lights_pre",
+      "date": "2024-05-02",
+      "png": "rs_2024/png/night_lights_pre_20240502.png",
+      "cog": null,
+      "bounds": [
+        -52.502037,
+        -30.506849,
+        -50.497572,
+        -28.997617
+      ]
+    },
+    {
+      "id": "night_lights_post",
+      "date": "2024-05-02",
+      "png": "rs_2024/png/night_lights_post_20240502.png",
+      "cog": null,
+      "bounds": [
+        -52.502037,
+        -30.506849,
+        -50.497572,
+        -28.997617
+      ]
     }
   ]
 }
