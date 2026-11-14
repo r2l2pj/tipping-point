@@ -46,6 +46,8 @@ POP_COLLECTION = "CIESIN/GPWv411/GPW_Population_Count"
 POP_BAND = "population_count"
 ASSET_TERRAIN_SCALE_M = 30
 ASSET_CLIM_SCALE_M = 10_000
+NOW_PAD_DAYS = 35
+EVENTS_DIR = Path(__file__).resolve().parents[1] / "events"
 
 
 def _ee_init():
@@ -111,6 +113,41 @@ def _climatology_for_doy(ee, doy: int):
     return _climatology(ee, d.month, d.day)
 
 
+def _doy(d: dt.date) -> int:
+    """Calendar (month, day) -> 1..366 on the leap-year climatology calendar."""
+    return (dt.date(2000, d.month, d.day) - dt.date(2000, 1, 1)).days + 1
+
+
+def _doys_around(d: dt.date, pad: int) -> set[int]:
+    """doy +-pad on the leap-year calendar, wrapping across the year boundary."""
+    return {((_doy(d) - 1 + i) % 366) + 1 for i in range(-pad, pad + 1)}
+
+
+def _doys_between(start: dt.date, end: dt.date) -> list[int]:
+    """doy(start)..doy(end) inclusive on the leap-year calendar, wrapping
+    across the year boundary (e.g. a Nov..Jan event window)."""
+    a, b = _doy(start), _doy(end)
+    if a <= b:
+        return list(range(a, b + 1))
+    return list(range(a, 367)) + list(range(1, b + 1))
+
+
+def _clim_cases(events_dir: Path = EVENTS_DIR) -> list[dict]:
+    """Per-case clim_rain specs from events/*.json: id, aoi.bbox and the
+    doy range of window.start..window.end inclusive (window used as-is)."""
+    cases = []
+    for path in sorted(events_dir.glob("*.json")):
+        case = json.loads(path.read_text())
+        cases.append({
+            "id": case["id"],
+            "bbox": case["aoi"]["bbox"],
+            "doys": _doys_between(
+                dt.date.fromisoformat(case["window"]["start"]),
+                dt.date.fromisoformat(case["window"]["end"])),
+        })
+    return cases
+
+
 def _terrain(ee):
     dem = ee.Image("NASA/NASADEM_HGT/001").select("elevation")
     slope = ee.Terrain.slope(dem)
@@ -138,19 +175,28 @@ def _ensure_collection(ee, path: str) -> None:
 
 
 def build_assets(ee, dry_run: bool = False) -> list:
-    """Export the static/south_brazil/* GEE assets (L8; lead-analysis reads
-    them): clim_rain ImageCollection (one image per day-of-year, 'doy'
-    property, p90/p95/p99 bands computed over +-30d windows around that
-    month/day, ~10 km), slope (~30 m, degrees) and hand (~30 m, meters).
+    """Export the static clim_rain ImageCollections + terrain assets (L8;
+    lead-analysis reads them):
+
+      - static/<case_id>/clim_rain for each events/*.json case, region =
+        the case aoi.bbox, one image per doy of window.start..window.end
+      - static/<STATIC_DOMAIN>/clim_rain over NOW_BOUNDS, the rolling now
+        window (today's doy +-35d)
+
+    Each clim image: 'doy' property, p90/p95/p99 bands over +-30d windows
+    around that month/day, stored int16 = mm*10 with image property
+    scale=10 (readers divide by 10; now_tpi uses config.climatology.scale),
+    ~10 km. slope (~30 m, degrees) and hand (~30 m, meters) stay float.
     Population stays npz-only — it is not in the analysis asset list.
     Returns the export tasks started."""
     region = ee.Geometry.Rectangle(list(NOW_BOUNDS))
     tasks = []
 
-    def _export(image, asset_id, scale, description):
+    def _export(image, asset_id, export_region, scale, description):
         task = ee.batch.Export.image.toAsset(
             image, description=description, assetId=asset_id,
-            region=region, scale=scale, crs="EPSG:4326", maxPixels=1e13)
+            region=export_region, scale=scale, crs="EPSG:4326",
+            maxPixels=1e13)
         if dry_run:
             print(f"[assets] (dry-run) {description} -> {asset_id}")
         else:
@@ -159,17 +205,32 @@ def build_assets(ee, dry_run: bool = False) -> list:
         tasks.append(task)
         return task
 
+    def _export_clim(doy, coll, clim_region, domain):
+        img = (_climatology_for_doy(ee, doy)
+               .multiply(10).round().toInt16()
+               .set("doy", doy).set("scale", 10))
+        _export(img, f"{coll}/doy_{doy:03d}", clim_region,
+                ASSET_CLIM_SCALE_M, f"{domain}_clim_rain_doy_{doy:03d}")
+
+    for spec in _clim_cases():
+        coll = f"{ASSET_ROOT}/static/{spec['id']}/clim_rain"
+        if not dry_run:
+            _ensure_collection(ee, coll)
+        case_region = ee.Geometry.Rectangle(list(spec["bbox"]))
+        for doy in spec["doys"]:
+            _export_clim(doy, coll, case_region, spec["id"])
+
     coll = _asset_path("clim_rain")
     if not dry_run:
         _ensure_collection(ee, coll)
-    for doy in range(1, 367):
-        img = _climatology_for_doy(ee, doy)
-        _export(img.set("doy", doy), f"{coll}/doy_{doy:03d}",
-                ASSET_CLIM_SCALE_M, f"clim_rain_doy_{doy:03d}")
+    for doy in sorted(_doys_around(dt.date.today(), NOW_PAD_DAYS)):
+        _export_clim(doy, coll, region, STATIC_DOMAIN)
 
     _, _, slope, hand, _pop = _terrain(ee)
-    _export(slope, _asset_path("slope"), ASSET_TERRAIN_SCALE_M, "slope")
-    _export(hand, _asset_path("hand"), ASSET_TERRAIN_SCALE_M, "hand")
+    _export(slope, _asset_path("slope"), region,
+            ASSET_TERRAIN_SCALE_M, "slope")
+    _export(hand, _asset_path("hand"), region,
+            ASSET_TERRAIN_SCALE_M, "hand")
     return tasks
 
 

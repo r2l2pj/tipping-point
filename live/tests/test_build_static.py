@@ -86,30 +86,53 @@ def _fake_ee():
     return ee
 
 
-def test_build_assets_exports_clim_collection_and_terrain():
+def _expected_clim():
+    """(collection, [doys]) pairs build_assets should export today."""
+    pairs = [
+        (f"{ASSET_ROOT}/static/{c['id']}/clim_rain", c["doys"], c["id"],
+         list(c["bbox"]))
+        for c in build_static._clim_cases()]
+    now_doys = sorted(build_static._doys_around(
+        dt.date.today(), build_static.NOW_PAD_DAYS))
+    pairs.append((_asset("clim_rain"), now_doys, STATIC_DOMAIN,
+                  list(build_static.NOW_BOUNDS)))
+    return pairs
+
+
+def test_build_assets_exports_clim_collections_and_terrain():
     ee = _fake_ee()
     tasks = build_static.build_assets(ee)
 
-    coll = f"{ASSET_ROOT}/static/{STATIC_DOMAIN}/clim_rain"
-    assert ee._created == [({"type": "ImageCollection"}, coll)]
+    expected = _expected_clim()
+    n_clim = sum(len(doys) for _, doys, _, _ in expected)
 
-    # 366 doy inserts into the collection + slope + hand
-    assert len(tasks) == 368
+    colls = [(coll, doys) for coll, doys, _, _ in expected]
+    assert ee._created == [
+        ({"type": "ImageCollection"}, coll) for coll, _ in colls]
+
+    # clim subset + slope + hand
+    assert len(tasks) == n_clim + 2
     assert all(t.started for t in tasks)
 
-    clim = tasks[:366]
-    assert [t.kwargs["assetId"] for t in clim] == [
-        f"{coll}/doy_{d:03d}" for d in range(1, 367)]
-    assert [t.image.props["doy"] for t in clim] == list(range(1, 367))
+    clim = tasks[:n_clim]
+    expected_tasks = [
+        (f"{coll}/doy_{d:03d}", d, f"{domain}_clim_rain_doy_{d:03d}", bbox)
+        for coll, doys, domain, bbox in expected for d in doys]
+    assert [(t.kwargs["assetId"], t.image.props["doy"],
+             t.kwargs["description"], t.kwargs["region"][1])
+            for t in clim] == expected_tasks
+    # int16 millimetres*10: image expression does .toInt16(), props flag it
+    assert all(t.image.props["scale"] == 10 for t in clim)
+    assert ".toInt16()" in SRC
     assert all(t.kwargs["scale"] == build_static.ASSET_CLIM_SCALE_M
                for t in clim)
 
-    by_desc = {t.kwargs["description"]: t for t in tasks[366:]}
+    by_desc = {t.kwargs["description"]: t for t in tasks[n_clim:]}
     assert set(by_desc) == {"slope", "hand"}
     assert by_desc["slope"].kwargs["assetId"] == _asset("slope")
     assert by_desc["hand"].kwargs["assetId"] == _asset("hand")
     assert all(t.kwargs["scale"] == build_static.ASSET_TERRAIN_SCALE_M
-               for t in tasks[366:])
+               for t in tasks[n_clim:])
     # population is npz-only — never an asset
     assert not any("pop" in t.kwargs["assetId"] for t in tasks)
 
@@ -117,7 +140,8 @@ def test_build_assets_exports_clim_collection_and_terrain():
 def test_build_assets_dry_run_starts_nothing():
     ee = _fake_ee()
     tasks = build_static.build_assets(ee, dry_run=True)
-    assert len(tasks) == 368
+    n_clim = sum(len(doys) for _, doys, _, _ in _expected_clim())
+    assert len(tasks) == n_clim + 2
     assert ee._exported == []
     assert ee._created == []
 
@@ -135,14 +159,40 @@ def test_build_assets_clim_windows_are_per_doy():
     ee.Date = types.SimpleNamespace(fromYMD=fromYMD)
     build_static.build_assets(ee, dry_run=True)
 
+    n_clim = sum(len(doys) for _, doys, _, _ in _expected_clim())
     expected_md = {
-        (d.month, d.day) for d in
-        (dt.date(2000, 1, 1) + dt.timedelta(days=i) for i in range(366))}
+        (d.month, d.day) for _, doys, _, _ in _expected_clim() for d in
+        (dt.date(2000, 1, 1) + dt.timedelta(days=doy - 1) for doy in doys)}
     assert {(m, d) for _, m, d in calls} == expected_md
     assert {y for y, _, _ in calls} == set(build_static.YEARS)
-    # one fromYMD per (year, offset) per doy: 366 * 23 * 21
-    assert len(calls) == 366 * len(list(build_static.YEARS)) * len(
+    # one fromYMD per (year, offset) per exported doy
+    assert len(calls) == n_clim * len(list(build_static.YEARS)) * len(
         list(build_static.OFFSETS))
+
+
+def test_clim_cases_reads_window_doys(tmp_path):
+    """_clim_cases: doys = doy(window.start)..doy(window.end) inclusive,
+    wrapping across the year boundary, region = aoi.bbox."""
+    import json
+
+    (tmp_path / "a.json").write_text(json.dumps({
+        "id": "x-case", "aoi": {"bbox": [1, 2, 3, 4]},
+        "window": {"start": "2024-04-20", "end": "2024-05-31"}}))
+    (tmp_path / "b.json").write_text(json.dumps({
+        "id": "y-wrap", "aoi": {"bbox": [5, 6, 7, 8]},
+        "window": {"start": "2025-11-30", "end": "2026-01-15"}}))
+    (tmp_path / "c.json").write_text(json.dumps({
+        "id": "z-sameday", "aoi": {"bbox": [0, 0, 0, 0]},
+        "window": {"start": "2024-06-10", "end": "2024-06-10"}}))
+
+    cases = build_static._clim_cases(tmp_path)
+    assert [c["id"] for c in cases] == ["x-case", "y-wrap", "z-sameday"]
+    assert cases[0]["bbox"] == [1, 2, 3, 4]
+    # Apr20..May31 = 42 doys, contiguous on the leap-year calendar
+    assert cases[0]["doys"] == list(range(111, 153))
+    # Nov30..Jan15 wraps: 335..366 then 1..15
+    assert cases[1]["doys"] == list(range(335, 367)) + list(range(1, 16))
+    assert cases[2]["doys"] == [162]
 
 
 def _asset(name):
