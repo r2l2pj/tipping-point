@@ -30,7 +30,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))  # `live` is importable only from the repo root
 
-from live.config import MIN_BLOB_PIXELS
 from live.render import classes_png_bytes, warp_to_3857
 from live.tpi import classify
 from tp.events import DATA_DIR, load_event
@@ -354,6 +353,9 @@ def publish_case(event_id: str, dry_run: bool = False,
         out["written"].append(rel)
 
     # ---- geojson: priority zones (event-day TPI >= Alto) --------------
+    # Two products from the same dissolved blobs: `critical_areas` keeps
+    # the full footprint, `priority_zones` is the ranked top-20 list the
+    # app renders as points (L15 — raw per-cell polygons crashed it).
     zones = []
     for hazard, series in (("landslide", "slide"), ("flood", "flood")):
         hit = bands_by_date[series].get(ref)
@@ -369,10 +371,14 @@ def publish_case(event_id: str, dry_run: bool = False,
         valid = _valid(tpi, nodata)
         cls = classify(np.where(valid, tpi, np.nan))
         mask = (cls >= 2) & valid
-        lab, n = label(mask)
+        lab, n = label(mask, structure=np.ones((3, 3)))
         sizes = np.bincount(lab.ravel())
+        # Footprint sieve ~0.05 km² (pixel dust); the ranked top-20 list
+        # needs no stronger cut — score decides.
+        px_km2 = abs(transform.a * transform.e) * 111320 ** 2 / 1e6
+        min_px = max(1, int(np.ceil(0.05 / max(px_km2, 1e-9))))
         for i in range(1, n + 1):
-            if sizes[i] < MIN_BLOB_PIXELS:
+            if sizes[i] < min_px:
                 continue
             blob = lab == i
             geoms = list(rasterio.features.shapes(
@@ -397,38 +403,56 @@ def publish_case(event_id: str, dry_run: bool = False,
         pop = _first(cog_dir, POP_PATTERNS)
         if pop is None:
             null("priority_zones.people", "no population COG")
-        gdf = gdf.sort_values("tpi", ascending=False).reset_index(drop=True)
-        feats = []
-        for rank, (_, row) in enumerate(gdf.iterrows(), start=1):
+
+        def _people(geom):
+            if pop is None:
+                return None
+            try:
+                return int(_pop_sum(pop, geom.__geo_interface__))
+            except (OSError, ValueError) as e:
+                null("priority_zones.people", f"{pop.name}: {e}")
+                return None
+
+        # full footprint -> critical_areas.geojson
+        gdf["people"] = [_people(g) for g in gdf["geometry"]]
+        gdf["score"] = gdf["area_km2"] * gdf["tpi"]
+        gdf = gdf.sort_values(
+            "people" if gdf["people"].notna().any() else "score",
+            ascending=False).reset_index(drop=True)
+
+        def _feature(row, rank):
             geom = row["geometry"]
-            c = geom.centroid
-            name = (min(places, key=lambda p: (p[0] - c.x) ** 2 + (p[1] - c.y) ** 2)[2]
+            c = geom.representative_point()
+            name = (min(places,
+                        key=lambda p: (p[0] - c.x) ** 2 + (p[1] - c.y) ** 2)[2]
                     if places else None)
-            people = None
-            if pop is not None:
-                try:
-                    people = int(_pop_sum(pop, geom.__geo_interface__))
-                except (OSError, ValueError) as e:
-                    null("priority_zones.people", f"{pop.name}: {e}")
-                    pop = None
-            feats.append({"type": "Feature", "geometry": geom.__geo_interface__,
-                          "properties": {
-                              "rank": rank, "name": name,
-                              "tpi": round(float(row["tpi"]), 4),
-                              "class": EN_CLASS_LABELS[min(int(row["class"]), 3)],
-                              "hazard": row["hazard"],
-                              "area_km2": round(float(row["area_km2"]), 4),
-                              "people": people}})
-        target = gj_dir / "priority_zones.geojson"
-        rel = str(target.relative_to(data_dir))
-        if dry_run:
-            out["planned"].append(rel)
-        else:
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(json.dumps(
-                {"type": "FeatureCollection", "features": feats},
-                ensure_ascii=False, indent=2) + "\n")
-            out["written"].append(rel)
+            return {"type": "Feature", "geometry": geom.__geo_interface__,
+                    "properties": {
+                        "rank": rank, "name": name,
+                        "tpi": round(float(row["tpi"]), 4),
+                        "class": EN_CLASS_LABELS[min(int(row["class"]), 3)],
+                        "hazard": row["hazard"],
+                        "area_km2": round(float(row["area_km2"]), 4),
+                        "people": (None if row["people"] is None
+                                   else int(row["people"])),
+                        "label_lon": round(float(c.x), 6),
+                        "label_lat": round(float(c.y), 6)}}
+
+        for target_name, rows in (
+                ("critical_areas", gdf),
+                ("priority_zones", gdf.head(20))):
+            feats = [_feature(row, rank)
+                     for rank, (_, row) in enumerate(rows.iterrows(), start=1)]
+            target = gj_dir / f"{target_name}.geojson"
+            rel = str(target.relative_to(data_dir))
+            if dry_run:
+                out["planned"].append(rel)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(json.dumps(
+                    {"type": "FeatureCollection", "features": feats},
+                    ensure_ascii=False, indent=2) + "\n")
+                out["written"].append(rel)
     elif not any(bands_by_date[s] for s in ("slide", "flood")):
         skip("priority_zones", "no TPI series COG")
     elif any(bands_by_date[s].get(ref) for s in ("slide", "flood")):
