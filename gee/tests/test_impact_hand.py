@@ -140,7 +140,7 @@ def _called(path_suffix, args=None, **kw):
 def test_gpw_nearest_epoch_pick(tmp_path, commons):
     impact.run("rs_2024", metrics_path=tmp_path / "m.json", exports=False)
     assert _called("ee.ImageCollection", [impact.COL_GPW])
-    assert _called("ee.Image", [f"{impact.ASSET_ROOT}/rs_2024_tpi_slide_series"])
+    assert _called("ee.Image", [f"{impact.ASSET_ROOT}/rs_2024/tpi_slide_series"])
     # epoch closest to the event year: sort by abs(date difference in years)
     assert _called(".difference")
     assert any("year" in a for p, a, k in LOG if p.endswith(".difference"))
@@ -191,7 +191,7 @@ def test_flood_gate_failure_writes_null_reasons(tmp_path, commons, monkeypatch):
     path = tmp_path / "metrics.json"
     impact.run("wa_2025", metrics_path=path, exports=False)
     m = json.loads(path.read_text())
-    assert seen == [f"{impact.ASSET_ROOT}/wa_2025_flood_nisar"]
+    assert seen == [f"{impact.ASSET_ROOT}/wa_2025/flood_nisar"]
     assert m["people_flooded"] is None and m["flooded_km2"] is None
     assert {"people_flooded", "flooded_km2"} <= set(m["_null_reasons"])
     assert "flood_nisar" in m["_null_reasons"]["people_flooded"]
@@ -205,6 +205,18 @@ def test_flood_gate_pass_wa(tmp_path, commons):
     assert out["metrics"]["people_flooded"] == 0
     assert out["metrics"]["flooded_km2"] == 0
     assert _called("ee.data.getAsset")
+
+
+def test_asset_prefers_assets_json(tmp_path, commons, monkeypatch):
+    monkeypatch.setattr(impact, "DATA_DIR", tmp_path)
+    assert impact._asset("wa_2025", "flood_nisar") == f"{impact.ASSET_ROOT}/wa_2025/flood_nisar"
+    (tmp_path / "wa_2025").mkdir()
+    (tmp_path / "wa_2025" / "assets.json").write_text(
+        json.dumps({"flood_nisar": "projects/p/assets/custom/flood"})
+    )
+    assert impact._asset("wa_2025", "flood_nisar") == "projects/p/assets/custom/flood"
+    # missing key falls back to the convention path
+    assert impact._asset("wa_2025", "tpi_slide_series") == f"{impact.ASSET_ROOT}/wa_2025/tpi_slide_series"
 
 
 def test_flood_keys_null_for_rs(tmp_path, commons):
@@ -255,7 +267,7 @@ def test_dry_run_impact_no_init(capsys, monkeypatch):
     out = capsys.readouterr().out
     assert "wa_2025_night_lights_pre_20251210" in out
     assert "wa_2025_night_lights_post_20251210" in out
-    assert "wa_2025_flood_nisar" in out
+    assert "wa_2025/flood_nisar" in out
 
 
 def test_dry_run_hand_prints_radii(capsys, monkeypatch):

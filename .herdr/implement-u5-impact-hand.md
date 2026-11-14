@@ -9,9 +9,13 @@
   - `night_light_drop_pct` = VNP46A2 `DNB_BRDF_Corrected_NTL` masked by
     `Mandatory_Quality_Flag == 0`, mean of 7 nights after vs 30 before, scale 500.
   - `people_flooded`/`flooded_km2`: wa_2025 only, gated on
-    `ee.data.getAsset(<ASSET_ROOT>/wa_2025_flood_nisar)`; gate fail or non-wa →
+    `ee.data.getAsset(<flood asset>)`; gate fail or non-wa →
     null + reason (`rs_2024`: "no NISAR coverage — event predates launch").
     When the gate opens, the light mask becomes critical∪flood (as in the JS).
+  - L7: EE asset paths = `projects/<GEE_PROJECT>/assets/tipping-point/
+    <case>/<name>` (`tpi_slide_series`, `flood_nisar`), and `_asset()` prefers
+    `data/<case>/assets.json` (name→path map, e.g. `water_nisar`/`flood_nisar`
+    keys) when the file exists — convention path otherwise.
   - Exports the pre/post NTL means as Drive GeoTIFF COGs
     (`formatOptions.cloudOptimized`), `fileNamePrefix` =
     `<caso>_night_lights_{pre,post}_<AAAAMMDD>` via `tp.events.artifact_stem`
@@ -35,14 +39,15 @@
   - Asserts: GPW sort-by-abs-year-diff + `.first()`, 30/7-night `advance`
     calls, `MQF==0`, scales 500/1000, the two COG export stems, focalMin radii
     {1000,1500,3000}, best-radius pick, null+reason merge when the flood gate
-    fails (and opens when `getAsset` succeeds), dry-run prints with no `init`.
+    fails (and opens when `getAsset` succeeds), assets.json preference +
+    convention fallback, dry-run prints with no `init`.
 - L4 applied: all `data/<event-id>/` literals → `data/<case>/`; merge target
   printed as `data/metrics.json[<case>]`, arg passed as the case key.
 
 ## Commands + results
 
 - `$UV sync` — ok.
-- `$UV run python -m pytest gee/tests pipeline/tests -q` — **43 passed**.
+- `$UV run python -m pytest gee/tests pipeline/tests -q` — **44 passed**.
 - `$UV run ruff check .` — **clean** (one `noqa: BLE001` on the flood-asset
   gate — any lookup failure intentionally closes the gate).
 - `$UV run python -m gee.impact --case wa_2025 --dry-run` — prints computes +
@@ -59,6 +64,11 @@
   `event_dates(case_id) -> [YYYY-MM-DD]`, and `ASSET_ROOT` =
   `projects/<GEE_PROJECT>/assets/tipping-point` (JS asset-namespace convention).
   If U4's differ, only these call sites need adjusting.
+- L7 `<name>` under `tipping-point/<case>/` uses the short layer key
+  (`flood_nisar`, `tpi_slide_series`), matching the assets.json key examples;
+  flag if producers instead keep the `<case>_` prefix inside the subpath —
+  `assets.json` resolves either way, the convention fallback assumes short
+  names.
 - `--tasks` = execute all GEE-side work (computes + export task start) and
   print, skipping the metrics merge; default = execute + merge + exports.
   hand.py has no exports, so `--tasks` = computes only.

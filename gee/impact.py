@@ -12,7 +12,8 @@ this reads). Per case:
   gpw_year             GPWv4 epoch closest to the event date
 
 people_flooded/flooded_km2 are wa_2025-only and gated on the NISAR flood asset
-existing (projects/<GEE_PROJECT>/assets/tipping-point/wa_2025_flood_nisar);
+existing (projects/<GEE_PROJECT>/assets/tipping-point/wa_2025/flood_nisar, or
+the path listed in data/<case>/assets.json);
 when the gate fails they merge as null + reason. Numbers merge into
 data/metrics.json (keyed by case) via tp.metrics.merge_metrics; the pre/post
 night-light means also export as COGs (<caso>_night_lights_{pre,post}_
@@ -23,12 +24,13 @@ Usage: python -m gee.impact --case <id> [--dry-run|--tasks]
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 import ee
 from tp.config import case as config_case
 from tp.config import load_config, threshold
-from tp.events import artifact_stem, list_events
+from tp.events import DATA_DIR, artifact_stem, list_events
 from tp.metrics import merge_metrics
 
 try:
@@ -66,12 +68,19 @@ def _event_id(case_id: str) -> str:
     raise KeyError(f"no events/*.json maps to case {case_id!r}")
 
 
-def _asset(name: str) -> str:
-    return f"{ASSET_ROOT}/{name}"
+def _asset(case_id: str, name: str) -> str:
+    """EE asset path (L7): data/<case>/assets.json name->path when present,
+    else the convention projects/<GEE_PROJECT>/assets/tipping-point/<case>/<name>."""
+    assets_json = DATA_DIR / case_id / "assets.json"
+    if assets_json.exists():
+        mapped = json.loads(assets_json.read_text()).get(name)
+        if mapped:
+            return mapped
+    return f"{ASSET_ROOT}/{case_id}/{name}"
 
 
 def _flood_asset(case_id: str) -> str:
-    return _asset(f"{case_id}_flood_nisar")
+    return _asset(case_id, "flood_nisar")
 
 
 def _event_band_index(case_id: str, cfg: dict) -> int:
@@ -145,7 +154,7 @@ def compute(case_id: str) -> dict:
     aoi = aoi_geom(case_id)
     ref = ee.Date(str(cfg["event_date"]))
     band = _event_band_index(case_id, cfg)
-    tpi_day = ee.Image(_asset(f"{case_id}_tpi_slide_series")).select(band).rename("TPI_slide")
+    tpi_day = ee.Image(_asset(case_id, "tpi_slide_series")).select(band).rename("TPI_slide")
     critical = tpi_day.gt(CRITICAL).selfMask()
     gpw = _gpw_nearest(ref)
     pop = gpw.select(0)
@@ -225,7 +234,7 @@ def plan(case_id: str) -> str:
     band = int(cfg.get("window_before_days", 10))
     lines = [
         f"[impact] case={case_id} event={eid} event_date={cfg['event_date']}",
-        f"  compute: tpi_day = ee.Image({_asset(f'{case_id}_tpi_slide_series')}).select({band})",
+        f"  compute: tpi_day = ee.Image({_asset(case_id, 'tpi_slide_series')}).select({band})",
         f"  compute: people_critical = {COL_GPW} nearest-epoch sum where TPI_slide>{CRITICAL}"
         + f" (scale={REDUCE_SCALE})",
         f"  compute: night_light_drop_pct = {COL_VNP46A2} {BAND_NTL} masked {BAND_MQF}==0, mean"
