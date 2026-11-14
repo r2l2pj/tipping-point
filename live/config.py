@@ -52,7 +52,7 @@ ALERT_MIN_CLASS = 2                                         # send only on upgra
 # only a fallback (run_now --local). These constants name the locked
 # interface shared with lead-gathering (pipeline/fetch/*) and lead-analysis
 # (tools/*, derived now/* assets).
-GEE_PROJECT = os.environ.get("GEE_PROJECT", "your-gee-project")
+GEE_PROJECT = os.environ.get("GEE_PROJECT", "jovial-idiom-514715-j8")
 ASSET_ROOT = f"projects/{GEE_PROJECT}/assets/tipping-point"
 NOW_COLLECTIONS = {"imerg_early", "smap_l4", "geosfp"}
 STATIC_DOMAIN = _now_name()                 # config.yaml domains.now.name
