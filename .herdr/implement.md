@@ -668,3 +668,29 @@ veto.
   `pipeline.fetch.ingest`) and my `_edl_login` duplicates `edl.earthaccess_login`
   semantics — a future cleanup could swap to `fetch.edl` (left as-is: out of
   the L9 scope).
+
+---
+
+## unit/nowbounds — drop NOW_BOUNDS fallback (2026-11-14, devin)
+
+Conductor ruling: tp.config.now_bounds() exists on main (unit/domains), so
+the fetch modules' bundled constant + ImportError fallback are dead weight.
+
+### Changed
+- `pipeline/fetch/imerg.py`, `pipeline/fetch/smap.py`,
+  `pipeline/fetch/geosfp.py`: removed `NOW_BOUNDS` constant (+ its comment
+  block) and the `try/except ImportError` fallback in `now_bounds()` — now
+  imports and returns `tp.config.now_bounds()` directly; docstrings updated.
+  `--bounds` still overrides (unchanged call sites).
+- `pipeline/tests/test_fetch_now.py::test_now_bounds_resolution`: dropped
+  the "helper absent -> bundled fallback" leg; keeps the config-wins leg
+  (monkeypatched `tp.config.now_bounds`) and the `--bounds` override leg.
+- Not touched: `live/config.py` (lead-live's), `test_domains.py`
+  KNOWN_MIRRORS (per ruling — tolerated entries stay listed).
+
+Diff: 4 files, +9/-46. Commit `acbf002` on `unit/nowbounds`.
+
+### Commands run
+- `$UV sync` — resolved 141 pkgs, installed 119 (uv 0.13.8, mise path).
+- `$UV run pytest pipeline/tests -q` — **294 passed**, 9 warnings, 11s.
+- `$UV run ruff check .` — **All checks passed!**
