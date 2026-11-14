@@ -281,6 +281,33 @@ def ingest_asset(gcs_uri, *, asset_id, kind, force=False) -> dict:
     return entry
 
 
+def ensure_collection(asset_parent_id, ee_data=None) -> dict:
+    """Create an IMAGE_COLLECTION container at asset_parent_id if absent.
+
+    Idempotent: when getAsset finds the container already, a status-"exists"
+    entry is returned and no createAsset call is made. `ee_data` may be
+    injected (tests); otherwise credentials + _init_ee() resolve ee.data
+    lazily, keeping this module import-safe without creds.
+    """
+    _validate_asset_id(asset_parent_id)
+    if ee_data is None:
+        _require_creds()
+        _init_ee()
+        ee_data = _import("ee").data
+    try:
+        asset = ee_data.getAsset(asset_parent_id)
+    except Exception as exc:
+        if not _is_not_found(exc):
+            raise
+        asset = None
+    if asset is not None:
+        return {"gee_id": asset_parent_id, "type": "IMAGE_COLLECTION",
+                "status": "exists"}
+    ee_data.createAsset({"type": "IMAGE_COLLECTION"}, path=asset_parent_id)
+    return {"gee_id": asset_parent_id, "type": "IMAGE_COLLECTION",
+            "status": "created"}
+
+
 def append_manifest(case, entry) -> Path:
     """Upsert `entry` into data/<case>/assets.json; return its path.
 

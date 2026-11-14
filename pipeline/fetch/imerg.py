@@ -29,6 +29,7 @@ import datetime as dt
 import importlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -38,11 +39,19 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 LEAF = "imerg_early"
-COLLECTION = f"tipping-point/now/{LEAF}"
+
+
+def collection_path(case: str = "now") -> str:
+    """GEE collection path for a case: tipping-point/<case>/imerg_early."""
+    return f"tipping-point/{case}/{LEAF}"
+
+
+COLLECTION = collection_path()
 SHORT_NAME = "GPM_3IMERGHHE"
 VERSION = "07"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+EVENTS_DIR = REPO_ROOT / "events"
 NOW_DIR = REPO_ROOT / "data" / "now"
 DEFAULT_COG_DIR = NOW_DIR / "cog" / LEAF
 ASSETS_JSON = NOW_DIR / "assets.json"
@@ -91,8 +100,9 @@ try:
     stage_to_gcs = _ing.stage_to_gcs if _ing else None
     ingest_asset = _ing.ingest_asset if _ing else None
     append_manifest = _ing.append_manifest if _ing else None
+    ensure_collection = getattr(_ing, "ensure_collection", None) if _ing else None
 except Exception:  # noqa: BLE001 — a broken ingest must never break fetch/dry-run
-    stage_to_gcs = ingest_asset = append_manifest = None
+    stage_to_gcs = ingest_asset = append_manifest = ensure_collection = None
 
 
 # --------------------------------------------------------------------------- #
@@ -138,6 +148,118 @@ def search_granules(bounds, end: dt.date, days: int = DEFAULT_DAYS) -> list:
                   str(end + dt.timedelta(days=1))),
         bounding_box=tuple(bounds),
     )
+
+
+def search_granules_range(bounds, start: dt.date, end: dt.date) -> list:
+    """Anonymous CMR search for every IMERG Early granule in start..end."""
+    import earthaccess
+
+    return earthaccess.search_data(
+        short_name=SHORT_NAME, version=VERSION,
+        temporal=(str(start), str(end + dt.timedelta(days=1))),
+        bounding_box=tuple(bounds),
+    )
+
+
+# --------------------------------------------------------------------------- #
+# case-window hindcast (--case): bounds/window from events/<case>.json
+# --------------------------------------------------------------------------- #
+def load_event(case: str) -> dict | None:
+    """events/<case>.json, tolerant of '-' vs '_' in the file name."""
+    names = dict.fromkeys(
+        (case, case.replace("-", "_"), case.replace("_", "-")))
+    for name in names:
+        p = EVENTS_DIR / f"{name}.json"
+        if p.is_file():
+            try:
+                return json.loads(p.read_text())
+            except ValueError:
+                return None
+    return None
+
+
+def case_bounds(case: str) -> tuple | None:
+    """AOI (w, s, e, n) from events/<case>.json: aoi.bbox then gee.aoi_bbox."""
+    ev = load_event(case) or {}
+    bbox = (ev.get("aoi") or {}).get("bbox") \
+        or (ev.get("gee") or {}).get("aoi_bbox")
+    return tuple(bbox) if bbox else None
+
+
+def case_window(case: str) -> tuple | None:
+    """(start, end) dates from events/<case>.json window, else gee.window."""
+    ev = load_event(case) or {}
+    for src in (ev.get("window"), (ev.get("gee") or {}).get("window")):
+        if isinstance(src, dict) and src.get("start") and src.get("end"):
+            return (dt.date.fromisoformat(src["start"]),
+                    dt.date.fromisoformat(src["end"]))
+    return None
+
+
+# --------------------------------------------------------------------------- #
+# granule start-time tags: per-granule asset ids are YYYYMMDDThhmm
+# --------------------------------------------------------------------------- #
+_IMERG_NAME_RE = re.compile(r"\.(\d{8})-S(\d{2})(\d{2})\d{2}")
+_ISO_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})")
+
+
+def _strings(obj, depth: int = 0):
+    """Yield every string under dicts/lists, depth-capped."""
+    if depth > 4 or obj is None:
+        return
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            yield from _strings(v, depth + 1)
+    elif isinstance(obj, (list, tuple)):
+        for v in obj:
+            yield from _strings(v, depth + 1)
+
+
+def _granule_payload(g):
+    """String-bearing view of a granule: dicts as-is, else common attrs."""
+    if isinstance(g, dict):
+        return g
+    payload = {}
+    for attr in ("umm", "meta", "producer_granule_id", "native_id"):
+        try:
+            payload[attr] = getattr(g, attr)
+        except Exception:  # noqa: BLE001 — odd granule objects must not break
+            payload[attr] = None
+    try:
+        payload["data_links"] = g.data_links()
+    except Exception:  # noqa: BLE001
+        payload["data_links"] = None
+    return payload
+
+
+def _granule_name(g) -> str | None:
+    """Best-effort granule file name for the manifest 'source' field."""
+    strings = list(_strings(_granule_payload(g)))
+    for t in strings:
+        if t.lower().endswith((".hdf5", ".h5", ".he5", ".nc")):
+            return t
+    return strings[0] if strings else None
+
+
+def granule_start_tag(g) -> str:
+    """Granule start time as YYYYMMDDThhmm (the per-granule asset id leaf).
+
+    IMERG v07 filenames carry it as '.YYYYMMDD-SHHMMSS.'; ISO timestamps in
+    the granule metadata are the fallback.
+    """
+    texts = list(_strings(_granule_payload(g)))
+    for t in texts:
+        m = _IMERG_NAME_RE.search(t)
+        if m:
+            return f"{m.group(1)}T{m.group(2)}{m.group(3)}"
+    for t in texts:
+        m = _ISO_RE.search(t)
+        if m:
+            return (f"{m.group(1)}{m.group(2)}{m.group(3)}"
+                    f"T{m.group(4)}{m.group(5)}")
+    raise ValueError("no granule start time found")
 
 
 def download_granules(granules, dest_dir: Path) -> list[Path]:
@@ -248,8 +370,8 @@ def write_cog(path: Path, values, lats, lons) -> Path:
     return path
 
 
-def asset_id(project: str, tag: str) -> str:
-    return f"projects/{project}/assets/{COLLECTION}/{tag}"
+def asset_id(project: str, tag: str, case: str = "now") -> str:
+    return f"projects/{project}/assets/{collection_path(case)}/{tag}"
 
 
 def manifest_asset_ids(path: Path = ASSETS_JSON) -> set[str]:
@@ -282,18 +404,19 @@ def scan_cogs(cog_dir: Path) -> list[dict]:
     for p in sorted(Path(cog_dir).glob(f"{LEAF}_*.tif")):
         tag = p.stem[len(LEAF) + 1:]
         out.append({"tag": tag, "cog": p,
-                    "product": "3day" if tag.endswith("_3day") else "daily"})
+                    "product": ("3day" if tag.endswith("_3day")
+                                else "halfhourly" if "T" in tag else "daily")})
     return out
 
 
 def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
                      force: bool = False, assets_json: Path = ASSETS_JSON,
-                     ingest: bool = True) -> list[dict]:
+                     ingest: bool = True, case: str = "now") -> list[dict]:
     """GCS-stage + GEE-ingest each COG; idempotent via assets.json."""
     done = manifest_asset_ids(assets_json)
     entries = []
     for a in assets:
-        aid = asset_id(project, a["tag"])
+        aid = asset_id(project, a["tag"], case)
         a["asset_id"] = aid
         if not force and aid in done:
             a["status"] = "skipped_existing"
@@ -307,12 +430,12 @@ def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
         if stage_to_gcs is None or ingest_asset is None:
             a["status"] = "ingest_unavailable"
             continue
-        uri = stage_to_gcs(Path(a["cog"]), bucket=bucket, case="now",
-                           name=f"cog/{LEAF}/{Path(a['cog']).name}")
+        uri = stage_to_gcs(Path(a["cog"]), bucket=bucket, case=case,
+                           name=f"cog-{LEAF}-{Path(a['cog']).stem}")
         ingest_asset(uri, asset_id=aid, kind="image", force=force)
         entry = {
             "asset_id": aid,
-            "collection": f"projects/{project}/assets/{COLLECTION}",
+            "collection": f"projects/{project}/assets/{collection_path(case)}",
             "kind": "image",
             "input": LEAF,
             "tag": a["tag"],
@@ -325,7 +448,7 @@ def stage_and_ingest(assets: list[dict], *, bucket: str, project: str,
             .replace("+00:00", "Z"),
         }
         if append_manifest is not None:
-            append_manifest("now", entry)
+            append_manifest(case, entry)
         a["status"] = "ingested"
         entries.append(entry)
     return entries
@@ -380,6 +503,53 @@ def run(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
     return assets
 
 
+def run_case(case: str, start: dt.date, end: dt.date, bounds=None, *,
+             out_dir: Path, bucket=None, project=None, download: bool = True,
+             force: bool = False, assets_json: Path = ASSETS_JSON,
+             ingest: bool = True) -> list[dict]:
+    """Case-window hindcast: one COG + one image asset per half-hourly
+    granule under projects/<proj>/assets/tipping-point/<case>/imerg_early.
+
+    Bounds come from events/<case>.json unless given; the parent
+    IMAGE_COLLECTION container is created once via ensure_collection before
+    the children ingest.
+    """
+    bounds = tuple(bounds) if bounds is not None else case_bounds(case)
+    if bounds is None:
+        raise RuntimeError(
+            f"no aoi in events file for case {case!r}; pass --bounds")
+    project = _resolve_project(project)
+    bucket = _resolve_bucket(bucket)
+    assets: list[dict] = []
+    if download:
+        granules = search_granules_range(bounds, start, end)
+        if not granules:
+            raise RuntimeError(
+                f"no {SHORT_NAME} granules in {start}..{end} for {case}")
+        paths = download_granules(granules, Path(out_dir) / "raw")
+        for g, path in zip(granules, paths):
+            tag = granule_start_tag(g)
+            da = open_halfhourly([path], bounds)
+            if "time" in da.dims:
+                da = da.isel(time=0)
+            lat_name = next(d for d in da.dims if "lat" in d.lower())
+            lon_name = next(d for d in da.dims if "lon" in d.lower())
+            cog = Path(out_dir) / f"{LEAF}_{tag}.tif"
+            write_cog(cog, da.values, da[lat_name].values,
+                      da[lon_name].values)
+            assets.append({"tag": tag, "cog": cog, "product": "halfhourly",
+                           "date": f"{tag[:4]}-{tag[4:6]}-{tag[6:8]}",
+                           "source": {"granule": _granule_name(g)}})
+    else:
+        assets = scan_cogs(out_dir)
+    if ingest and assets and ensure_collection is not None:
+        ensure_collection(
+            f"projects/{project}/assets/{collection_path(case)}")
+    stage_and_ingest(assets, bucket=bucket, project=project, force=force,
+                     assets_json=assets_json, ingest=ingest, case=case)
+    return assets
+
+
 def plan(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
          out_dir: Path, bucket=None, project=None) -> dict:
     """The --dry-run document: projected assets, no network or credentials."""
@@ -411,6 +581,28 @@ def plan(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
     }
 
 
+def plan_case(case: str, start: dt.date, end: dt.date, bounds=None, *,
+              out_dir: Path, bucket=None, project=None) -> dict:
+    """The --case --dry-run document: projected per-granule assets."""
+    bounds = tuple(bounds) if bounds is not None else case_bounds(case)
+    proj = project or os.environ.get("GEE_PROJECT") or "<GEE_PROJECT>"
+    parent = f"projects/{proj}/assets/{collection_path(case)}"
+    return {
+        "input": LEAF,
+        "mode": "case",
+        "case": case,
+        "collection": parent,
+        "short_name": f"{SHORT_NAME}.{VERSION}",
+        "window": [start.isoformat(), end.isoformat()],
+        "bounds": list(bounds) if bounds else None,
+        "bucket": _resolve_bucket(bucket),
+        "assets_json": str(ASSETS_JSON),
+        "granule_asset": f"{parent}/<yyyymmddThhmm>",
+        "auth": "search anonymous; download needs EARTHDATA_TOKEN or "
+                "EDL_USER/EDL_PASS",
+    }
+
+
 def parse_args(argv=None):
     p = argparse.ArgumentParser(
         prog="python -m pipeline.fetch.imerg",
@@ -438,11 +630,48 @@ def parse_args(argv=None):
                    help="fetch + write COGs but skip GCS/GEE staging")
     p.add_argument("--force", action="store_true",
                    help="re-ingest assets already in assets.json")
+    p.add_argument("--case", default=None, metavar="CASE_ID",
+                   help="hindcast mode: per-granule image assets under "
+                        "tipping-point/<case>/imerg_early; aoi/window from "
+                        "events/<case>.json unless --bounds/--start/--end")
+    p.add_argument("--start", type=dt.date.fromisoformat, default=None,
+                   help="case-window start date (default: events window)")
+    p.add_argument("--end", type=dt.date.fromisoformat, default=None,
+                   help="case-window end date (default: events window)")
     return p.parse_args(argv)
 
 
 def main(argv=None) -> None:
     args = parse_args(argv)
+    if args.case:
+        window = case_window(args.case)
+        start = args.start or (window[0] if window else None)
+        end = args.end or (window[1] if window else None)
+        if start is None or end is None:
+            raise SystemExit(
+                "--case needs --start/--end or a window in "
+                f"events/{args.case}.json")
+        bounds = (tuple(args.bounds) if args.bounds is not None
+                  else case_bounds(args.case))
+        if args.dry_run:
+            print(json.dumps(
+                plan_case(args.case, start, end, bounds,
+                          out_dir=args.out_dir, bucket=args.bucket,
+                          project=args.project), indent=2))
+            return
+        assets = run_case(args.case, start, end, bounds,
+                          out_dir=args.out_dir, bucket=args.bucket,
+                          project=args.project,
+                          download=not args.no_download, force=args.force,
+                          assets_json=args.assets_json,
+                          ingest=not args.no_ingest)
+        counts = {}
+        for a in assets:
+            counts[a["status"]] = counts.get(a["status"], 0) + 1
+        print(f"{LEAF}: {counts} -> {collection_path(args.case)}")
+        return
+    if args.start is not None or args.end is not None:
+        raise SystemExit("--start/--end apply to --case mode")
     bounds = tuple(args.bounds) if args.bounds is not None else now_bounds()
     if args.dry_run:
         print(json.dumps(plan(args.date, bounds, args.days,

@@ -1,328 +1,49 @@
-# implement — ingest (GEE asset ingest unit, t9r) — round 3 fixes
+# implement: unit/imerg-range — IMERG Early case-window hindcast
 
-## Changed (this round)
+## Changed files
 
-- `pipeline/fetch/ingest.py` — `_validate_segment` now allows dots in
-  names (`[A-Za-z0-9][A-Za-z0-9._-]*`): callers pass real filenames like
-  `wa_2025_nisar_gcov_20251228.tif` as `name` (cross-unit break caught by
-  lead-analysis, test_fetch_nisar::test_execute_stages_ingests_and_appends).
-  Still rejects `/`, `\`, `..` (incl. embedded `a..b`), empty, leading
-  non-alnum, and trailing `.`.
-- `pipeline/fetch/nisar.py` — `_edl_credentials`/`_gdal_auth_env` now
-  delegate to shared `fetch.edl` (`ensure_earthdata`/`gdal_auth_env`); the
-  edlauth merge had deleted `tp_nisar._edl_credentials`, breaking
-  `execute_plan` with AttributeError (pre-existing suite failure on main,
-  fixed here to get pipeline/tests green). Side effect: token creds now
-  use the correct `GDAL_HTTP_HEADERS` Bearer option.
-- `pipeline/tests/test_ingest.py` — `test_invalid_case_and_name_rejected`
-  updated: real filename with dots asserted valid; `a..b` and trailing `.`
-  asserted invalid.
-- `pipeline/fetch/opera.py` — user-restyled `_ingest` importlib fix kept
-  (f"{__package__}.ingest" + top-level importlib, moved bucket check
-  before EDL login).
+- `pipeline/fetch/ingest.py` (+26): new `ensure_collection(asset_parent_id,
+  ee_data=None)` — validates the id, `getAsset` → `exists` skip (only a
+  not-found proceeds, auth errors propagate), else
+  `createAsset({"type": "IMAGE_COLLECTION"}, path=...)` → `created`.
+  `ee_data` injectable; otherwise creds + `_init_ee()` + lazy `ee` import.
+- `pipeline/fetch/imerg.py`: case-hindcast mode.
+  - `collection_path(case)` replaces hard-coded `COLLECTION` (now-mode
+    default unchanged); `asset_id(project, tag, case="now")`.
+  - `--case CASE`, `--start`, `--end` flags. Case mode resolves bounds from
+    `events/<case>.json` (`aoi.bbox` → `gee.aoi_bbox`) unless `--bounds`;
+    window defaults to events `window`/`gee.window` unless flags given.
+    `--start/--end` without `--case` → SystemExit. `--dry-run` prints
+    `plan_case` JSON.
+  - `search_granules_range` (temporal start..end+1d), `granule_start_tag`
+    (IMERG `S`-stamp regex, ISO fallback) → per-granule ids
+    `<case>/imerg_early/<yyyymmddThhmm>`; `load_event`, `case_bounds`,
+    `case_window`.
+  - `run_case`: search → download → `open_halfhourly` per granule →
+    `write_cog` → `ensure_collection` once → `stage_and_ingest(case=...)`.
+  - `stage_and_ingest` gained `case` kwarg (default `"now"`); staging blob
+    name changed `cog/imerg_early/<file>.tif` → `cog-imerg_early-<stem>`
+    because real `staging_uri` rejects `/` in name (was unreachable code
+    before — only fakes had exercised it).
+  - `scan_cogs` product detection: `T`-tags → `halfhourly`.
+- `pipeline/tests/test_ingest.py`: fake ee records `createAsset` (feeds the
+  asset store); +3 `ensure_collection` tests (create-once, injected
+  ee_data, id validation).
+- `pipeline/tests/test_fetch_now.py`: fake ee + fake storage helpers; +7
+  tests — granule tag parsing, collection created once + 3 child ids
+  `rs-2024-05/imerg_early/<yyyymmddThhmm>`, `--start/--end` temporal window,
+  events-json bounds + `--bounds` override, second-run idempotency (1
+  createAsset, 3 startIngestion), dry-run plan, events-window default,
+  `--start/--end` without `--case` rejected. All offline (faked
+  earthaccess/ee/storage/rasterio; `tp.events.DATA_DIR` → tmp_path).
 
-## Commands run
-
-- `$UV run pytest pipeline/tests -q` — **288 passed** (was 1 failed:
-  test_fetch_nisar::test_execute_requires_creds — tp_nisar creds helpers
-  removed by the edlauth merge).
-- `$UV run ruff check .` — **All checks passed**.
-
-## Contract (unchanged)
-
-`stage_to_gcs(local_path,*,bucket,case,name)->str`,
-`ingest_asset(gcs_uri,*,asset_id,kind,force=False)->dict`,
-`append_manifest(case,entry)->Path`; NOW_GCS_BUCKET + GCS_BUCKET alias;
-`data/<case>/assets.json` upserts keyed by name; segment/path validation
-on case/name/bucket/project/asset_id; `tools/ingest_assets.py` registry
-CLI (`--case` choices from config.yaml, `--event`, `--dry-run`,
-`--manifest-only`, `--force`).
-
-## Commands run
-
-- `git rebase main` — clean; prior work already merged as e2109d5, so the
-  rebase produced no new commit.
-- `$UV run pytest pipeline/tests -q` — **211 passed** (was 1 failed:
-  test_fetch_opera, fixed via opera.py importlib change; confirmed the
-  failure pre-existed on main by stashing).
-- `$UV run ruff check .` — **All checks passed**.
-- `env -u GOOGLE_APPLICATION_CREDENTIALS -u GCP_SA_KEY $UV run python
-  tools/ingest_assets.py --case rs_2024 --dry-run` — exit 0, correct plan.
-
-## Files in this commit
-
-## What it does
-
-- `$UV sync` — OK.
-- `$UV run pytest pipeline/tests/test_ingest.py -q` — **16 passed** (0.04 s).
-- `$UV run ruff check .` — **All checks passed** (fixed: removed unused
-  `noqa` directives; non-404 getAsset re-raise needs no noqa).
-- `env -u GOOGLE_APPLICATION_CREDENTIALS -u NOW_GCS_BUCKET -u GCS_BUCKET
-  $UV run python tools/ingest_assets.py --event rs-2024-05 --dry-run` —
-  exit 0; listed the 2 real rs_2024 geojson table assets with correct
-  `gs://<NOW_GCS_BUCKET>/staging/rs_2024/...` and
-  `projects/hermes-fesolucoes/assets/tipping-point/rs_2024/...` URIs; no
-  assets.json written.
-
-## Files committed (unit/ingest worktree only)
-
-pipeline/fetch/ingest.py, tools/ingest_assets.py, pipeline/tests/test_ingest.py
-## Changes
-
-### `pipeline/fetch/swot.py` (new, ~330 lines)
-- `series_files` / `load_records` / `collect_records` — reads every
-  `data/<case>/series/<case>_swot_*.json` (tp.swot orient='records' list,
-  or a dict carrying `records`/`features` + optional `reaches` geometry
-  map). Returns records + merged per-reach geometry map.
-- `build_feature_collection` — one Feature per observation, properties
-  `{reach_id (str), t_utc (ISO w/ UTC offset via fromisoformat — 'Z'
-  handled natively), river_m (float), source: 'SWOT Hydrocron'}`.
-- Geometry resolution order per record: record-carried geometry
-  (`geometry` dict or lon/lat field pairs) collapsed to centroid/Point
-  via shapely → event `swot` block per-reach geometry (`reaches` /
-  `reach_geometry` / `geometry` / `geometries` / `endpoints` keys;
-  `[lon,lat]` pairs → Point, endpoint lists → LineString) → file-level
-  `reaches` map → null (valid GeoJSON; still ingests as plain table).
-- `content_hash` — sha256 over canonical FC JSON (sort_keys, tight
-  separators) → stable across runs.
-- `recorded_hash` — tolerant `data/<case>/assets.json` reader: accepts
-  `{"swot_series": {...}}`, `{"assets": {...}}` and list-of-entries
-  layouts (canonical writer is `append_manifest` on unit/ingest).
-- `run(case_id, ...)` — collect → FC → hash → skip-check → stage
-  (`data/<case>/staging/swot_series.geojson`) → `stage_to_gcs` →
-  `ingest_asset(kind='table')` → `append_manifest` entry carrying
-  `{name, asset_id, kind, gcs_uri, hash, features, source, ingested_at}`.
-  Asset id: `projects/<GEE_PROJECT>/assets/tipping-point/<case>/swot_series`.
-- Ingest contract import: `importlib` loop over
-  `pipeline.fetch.ingest` / `fetch.ingest` / `tp.ingest` (covers both the
-  `python -m pipeline.fetch.swot` namespace layout and the tests'
-  `pipeline/`-on-sys.path layout, plus a tp fallback); all three names
-  `None` when absent → `--dry-run` unaffected, real run exits with a
-  clear "merge unit/ingest first" message.
-- CLI: `--case`/`--event` (mutually exclusive, required; `--case` accepts
-  case key or event id via `case_key`), `--dry-run`, `--force`,
-  `--project` (env GEE_PROJECT), `--bucket` (env NOW_GCS_BUCKET).
-  `--event`/`_default_event` (`events/<case-dash>-*.json` glob) supplies
-  the event `swot` block for reach geometry only.
-- Idempotent: same recorded hash + no `--force` → prints skip, no
-  staging/upload/ingest/manifest calls. Changed hash or `--force` →
-  re-ingests (`force` forwarded to `ingest_asset`).
-
-### `pipeline/tests/test_fetch_swot.py` (new, 11 tests)
-Fixture series JSON under tmp `data/<case>/series/`; `_FakeStorage` /
-`_FakeEE` / `_FakeManifest` fixtures monkeypatch the three contract
-names on `fetch.swot` — no network, no real ee/storage.
-- FC shape + exact properties; null-geometry (plain-table) case.
-- Record lon/lat → Point; record LineString → centroid Point; event
-  `swot.endpoints` → LineString.
-- `--dry-run` writes staging GeoJSON + prints plan, contract untouched.
-- Real run: stage_to_gcs args, ingest_asset `kind='table'` + asset_id,
-  manifest entry hash/kind.
-- Idempotent skip on same hash (zero contract calls), re-ingest on
-  changed hash, `--force` re-ingest (`force=True` forwarded).
-- `main(["--case", ..., "--dry-run"])` end-to-end; no-records SystemExit.
-# impl-grefassets — L8a reference layers -> GEE table assets
-
-Branch `unit/ref-assets`, worktree `tipping-point-data-wt/ref-assets`.
-Commit `bce9bba` (amended after review NEEDS-FIX) — 4 files, +691/-11.
-NOT pushed/merged.
-
-Review fix: `--window` was a store_true that passed `event['window']` (the
-full event window) into the GLC query — broader than the configured filter.
-Now `--window START,END` takes explicit ISO dates (argparse `type=`
-validation, rejects bad input); without it `glc_catalog` falls back to
-`event['glc_window']` as before.
-
-## Files
-# implement — L8a nisar-update (unit/nisar-update)
-
-Daily NISAR new-pass search + ingest. Module IS the CLI per interface update —
-no tools/ file.
-
-**Main-RED fix (2814643, rebased onto main e52403d):** `_load_ingest` now
-resolves via `importlib.import_module(f"{__package__}.ingest")` at call
-time + `import ingest` fallback (opera e52403d pattern) — `from fetch
-import ingest` reused the cached package attribute once real ingest.py was
-imported, bypassing sys.modules fakes. ingest/bucket/GEE_PROJECT checks
-moved before Earthdata creds; autouse `isolated_environment` fixture added;
-fakes injected at both `fetch.ingest` and `pipeline.fetch.ingest`;
-missing-module test blocks all three import names. Full suite: 227 passed.
-
-**Main-RED fix 2 (f2be704, rebased onto main cddea0b):** edlauth removed
-`tp.nisar._edl_credentials`/`_gdal_auth_env` — now
-`from .edl import ensure_earthdata, gdal_auth_env` (canonical helper, same
-dict shape + 'Earthdata credentials required' RuntimeError; token travels
-via GDAL_HTTP_HEADERS). No asf session needed — metadata search is
-anonymous. Full suite: 278 passed.
-
-## Files (2 created, 942 lines, amended commit 1013642 on unit/nisar-update)
-
-- `pipeline/fetch/nisar.py` (~460 lines) — search/plan/execute + CLI
-  `python -m pipeline.fetch.nisar [--case] [--since] [--alerts-geojson] [--dry-run|--execute]`
-- `pipeline/tests/test_fetch_nisar.py` (~480 lines) — 16 offline tests,
-  fake `asf_search` + fake `fetch.ingest` injected via `sys.modules`
-
-- `uv sync` (via $UV run): 119 packages, `tp` editable install OK.
-- `uv run pytest pipeline/tests/test_fetch_swot.py -q` → **11 passed**.
-- `uv run ruff check .` → **All checks passed** (after fixes:
-  `fromisoformat` native 'Z', `_centroid` restructured — shapely errors
-  propagate instead of a blind except, unused test var dropped).
-- `uv run python -m pipeline.fetch.swot --help` → argparse usage OK.
-- Dry-run vs a temp fixture (`data/rs_2024/series/rs_2024_swot_20240502.json`,
-  2 records, one with lon/lat): plan JSON correct
-  (`features:2, with_geometry:1`), staged FC verified — null geometry on
-  the bare record, Point on the record carrying lon/lat. Fixture removed
-  after.
-- `--event rs-2024-05 --dry-run` → resolves case + loads event OK.
-- Real run without unit/ingest merged → exits 1 with the
-  "ingest contract unavailable" message (as designed).
-- `pipeline/fetch/edl.py` (NEW): shared EDL helper, tiny API as requested —
-  `edl_token()`, `edl_auth_headers()` (Bearer dict for plain HTTPS fetches),
-  `ensure_earthdata()` ({"token"} | {"user","password"} | {"netrc"} or the
-  existing-style clean "Earthdata credentials required" RuntimeError), plus
-  the per-mechanism appliers `earthaccess_login()` (strategy='environment'
-  for token AND user/pass — earthaccess 0.19 reads EARTHDATA_TOKEN itself;
-  EDL_USER/PASS map onto EARTHDATA_USERNAME/PASSWORD; strategy='netrc' for
-  netrc), `asf_session()` (`ASFSession().auth_with_token(token)`, None when
-  no token), and `gdal_auth_env()` (token -> GDAL_HTTP_HEADERS Bearer only —
-  NO cross-host forwarding flag; user/pass -> GDAL_HTTP_USERPWD; netrc ->
-  GDAL_HTTP_NETRC=YES).
-- `pipeline/tp/nisar.py`: deleted `_edl_credentials`/`_earthdata_login`/
-  `_gdal_auth_env` — `execute_plan()` and `search()` now go through
-  `fetch.edl`. `gdal_subset_cmd()` prints
-  `GDAL_HTTP_HEADERS="Authorization: Bearer $EARTHDATA_TOKEN"` when a token
-  is set (env-var reference — token value never printed), else keeps
-  GDAL_HTTP_NETRC=YES. Docstrings updated.
-- `pipeline/tp/hls_fetch.py`: `_edl_login()` delegates to
-  `fetch.edl.earthaccess_login()` wrapped in the module's _EDL_MSG (now
-  mentions EARTHDATA_TOKEN); lazy import kept; `import os` dropped.
-  `fetch_scenes()` also pins `edl.edl_auth_headers()` onto
-  `earthaccess.get_requests_https_session()` — the shared session granule
-  downloads run on — so EARTHDATA_TOKEN rides as Authorization: Bearer
-  (no-op {} when user/pass or netrc auth is in use).
-- `pipeline/tp/modis_nrt.py`: `search()` calls `edl.earthaccess_login()`
-  inside the existing never-raises try (no creds -> [] as before);
-  `fetch_nrt()` pins `edl.edl_auth_headers()` onto the earthaccess
-  HTTPS session the same way before `earthaccess.download`.
-- `pipeline/scripts/01_get_nisar.py`: --execute help text mentions
-  EARTHDATA_TOKEN.
-- `pipeline/fetch/{__init__,boundaries,glc,inventory}.py`: NOT changed —
-  all are public no-auth fetchers (IBGE, US Census TIGERweb, COOLR public
-  FeatureServer, Zenodo public API); per plan, nothing to do. Note:
-  `zenodo_inventory.py` does not exist; the Zenodo inventory fetcher is
-  `pipeline/fetch/inventory.py`.
-- asf_search: no in-scope call site uses it (only `live/fetch.py`, out of
-  scope, and that one is metadata-only/no-auth). `edl.asf_session()` covers
-  the mechanism for the parallel fetch units.
-- `tp/validation.py` also calls `earthaccess.login()` but is NOT in my file
-  scope — left untouched.
-- Tests: new `pipeline/tests/test_edl.py` (14 tests, no network);
-  `test_nisar.py` fakes now capture earthaccess.login kwargs + rasterio.Env
-  kwargs; new tests assert Bearer header in GDAL_HTTP_HEADERS, USERPWD
-  fallback, token-only env-var reference in printed gdalwarp cmd, and clean
-  error drops EARTHDATA_TOKEN too; `test_hls_fetch.py` + `test_modis_nrt.py`
-  gained token/no-creds/fallback login-wiring tests plus one test each
-  asserting `Authorization: Bearer faketoken` lands on the earthaccess
-  download session (review NEEDS-FIX: edl_auth_headers wired at both
-  download call sites).
-
-## Commands run
-
-- `$UV sync` — OK ("Resolved 141 packages", 119 installed).
-- `$UV run ruff check .` — "All checks passed!".
-- `$UV run pytest pipeline/tests -q` — **114 passed in 2.80s** (after the
-  review NEEDS-FIX wiring; 112 before).
-
-## Review round 1 (NEEDS-FIX)
-
-- `load_records` assumed non-list JSON was a dict → scalar/null series
-  file crashed on `.get`. Now raises `TypeError` naming the file;
-  `reaches` must be a dict; `records`/`features` must be a list; GeoJSON
-  Feature entries are flattened (properties + geometry).
-- Same crash class fixed in `recorded_hash`: scalar `assets.json`,
-  scalar `assets` value and scalar `swot_series` entry all return None.
-- +3 tests (scalar series files, FC-dict series file, malformed
-  assets.json shapes) → 14 total. `ruff check .` clean; TRY004 →
-  TypeError.
-
-## Review round 2 (NEEDS-FIX, on merged f8d3f94 — rebased onto main a3d1b7d)
-
-- `collect_records` now wraps `load_records` per file:
-  `(TypeError, json.JSONDecodeError)` → stderr
-  `warning: skipping malformed series file <path>: <err>` + skip. Valid
-  files still load; all-corrupt still exits cleanly via the existing
-  "no SWOT records" SystemExit. Chosen policy: warn+skip (not abort).
-- +3 tests (bad-among-good warn+skip both for scalar and invalid-JSON,
-  all-malformed clean exit) → 17 in test_fetch_swot.py.
-- `$UV run pytest pipeline/tests -q` → 208 passed, 1 failed:
-  `test_fetch_opera.py::test_fetch_scenes_download_ingests` —
-  PRE-EXISTING on clean main (verified via stash; order-dependent,
-  passes in isolation). Sibling unit's flake, out of scope.
-- `$UV run ruff check .` → clean.
-
-## Notes / assumptions
-
-- `assets.json` schema is owned by unit/ingest's `append_manifest`; my
-  reader tolerates dict-keyed, `assets`-nested, and list layouts.
-- `stage_to_gcs` is called with a `Path` local_path, keyword-only
-  bucket/case/name per contract.
-- Smoke-test fixture files were deleted; `git status` shows only the two
-  scope files (+ this report).
-
-Files: 2 created (+ .herdr/implement.md). Tests: 11, all passing.
-- CMR search for `OPERA_L3_DSWX-HLS_V1` over case AOI + window via
-  `earthaccess.search_data` — **lazy import, unauthenticated**. Sorted
-  least-cloudy first (missing cloud last), `--limit N` slices post-sort.
-- `--event` reads aoi + window from `events/*.json` via `tp.events`
-  (default window: reference_date .. window.end, same convention as
-  `tp.hls_fetch`); `--case` reads the config.yaml case via `tp.config`
-  (event_date .. event_date + window_after_days) or, with `--event`,
-  overrides only the output case name. `--start/--end` override bounds.
-- Per granule picks the B01_WTR band link (`wtr_link` prefers `B01_WTR`,
-  rejects BWTR/WTR-1/WTR-2 via `_wtr_rank`), downloads just that file —
-  **auth happens here only**: `EARTHDATA_TOKEN` bearer first (ruling L6,
-  same env-strategy pattern as `live/fetch.py`), then `EDL_USER/EDL_PASS`
-  mapped only when BOTH are set, then `~/.netrc` — `RuntimeError` naming
-  what's missing. (Review fix: a partial EDL pair no longer leaks an
-  empty `EARTHDATA_*` var and lets earthaccess try netrc first.)
-- Clips to AOI bbox (reprojected into the raster CRS) and writes a COG
-  (GTiff fallback) to gitignored
-  `data/raw/opera/<case>/opera_dswx_<yyyymmdd>.tif`.
-- Stages via `stage_to_gcs(local_path, bucket=$NOW_GCS_BUCKET, case, name)`
-  → `ingest_asset(uri, asset_id=projects/$GEE_PROJECT/assets/tipping-point/
-  <case>/opera/opera_dswx_<yyyymmdd>, kind='image')` → `append_manifest`.
-- **Idempotent**: `data/<case>/assets.json` is read for existing
-  `asset_id`s; hits are skipped before auth/download/stage
-  (`status: "exists"`). Records: `{granule, date, cloud_cover, wtr,
-  local_path, asset_id, gcs_uri, status}` printed as JSON.
-
-## Assumptions (flag for lead)
-
-1. Ingest module assumed to land as `pipeline/fetch/ingest.py` — imported
-   lazily via `from . import ingest` (guarded), so `--no-download` /
-   `--dry-run` work without it; download path errors cleanly if absent.
-2. `assets.json` dedup read assumed at `data/<case>/assets.json`, entries
-   under an `"assets"` list (tolerates a bare list too).
-3. `OPERA_L3_DSWx-HLS` collection searched as a single `short_name`
-   string (per PLAN.md "OPERA_L3_DSWX-HLS_V1"); no version split.
-4. Reuses `tp.hls_fetch` sort/record/cloud/date helpers rather than
-   duplicating them; adds an OPERA native-id date fallback regex.
-
-## Commands + results
+## Commands
 
 - `$UV sync` — ok
-- `$UV run pytest pipeline/tests/test_fetch_opera.py -q` — **13 passed**
-- `$UV run ruff check .` — **all checks passed** (one justified
-  `# noqa: BLE001` on the COG-driver fallback, matching live/fetch.py
-  precedent)
-- Regression: `pytest test_fetch_opera + test_hls_fetch +
-  test_fetch_inventory` — **27 passed**
-- `python -m pipeline.fetch.opera --event rs-2024-05 --dry-run` and
-  `--case rs_2024 --dry-run` — both print resolved params JSON
-  (verified end-to-end, no creds needed)
+- `$UV run pytest pipeline/tests -q` — **299 passed** (+10 new tests)
+- `$UV run ruff check .` — All checks passed
 
-No network in tests: earthaccess, rasterio(.mask/.warp), and
-fetch.ingest are all faked via `sys.modules`.
+## Notes
 
 Commit: files above on `unit/opera-dswx`, not pushed.
 - `pipeline/fetch/reference.py` (new, ~287 lines) — library + CLI per the
@@ -694,3 +415,8 @@ Diff: 4 files, +9/-46. Commit `acbf002` on `unit/nowbounds`.
 - `$UV sync` — resolved 141 pkgs, installed 119 (uv 0.13.8, mise path).
 - `$UV run pytest pipeline/tests -q` — **294 passed**, 9 warnings, 11s.
 - `$UV run ruff check .` — **All checks passed!**
+- Branch `unit/imerg-range`, worktree `tipping-point-data-wt/imerg-range`.
+- Second run of `run_case` skips re-ingest at the GEE layer (`getAsset`
+  finds children → status `exists`), not via assets.json — real
+  `append_manifest` entries key `gee_id`, which `manifest_asset_ids`
+  doesn't scan; harmless since ingest_asset itself is idempotent.

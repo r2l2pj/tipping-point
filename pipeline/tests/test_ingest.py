@@ -41,8 +41,14 @@ def _fake_ee(calls, assets=None, get_error=None):
         calls.append(("table", request_id, params))
         return {"name": "op/table-1"}
 
+    def create_asset(value, path=None, **kw):
+        calls.append(("create", value, path))
+        store[path] = value
+        return {"name": path}
+
     ee.data = types.SimpleNamespace(
         getAsset=get_asset,
+        createAsset=create_asset,
         startIngestion=start_ingestion,
         startTableIngestion=start_table,
     )
@@ -262,6 +268,52 @@ def test_invalid_case_and_name_rejected(tmp_path):
                             kind="image")
     with pytest.raises(ValueError):
         ingest.append_manifest("../escape", {"name": "x"})
+
+
+def test_ensure_collection_creates_container_once(monkeypatch):
+    """ensure_collection: createAsset(IMAGE_COLLECTION) once, then exists."""
+    _, calls = _install_fakes(monkeypatch)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    parent = "projects/p/assets/tipping-point/rs_2024/imerg_early"
+    e1 = ingest.ensure_collection(parent)
+    assert e1["status"] == "created"
+    assert e1["type"] == "IMAGE_COLLECTION"
+    create = [c for c in calls if c[0] == "create"]
+    assert create == [("create", {"type": "IMAGE_COLLECTION"}, parent)]
+    e2 = ingest.ensure_collection(parent)
+    assert e2["status"] == "exists"
+    assert len([c for c in calls if c[0] == "create"]) == 1   # idempotent
+
+
+def test_ensure_collection_injected_ee_data():
+    """ee_data injection skips creds/init entirely."""
+    created = []
+    store = {}
+
+    def get_asset(aid):
+        if aid not in store:
+            raise RuntimeError(f"{aid} not found")
+        return store[aid]
+
+    def create_asset(value, path=None):
+        created.append((value, path))
+        store[path] = value
+        return {"name": path}
+
+    data = types.SimpleNamespace(getAsset=get_asset,
+                                 createAsset=create_asset)
+    parent = "projects/p/assets/tipping-point/c/x"
+    assert ingest.ensure_collection(parent, ee_data=data)["status"] == "created"
+    assert ingest.ensure_collection(parent, ee_data=data)["status"] == "exists"
+    assert created == [({"type": "IMAGE_COLLECTION"}, parent)]
+
+
+def test_ensure_collection_validates_id(monkeypatch):
+    _install_fakes(monkeypatch)
+    with pytest.raises(ValueError):
+        ingest.ensure_collection("projects/p/assets/../evil")
+    with pytest.raises(ValueError):
+        ingest.ensure_collection("")
 
 
 def test_append_manifest_writes_and_upserts(monkeypatch, tmp_path):

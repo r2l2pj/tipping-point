@@ -368,7 +368,7 @@ def test_stage_and_ingest_skip_and_force(tmp_path, monkeypatch):
     assert a1[0]["status"] == "ingested"
     assert calls["stage"][0]["case"] == "now"
     assert calls["stage"][0]["bucket"] == "bkt"
-    assert calls["stage"][0]["name"] == "cog/imerg_early/imerg_early_20261114.tif"
+    assert calls["stage"][0]["name"] == "cog-imerg_early-imerg_early_20261114"
     aid = calls["ingest"][0]["asset_id"]
     assert aid == "projects/proj/assets/tipping-point/now/imerg_early/20261114"
     assert calls["manifest"][0][0] == "now"
@@ -491,7 +491,182 @@ def test_no_download_scans_cogs(tmp_path, monkeypatch):
                         bucket="b", project="p", download=False,
                         assets_json=manifest)
     assert [a["tag"] for a in assets] == ["20261115", "20261116"]
+
+
+# --------------------------------------------------------------------------- #
+# --case hindcast: per-granule half-hourly images under a case collection
+# --------------------------------------------------------------------------- #
+def _fake_ee_storage(monkeypatch, store=None):
+    """Fake ee (data.getAsset/createAsset/startIngestion backed by `store`)
+    + fake google.cloud.storage; returns (calls, uploads, store)."""
+    calls = {"getAsset": [], "createAsset": [], "startIngestion": [],
+             "init": []}
+    store = store if store is not None else {}
+    ee = types.ModuleType("ee")
+
+    def get_asset(aid):
+        calls["getAsset"].append(aid)
+        if aid not in store:
+            raise RuntimeError(f"{aid} not found")
+        return store[aid]
+
+    def create_asset(value, path=None, **kw):
+        calls["createAsset"].append((value, path))
+        store[path] = value
+        return {"name": path}
+
+    def start_ingestion(rid, params):
+        calls["startIngestion"].append(params)
+        store[params["name"]] = {"type": "IMAGE"}
+        return {"name": "op-1"}
+
+    ee.data = types.SimpleNamespace(
+        getAsset=get_asset, createAsset=create_asset,
+        startIngestion=start_ingestion,
+        startTableIngestion=lambda *a, **kw: None)
+    ee.Initialize = lambda **kw: calls["init"].append(kw)
+    ee.ServiceAccountCredentials = (
+        lambda *a, **kw: types.SimpleNamespace(args=(a, kw)))
+    monkeypatch.setitem(sys.modules, "ee", ee)
+    monkeypatch.delitem(sys.modules, "gee.common", raising=False)
+
+    uploads = []
+    stor = types.ModuleType("google.cloud.storage")
+
+    class _Blob:
+        def __init__(self, bucket, name):
+            self._b, self._n = bucket, name
+
+        def upload_from_filename(self, filename):
+            uploads.append((self._b, self._n, filename))
+
+    class _Bucket:
+        def __init__(self, name):
+            self._n = name
+
+        def blob(self, name):
+            return _Blob(self._n, name)
+
+    class Client:
+        def bucket(self, name):
+            return _Bucket(name)
+
+    stor.Client = Client
+    monkeypatch.setitem(sys.modules, "google.cloud.storage", stor)
+    return calls, uploads, store
+
+
+def _granule_da(rate=1.5):
+    """One-step (time,lat,lon) mm/h array standing in for a granule."""
+    return xr.DataArray(
+        np.full((1, 2, 3), rate), dims=("time", "lat", "lon"),
+        coords={"time": [np.datetime64("2024-05-01T00:00")],
+                "lat": [-30.0, -29.0], "lon": [-52.0, -51.0, -50.0]})
+
+
+def _case_setup(monkeypatch, tmp_path, n=3):
+    """N fake IMERG granules (half-hourly names), fake ee + storage, real
+    ingest callables under fake creds. Returns (calls, uploads, store, ea)."""
+    names = [
+        f"3B-HHR-E.MS.MRG.3IMERG.20240501-S{hh:02d}{mm:02d}00-E{hh:02d}{mm + 29:02d}59.{i:04d}.V07B.HDF5"
+        for i, (hh, mm) in enumerate([(0, 0), (0, 30), (1, 0)][:n])]
+    granules = [{"producer_granule_id": nm} for nm in names]
+    files = [tmp_path / "raw" / f"g{i}.h5" for i in range(n)]
+    ea = _fake_earthaccess(monkeypatch, granules=granules,
+                           download_files=[str(f) for f in files])
+    monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    monkeypatch.setenv("GEE_PROJECT", "proj")
+    for var in ("GCP_SA_KEY", "GEE_SERVICE_ACCOUNT_KEY"):
+        monkeypatch.delenv(var, raising=False)
+    _fake_rasterio(monkeypatch)
+    calls, uploads, store = _fake_ee_storage(monkeypatch)
+    monkeypatch.setattr(imerg, "open_halfhourly", lambda paths, b: _granule_da())
+    import tp.events
+    monkeypatch.setattr(tp.events, "DATA_DIR", tmp_path / "data")
+    return calls, uploads, store, ea
+
+
+def test_granule_start_tag():
+    assert imerg.granule_start_tag({"producer_granule_id":
+        "3B-HHR-E.MS.MRG.3IMERG.20240501-S003000-E005959.0030.V07B.HDF5"}
+        ) == "20240501T0030"
+    assert imerg.granule_start_tag({"umm": {"TemporalExtent": {"RangeDateTime":
+        {"BeginningDateTime": "2024-05-01T01:30:00.000Z"}}}}
+        ) == "20240501T0130"
+    with pytest.raises(ValueError):
+        imerg.granule_start_tag({"id": "no-time-here"})
+
+
+def test_imerg_case_run_creates_collection_and_children(tmp_path, monkeypatch):
+    calls, uploads, _, ea = _case_setup(monkeypatch, tmp_path)
+    assets = imerg.run_case(
+        "rs-2024-05", dt.date(2024, 5, 1), dt.date(2024, 5, 2),
+        out_dir=tmp_path / "cog", bucket="bkt",
+        assets_json=tmp_path / "assets.json")
+    parent = "projects/proj/assets/tipping-point/rs-2024-05/imerg_early"
+    # --start/--end window honored (+1 day end-exclusive convention)
+    assert ea.calls["search"][0]["temporal"] == ("2024-05-01", "2024-05-03")
+    # aoi read from events/rs-2024-05.json (no --bounds given)
+    assert ea.calls["search"][0]["bounding_box"] == (-52.5, -30.5, -50.5, -29.0)
+    # IMAGE_COLLECTION container created exactly once, before children
+    assert calls["createAsset"] == [({"type": "IMAGE_COLLECTION"}, parent)]
+    # per-granule asset ids are the granule start time YYYYMMDDThhmm
+    assert [p["name"] for p in calls["startIngestion"]] == [
+        f"{parent}/20240501T0000",
+        f"{parent}/20240501T0030",
+        f"{parent}/20240501T0100"]
+    assert [a["tag"] for a in assets] == [
+        "20240501T0000", "20240501T0030", "20240501T0100"]
     assert all(a["status"] == "ingested" for a in assets)
+    # GCS staging under the case, not "now"
+    assert all(b == "bkt" and n.startswith("staging/rs-2024-05/cog-imerg_early-")
+               for b, n, _ in uploads)
+    assert len(uploads) == 3
+
+
+def test_imerg_case_run_idempotent_second_run(tmp_path, monkeypatch):
+    calls, _, _, _ = _case_setup(monkeypatch, tmp_path)
+    kw = {"out_dir": tmp_path / "cog", "bucket": "bkt",
+          "assets_json": tmp_path / "assets.json"}
+    imerg.run_case("rs-2024-05", dt.date(2024, 5, 1), dt.date(2024, 5, 2), **kw)
+    imerg.run_case("rs-2024-05", dt.date(2024, 5, 1), dt.date(2024, 5, 2), **kw)
+    assert len(calls["createAsset"]) == 1        # collection made once
+    assert len(calls["startIngestion"]) == 3     # existing children skipped
+
+
+def test_imerg_case_bounds_override(tmp_path, monkeypatch):
+    _, _, _, ea = _case_setup(monkeypatch, tmp_path)
+    b = (-53.0, -30.0, -51.0, -29.0)
+    imerg.run_case("rs-2024-05", dt.date(2024, 5, 1), dt.date(2024, 5, 1),
+                   bounds=b, out_dir=tmp_path / "cog", bucket="bkt",
+                   assets_json=tmp_path / "assets.json")
+    assert ea.calls["search"][0]["bounding_box"] == b
+
+
+def test_imerg_case_dry_run(tmp_path, monkeypatch, capsys):
+    imerg.main(["--case", "rs-2024-05", "--start", "2024-05-01",
+                "--end", "2024-05-02", "--out-dir", str(tmp_path),
+                "--dry-run"])
+    out = json.loads(capsys.readouterr().out)
+    assert out["case"] == "rs-2024-05"
+    assert out["collection"].endswith("tipping-point/rs-2024-05/imerg_early")
+    assert out["window"] == ["2024-05-01", "2024-05-02"]
+    assert out["bounds"] == [-52.5, -30.5, -50.5, -29.0]
+    assert out["granule_asset"].endswith("/<yyyymmddThhmm>")
+
+
+def test_imerg_case_defaults_to_events_window(tmp_path, monkeypatch, capsys):
+    """--case alone uses events/<case>.json window + aoi."""
+    imerg.main(["--case", "rs-2024-05", "--out-dir", str(tmp_path),
+                "--dry-run"])
+    out = json.loads(capsys.readouterr().out)
+    assert out["window"] == ["2024-04-20", "2024-05-31"]
+
+
+def test_start_end_without_case_rejected(capsys):
+    with pytest.raises(SystemExit):
+        imerg.main(["--start", "2024-05-01", "--end", "2024-05-02"])
 
 
 # --------------------------------------------------------------------------- #
