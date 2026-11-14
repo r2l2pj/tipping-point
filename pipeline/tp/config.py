@@ -57,6 +57,15 @@ def now_bounds() -> tuple[float, float, float, float]:
     return tuple(now["bbox"])
 
 
+def now_name() -> str:
+    """Name of the 'now' domain (domains.now.name) — also the
+    ``static/<name>/`` namespace of the GEE statics it uses."""
+    now = (load_config().get("domains") or {}).get("now") or {}
+    if "name" not in now:
+        raise KeyError("config.yaml is missing domains.now.name")
+    return now["name"]
+
+
 def clim_scale() -> float:
     """Divisor for stored climatology percentiles (int16 mm*scale); 1 if unset."""
     return (load_config().get("climatology") or {}).get("scale", 1)

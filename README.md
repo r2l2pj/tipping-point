@@ -62,8 +62,9 @@ to the orphan branch `fallback`, which the app reads via
 ## Domains and the rain climatology
 
 `config.yaml` carries a `domains` block alongside `cases`: `domains.now`
-(name `sul_brasil`, W/S/E/N bbox) is the live coverage area, read via
-`tp.config.now_bounds()` (same bbox as `live.config.NOW_BOUNDS`).
+(name `south_brazil`, W/S/E/N bbox) is the live coverage area, read via
+`tp.config.now_bounds()` / `tp.config.now_name()` (same bbox as
+`live.config.NOW_BOUNDS`, same name as `live.config.STATIC_DOMAIN`).
 
 The 3-day-rain climatology backing the R-score percentiles lives in GEE as an
 ImageCollection per coverage area, **int16 mm×10** storage (~0.9 GB total —
@@ -71,12 +72,102 @@ divide by 10 on read):
 
 - `tipping-point/<case>/clim_rain` — per case: ~25 images, the doys of the
   case event window, clipped to that case AOI.
-- `tipping-point/static/sul_brasil/clim_rain` — for the live job: a rolling
+- `tipping-point/static/south_brazil/clim_rain` — for the live job: a rolling
   ~75-doy window over the `domains.now` bbox.
 
 Interface is unchanged in both: one image per doy with a `doy` property and
 bands `p90|p95|p99` (3-day-sum mm percentiles, ~10 km). Readers filter on
 `doy` and scale by 0.1.
+
+## Method and thresholds
+
+TPI = geometric mean of three scores in [0,1], per `config.yaml thresholds`:
+
+- **R** (rain): piecewise score of the 3-day IMERG sum against that doy's
+  climatological p90/p95/p99 (`rain_percentiles: [90, 95, 99]`).
+- **S** (soil): SMAP L4 `sm_rootzone_wetness` rescaled over
+  `soil_wetness_range: [0.5, 0.9]`.
+- **T** (terrain): slope (NASADEM, `slope_range_deg: [15, 30]`) for
+  TPI_slide; HAND proxy (`hand_range_m: [5, 15]`, zeroed above 5° slope)
+  for TPI_flood. Classes at `tpi_classes: [0.2, 0.4, 0.6]`, weights
+  `tpi_weights` (uniform = plain geomean).
+
+Flood mask (NISAR, ruling A2 — calibration choice): **adaptive per-scene
+Otsu threshold** on GCOV backscatter change (`water_db_max: -15` is the
+fallback/clamp only), median 3×3, `flood_db_drop: -3` dB drop, HAND < 15 m
+gate, bright-flood layer, 3-ha minimum mapping unit. Coherence landslide
+candidates use `coherence_drop: 0.3` / `coherence_ref_min: 0.4` with
+elevation/snow/flood exclusion gates — declared but **moot for wa_2025**
+(no GUNW pair crosses the event; candidates come from HLS optical instead).
+
+Perfect forecast (ruling A4): replay D+1..D+3 layers use the **observed**
+TPI band of D+k — R *and* S observed at that date, not held constant;
+`forecast_source: "perfect-forecast"` in metrics. Live Modo Agora uses
+`forecast_source: "geos-fp"` with SMAP held at the latest observation.
+
+Lead time (`ml/lead_time.py`): per damage-point `lead_hours =
+anchor − first Critical crossing`; metrics carry `lead_time_median_h`,
+`lead_time_iqr_h`, `lead_time_mean_h`, `warned_before_pct`,
+`warned_24h_pct`, `never_critical_pct`, `n_points`, `n_points_excluded`,
+`alto_n_points` (Alto-threshold counts), `anchor_precision`,
+`event_lead_h`, `official_warning_delta_h`, `critical_area_km2`,
+`critical_area_with_damage_pct`, plus a 6-h `lead_time_hist` and
+`lead_time_assumptions`. Null fields ship with a reason string, never a
+silent 0.
+
+## Data sources (NASA + partners)
+
+| Source | GEE catalog id / product | Used for |
+| --- | --- | --- |
+| IMERG V07 | `NASA/GPM_L3/IMERG_V07` (Late replay, Early live; `precipitation` mm/h ×0.5) | R score |
+| SMAP L4 | `NASA/SMAP/SPL4SMGP/008` (`sm_rootzone_wetness`; /007 discontinued) | S score |
+| NASADEM | `NASA/NASADEM_HGT/001` | slope / T scores |
+| MODIS LC | `MODIS/061/MCD12Q1` | ML features only — **not** a TPI index input (ruling A3) |
+| GPWv4.11 | `CIESIN/GPWv411/GPW_Population_Count` | exposed population (`gpw_year` in metrics = epoch nearest the event; epochs are 5-yr, latest 2020) |
+| Black Marble | `NASA/VIIRS/002/VNP46A2` (`DNB_BRDF_Corrected_NTL`) | pre/post night-lights change |
+| OPERA DSWx | `OPERA/DSWX/L3_V1/HLS` (rs_2024), `OPERA/DSWX/L3_V1/S1` (wa_2025) | validation IoU/F1 (`B01_WTR`, ≤5 d after event, ruling L10b) |
+| HLS | `NASA/HLS/HLSL30/v002`, `NASA/HLS/HLSS30/v002` | scar candidates, cloud fraction |
+
+Off-GEE fetches: NISAR GCOV (below), SWOT Hydrocron (reach ids in
+`events/*.json`), GEOS-FP forecast, GLC/UFRGS-Cemaden landslide
+inventories.
+
+## NISAR products
+
+wa_2025 frames (`events/wa-2025-12.json`, track 172D / frame 064,
+collection `NISAR_L2_GCOV_BETA_V1`; aux `NISAR_WATERMASK`, `NISAR_DEM`):
+
+- ref (no-event): `NISAR_L2_PR_GCOV_004_172_D_064_4005_DHDH_A_20251110T031814_20251110T031849_X05009_N_F_J_001` (2025-11-10)
+- pre: `NISAR_L2_PR_GCOV_006_172_D_064_4005_DHDH_A_20251204T031815_20251204T031850_X05009_N_F_J_001` (2025-12-04)
+- post: `NISAR_L2_PR_GCOV_007_172_D_064_4005_DHDH_A_20251216T031815_20251216T031850_X05009_N_F_J_001` (2025-12-16)
+
+GCOV/GUNW ship as HDF5 — subset via Harmony/`/vsicurl/` + `NETCDF:` prefix,
+never download full frames. Dataset paths (spec D-102274/D-102272, see
+`pipeline/tp/nisar.py`):
+
+- GCOV `/science/LSAR/GCOV/grids/frequencyA/{HHHH,HVHV,mask,numberOfLooks}` (float32 linear gamma0)
+- GUNW `/science/LSAR/GUNW/grids/frequencyA/{wrappedInterferogram,unwrappedInterferogram}/HH/coherenceMagnitude`
+
+## ML scope (ruling A3)
+
+The ML layer is an XGBoost landslide-trigger model producing the
+`hazard_slide_series` (LHASA-style, spatial-block CV, `seed: 42`
+everywhere). T stays the slope/HAND static terrain score — there is **no
+`t_ml.tif` and no T_ML this weekend**; that susceptibility layer is
+roadmap. MODIS land cover feeds ML features only and is **not** a TPI
+index input.
+
+## Declared limitations
+
+- Flood threshold is a per-scene Otsu calibration (A2), not a fixed −15 dB.
+- Perfect-forecast D+k uses observed inputs incl. S (A4) — upper bound,
+  not an operational forecast.
+- GUNW/coherence landslide detection is moot for wa_2025 (no event-crossing
+  pair); candidates are HLS optical and stay "candidates", never confirmed.
+- WA landslide hit-rate may be null — the GLC inventory has no in-window
+  points; radar confirms floods only for this case.
+- NISAR frames are BETA pre-calibration products; use relative
+  before/after change on the same frame.
 
 ## Rules
 

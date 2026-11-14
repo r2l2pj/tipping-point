@@ -15,7 +15,7 @@ cases:
 
 domains:
   now:
-    name: sul_brasil
+    name: south_brazil
     bbox: [-58.0, -34.0, -48.0, -22.5]   # oeste, sul, leste, norte
 
 thresholds:

@@ -13,9 +13,9 @@ Inputs (under projects/<GEE_PROJECT>/assets/tipping-point/):
       YYYYMMDD_3day (rolling 3-day mm) by pipeline/fetch/imerg.py.
   now/smap_l4   — latest SMAP L4 sm_rootzone_wetness, tag YYYYMMDD.
   now/geosfp    — GEOS-FP forecast daily mm, tag = forecast VALID date.
-  static/south_brazil/clim_rain — ImageCollection of 366 images (prop
-      `doy`, bands p90|p95|p99 = 3-day-sum mm percentiles).
-  static/south_brazil/{slope,hand} — terrain statics (deg / m, ~30 m).
+  static/<domains.now.name>/clim_rain — ImageCollection of 366 images
+      (prop `doy`, bands p90|p95|p99 = 3-day-sum mm percentiles).
+  static/<domains.now.name>/{slope,hand} — terrain statics (deg/m, ~30 m).
 
 d0 is observed: the newest IMERG 3-day accumulation + latest SMAP L4.
 d1..d3 are GEOS-FP valid dates; their 3-day rain blends the (3-k) most
@@ -40,7 +40,7 @@ from pathlib import Path
 
 import ee
 import tp.metrics as _metrics
-from tp.config import clim_scale, now_bounds, thresholds
+from tp.config import clim_scale, now_bounds, now_name, thresholds
 
 from . import common, tpi
 
@@ -48,7 +48,7 @@ FORECAST_DAYS = 3                     # d0 observed + d1..d3 GEOS-FP leads
 FORECAST_SOURCE = "geos-fp"
 SCALE_M = 1000                        # matches gee.tpi series scale (~1 km grid)
 
-# `now/` input collections and `static/south_brazil/` inputs (leaf names).
+# `now/` input collections and `static/<domains.now.name>/` inputs (leaf names).
 COLLECTIONS = ("imerg_early", "smap_l4", "geosfp")
 STATICS = ("clim_rain", "slope", "hand")
 
@@ -81,10 +81,10 @@ def _root(project: str | None = None) -> str:
 
 
 def input_asset_ids(project: str | None = None) -> dict:
-    """{leaf: assetId} for the now/ collections + south_brazil statics."""
+    """{leaf: assetId} for the now/ collections + static/<now domain> statics."""
     root = _root(project)
     return ({n: f"{root}/now/{n}" for n in COLLECTIONS}
-            | {n: f"{root}/static/south_brazil/{n}" for n in STATICS})
+            | {n: f"{root}/static/{now_name()}/{n}" for n in STATICS})
 
 
 def derived_asset_ids(project: str | None = None) -> dict:
@@ -165,11 +165,11 @@ def _rain3_image(asset, sources) -> ee.Image:
 
 
 def terrain_scores(asset) -> tuple:
-    """(T_slide, T_flood) in [0,1] from the south_brazil statics —
+    """(T_slide, T_flood) in [0,1] from the static/<now domain> statics —
     gee.tpi.terrain_scores with slope/HAND read instead of derived."""
     thr = thresholds()
-    slope = ee.Image(asset("static/south_brazil/slope")).select(0)
-    hand = ee.Image(asset("static/south_brazil/hand")).select(0)
+    slope = ee.Image(asset(f"static/{now_name()}/slope")).select(0)
+    hand = ee.Image(asset(f"static/{now_name()}/hand")).select(0)
     t_slide = slope.unitScale(*thr["slope_range_deg"]).clamp(0, 1)
     t_flood = (ee.Image(1).subtract(hand.unitScale(*thr["hand_range_m"]))
                .clamp(0, 1).where(slope.gt(tpi.SLOPE_FLOOD_MAX_DEG), 0))
@@ -199,7 +199,7 @@ def compute(project: str) -> dict:
     plans = day_plans(tags["imerg_early"], tags["smap_l4"], tags["geosfp"])
     aoi = ee.Geometry.Rectangle(list(now_bounds()))
     t_slide, t_flood = terrain_scores(asset)
-    clim_col = ee.ImageCollection(asset("static/south_brazil/clim_rain"))
+    clim_col = ee.ImageCollection(asset(f"static/{now_name()}/clim_rain"))
     updated_at = _utcnow()
     images = {}
     for p in plans:
@@ -268,7 +268,7 @@ def plan(project: str | None = None) -> str:
     for leaf in COLLECTIONS:
         lines.append(f"  collection {root}/now/{leaf} (tags -> date window)")
     for leaf in STATICS:
-        lines.append(f"  {root}/static/south_brazil/{leaf}")
+        lines.append(f"  {root}/static/{now_name()}/{leaf}")
     lines.append("writes (delete existing asset, then export one Image each, stamped "
                  "data_date + updated_at):")
     for aid in derived_asset_ids(project).values():
