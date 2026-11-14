@@ -5,6 +5,7 @@ come from the same config.yaml the GEE scripts paste by hand.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import yaml
@@ -40,3 +41,12 @@ SLOPE_FLOOD_MAX_DEG = 5.0                                   # gee/01: slope.gt(5
 
 QUIET_HOURS = frozenset({23, 0, 1, 2, 3, 4, 5})             # alert rules, doc "Regras de envio"
 ALERT_MIN_CLASS = 2                                         # send only on upgrade to Alto/Crítico
+
+# L8 — GEE assets are the single source of truth; the local numpy path is
+# only a fallback (run_now --local). These constants name the locked
+# interface shared with lead-gathering (pipeline/fetch/*) and lead-analysis
+# (tools/*, derived now/* assets).
+GEE_PROJECT = os.environ.get("GEE_PROJECT", "hermes-fesolucoes")
+ASSET_ROOT = f"projects/{GEE_PROJECT}/assets/tipping-point"
+NOW_COLLECTIONS = {"imerg_early", "smap_l4", "geosfp"}
+STATIC_DOMAIN = "south_brazil"

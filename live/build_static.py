@@ -17,6 +17,8 @@ t_flood, slope_deg, hand_m, pop, pop_year, pop_source, lats, lons.
 """
 from __future__ import annotations
 
+import argparse
+import datetime as dt
 import io
 import json
 import sys
@@ -30,9 +32,11 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from live.config import (
+    ASSET_ROOT,
     HAND_PROXY_RADIUS_M,
     NOW_BOUNDS,
     STATIC_DIR,
+    STATIC_DOMAIN,
     STATIC_NPZ,
 )
 
@@ -40,6 +44,8 @@ YEARS = range(2001, 2024)
 OFFSETS = range(-30, 31, 3)
 POP_COLLECTION = "CIESIN/GPWv411/GPW_Population_Count"
 POP_BAND = "population_count"
+ASSET_TERRAIN_SCALE_M = 30
+ASSET_CLIM_SCALE_M = 10_000
 
 
 def _ee_init():
@@ -97,10 +103,80 @@ def _terrain(ee):
         hand.rename("hand_m"), pop_img.rename("pop")
 
 
-def main() -> None:
+def _asset_path(name: str) -> str:
+    return f"{ASSET_ROOT}/static/{STATIC_DOMAIN}/{name}"
+
+
+def _ensure_collection(ee, path: str) -> None:
+    try:
+        info = ee.data.getAsset(path)
+    except ee.EEException:
+        info = None
+    if not info:
+        ee.data.createAsset({"type": "ImageCollection"}, path)
+
+
+def build_assets(ee, dry_run: bool = False) -> list:
+    """Export the static/south_brazil/* GEE assets (L8; lead-analysis reads
+    them): clim_rain ImageCollection (one image per day-of-year, 'doy'
+    property, p90/p95/p99 bands, ~10 km), slope (~30 m, degrees) and hand
+    (~30 m, meters). Population stays npz-only — it is not in the analysis
+    asset list. Returns the export tasks started."""
+    region = ee.Geometry.Rectangle(list(NOW_BOUNDS))
+    tasks = []
+
+    def _export(image, asset_id, scale, description):
+        task = ee.batch.Export.image.toAsset(
+            image, description=description, assetId=asset_id,
+            region=region, scale=scale, crs="EPSG:4326", maxPixels=1e13)
+        if dry_run:
+            print(f"[assets] (dry-run) {description} -> {asset_id}")
+        else:
+            task.start()
+            print(f"[assets] started {description} -> {asset_id}")
+        tasks.append(task)
+        return task
+
+    coll = _asset_path("clim_rain")
+    if not dry_run:
+        _ensure_collection(ee, coll)
+    month_imgs: dict[int, object] = {}
+    for doy in range(1, 367):
+        month = (dt.date(2000, 1, 1) + dt.timedelta(days=doy - 1)).month
+        img = month_imgs.get(month)
+        if img is None:
+            img = _climatology_for_month(ee, month)
+            month_imgs[month] = img
+        _export(img.set("doy", doy), f"{coll}/doy_{doy:03d}",
+                ASSET_CLIM_SCALE_M, f"clim_rain_doy_{doy:03d}")
+
+    _, _, slope, hand, _pop = _terrain(ee)
+    _export(slope, _asset_path("slope"), ASSET_TERRAIN_SCALE_M, "slope")
+    _export(hand, _asset_path("hand"), ASSET_TERRAIN_SCALE_M, "hand")
+    return tasks
+
+
+def parse_args(argv=None):
+    p = argparse.ArgumentParser(
+        prog="build_static", description=__doc__.splitlines()[0])
+    p.add_argument("--assets", action="store_true",
+                   help="export the static/south_brazil/* GEE assets "
+                        "(clim_rain, slope, hand) instead of writing the npz")
+    p.add_argument("--dry-run", action="store_true",
+                   help="--assets only: build the export tasks without "
+                        "starting them")
+    return p.parse_args(argv)
+
+
+def main(argv=None) -> None:
     from live.grid import dst_lats_lons
 
+    args = parse_args(argv)
     ee = _ee_init()
+    if args.assets:
+        build_assets(ee, dry_run=args.dry_run)
+        return
+
     out = {"lats": None, "lons": None}
     lats, lons = dst_lats_lons()
     out["lats"], out["lons"] = lats, lons

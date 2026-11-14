@@ -1,6 +1,10 @@
 """Modo Agora — live pipeline entry point (doc steps 2-6).
 
-Each run (GitHub Actions, every 3 h):
+L8: the default run delegates to the GEE orchestration job (`live.jobs now`)
+— fetch into `now/` asset collections, derived TPI assets, fallback export,
+manifest last. `--local` runs the local numpy pipeline below instead
+(fallback + tests):
+
   1. download IMERG Early (last 7 days), latest SMAP L4, today's GEOS-FP forecast
   2. compute R, S, TPI today and the D+1..D+3 projection with static/ climatology
      and terrain — same thresholds as config.yaml / gee/01_tpi_index.js
@@ -9,8 +13,9 @@ Each run (GitHub Actions, every 3 h):
   5. write manifest.json LAST (the app never reads a half-updated set)
   6. optionally upload data/now/ to gs://$NOW_GCS_BUCKET/now/ (manifest last)
 
-Requires static/sul_static.npz — build once with live/build_static.py.
-Credentials come from env (EDL_USER/EDL_PASS, GCP_SA_KEY); nothing is stored.
+The --local path requires static/sul_static.npz — build once with
+live/build_static.py. Credentials come from env (EDL_USER/EDL_PASS,
+GCP_SA_KEY); nothing is stored.
 """
 from __future__ import annotations
 
@@ -53,6 +58,12 @@ def parse_args(argv=None):
     p.add_argument("--no-nisar", action="store_true", help="skip the NISAR pass listing")
     p.add_argument("--no-upload", action="store_true",
                    help="skip GCS upload even if NOW_GCS_BUCKET is set")
+    p.add_argument("--local", action="store_true",
+                   help="run the local numpy pipeline instead of the GEE job "
+                        "(fallback path; the options above only apply here)")
+    p.add_argument("--dry-run", action="store_true",
+                   help="GEE mode: print the job's subprocess steps without "
+                        "running them")
     return p.parse_args(argv)
 
 
@@ -216,6 +227,10 @@ def run(args) -> dict:
 
 def main(argv=None) -> None:
     args = parse_args(argv)
+    if not args.local:
+        from live import jobs
+        jargv = ["now"] + (["--dry-run"] if args.dry_run else [])
+        return jobs.main(jargv)
     manifest = run(args)
     print(f"data/now/ updated_at={manifest['updated_at']} "
           f"layers={len(manifest['layers'])} nisar={len(manifest['nisar_passes'])}")
