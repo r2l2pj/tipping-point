@@ -28,22 +28,6 @@ log = logging.getLogger(__name__)
 FORECAST_SOURCE = "perfect-forecast"
 
 
-def case_id(any_id: str) -> str:
-    """Canonical case key: 'rs-2024-05' or 'rs_2024' → 'rs_2024' (L4)."""
-    return "_".join(any_id.split("-")[:2])
-
-
-def resolve_event_id(any_id: str) -> str:
-    """Event id for either form: 'rs-2024-05' stays; 'rs_2024' → its event id."""
-    if (events.EVENTS_DIR / f"{any_id}.json").exists():
-        return any_id
-    cid = case_id(any_id)
-    matches = [e for e in events.list_events() if case_id(e) == cid]
-    if not matches:
-        raise KeyError(f"no event for {any_id!r}; events/: {events.list_events()}")
-    return matches[0]
-
-
 def _band_dates(src) -> dict[str, int]:
     """Map 'YYYYMMDD' band descriptions → 1-based band index."""
     out = {}
@@ -55,7 +39,7 @@ def _band_dates(src) -> dict[str, int]:
 
 def perfect_forecast(
     series_cog: str | Path,
-    event_id: str,
+    event: str,
     issue_date: str | date,
     days: tuple[int, ...] = (1, 2, 3),
     out_dir: str | Path | None = None,
@@ -65,15 +49,15 @@ def perfect_forecast(
 
     The d<k> image is the observed TPI band of ``issue_date + k`` from
     ``series_cog`` (float TPI series, bands named YYYYMMDD); ``AAAAMMDD`` in
-    the filename is the *issue* date. ``event_id`` accepts either the event
-    id (``rs-2024-05``) or the case id (``rs_2024``); outputs default to
+    the filename is the *issue* date. ``event`` accepts either the event id
+    (``rs-2024-05``) or the case id (``rs_2024``); outputs default to
     ``data/<case-id>/cog/`` (L4). A date with no band writes nothing and is
-    reported under ``"missing"``. ``forecast_source`` is merged via
-    ``tp.metrics.merge_metrics`` (event id — the helper routes it).
+    reported under ``"missing"``. ``forecast_source`` is merged into the
+    event's case blob of the root data/metrics.json via
+    ``tp.metrics.merge_metrics`` (``metrics_path`` is for tests only).
     """
-    event_id = resolve_event_id(event_id)
     issue = date.fromisoformat(str(issue_date))
-    out_dir = Path(out_dir) if out_dir else events.event_data_dir(case_id(event_id)) / "cog"
+    out_dir = Path(out_dir) if out_dir else events.event_data_dir(event) / "cog"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     written: list[str] = []
@@ -93,13 +77,13 @@ def perfect_forecast(
                 log.warning("no band %s in %s — skipping d%d", target, series_cog, k)
                 continue
             band = src.read(idx)
-            out_path = out_dir / f"{events.artifact_stem(event_id, f'tpi_forecast_d{k}', issue.isoformat())}.tif"
+            out_path = out_dir / f"{events.artifact_stem(event, f'tpi_forecast_d{k}', issue.isoformat())}.tif"
             with rasterio.open(out_path, "w", **profile) as dst:
                 dst.write(band, 1)
                 dst.set_band_description(1, target)
             written.append(str(out_path))
             log.info("wrote %s (observed band %s as d%d)", out_path.name, target, k)
 
-    merge_metrics(event_id, flat={"forecast_source": FORECAST_SOURCE}, path=metrics_path)
+    merge_metrics(event, flat={"forecast_source": FORECAST_SOURCE}, path=metrics_path)
     return {"issue": issue.isoformat(), "source": FORECAST_SOURCE,
             "written": written, "missing": missing}

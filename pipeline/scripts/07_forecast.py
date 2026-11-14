@@ -12,8 +12,9 @@ events/<event>.json. ``--event`` accepts either the event id or the case id
 import argparse
 from pathlib import Path
 
+from tp.config import event_id
 from tp.events import load_event
-from tp.forecast import perfect_forecast, resolve_event_id
+from tp.forecast import perfect_forecast
 
 
 def main() -> None:
@@ -27,10 +28,10 @@ def main() -> None:
     ap.add_argument("--days", default="1,2,3", help="comma-separated forecast days")
     args = ap.parse_args()
 
-    event_id = resolve_event_id(args.event)
-    issue = args.issue or load_event(event_id)["reference_date"]
+    event = event_id(args.event)
+    issue = args.issue or load_event(event)["reference_date"]
     days = tuple(int(d) for d in args.days.split(","))
-    report = perfect_forecast(args.series, event_id, issue, days=days)
+    report = perfect_forecast(args.series, event, issue, days=days)
     print(report)
 
 

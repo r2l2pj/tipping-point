@@ -48,9 +48,10 @@ def test_forecast_bands_equal_shifted_observed(tmp_path):
                 idx = list(ref.descriptions).index(target) + 1
                 np.testing.assert_array_equal(src.read(1), ref.read(idx))
 
-    metrics = json.loads(metrics_path.read_text())
-    assert metrics["forecast_source"] == FORECAST_SOURCE == "perfect-forecast"
-    assert metrics["event"] == "rs-2024-05"
+    # L4: root metrics.json is keyed by canonical case id
+    blob = json.loads(metrics_path.read_text())["cases"]["rs_2024"]
+    assert blob["forecast_source"] == FORECAST_SOURCE == "perfect-forecast"
+    assert blob["event"] == "rs-2024-05"
 
 
 def test_forecast_missing_band_writes_nothing_and_reports(tmp_path):
@@ -76,11 +77,16 @@ def test_default_out_dir_routes_to_case_dir(tmp_path, monkeypatch):
     series = _write_series(tmp_path / "series.tif", dates)
     monkeypatch.setattr(tp.events, "DATA_DIR", tmp_path / "data")
 
+    metrics_path = tmp_path / "m" / "metrics.json"
     report = perfect_forecast(series, "rs_2024", ISSUE, days=(1,),
-                              metrics_path=tmp_path / "m" / "metrics.json")
+                              metrics_path=metrics_path)
     out = tmp_path / "data" / "rs_2024" / "cog" / "rs_2024_tpi_forecast_d1_20240502.tif"
     assert out.exists()
     assert report["written"] == [str(out)]
+    # case id input still merges under the canonical case blob
+    blob = json.loads(metrics_path.read_text())["cases"]["rs_2024"]
+    assert blob["event"] == "rs-2024-05"
+    assert blob["forecast_source"] == "perfect-forecast"
 
 
 def test_forecast_preserves_nodata(tmp_path):

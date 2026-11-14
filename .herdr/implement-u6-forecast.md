@@ -13,19 +13,24 @@
   `tp.metrics.merge_metrics` on every run. (The plan's sketch named the 2nd
   param `event_date`; implemented as `event_id` — `<caso>` stem and the
   metrics merge both need it.)
-- **Spec delta L4** (applied 2026-11-14): outputs route to
-  `data/<case-id>/cog/` (`rs_2024`, `wa_2025`), not `data/<event-id>/`.
-  `tp.config.case_id()` does not exist in this worktree yet, so forecast.py
-  carries `case_id()` (either form → underscore case key) and
-  `resolve_event_id()` (case id → event id via `events/*.json`, needed for
-  `load_event`/`artifact_stem` and for `merge_metrics`, which keeps its
-  signature and takes the event id — the helper routes to root
-  `data/metrics.json` keyed by case once its L4 update lands; metrics.py is
-  outside my write scope). `perfect_forecast` accepts either id form.
+- **Spec delta L4** (applied 2026-11-14, reworked after review blocker):
+  branch rebased onto main (now carries the L4 `tp.config.case_id`/
+  `event_id` resolvers, `events.case_key`-routed `event_data_dir`, and the
+  root-shape `merge_metrics`); the local `case_id`/`resolve_event_id`
+  helpers were dropped in favor of the upstream ones. Outputs route to
+  `data/<case-id>/cog/`; `perfect_forecast` accepts either id form.
+- **Root metrics shape**: `merge_metrics(event_or_case, ..., path=None)`
+  routes to `REPO_ROOT/data/metrics.json` keyed by canonical case —
+  `{"cases": {"<cid>": {"event": "<event-id>", ...flat keys}}}`. The
+  per-event `data/<event>/metrics.json` default is gone everywhere;
+  `metrics_path` is only ever passed by tests. `ml/lead_time.py` defaults
+  to `data/metrics.json` too and writes its `landslide_ml.lead_hours`
+  detail into the case blob (same read-blob-merge pattern as
+  `ml/evaluate.py` — no second non-atomic write).
 - `pipeline/scripts/07_forecast.py` (new): CLI `--event --series [--issue]
-  [--days 1,2,3]`; `--event` accepts event or case id; issue defaults to
-  `events/<event>.json` `reference_date`; writes into
-  `data/<case-id>/cog/` via `event_data_dir(case_id)`.
+  [--days 1,2,3]`; `--event` accepts event or case id (resolved via
+  `tp.config.event_id`); issue defaults to `events/<event>.json`
+  `reference_date`; writes into `data/<case-id>/cog/`.
 - `ml/lead_time.py`: accepts float TPI series — dtype auto-detect
   (`is_float_series`) or `--tpi`; TPI values used as-is (no /100 scaling),
   default threshold 0.6 (Alto cut). New label-point flow (`--labels` CSV,
@@ -36,10 +41,9 @@
   evaluable (non-null) points; mean/median over pos anticipations. Without
   `--labels` the original cluster flow runs unchanged. Frame times default
   to band names (YYYYMMDD), falling back to `cfg.FRAME_TIMES_UTC`.
-  `ANCHOR_TIMES_UTC` untouched (still empty by design). Metrics now go
-  through `tp.metrics.merge_metrics` (flat keys); the pre-existing
-  `landslide_ml.lead_hours` detail block is kept via a second atomic
-  tmp+replace write.
+  `ANCHOR_TIMES_UTC` untouched (still empty by design). Metrics go through
+  `tp.metrics.merge_metrics` — flat keys plus the `landslide_ml.lead_hours`
+  detail merged into the case blob in one atomic write.
 - `pipeline/tests/test_forecast.py` (new): 16-band synthetic float series;
   d1–d3 rasters equal the shifted observed bands; missing date → report +
   no file; nodata preserved; metrics.json gets `perfect-forecast`; L4 case
@@ -52,9 +56,9 @@
 
 ## Commands run + results
 
-- `uv sync` — ok.
-- `uv run pytest pipeline/tests ml/tests live/tests -q` — **65 passed**
-  (baseline was 46).
+- `uv sync` — ok (h5netcdf arrived via main's uv.lock after rebase).
+- `uv run pytest pipeline/tests ml/tests live/tests -q` — **147 passed**
+  post-rebase (main's suite included; baseline was 46 on the old tree).
 - `uv run ruff check .` — **All checks passed**.
 - `uv run python pipeline/scripts/07_forecast.py --help` — resolves.
 - `uv run python -m ml.lead_time --help` — resolves.

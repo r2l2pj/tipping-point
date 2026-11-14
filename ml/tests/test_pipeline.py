@@ -220,7 +220,7 @@ def test_lead_time_tpi_series_label_points(tmp_path):
                  "--anchor", "2024-05-03T00:00:00Z",
                  "--event", "rs-2024-05",
                  "--metrics-out", str(metrics_path)]) == 0
-    metrics = json.loads(metrics_path.read_text())
-    assert metrics["lead_time_mean_h"] == pytest.approx(48.0)
-    assert metrics["warned_before_pct"] == pytest.approx(75.0)
-    assert metrics["landslide_ml"]["lead_hours"]["mode"] == "label_points"
+    blob = json.loads(metrics_path.read_text())["cases"]["rs_2024"]
+    assert blob["lead_time_mean_h"] == pytest.approx(48.0)
+    assert blob["warned_before_pct"] == pytest.approx(75.0)
+    assert blob["landslide_ml"]["lead_hours"]["mode"] == "label_points"

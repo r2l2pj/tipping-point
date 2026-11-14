@@ -27,7 +27,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import os
 from pathlib import Path
 
 import numpy as np
@@ -36,6 +35,7 @@ import rasterio
 from rasterio.transform import rowcol
 from rasterio.warp import transform as warp_transform
 from scipy import ndimage
+from tp.config import case_id
 from tp.metrics import merge_metrics
 
 from . import config as cfg
@@ -205,13 +205,6 @@ def summarize_points(points: pd.DataFrame) -> dict:
     }
 
 
-def _atomic_write(path: Path, metrics: dict) -> None:
-    """Same tmp+replace discipline as tp.metrics.merge_metrics."""
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(metrics, indent=2, default=str) + "\n")
-    os.replace(tmp, path)
-
-
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--hazard", required=True,
@@ -267,16 +260,16 @@ def main(argv: list[str] | None = None) -> int:
     detail.update(summary)
     log.info(json.dumps(summary, indent=2, default=str))
 
-    metrics_path = Path(args.metrics_out) if args.metrics_out else cfg.DATA_DIR / args.event / "metrics.json"
-    merged = merge_metrics(
-        args.event,
-        flat={k: summary[k] for k in _FLAT_KEYS},
-        path=metrics_path,
-    )
-    # Detailed sub-results may nest under extra sections (data/SCHEMA.md);
-    # keep the pre-existing landslide_ml.lead_hours block, written atomically.
-    merged.setdefault("landslide_ml", {})["lead_hours"] = detail
-    _atomic_write(metrics_path, merged)
+    metrics_path = Path(args.metrics_out) if args.metrics_out else cfg.DATA_DIR / "metrics.json"
+    flat = {k: summary[k] for k in _FLAT_KEYS}
+    # Detailed sub-results nest under landslide_ml in the case blob of the
+    # root data/metrics.json (L4; same pattern as ml/evaluate.py).
+    blob = {}
+    if metrics_path.exists():
+        blob = json.loads(metrics_path.read_text()).get("cases", {}).get(
+            case_id(args.event), {})
+    flat["landslide_ml"] = {**blob.get("landslide_ml", {}), "lead_hours": detail}
+    merge_metrics(args.event, flat=flat, path=metrics_path)
     log.info("wrote %s", metrics_path)
     return 0
 
