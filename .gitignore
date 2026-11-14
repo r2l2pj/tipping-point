@@ -20,3 +20,9 @@ data/raw/
 
 # OS
 .DS_Store
+
+# never commit credential keys
+*-service-account*.json
+hermes-*.json
+gcp-*.json
+service-account*.json
