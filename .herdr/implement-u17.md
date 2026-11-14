@@ -23,8 +23,37 @@
   - `test_download_band_accepts_raw_tiff_payload`: raw TIFF bytes return the
     array. Both assert float64 dtype and exact array equality.
   - `test_build_assets_clim_windows_are_per_doy`: spies on
-    `ee.Date.fromYMD`, asserts all 366 leap-year (month, day) pairs are
-    sampled across every year in YEARS (once per offset: 366*23*21 calls).
+    `ee.Date.fromYMD`, asserts every exported doy's (month, day) is
+    sampled across every year in YEARS (superseded by subset — see below).
+
+## Scope refinement (t6g, overrides float32 choice): per-case collections
+
+Final layout (conductor-approved):
+- `static/<case_id>/clim_rain` per events/*.json case, region = aoi.bbox,
+  doys = doy(window.start)..doy(window.end) inclusive, top-level `window`
+  field used as-is, wrap-aware across the year boundary
+  (`_doys_between` — wa-2025-12 Nov1..Jan31 wraps 306..366 + 1..31).
+- `static/<STATIC_DOMAIN>/clim_rain` over NOW_BOUNDS, rolling now window
+  = dt.date.today() +-35d (`_doys_around`, also wrap-aware).
+- Bands int16 = millimetres*10: `img.multiply(10).round().toInt16()`
+  with image property scale=10 (divide-by-10 documented in docstring;
+  now_tpi reads config.climatology.scale). FLAGGED per conductor: int16
+  was the approved override, not float32.
+- Descriptions prefixed by domain: `<case_id>_clim_rain_doy_NNN` /
+  `south_brazil_clim_rain_doy_NNN`.
+- Removed _clim_doys/EVENT_PAD_DAYS; added _clim_cases, _doys_between.
+  ~205 clim images total today (42 rs + 92 wa + 71 now) + slope + hand.
+
+Tests:
+- `test_clim_cases_reads_window_doys` — tmp events dir, contiguous +
+  year-wrap + single-day windows.
+- `test_build_assets_exports_clim_collections_and_terrain` — collection
+  creation, assetIds/regions/descriptions per case, doy+scale=10 props,
+  `.toInt16()` source check, terrain unchanged.
+- `test_build_assets_clim_windows_are_per_doy` — fromYMD spy over the
+  exported doy set (n_clim * 23 * 21 calls, every doy's month/day).
+- `test_build_assets_dry_run_starts_nothing` — n_clim+2 tasks, nothing
+  started/created.
 
 ## Scope addition (t6g): per-doy clim_rain windows
 
@@ -45,13 +74,14 @@ y in 2001-2023, o in -30..30 step 3, each a 3-day IMERG sum ending there
 
 ## Commands run
 
-- `$UV run pytest live/tests/ -q` -> 74 passed (21 warnings, pre-existing
+- `$UV run pytest live/tests/ -q` -> 75 passed (21 warnings, pre-existing
   NotGeoreferenced/PendingDeprecation warnings)
 - `$UV run ruff check live/` -> All checks passed!
 - Commits on `unit/u17`:
   - `8e7ac0c` U17: build_static raw-TIFF getDownloadURL + ee_init adoption
   - `cdf7190` U17: unit report
   - `2339d60` U17: per-doy climatology windows in build_assets
+  - `7191e0b` U17: per-case clim_rain collections, int16 mm*10
 
 ## Notes
 
