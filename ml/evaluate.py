@@ -18,6 +18,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score, roc_curve
+from tp.config import case_id
+from tp.metrics import merge_metrics
 
 from . import config as cfg
 from .dataset import iter_block_folds, load_features, prepare_X
@@ -155,17 +157,17 @@ def update_metrics_json(
     path: str | Path | None = None,
     flat: dict | None = None,
 ) -> Path:
-    """Merge ``section`` under ``landslide_ml`` in data/<event>/metrics.json;
-    ``flat`` keys are merged at top level (v4 key list, data/SCHEMA.md)."""
-    path = Path(path) if path else cfg.DATA_DIR / event_id / "metrics.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    metrics = {"event": event_id}
+    """Merge ``section`` under ``landslide_ml`` in the event's case blob of
+    the root data/metrics.json; ``flat`` keys merge at case-blob level
+    (v4 key list, data/SCHEMA.md)."""
+    path = Path(path) if path else cfg.DATA_DIR / "metrics.json"
+    merged = dict(flat or {})
+    blob = {}
     if path.exists():
-        metrics = json.loads(path.read_text())
-    metrics.setdefault("landslide_ml", {}).update(section)
-    if flat:
-        metrics.update(flat)
-    path.write_text(json.dumps(metrics, indent=2) + "\n")
+        blob = json.loads(path.read_text()).get("cases", {}).get(
+            case_id(event_id), {})
+    merged["landslide_ml"] = {**blob.get("landslide_ml", {}), **section}
+    merge_metrics(event_id, flat=merged, path=path)
     log.info("wrote %s", path)
     return path
 

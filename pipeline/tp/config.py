@@ -36,3 +36,29 @@ def case(case_id: str) -> dict:
     if case_id not in cases:
         raise KeyError(f"unknown case {case_id!r}; config.yaml cases: {sorted(cases)}")
     return cases[case_id]
+
+
+def case_id(name: str) -> str:
+    """Canonical case id ('rs_2024') from a case id or event id ('rs-2024-05')."""
+    cases = load_config()["cases"]
+    if name in cases:
+        return name
+    cand = "_".join(name.split("-")[:2])
+    if cand in cases:
+        return cand
+    raise KeyError(f"unknown case/event {name!r}; config.yaml cases: {sorted(cases)}")
+
+
+def event_id(name: str) -> str:
+    """Event id ('rs-2024-05') for a case id or event id.
+
+    Event ids pass through unchanged; a canonical case id resolves through
+    events/*.json ('rs_2024' -> 'rs-2024-05'); unresolvable names come back
+    as given (canonical).
+    """
+    cid = case_id(name)
+    if name != cid:
+        return name
+    stem = cid.replace("_", "-")
+    matches = sorted(p.stem for p in (REPO_ROOT / "events").glob(f"{stem}-*.json"))
+    return matches[0] if matches else name

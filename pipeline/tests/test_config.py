@@ -31,6 +31,21 @@ def test_case_accessor():
         config.case("xx_1999")
 
 
+def test_case_id_resolution():
+    assert config.case_id("rs_2024") == "rs_2024"
+    assert config.case_id("wa_2025") == "wa_2025"
+    assert config.case_id("rs-2024-05") == "rs_2024"
+    assert config.case_id("wa-2025-12") == "wa_2025"
+    with pytest.raises(KeyError, match="unknown"):
+        config.case_id("xx-1999-01")
+
+
+def test_event_id_resolution():
+    assert config.event_id("rs_2024") == "rs-2024-05"
+    assert config.event_id("wa_2025") == "wa-2025-12"
+    assert config.event_id("rs-2024-05") == "rs-2024-05"
+
+
 def test_load_config_custom_path(tmp_path):
     p = tmp_path / "other.yaml"
     p.write_text("thresholds:\n  flood_db_drop: -7\ncases: {}\n")
