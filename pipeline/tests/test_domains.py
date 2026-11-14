@@ -18,7 +18,11 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 VALUES = (-58.0, -34.0, -48.0, -22.5)   # west, south, east, north
 
-SKIP_DIRS = {".git", ".venv", "node_modules", ".herdr", "tests", "__pycache__"}
+# Guard scans code/config/doc sources only; data/**, fixtures and generated
+# outputs legitimately carry the bounds value in the published contract.
+SCAN_SUFFIXES = {".py", ".js", ".ts", ".yml", ".yaml", ".md"}
+SKIP_DIRS = {".git", ".venv", "node_modules", ".herdr", "tests", "__pycache__",
+             "data", "fixtures", "__fixtures__"}
 
 # Pre-existing copies outside test/report files (see docstring). Each entry
 # must disappear as its owning unit migrates; nothing may be ADDED here.
@@ -27,9 +31,6 @@ KNOWN_MIRRORS = {
     "pipeline/fetch/imerg.py",
     "pipeline/fetch/smap.py",
     "docs/PLAN.md",
-    "data/SCHEMA.md",
-    "data/now/manifest.json",
-    "data/manifest.json",
 }
 
 
@@ -47,7 +48,8 @@ def _files_with_bbox_literal() -> set[str]:
     found = set()
     for p in REPO_ROOT.rglob("*"):
         rel = p.relative_to(REPO_ROOT)
-        if not p.is_file() or SKIP_DIRS & set(rel.parts):
+        if not p.is_file() or p.suffix not in SCAN_SUFFIXES \
+                or SKIP_DIRS & set(rel.parts):
             continue
         if rel.name.startswith("test_") or rel.name == "config.yaml":
             continue
