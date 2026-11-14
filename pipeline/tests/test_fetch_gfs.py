@@ -55,6 +55,18 @@ class StubImage:
         return "stub://gfs-download"
 
 
+class StubProjection:
+    """Mirrors GFS0P25's real projection: WKT only (no crs code), but
+    getInfo() carries the 0.25 deg transform."""
+
+    def __init__(self, transform):
+        self.transform = transform
+
+    def getInfo(self):
+        # Mirrors the real getInfo: 'wkt' key, no 'crs' code.
+        return {"wkt": 'GEOGCS["unknown"]', "transform": self.transform}
+
+
 class StubCollection:
     """Rows: dicts with creation_time (ms), forecast_hours, value."""
 
@@ -79,10 +91,8 @@ class StubCollection:
 
     def first(self):
         return StubImage(members=self.rows[:1],
-                         projection=types.SimpleNamespace(
-                             crs=lambda: "EPSG:4326",
-                             transform=lambda: [0.25, 0, -180.0,
-                                                0, -0.25, 90.0]))
+                         projection=StubProjection(
+                             [0.25, 0, -180.125, 0, -0.25, 90.125]))
 
     def sum(self):
         return StubImage(members=self.rows,
@@ -220,15 +230,16 @@ def _tiff_bytes(count=3, h=4, w=5):
 
 
 def test_download_url_uses_native_grid():
-    """crsTransform from the source projection — no `scale` resample."""
-    proj = types.SimpleNamespace(
-        crs=lambda: "EPSG:4326",
-        transform=lambda: [0.25, 0, -180.0, 0, -0.25, 90.0])
+    """Source WKT + crs_transform — no `scale` resample (the GFS
+    projection has no crs code, only WKT on a sphere datum; EPSG:4326
+    would reproject and shift cells)."""
+    transform = [0.25, 0, -180.125, 0, -0.25, 90.125]
     img = StubImage()
-    gfs._download_url(img, ("rect", ()), "stem", proj)
+    gfs._download_url(img, ("rect", ()), "stem", 'GEOGCS["unknown"]',
+                      transform)
     params = img.url_params
-    assert params["crs"] == "EPSG:4326"
-    assert params["crsTransform"] == [0.25, 0, -180.0, 0, -0.25, 90.0]
+    assert params["crs"] == 'GEOGCS["unknown"]'
+    assert params["crs_transform"] == transform
     assert "scale" not in params
 
 

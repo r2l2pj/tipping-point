@@ -172,14 +172,15 @@ def _download(url: str, limit: int = MAX_DOWNLOAD_BYTES) -> bytes | None:
     return fetch(url, limit=limit)
 
 
-def _download_url(image, aoi, stem: str, projection) -> str:
-    # Download on GFS's native grid: crs + crsTransform from a source
-    # image's .projection() — a plain `scale` would silently resample
-    # (measured 8.39 mm resampled vs 9.04 mm native day sum).
+def _download_url(image, aoi, stem: str, crs_wkt: str, transform) -> str:
+    # Download on GFS's true native grid: crs + crs_transform getInfo'd
+    # from a precip-band image's .projection(). GFS0P25's projection is
+    # WKT only (sphere datum, no crs code) — pinning EPSG:4326 instead
+    # reprojects and shifts the sampled cells.
     return image.getDownloadURL({
         "name": stem, "region": aoi,
-        "crs": projection.crs(),
-        "crsTransform": projection.transform(),
+        "crs": crs_wkt,
+        "crs_transform": transform,
         "format": "GEO_TIFF", "filePerBand": False})
 
 
@@ -247,9 +248,14 @@ def fetch(case: str, issue: dt.date, days=DEFAULT_DAYS, *,
     path = cog_path(case_id, issue, out_root)
     if fetch is None:
         fetch = _download
-    projection = (col.filter(ee.Filter.eq("creation_time", run_ms))
-                     .first().projection())
-    data = fetch(_download_url(image, aoi, path.stem, projection),
+    # getInfo the projection of a precip-BAND image — .first() of the run
+    # can be the bandless f000, and GFS0P25's projection has no crs code.
+    src = (col.filter(ee.Filter.eq("creation_time", run_ms))
+              .filter(ee.Filter.gt("forecast_hours", 0)).first())
+    proj = src.projection().getInfo()
+    data = fetch(_download_url(image, aoi, path.stem,
+                               proj.get("wkt") or "EPSG:4326",
+                               proj["transform"]),
                  limit=MAX_DOWNLOAD_BYTES)
     if data is None:
         raise RuntimeError(
