@@ -215,7 +215,9 @@ def test_forecast_image_bands():
     assert [len(b.members) for b in img.bands] == [2, 1, 1]
 
 
-def _tiff_bytes(count=3, h=4, w=5):
+def _tiff_bytes(count=3, h=7, w=9):
+    """GEE payload mimic: dims = rs_2024 AOI snapped to the native grid,
+    stamped one row too far north (the real-GEE georeference bug)."""
     import rasterio
     from rasterio.transform import from_origin
 
@@ -223,7 +225,7 @@ def _tiff_bytes(count=3, h=4, w=5):
         with mem.open(
                 driver="GTiff", height=h, width=w, count=count,
                 dtype="float64", crs="EPSG:4326",
-                transform=from_origin(-52.5, -29.0, 0.25, 0.25)) as dst:
+                transform=from_origin(-52.625, -28.625, 0.25, 0.25)) as dst:
             dst.write(np.arange(count * h * w,
                                 dtype=np.float64).reshape(count, h, w))
         return mem.read()
@@ -241,6 +243,15 @@ def test_download_url_uses_native_grid():
     assert params["crs"] == 'GEOGCS["unknown"]'
     assert params["crs_transform"] == transform
     assert "scale" not in params
+
+
+def test_expected_transform_snaps_aoi_to_native_grid():
+    t, w, h = gfs.expected_transform(
+        -52.5, -30.5, -50.5, -29.0,
+        [0.25, 0, -180.125, 0, -0.25, 90.125])
+    assert (w, h) == (9, 7)
+    assert (t.c, t.f) == (-52.625, -28.875)  # x0, y_top
+    assert (t.a, t.e) == (0.25, -0.25)
 
 
 def test_fetch_writes_cog_and_sidecar(tmp_path, monkeypatch):
@@ -269,6 +280,10 @@ def test_fetch_writes_cog_and_sidecar(tmp_path, monkeypatch):
         assert src.crs.to_string() == "EPSG:4326"
         assert src.descriptions == ("d1", "d2", "d3")
         assert src.transform.e < 0  # north-up
+        # AOI snapped to the native grid — NOT the buggy payload stamp
+        # (-52.625, -28.625) that GEE returns one row too far north.
+        assert (src.transform.c, src.transform.f) == (-52.625, -28.875)
+        assert (src.width, src.height) == (9, 7)
         assert src.tags()["label"] == "forecast: NOAA GFS (issued 2024-04-27)"
 
     sidecar = json.loads(cog.with_suffix(".json").read_text())

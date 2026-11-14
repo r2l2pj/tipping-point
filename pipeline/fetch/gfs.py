@@ -184,9 +184,36 @@ def _download_url(image, aoi, stem: str, crs_wkt: str, transform) -> str:
         "format": "GEO_TIFF", "filePerBand": False})
 
 
+def expected_transform(w: float, s: float, e: float, n: float,
+                       crs_transform) -> tuple:
+    """(Affine, width, height) of `region` snapped outward to the
+    crs_transform grid — the grid GEE's data actually sits on.
+
+    Measured real-GEE behavior: getDownloadURL with a WKT crs +
+    crs_transform returns pixels on this snapped grid, but stamps the
+    GeoTIFF geotransform one row too far north. We therefore recompute
+    the transform ourselves instead of trusting the payload's.
+    """
+    from affine import Affine
+
+    rx, _, ox, _, ry, oy = crs_transform  # ry < 0 for north-up
+    x0 = ox + int(np.floor((w - ox) / rx)) * rx
+    x1 = ox + int(np.ceil((e - ox) / rx)) * rx
+    y_top = oy - int(np.floor((oy - n) / -ry)) * -ry
+    y_bot = oy - int(np.ceil((oy - s) / -ry)) * -ry
+    return (Affine(rx, 0, x0, 0, ry, y_top),
+            round((x1 - x0) / rx), round((y_top - y_bot) / -ry))
+
+
 def write_cog(path: Path, data: bytes, band_names: list[str],
-              label: str) -> Path:
-    """Persist a GEE GeoTIFF payload as a north-up EPSG:4326 float32 COG."""
+              label: str, aoi=None, crs_transform=None) -> Path:
+    """Persist a GEE GeoTIFF payload as a north-up EPSG:4326 float32 COG.
+
+    If `aoi` ([w,s,e,n] bounds) + `crs_transform` are given, the output
+    geotransform is recomputed as the region snapped to that grid (GEE
+    stamps WKT-crs downloads one row too far north — verified on real
+    output) and the payload dims must match the expected grid.
+    """
     import rasterio
 
     if zipfile.is_zipfile(io.BytesIO(data)):
@@ -198,6 +225,15 @@ def write_cog(path: Path, data: bytes, band_names: list[str],
     with rasterio.MemoryFile(data) as mem, mem.open() as src:
         arr = src.read().astype(np.float32)
         profile = dict(src.profile)
+    if aoi is not None and crs_transform is not None:
+        transform, w_px, h_px = expected_transform(*aoi,
+                                                 crs_transform)
+        if (w_px, h_px) != (profile["width"], profile["height"]):
+            raise RuntimeError(
+                f"GFS download grid mismatch: payload "
+                f"{profile['width']}x{profile['height']} vs snapped "
+                f"AOI {w_px}x{h_px}: {path}")
+        profile["transform"] = transform
     profile.update(driver="COG", dtype="float32", crs="EPSG:4326",
                    nodata=np.nan)
     with rasterio.open(path, "w", **profile) as dst:
@@ -260,7 +296,8 @@ def fetch(case: str, issue: dt.date, days=DEFAULT_DAYS, *,
     if data is None:
         raise RuntimeError(
             f"GFS download exceeds {MAX_DOWNLOAD_BYTES}-byte limit: {path}")
-    write_cog(path, data, names, label)
+    write_cog(path, data, names, label, aoi=bbox,
+              crs_transform=proj["transform"])
     manifest = {
         "case": case_id,
         "issue_date": issue.isoformat(),
