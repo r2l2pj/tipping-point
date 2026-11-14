@@ -212,18 +212,49 @@ def load_now_regions(now_dir: Path | str = NOW_DIR) -> list[dict]:
 
 
 # --------------------------------------------------------------------------
-# L12b subscriber store — Neon Postgres over its HTTPS SQL endpoint, plain
-# requests. DATABASE_URL (postgresql://...) is the only secret; the API host
-# is parsed out of it. LGPD: consent-only reads, lat/lon are never written
-# from here, /parar deletes app-side. The now job touching the table keeps
-# the free tier warm.
+# L12c subscriber store — two backends behind one interface, chosen by
+# DATABASE_URL: unset or 'sqlite:<path>' -> stdlib sqlite3 (default
+# .data/tipping-point.sqlite, gitignored); 'postgres(s)://...' -> the Neon
+# HTTPS SQL endpoint (POST https://<host>/sql, Neon-Connection-String header,
+# {query, params} body). LGPD: consent-only reads, lat/lon never written from
+# here, /parar deletes app-side. Store errors must never fail the job.
+
+_SCHEMA_SQL = Path(__file__).resolve().parents[1] / "db" / "schema.sql"
+_DEFAULT_DB = Path(__file__).resolve().parents[1] / ".data" / "tipping-point.sqlite"
 
 
-def _neon_config() -> tuple[str | None, str | None]:
-    """-> (sql_endpoint, connection_string), or (None, None) if unset."""
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        return None, None
+def _backend() -> str | None:
+    url = os.environ.get("DATABASE_URL", "")
+    if url.startswith(("postgres://", "postgresql://")):
+        return "neon"
+    if url == "" or url.startswith("sqlite:"):
+        return "sqlite"
+    return None
+
+
+def _sqlite_path() -> Path:
+    url = os.environ.get("DATABASE_URL", "")
+    if url.startswith("sqlite:") and url[len("sqlite:"):]:
+        return Path(url[len("sqlite:"):])
+    return _DEFAULT_DB
+
+
+def _sqlite_conn():
+    import sqlite3
+
+    path = _sqlite_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path)
+    if not conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' "
+            "AND name='subscribers'").fetchone():
+        conn.executescript(_SCHEMA_SQL.read_text())
+    return conn
+
+
+def _neon_endpoint() -> tuple[str | None, str | None]:
+    """-> (sql_endpoint, connection_string)."""
+    url = os.environ.get("DATABASE_URL", "")
     host = url.split("@", 1)[-1].split("/", 1)[0] if "@" in url else None
     if not host:
         return None, None
@@ -233,7 +264,7 @@ def _neon_config() -> tuple[str | None, str | None]:
 def _neon_query(query: str, params: list | None = None) -> list[dict]:
     import requests
 
-    endpoint, conn = _neon_config()
+    endpoint, conn = _neon_endpoint()
     if not endpoint or not conn:
         return []
     resp = requests.post(
@@ -255,17 +286,36 @@ def _neon_query(query: str, params: list | None = None) -> list[dict]:
 
 def subscribers() -> list[dict]:
     """Consenting subscriber rows (chat_id, lat, lon, last_class)."""
-    return _neon_query(
-        "SELECT chat_id, lat, lon, last_class FROM subscribers "
-        "WHERE consent = true")
+    kind = _backend()
+    if kind == "neon":
+        return _neon_query(
+            "SELECT chat_id, lat, lon, last_class FROM subscribers "
+            "WHERE consent = true")
+    if kind == "sqlite":
+        with _sqlite_conn() as conn:
+            cur = conn.execute(
+                "SELECT chat_id, lat, lon, last_class FROM subscribers "
+                "WHERE consent")
+            cols = [d[0] for d in cur.description]
+            return [dict(zip(cols, r)) for r in cur.fetchall()]
+    return []
 
 
 def update_subscriber(chat_id: str, fields: dict) -> None:
-    _neon_query(
-        "UPDATE subscribers SET last_class = $1, last_alert_ts = $2, "
-        "current_label = $3, data_date = $4 WHERE chat_id = $5",
-        [fields.get("last_class"), fields.get("last_alert_ts"),
-         fields.get("current_label"), fields.get("data_date"), chat_id])
+    kind = _backend()
+    vals = [fields.get("last_class"), fields.get("last_alert_ts"),
+            fields.get("current_label"), fields.get("data_date")]
+    if kind == "neon":
+        _neon_query(
+            "UPDATE subscribers SET last_class = $1, last_alert_ts = $2, "
+            "current_label = $3, data_date = $4 WHERE chat_id = $5",
+            [*vals, chat_id])
+    elif kind == "sqlite":
+        with _sqlite_conn() as conn:
+            conn.execute(
+                "UPDATE subscribers SET last_class = ?, last_alert_ts = ?, "
+                "current_label = ?, data_date = ? WHERE chat_id = ?",
+                [*vals, chat_id])
 
 
 def update_subscribers_from_regions(regions: list[dict], data_date: str) -> int:
@@ -273,11 +323,11 @@ def update_subscribers_from_regions(regions: list[dict], data_date: str) -> int:
 
     regions: dicts from critical_areas_from_assets/load_now_regions — each has
     class, label, kind and a GeoJSON `geometry`. Returns updated row count.
-    No secrets configured -> skip note, 0 (local/dev runs must not fail).
+    Unreachable/erroring store -> clear log line, 0 — store errors must never
+    fail the job.
     """
-    endpoint, _ = _neon_config()
-    if not endpoint:
-        print("[subscribers] DATABASE_URL unset — skipping")
+    if _backend() is None:
+        print("[subscribers] unrecognized DATABASE_URL scheme — skipping")
         return 0
     from shapely.geometry import Point, shape
 
@@ -293,7 +343,12 @@ def update_subscribers_from_regions(regions: list[dict], data_date: str) -> int:
             continue
     now_iso = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")
     updated = 0
-    for row in subscribers():
+    try:
+        rows = subscribers()
+    except Exception as exc:  # noqa: BLE001 — store errors must not fail the job
+        print(f"[subscribers] store unreachable ({exc}) — skipping")
+        return 0
+    for row in rows:
         try:
             point = Point(float(row["lon"]), float(row["lat"]))
         except (KeyError, TypeError, ValueError):
@@ -305,13 +360,15 @@ def update_subscribers_from_regions(regions: list[dict], data_date: str) -> int:
         prev = int(row.get("last_class") or 0)
         if cls == prev:
             continue
-        if cls == 0 and prev == 0:
+        try:
+            update_subscriber(row["chat_id"], {
+                "last_class": cls,
+                "last_alert_ts": now_iso,
+                "current_label": label,
+                "data_date": data_date,
+            })
+        except Exception as exc:  # noqa: BLE001 — store errors must not fail the job
+            print(f"[subscribers] update failed ({exc}) — skipping row")
             continue
-        update_subscriber(row["chat_id"], {
-            "last_class": cls,
-            "last_alert_ts": now_iso,
-            "current_label": label,
-            "data_date": data_date,
-        })
         updated += 1
     return updated

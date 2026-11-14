@@ -217,6 +217,63 @@ def test_subscribers_non200_raises(neon):
         alerts.subscribers()
 
 
-def test_no_env_skips_without_http(neon, monkeypatch):
-    monkeypatch.delenv("DATABASE_URL", raising=False)
+def test_unrecognized_scheme_skips(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "mysql://u:p@h/db")
     assert alerts.update_subscribers_from_regions([_REGION], "2026-11-14") == 0
+
+
+# --- sqlite backend (stdlib sqlite3 on a tmp file, no server) ---
+
+
+def _seed_sqlite(path, rows):
+    import sqlite3
+
+    conn = sqlite3.connect(path)
+    conn.executescript(
+        "CREATE TABLE subscribers (chat_id TEXT PRIMARY KEY, lat NUMERIC,"
+        " lon NUMERIC, consent BOOLEAN, last_class INTEGER,"
+        " last_alert_ts TEXT, current_label TEXT, data_date TEXT,"
+        " created_at TEXT DEFAULT CURRENT_TIMESTAMP);")
+    for r in rows:
+        conn.execute(
+            "INSERT INTO subscribers (chat_id, lat, lon, consent, last_class)"
+            " VALUES (?, ?, ?, 1, ?)",
+            (r["chat_id"], r["lat"], r["lon"], r["last_class"]))
+    conn.commit()
+    conn.close()
+
+
+def test_sqlite_backend_update_flow(monkeypatch, tmp_path):
+    db = tmp_path / "subs.sqlite"
+    _seed_sqlite(db, _ROWS)
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:{db}")
+    n = alerts.update_subscribers_from_regions([_REGION], "2026-11-14")
+    assert n == 2
+    import sqlite3
+
+    conn = sqlite3.connect(db)
+    got = {r[0]: r for r in conn.execute(
+        "SELECT chat_id, last_class, current_label, data_date,"
+        " last_alert_ts FROM subscribers")}
+    conn.close()
+    assert got["inside"][1] == 3 and got["inside"][2] == "Crítico"
+    assert got["inside"][3] == "2026-11-14"
+    assert got["inside"][4].endswith("Z")
+    assert got["outside"][1] == 0 and got["outside"][2] == ""
+    assert got["same"][1] == 3  # unchanged
+
+
+def test_sqlite_default_path_and_schema_autocreate(monkeypatch, tmp_path):
+    db = tmp_path / "fresh.sqlite"
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setattr(alerts, "_DEFAULT_DB", db)
+    # empty auto-created store -> consenting rows none -> 0 updates, no HTTP
+    assert alerts.update_subscribers_from_regions([_REGION], "2026-11-14") == 0
+    assert db.exists()
+    import sqlite3
+
+    cols = [r[1] for r in sqlite3.connect(db).execute(
+        "PRAGMA table_info(subscribers)")]
+    assert cols == ["chat_id", "lat", "lon", "consent", "last_class",
+                    "last_alert_ts", "current_label", "data_date",
+                    "created_at"]

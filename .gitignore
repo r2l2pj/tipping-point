@@ -21,6 +21,9 @@ data/raw/
 # OS
 .DS_Store
 
+# local subscriber store (sqlite default backend)
+.data/
+
 # never commit credential keys
 *-service-account*.json
 hermes-*.json
