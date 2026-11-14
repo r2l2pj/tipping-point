@@ -66,24 +66,15 @@ def fetch_imerg_daily(bounds, end: dt.date, days: int = 7):
     Returns (daily_xarray(time,lat,lon), last_product_iso). 3IMERGHHE files are
     half-hourly mm/h over a 'Grid' HDF5 group; sum * 0.5 gives mm.
     """
-    import earthaccess
-    import xarray as xr
+    # Reuse the pipeline fetcher: streamed earthaccess.open + bbox subset
+    # per granule (no dask, bounded memory, no full-file downloads).
+    from pathlib import Path
 
-    _edl_login()
-    results = earthaccess.search_data(
-        short_name="GPM_3IMERGHHE", version="07",
-        temporal=(str(end - dt.timedelta(days=days)), str(end + dt.timedelta(days=1))),
-        bounding_box=tuple(bounds),
-    )
-    if not results:
-        raise RuntimeError("no GPM_3IMERGHHE granules in window")
-    files = earthaccess.open(results)
-    try:
-        ds = xr.open_mfdataset(files, group="Grid", combine="by_coords", engine="h5netcdf")
-    except (OSError, KeyError, ValueError):
-        ds = xr.open_mfdataset(files, combine="by_coords", engine="h5netcdf")
-    var = "precipitation" if "precipitation" in ds else "precipitationCal"
-    daily = (_subset(ds[var], bounds) * 0.5).resample(time="1D").sum()
+    from live.config import NOW_DIR
+    from pipeline.fetch.imerg import fetch_daily as _imerg_daily
+
+    daily, _rain3, _steps = _imerg_daily(
+        bounds, end, days, Path(NOW_DIR) / "cog" / "imerg_early")
     last_iso = np.datetime_as_string(daily.time.values[-1], unit="h")
     return daily.compute(), f"{last_iso}Z"
 

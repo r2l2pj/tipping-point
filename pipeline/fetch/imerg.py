@@ -471,6 +471,8 @@ def fetch_daily(bounds, end: dt.date, days: int, work_dir: Path):
     incs = fetch_increments(bounds, end, days, work_dir)
     inc = incs[0] if len(incs) == 1 else xr.concat(
         incs, dim="time", join="exact").sortby("time")
+    lat_name = next(d for d in inc.dims if "lat" in d.lower())
+    inc = inc.transpose("time", lat_name, ...)
     return _accumulate(inc)
 
 

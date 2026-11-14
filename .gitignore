@@ -29,3 +29,4 @@ data/raw/
 hermes-*.json
 gcp-*.json
 service-account*.json
+static/cache/
