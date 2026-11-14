@@ -286,7 +286,9 @@ def test_flood_keys_null_for_rs(tmp_path, commons):
 
 
 def test_hand_three_radii(tmp_path, commons):
-    hand.run("rs_2024", metrics_path=tmp_path / "m.json")
+    config = tmp_path / "config.yaml"
+    config.write_text("thresholds:\n  hand_proxy_radius_m: 1500\n")
+    hand.run("rs_2024", metrics_path=tmp_path / "m.json", config_path=config)
     radii = {
         k["radius"] for p, a, k in LOG if p.endswith(".focalMin") and k.get("units") == "meters"
     }
@@ -296,7 +298,7 @@ def test_hand_three_radii(tmp_path, commons):
     assert _called("ee.Reducer.pearsonsCorrelation")
     assert _called(".sample", scale=90, numPixels=5000, seed=1)
     blob = json.loads((tmp_path / "m.json").read_text())["cases"]["rs_2024"]
-    assert set(blob["hand_validation"]) == {"1000", "1500", "3000"}
+    assert set(blob["hand_validation_radii"]) == {"1000", "1500", "3000"}
     assert blob["collections"]["MERIT_Hydro"] == "MERIT/Hydro/v1_0_1"
 
 
@@ -308,9 +310,13 @@ def test_best_radius_picks_highest_combined(tmp_path, commons, monkeypatch):
     }
     assert hand.best_radius(canned) == 1500
     monkeypatch.setattr(hand, "_radius_stats", lambda dem, merit, aoi, r: canned[r])
-    out = hand.run("rs_2024", metrics_path=tmp_path / "m.json")
+    config = tmp_path / "config.yaml"
+    config.write_text("thresholds:\n  hand_proxy_radius_m: 1000\n")
+    out = hand.run("rs_2024", metrics_path=tmp_path / "m.json", config_path=config)
+    assert "hand_proxy_radius_m: 1500" in config.read_text()
+    assert out["metrics"]["hand_validation"] == 60
     assert out["metrics"]["hand_best_radius_m"] == 1500
-    assert out["merged"]["cases"]["rs_2024"]["hand_validation"]["1500"] == {"r": 0.7, "iou": 0.6}
+    assert out["merged"]["cases"]["rs_2024"]["hand_validation_radii"]["1500"] == {"r": 0.7, "iou": 0.6}
 
 
 # ---------- dry-run: plan without init ----------
@@ -323,6 +329,17 @@ def test_dry_run_impact_no_init(capsys, monkeypatch):
     assert "wa_2025_night_lights_pre_20251210" in out
     assert "wa_2025_night_lights_post_20251210" in out
     assert "wa_2025/flood_nisar" in out
+
+
+def test_hand_no_samples_is_null_with_reason(tmp_path, commons, monkeypatch):
+    monkeypatch.setattr(hand, "compute", lambda _: {r: {"r": None, "iou": None} for r in hand.RADII_M})
+    config = tmp_path / "config.yaml"
+    config.write_text("thresholds:\n  hand_proxy_radius_m: 1500\n")
+    out = hand.run("rs_2024", metrics_path=tmp_path / "m.json", config_path=config)
+    blob = out["merged"]["cases"]["rs_2024"]
+    assert blob["hand_validation"] is None
+    assert blob["_null_reasons"]["hand_validation"]
+    assert config.read_text() == "thresholds:\n  hand_proxy_radius_m: 1500\n"
 
 
 def test_dry_run_hand_prints_radii(capsys, monkeypatch):

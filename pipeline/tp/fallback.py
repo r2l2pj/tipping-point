@@ -209,24 +209,39 @@ def render_now(root: str | Path, *, ee_client=None, fetch=None, fetch_png=None,
 
     summary_path = root / "now/summary.json"
     if not summary_path.is_file():
-        slide = images["tpi_slide_d0"].gte(cuts[1])
-        flood = images["tpi_flood_d0"].gte(cuts[1])
+        slide = images["tpi_slide_d0"].gt(cuts[2])
+        flood = images["tpi_flood_d0"].gt(cuts[2])
+        population = (ee.ImageCollection("CIESIN/GPWv411/GPW_Population_Count")
+                      .sort("system:time_start", False).first().select("population_count"))
+
+        def people(mask):
+            values = population.updateMask(mask).reduceRegion(
+                reducer=ee.Reducer.sum(), geometry=region, scale=1000, maxPixels=1e9).getInfo()
+            value = next(iter(values.values()), None)
+            return float(value) if value is not None else None
+
+        exposed = people(slide.Or(flood))
+        flooded = people(flood)
         worst = classes["tpi_slide_d0"].max(classes["tpi_flood_d0"])
         summary = {"generated_at": max(stamp["updated_at"] for stamp in stamps.values()),
                    "forecast_source": "geos-fp", "asset_dates": stamps,
                    "data_dates": node.get("data_dates", {}),
                    "critical_km2": {"slide": km2(slide), "flood": km2(flood), "any": km2(slide.Or(flood))},
                    "classes_km2": {label: km2(worst.eq(i)) for i, label in enumerate(labels)},
-                   "people_critical": None, "people_exposed": None,
-                   "_null_reasons": {"people_critical": "population not present in derived TPI assets",
-                                     "people_exposed": "population not present in derived TPI assets"}}
+                   "people_critical": exposed, "people_exposed": exposed,
+                   "people_flooded": flooded,
+                   "_null_reasons": {key: "GPW has no population coverage in the selected zone"
+                                     for key, value in {"people_critical": exposed,
+                                                        "people_exposed": exposed,
+                                                        "people_flooded": flooded}.items()
+                                     if value is None}}
         summary_path.write_text(json.dumps(summary))
     critical_path = root / "now/geojson/critical_areas.geojson"
     if not critical_path.is_file():
         features = []
         for name in ("tpi_slide_d0", "tpi_flood_d0", "tpi_slide_d1", "tpi_flood_d1"):
             cls = classes[name]
-            collection = cls.updateMask(cls.gte(2)).reduceToVectors(
+            collection = cls.updateMask(images[name].gt(cuts[2])).reduceToVectors(
                 geometry=region, scale=1000, geometryType="polygon", eightConnected=True,
                 labelProperty="class", maxPixels=1e9, geometryInNativeProjection=False).getInfo()
             for feature in collection["features"]:

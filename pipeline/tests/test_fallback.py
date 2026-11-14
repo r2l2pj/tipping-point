@@ -152,7 +152,7 @@ def fake_render_clients(cog_bytes=b"COG"):
                 if method == "reduceToVectors":
                     return SimpleNamespace(getInfo=lambda: {"features": [{
                         "type": "Feature", "geometry": {"type": "Polygon", "coordinates": []},
-                        "properties": {"class": 2}}]})
+                        "properties": {"class": 3}}]})
                 if method == "getThumbURL":
                     return "fake-png-url"
                 if method == "getDownloadURL":
@@ -161,7 +161,8 @@ def fake_render_clients(cog_bytes=b"COG"):
             return operation
 
     Image.pixelArea = lambda: Image()
-    ee = SimpleNamespace(Image=Image, Geometry=SimpleNamespace(Rectangle=lambda bounds: bounds),
+    ee = SimpleNamespace(Image=Image, ImageCollection=lambda name: Image(name),
+                         Geometry=SimpleNamespace(Rectangle=lambda bounds: bounds),
                          Reducer=SimpleNamespace(sum=lambda: "sum"))
 
     def fetch(url, limit=None):
@@ -180,7 +181,7 @@ def test_render_now_writes_local_files(production):
     entries = fallback.render_now(production, ee_client=ee, fetch=fetch,
                                   fetch_png=lambda url: b"PNG")
     assert [args for method, args, _ in calls if method == "select"] == [
-        ("TPI_slide",)] * 4 + [("TPI_flood",)] * 4
+        ("TPI_slide",)] * 4 + [("TPI_flood",)] * 4 + [("population_count",)]
     thumbs = [args[0] for method, args, _ in calls if method == "getThumbURL"]
     assert len(thumbs) == 8
     assert all(p["crs"] == "EPSG:3857" for p in thumbs)
@@ -196,7 +197,10 @@ def test_render_now_writes_local_files(production):
     critical = json.loads((production / "now/geojson/critical_areas.geojson").read_text())
     assert len(critical["features"]) == 4
     assert {f["properties"]["hazard"] for f in critical["features"]} == {"slide", "flood"}
-    assert all(f["properties"]["label"] == "Alto" for f in critical["features"])
+    assert all(f["properties"]["label"] == "Crítico" for f in critical["features"])
+    assert len([1 for method, args, _ in calls if method == "gt" and args == (0.6,)]) == 6
+    assert summary["people_exposed"] == summary["people_flooded"] == 12.5
+    assert summary["_null_reasons"] == {}
     assert all((production / rel).read_bytes() == content for rel, content in originals.items())
     assert entries[-2:] == ["now/manifest.json", "manifest.json"]
     assert all((production / rel).is_file() for rel in entries)
@@ -247,7 +251,7 @@ def test_render_rs_cog_only_layers(production):
     (production / "now/manifest.json").write_text(json.dumps(node))
     ee, calls, fetch = fake_render_clients()
     fallback.render_now(production, ee_client=ee, fetch=fetch, fetch_png=lambda url: b"PNG")
-    assert [args for method, args, _ in calls if method == "select"][-2:] == [("R",), ("S",)]
+    assert [args for method, args, _ in calls if method == "select"][-3:-1] == [("R",), ("S",)]
     assert (production / "now/cog/r_d0.tif").read_bytes() == b"COG"
     assert (production / "now/cog/s_d0.tif").read_bytes() == b"COG"
     assert len([1 for method, _, _ in calls if method == "getThumbURL"]) == 8
