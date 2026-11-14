@@ -58,9 +58,8 @@ Local fallback: `EDL_USER`/`EDL_PASS` or a `~/.netrc` entry for
 ## Domains and the rain climatology
 
 `config.yaml` carries a `domains` block alongside `cases`: `domains.now`
-(name `sul_brasil`, bbox `[-58.0, -34.0, -48.0, -22.5]` W/S/E/N) is the live
-coverage area, read via `tp.config.now_bounds()` (same bbox as
-`live.config.NOW_BOUNDS`).
+(name `sul_brasil`, W/S/E/N bbox) is the live coverage area, read via
+`tp.config.now_bounds()` (same bbox as `live.config.NOW_BOUNDS`).
 
 The 3-day-rain climatology backing the R-score percentiles lives in GEE as an
 ImageCollection per coverage area, **int16 mm×10** storage (~0.9 GB total —
