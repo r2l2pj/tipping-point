@@ -98,7 +98,7 @@ forecast_source       7
   p90|p95|p99 3-day-sum mm ~10km), slope(deg), hand(m)}` for
   domain `south_brazil|wa_2025`; `<case>/{tpi_slide_series, tpi_flood_series,
   r_series, s_series (band=YYYYMMDD), t_slide, t_flood (single-band),
-  landslide_candidates_hls, + ingested names via data/assets.json}`;
+  landslide_candidates_hls, + ingested names via data/<case>/assets.json}`;
   `now/{imerg_early, smap_l4, geosfp collections, tpi_slide_d0..3,
   tpi_flood_d0..3, r_d0..3, s_d0..3 single-day images}`.
 - Manifest layer entries gain `"asset": string|null` (full asset id; null =
@@ -107,7 +107,8 @@ forecast_source       7
   (ISO) noted; reader rule pinned: `asset` = primary via app server,
   `png`/`cog` = fallback unchanged.
 - Writer table gained rows for `projects/<GEE_PROJECT>/assets/tipping-point/**`
-  and `data/assets.json`.
+  and `data/<case>/assets.json` (per case — lead-gathering ingest tool;
+  corrected from root data/assets.json on lead-analysis note).
 - Proof greps: `"asset"`:5, `assets/tipping-point`:7, `data_date`:6,
   `assets.json`:3; required greps unchanged; fences even (22).
 

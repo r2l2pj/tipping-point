@@ -400,7 +400,7 @@ tipping-point/
 │   │                            # multiband, one band per day named YYYYMMDD
 │   ├── t_slide, t_flood         # single-band static terrain scores
 │   ├── landslide_candidates_hls
-│   └── ...                      # further ingested rasters — names in data/assets.json
+│   └── ...                      # further ingested rasters — names in data/<case>/assets.json
 └── now/
     ├── imerg_early, smap_l4, geosfp                            # input collections
     └── tpi_slide_d0..d3, tpi_flood_d0..d3, r_d0..d3, s_d0..d3   # single-day images
@@ -412,7 +412,7 @@ tipping-point/
 - Reader rule: a manifest layer's `asset` is the PRIMARY source (served via
   the app server); `png`/`cog` remain the fallback, unchanged.
 - Extra ingested rasters beyond the names above are recorded by asset id in
-  `data/assets.json`.
+  `data/<case>/assets.json` (per case, written by the gathering ingest tool).
 
 ## Who writes what
 
@@ -434,7 +434,7 @@ tipping-point/
 | `data/<case>/nisar_products.json` | `pipeline/scripts/01_get_nisar.py` / `tp/nisar.py` (granule ids → `collections`) |
 | `data/now/*` | `live/run_now.py` (static grid `static/sul_static.npz` from `live/build_static.py`) |
 | `projects/<GEE_PROJECT>/assets/tipping-point/**` | `python -m gee.tpi` (static/<case>), `live/run_now.py` (now/), publish ingest (`tools/publish_case.py`) |
-| `data/assets.json` | ingest step (`tools/publish_case.py` / `python -m gee.tpi`) — records extra ingested asset ids |
+| `data/<case>/assets.json` | lead-gathering ingest tool — records extra ingested asset ids per case |
 | `data/raw/**` | fetch scripts (NISAR, OPERA DSWx, HLS, MODIS NRT) — gitignored |
 | `simular.json` | `tools/build_simular.py` — an **app-side fixture** for the Telegram `/simular` demo, NOT a contract product |
 
