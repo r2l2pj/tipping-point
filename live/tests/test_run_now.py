@@ -4,6 +4,7 @@ SMAP gaps must surface as nodata (transparent PNGs, NaN in the float TPI COGs,
 `nodata_km2` in summary) — never filled with a fake 0.7 wetness.
 """
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -93,7 +94,7 @@ def fake_now(tmp_path, monkeypatch):
         "--bounds", *map(str, BOUNDS),
         "--static-dir", str(static_dir),
         "--out-dir", str(out_dir),
-        "--no-nisar", "--no-upload",
+        "--no-nisar",
     ])
     return args, out_dir, written
 
@@ -147,3 +148,12 @@ def test_run_now_end_to_end(fake_now):
     ]:
         assert (out_dir / rel).exists(), rel
     assert json.loads((out_dir / "manifest.json").read_text())["schema"] == "tipping-point/now@2"
+
+
+def test_no_upload_flag_removed():
+    """S19: no bucket anywhere — run_now has no GCS upload path or flag."""
+    import live.run_now
+    with pytest.raises(SystemExit):
+        parse_args(["--no-upload"])
+    assert not hasattr(live.publish, "upload_gcs")
+    assert "NOW_GCS_BUCKET" not in Path(live.run_now.__file__).read_text()

@@ -12,6 +12,7 @@ import re
 from pathlib import Path
 
 import pytest
+import yaml
 from tp import config
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -74,6 +75,18 @@ def test_now_bounds_missing_key_raises(monkeypatch):
                         lambda *a, **k: {"domains": {"now": {"name": "x"}}})
     with pytest.raises(KeyError, match="domains.now"):
         config.now_bounds()
+
+
+def test_now_name_reads_config_yaml():
+    raw = yaml.safe_load(config.CONFIG_PATH.read_text())
+    assert config.now_name() == raw["domains"]["now"]["name"]
+
+
+def test_now_name_missing_key_raises(monkeypatch):
+    monkeypatch.setattr(config, "load_config",
+                        lambda *a, **k: {"domains": {"now": {"bbox": [0, 0, 1, 1]}}})
+    with pytest.raises(KeyError, match="domains.now.name"):
+        config.now_name()
 
 
 def test_clim_scale_reads_config_yaml():

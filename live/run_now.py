@@ -11,7 +11,6 @@ manifest last. `--local` runs the local numpy pipeline below instead
   3. list recent NISAR passes over the area (metadata only)
   4. write PNGs, critical-areas GeoJSON, summary.json, alerts.json into data/now/
   5. write manifest.json LAST (the app never reads a half-updated set)
-  6. optionally upload data/now/ to gs://$NOW_GCS_BUCKET/now/ (manifest last)
 
 The --local path requires static/sul_static.npz — build once with
 live/build_static.py. Credentials come from env (EARTHDATA_TOKEN canonical,
@@ -27,7 +26,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import os
 import sys
 from pathlib import Path
 
@@ -67,8 +65,6 @@ def parse_args(argv=None):
                         "temporary NASA/GPM_L3/IMERG_V07 stand-in via Earth "
                         "Engine until the GES DISC EULA is accepted")
     p.add_argument("--no-nisar", action="store_true", help="skip the NISAR pass listing")
-    p.add_argument("--no-upload", action="store_true",
-                   help="skip GCS upload even if NOW_GCS_BUCKET is set")
     p.add_argument("--local", action="store_true",
                    help="run the local numpy pipeline instead of the GEE job "
                         "(fallback path; the options above only apply here)")
@@ -244,11 +240,6 @@ def run(args) -> dict:
         layers, nisar)
     written = publish.write_outputs(args.out_dir, files, manifest)
     assert written[-1].name == "manifest.json"
-
-    # ---- optional upload (env-gated; plain git commit of data/now/ also works) ----
-    bucket = os.environ.get("NOW_GCS_BUCKET")
-    if bucket and not args.no_upload:
-        publish.upload_gcs(args.out_dir, bucket)
     return manifest
 
 

@@ -100,3 +100,9 @@ def test_fallback_publish_and_permissions(name, cron, job):
 def test_now_cron():
     _, doc = _load("now.yml")
     assert _on(doc)["schedule"] == [{"cron": "0 */6 * * *"}]
+
+
+def test_now_header_comment_matches_cron():
+    text, _ = _load("now.yml")
+    header = text.split("on:", 1)[0]
+    assert "every 6 h" in header and "every 3 h" not in header

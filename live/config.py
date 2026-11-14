@@ -16,6 +16,7 @@ _pipeline = str(REPO_ROOT / "pipeline")
 if _pipeline not in sys.path:
     sys.path.insert(0, _pipeline)
 from tp.config import now_bounds as _now_bounds
+from tp.config import now_name as _now_name
 
 CONFIG_PATH = REPO_ROOT / "config.yaml"
 STATIC_DIR = REPO_ROOT / "static"
@@ -28,7 +29,6 @@ NOW_RES_DEG = 0.01                          # ~1 km
 IMERG_LOOKBACK_DAYS = 7
 NISAR_LOOKBACK_DAYS = 14
 FORECAST_DAYS = 3
-GCS_BUCKET = "tipping-point-data"
 
 LABELS = ["Baixo", "Moderado", "Alto", "Crítico"]
 PALETTE_HEX = ["ffffb2", "fecc5c", "fd8d3c", "bd0026"]
@@ -55,4 +55,4 @@ ALERT_MIN_CLASS = 2                                         # send only on upgra
 GEE_PROJECT = os.environ.get("GEE_PROJECT", "your-gee-project")
 ASSET_ROOT = f"projects/{GEE_PROJECT}/assets/tipping-point"
 NOW_COLLECTIONS = {"imerg_early", "smap_l4", "geosfp"}
-STATIC_DOMAIN = "south_brazil"
+STATIC_DOMAIN = _now_name()                 # config.yaml domains.now.name

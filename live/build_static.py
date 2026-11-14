@@ -300,7 +300,7 @@ def parse_args(argv=None):
     p = argparse.ArgumentParser(
         prog="build_static", description=__doc__.splitlines()[0])
     p.add_argument("--assets", action="store_true",
-                   help="export the static/south_brazil/* GEE assets "
+                   help=f"export the static/{STATIC_DOMAIN}/* GEE assets "
                         "(clim_rain, slope, hand) instead of writing the npz")
     p.add_argument("--dry-run", action="store_true",
                    help="--assets only: build the export tasks without "
