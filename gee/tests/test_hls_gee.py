@@ -166,11 +166,11 @@ def test_pre_post_windows_from_config(commons):
 
 def test_run_merges_metrics_and_starts_asset_export(tmp_path, commons):
     out = hls_scar.run("wa_2025", metrics_path=tmp_path / "m.json")
-    m = json.loads((tmp_path / "m.json").read_text())
+    blob = json.loads((tmp_path / "m.json").read_text())["cases"]["wa_2025"]
     assert {"cloud_pct", "landslide_hls_candidates",
-            "landslide_hls_candidate_px"} <= set(m)
-    assert "HLS" in m["collections"]
-    assert "HLSL30" in m["collections"]["HLS"]
+            "landslide_hls_candidate_px"} <= set(blob)
+    assert "HLS" in blob["collections"]
+    assert "HLSL30" in blob["collections"]["HLS"]
     exports = [(p, a, k) for p, a, k in LOG
                if p.endswith("Export.image.toAsset")]
     assert len(exports) == 1
