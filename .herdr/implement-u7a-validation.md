@@ -155,3 +155,37 @@ no earthaccess import.
   (fill) never count.
 
 Re-verified: 43 tests pass, `ruff check .` clean.
+
+## L7 — gee/opera.py (NISAR x OPERA validation in Earth Engine)
+
+- New `gee/opera.py` (`python -m gee.opera --case <id> [--dry-run|--tasks]`)
+  in the U5 pattern: `from gee.common import …` guarded by
+  `except ModuleNotFoundError` so `--dry-run` works without U4;
+  `gee.common`/`__init__.py` not created (U4 owns them).
+- Inputs resolve in order: `data/<case>/assets.json` name→path map
+  (tolerant reader — `OSError`/`JSONDecodeError` → {}), then
+  `<ASSET_ROOT>/<case>/water_nisar` + `<case>/opera_wtr` verified via
+  `ee.data.getAsset`; OPERA also falls back to a catalog mosaic
+  (`OPERA_CATALOG` per case, `filterBounds`+`filterDate` event..+5d,
+  `select(B01_WTR).mosaic()`) when the collection exists.
+- One reduceRegion sums selfMasked tp/fp/fn/cloud/valid bands → client-side
+  iou/f1/cloud_pct (same math as local) → `merge_metrics(case_id, …)`
+  flat + null reasons + `collections.opera_dswx`/`cloud_pct_source`.
+- New `gee/tests/test_opera.py` (10 tests, fake-ee recorder + stubbed
+  gee.common via sys.modules, repo-root sys.path insert since gee/ has no
+  __init__.py on this branch): assets.json wins / default paths / catalog
+  fallback / nothing resolves / band math / hand-computed merge /
+  nisar-gate null reasons / all-null / dry-run / --tasks skips merge.
+
+## Review blocker fix — 04 merged unbound
+
+`--auto` with zero granules (or any run resolving no source) left `merged`
+unassigned → UnboundLocalError at `print(merged)`. The tail is now an
+if/else that always merges: compare when OPERA+NISAR exist; else cloud_pct
+from mosaic or Fmask with iou/f1 null+reason; else all three null+reason
+("no OPERA tiles in the window and no --hls-cloud raster"). `--hls-cloud`
+standalone now writes iou/f1 nulls with a reason. New test
+`test_script_hls_cloud_alone` drives the script's main() via importlib
+with DATA_DIR patched to tmpdir; empty-`--auto` smoke-verified manually.
+
+Re-verified: 54 tests pass (44 pipeline + 10 gee), `ruff check .` clean.

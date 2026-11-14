@@ -1,6 +1,8 @@
+import importlib.util
 import json
 import os
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -177,3 +179,39 @@ def test_write_metrics_preserves_existing_keys(tmp_path):
     assert on_disk == m
     assert on_disk["flooded_km2"] == 42.0
     assert on_disk["iou"] == 0.5 and on_disk["f1"] == 0.66
+
+
+def _script_main(monkeypatch, tmp_path, argv):
+    """Run pipeline/scripts/04_validation.py main() against a tmp data dir."""
+    import tp.events
+    import tp.metrics
+    monkeypatch.setattr(tp.events, "DATA_DIR", tmp_path / "data")
+    monkeypatch.setattr(tp.metrics, "DATA_DIR", tmp_path / "data")
+    script = Path(__file__).resolve().parents[2] / "pipeline/scripts/04_validation.py"
+    spec = importlib.util.spec_from_file_location("v4script", script)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    monkeypatch.setattr(sys, "argv", argv)
+    mod.main()
+
+
+def test_script_hls_cloud_alone(tmp_path, monkeypatch):
+    # --hls-cloud with no --cloud-only: cloud_pct merges + iou/f1 null w/ reasons
+    fmask = np.array([
+        [2, 6, 0, 0],
+        [0, 0, 0, 0],
+        [4, 0, 0, 0],
+        [0, 0, 0, 255],
+    ], np.uint8)
+    p = write_tif(tmp_path / "fmask.tif", fmask, nodata=255)
+    _script_main(
+        monkeypatch, tmp_path,
+        ["04", "--event", "rs-2024-05", "--hls-cloud", str(p)],
+    )
+    files = list(tmp_path.rglob("metrics.json"))
+    assert len(files) == 1
+    m = json.loads(files[0].read_text())
+    assert m["cloud_pct"] == pytest.approx(200 / 15)
+    assert m["iou"] is None and m["f1"] is None
+    assert m["_null_reasons"]["iou"] and m["_null_reasons"]["f1"]
+    assert m["collections"]["cloud_pct_source"] == "hls_fmask"

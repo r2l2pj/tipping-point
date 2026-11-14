@@ -128,21 +128,28 @@ def main() -> None:
             flat=compare_wtr(nisar, wtr),
             collections={**collections, "cloud_pct_source": short_name},
         )
-    elif wtr is not None or args.hls_cloud:
-        # cloud stat only: OPERA mosaic preferred, Fmask as fallback
+    else:
+        # cloud stat only (or nothing resolved): OPERA mosaic preferred,
+        # Fmask as fallback; uncovered keys merge as null + reason.
         if wtr is not None:
-            pct, source = cloud_pct(wtr), short_name
+            flat = {"cloud_pct": cloud_pct(wtr), "iou": None, "f1": None}
+            source, reason = short_name, f"no NISAR water mask at {nisar_path.name}"
+        elif args.hls_cloud:
+            flat = {
+                "cloud_pct": hls_fmask_cloud_pct(args.hls_cloud),
+                "iou": None, "f1": None,
+            }
+            source = "hls_fmask"
+            reason = "optical-only run — no OPERA WTR/NISAR pair to compare"
         else:
-            pct, source = hls_fmask_cloud_pct(args.hls_cloud), "hls_fmask"
-        flat = {"cloud_pct": pct}
-        reasons = {}
-        if wtr is not None:
-            flat["iou"] = flat["f1"] = None
-            reasons["iou"] = reasons["f1"] = f"no NISAR water mask at {nisar_path.name}"
-        merged = merge_metrics(
-            event, flat=flat, reasons=reasons,
-            collections={**collections, "cloud_pct_source": source},
-        )
+            flat = {"cloud_pct": None, "iou": None, "f1": None}
+            source = None
+            reason = "no OPERA tiles in the window and no --hls-cloud raster"
+        reasons = {k: reason for k, v in flat.items() if v is None}
+        coll = dict(collections)
+        if source:
+            coll["cloud_pct_source"] = source
+        merged = merge_metrics(event, flat=flat, reasons=reasons, collections=coll)
     print(merged)
 
 
