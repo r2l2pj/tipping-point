@@ -222,7 +222,7 @@ def test_dry_run_writes_nothing(tmp_path):
 
 def test_critical_stats_matches_independent_count(tmp_path):
     """series days[].critical_* and the metrics scalar share ONE definition:
-    pixel count with TPI >= 0.6, geodesic px area, per hazard + union."""
+    pixel count with TPI > 0.6, geodesic px area, per hazard + union."""
     from tp.bundle import _critical_stats, TPI_THRESHOLD
     d = _data_dir(tmp_path)
     import datetime as dt
@@ -242,7 +242,7 @@ def test_critical_stats_matches_independent_count(tmp_path):
     # independent recount for day2, same band, same geodesic formula
     with rasterio.open(cs) as src:
         a = src.read(2).astype(np.float64); tr = src.transform
-    m = np.isfinite(a) & (a >= TPI_THRESHOLD)
+    m = np.isfinite(a) & (a > TPI_THRESHOLD)
     lats = tr.f + (np.arange(a.shape[0]) + 0.5) * tr.e
     px = (abs(tr.a) * 111320.0 * np.cos(np.deg2rad(lats))
           * abs(tr.e) * 110540.0) / 1e6

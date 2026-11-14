@@ -292,7 +292,7 @@ def _critical_stats(bands_by_date: dict, pop_cog: Path | None,
                     people: bool = True) -> dict:
     """{iso_date: {critical_km2, critical_slide_km2, critical_flood_km2,
     people_critical}} — ONE definition shared by the series rows and the
-    metrics scalar: area of pixels with TPI >= TPI_THRESHOLD, per hazard,
+    metrics scalar: area of pixels with TPI > TPI_THRESHOLD (strict — doc class table), per hazard,
     geodesic on the source lon/lat grid (per-row cos(lat) correction);
     critical_km2 is the slide∪flood union. people_critical = GPWv4 count
     under the union via coverage-fraction reproject to the ~1 km GPW grid
@@ -311,7 +311,9 @@ def _critical_stats(bands_by_date: dict, pop_cog: Path | None,
                 continue
             with rasterio.open(cb[0]) as src:
                 a = np.asarray(src.read(cb[1]), dtype=np.float64)
-                m = _valid(a, src.nodata) & (a >= TPI_THRESHOLD)
+                # doc class table: Crítico = "acima de 0,6" — strict, same
+                # cut classify() uses for class 3
+                m = _valid(a, src.nodata) & (a > TPI_THRESHOLD)
                 tr, crs = src.transform, src.crs
             per_hazard[h] = m
             mask = m if mask is None else (mask | m)
@@ -733,7 +735,7 @@ def publish_case(event_id: str, dry_run: bool = False,
         flat, reasons = {}, {}
         first_crit = next(
             (d for d in sorted(tpi_max)
-             if tpi_max[d] >= TPI_THRESHOLD), None)
+             if tpi_max[d] > TPI_THRESHOLD), None)
         flat["first_critical_at"] = first_crit
         peak = max(crit_stats.items(),
                    key=lambda kv: kv[1]["critical_km2"], default=None)
