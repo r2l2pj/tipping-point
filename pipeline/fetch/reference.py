@@ -20,7 +20,8 @@ data/<case>/assets.json is skipped unless --force.
     uv run python -m pipeline.fetch.reference --kind glc --case wa_2025
     uv run python -m pipeline.fetch.reference --kind all --all --dry-run
 
-Env: GEE_PROJECT (default 'hermes-fesolucoes'), plus whatever credentials
+Env: GEE_PROJECT (default 'your-gee-project' placeholder — set it; the
+deploy project is env-only), plus whatever credentials
 fetch.ingest itself needs (GOOGLE_APPLICATION_CREDENTIALS / GCP_SA_KEY).
 No bucket env is needed.
 """
@@ -46,7 +47,7 @@ except ImportError:
     except ImportError:  # unit/ingest not landed yet — --dry-run still works
         append_manifest = ingest_table = None
 
-DEFAULT_GEE_PROJECT = "hermes-fesolucoes"
+DEFAULT_GEE_PROJECT = "your-gee-project"
 MANIFEST_NAME = "assets.json"
 STAGING_DIRNAME = "staging"
 

@@ -526,7 +526,7 @@ def test_manifest_only_writes_pending(monkeypatch, tmp_path):
         (tmp_path / "wa_2025" / "assets.json").read_text())
     assert doc["assets"] == [{
         "name": "municipal_boundaries",
-        "gee_id": "projects/hermes-fesolucoes/assets/tipping-point/"
+        "gee_id": "projects/your-gee-project/assets/tipping-point/"
                   "wa_2025/municipal_boundaries",
         "kind": "table",
         "status": "pending",

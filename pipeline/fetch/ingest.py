@@ -18,7 +18,8 @@ is skipped (status "exists") unless force=True.
 
 Env vars:
   GEE_PROJECT                     Earth Engine cloud project
-                                  (default 'hermes-fesolucoes')
+                                  (default 'your-gee-project' placeholder —
+                                  set it; the deploy project is env-only)
   GCP_SA_KEY                      service-account JSON (path or raw blob —
                                   repo convention, shared with gee.common)
   GEE_SERVICE_ACCOUNT_KEY         fallback SA key env
@@ -28,8 +29,7 @@ Missing creds raise RuntimeError naming what to set. ee and gee.common are
 imported lazily (importlib, so tests inject fakes through sys.modules) —
 --dry-run and the test suite need no credentials, no SDK and no network. EE
 is initialized through the shared gee.common.init helper
-(ServiceAccountCredentials). NOTE: hermes-fesolucoes is not registered
-with Earth Engine yet, so real ingestion is blocked until it is.
+(ServiceAccountCredentials).
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ from pathlib import Path
 
 from tp import events
 
-DEFAULT_GEE_PROJECT = "hermes-fesolucoes"
+DEFAULT_GEE_PROJECT = "your-gee-project"
 ASSET_ROOT = "tipping-point"
 MANIFEST_SCHEMA = "tipping-point/gee-assets@1"
 # Features per client-side ee.FeatureCollection chunk (and per export
