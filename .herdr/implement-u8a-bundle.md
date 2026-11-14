@@ -47,7 +47,9 @@ Branch `unit/u8a`. Includes the mid-task L4 delta: all outputs under
     fills `planned[]` and writes nothing.
 - `tools/publish_case.py` (new) — thin CLI `--event [--dry-run]`, prints
   the summary JSON. No creds needed.
-- `pipeline/tests/test_bundle.py` (new) — 7 tests.
+- `pipeline/tests/test_bundle.py` (new) — 8 tests, incl.
+  `test_forecast_png_stem_pinned` asserting the literal SCHEMA forecast
+  stem `rs_2024/png/tpi_slide_d1_20240503.png` (review fix-up).
 - `data/rs_2024/geojson/places.geojson` (new, 6 RS towns from gee/08),
   `data/wa_2025/geojson/places.geojson` (new, 8 Skagit/Snohomish towns).
 

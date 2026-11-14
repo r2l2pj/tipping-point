@@ -100,6 +100,20 @@ def test_forecast_cog_layers(tmp_path):
         assert ent["date"] == "2025-12-11" and ent["forecast"] is True
 
 
+def test_forecast_png_stem_pinned(tmp_path):
+    """SCHEMA pins <layer-id>_d<k>_<YYYYMMDD>.png where the date is the
+    depicted day (issue + k) — the literal doc example."""
+    d = _data_dir(tmp_path)
+    _write_cog(d / "cog" / "rs_2024_tpi_forecast_d1_20240502.tif",
+               [_tpi(0.5)], ["tpi_slide"])
+    s = publish_case("rs-2024-05", data_dir=tmp_path / "data")
+    assert (d / "png" / "tpi_slide_d1_20240503.png").exists()
+    ent = next(e for e in s["layers"] if e["id"] == "tpi_slide_d1")
+    assert ent["png"] == "rs_2024/png/tpi_slide_d1_20240503.png"
+    idx = json.loads((d / "png" / "_index.json").read_text())
+    assert idx["layers"][0]["png"] == "rs_2024/png/tpi_slide_d1_20240503.png"
+
+
 def test_priority_zones(tmp_path):
     d = _data_dir(tmp_path)
     tpi = _tpi()
