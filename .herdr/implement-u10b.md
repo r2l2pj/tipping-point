@@ -46,8 +46,11 @@ conductor wants raw per-case too.
   - `dry_run=True` returns the planned `data/raw/nisar/` paths with no
     creds and no network.
 - `download_plan` tolerates both event shapes (scene dates flat on the
-  frame or nested under `"scenes"`; GUNW absent) and now carries
-  `track`/`frame` into each entry for granule matching.
+  frame, under a `"scenes"` mapping, or in a `"scenes"` list of
+  `{date, role, granule_id}` — wa-2025-12 uses the list form now and is
+  GCOV-only) and carries `track`/`frame`/`granule_id` into each entry.
+  `_find_granule` prefers a declared `granule_id` (native-id equality),
+  else falls back to track/frame + date scoring.
 - Helpers: `_edl_credentials`, `_earthdata_login`, `_gdal_auth_env`,
   `_step_dates`, `_track_look`, `_native_id`, `_find_granule`,
   `_subset_h5_variable`, `_netcdf_dsn`.
@@ -63,14 +66,20 @@ conductor wants raw per-case too.
   clean refusal). `--dry-run` lists paths without downloading.
 - `--plan` unchanged: fully offline, no creds, no network.
 
-### `pipeline/tests/test_nisar.py` (+6 tests)
+### `pipeline/tests/test_nisar.py`
+- `test_download_plan_wa` — updated for GCOV-only wa (gunw==0); asserts
+  declared granule_ids ride on the plan from the scenes-list shape.
+- `test_download_plan_gunw_synthetic` — GUNW plan coverage kept via a
+  synthetic event dict.
 - `test_event_data_dir_uses_case_key` — `event_data_dir('wa-2025-12')`
   → `<DATA_DIR>/wa_2025` with `cog/` etc.; `case_key('rs-2024-05')`.
 - `test_execute_plan_writes_tifs_and_manifest` — fake `rasterio` injected
   into `sys.modules` (`rasterio`, `rasterio.vrt`, `rasterio.windows`),
-  fake `earthaccess`, `EDL_*` env, `DATA_DIR` → tmp. Asserts 8 tifs under
-  `raw/nisar/`, 4 CMR calls, manifest roles/collections/native-ids
-  (incl. wrong-track granule filtered out).
+  fake `earthaccess`, `EDL_*` env, `DATA_DIR` → tmp. Asserts 6 GCOV tifs
+  under `raw/nisar/`, 2 CMR calls, manifest roles/collections/native-ids
+  (declared granule_id match; no GUNW key).
+- `test_execute_plan_gunw_synthetic` — execute_plan GUNW path on the
+  synthetic event: 2 tifs + manifest ref/evt ids (date/track matching).
 - `test_execute_plan_requires_creds` — `RuntimeError("Earthdata credentials…")`
 - `test_execute_plan_dry_run_needs_nothing` — planned paths, nothing written
 - `test_plan_flag_runs_offline` — subprocess `--plan`, rc 0, no creds
@@ -79,8 +88,9 @@ conductor wants raw per-case too.
 ## Commands run
 
 - `$UV sync` — ok
-- `$UV run pytest pipeline/tests live/tests ml/tests -x -q` — **52 passed**
-  (46 baseline + 6 new), 9 pre-existing pandas warnings
+- `$UV run pytest pipeline/tests -q` — **41 passed**
+- `$UV run pytest pipeline/tests live/tests ml/tests -q` — **82 passed**,
+  only pre-existing warnings
 - `$UV run ruff check pipeline/` — **All checks passed**
 - `01_get_nisar.py --event wa-2025-12 --plan` — prints plan + gdalwarp cmds, no creds
 - `... --execute --dry-run` — lists 8 `data/raw/nisar/*.tif` paths, no creds

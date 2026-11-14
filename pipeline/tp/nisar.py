@@ -177,15 +177,26 @@ def download_plan(event: dict) -> list[dict]:
     nisar = event.get("nisar", {})
     for frame in nisar.get("frames", []):
         product = frame.get("product")
-        # Tolerate both event shapes: dates may sit flat on the frame object
-        # or nested under a "scenes" mapping.
+        # Tolerate both event shapes: scene dates may sit flat on the frame,
+        # in a "scenes" mapping, or in a "scenes" list of
+        # {date, role, granule_id} entries.
         scenes = frame.get("scenes")
-        if not isinstance(scenes, dict):
-            scenes = frame
+        scene_map, granule_ids = {}, {}
+        if isinstance(scenes, dict):
+            scene_map = scenes
+        elif isinstance(scenes, list):
+            for s in scenes:
+                if isinstance(s, dict) and s.get("role"):
+                    scene_map[s["role"]] = s.get("date")
+                    if s.get("granule_id"):
+                        granule_ids[s["role"]] = s["granule_id"]
         collections = frame.get("collections", {})
         track, frame_no = frame.get("track"), frame.get("frame")
         if product == "GCOV":
-            for which, date in (("pre", scenes.get("pre")), ("post", scenes.get("post"))):
+            for which, date in (
+                ("pre", scene_map.get("pre") or frame.get("pre")),
+                ("post", scene_map.get("post") or frame.get("post")),
+            ):
                 if not date:
                     continue
                 for var in ("HHHH", "HVHV", "mask"):
@@ -199,6 +210,7 @@ def download_plan(event: dict) -> list[dict]:
                             "h5_path": h5path,
                             "track": track,
                             "frame": frame_no,
+                            "granule_id": granule_ids.get(which),
                             "collection": collections.get(
                                 "BETA", COLLECTIONS["GCOV"]
                             ),
@@ -207,8 +219,18 @@ def download_plan(event: dict) -> list[dict]:
                     )
         elif product == "GUNW":
             for which, pair in (
-                ("ref", scenes.get("reference_pair")),
-                ("evt", scenes.get("event_pair")),
+                (
+                    "ref",
+                    scene_map.get("reference_pair")
+                    or scene_map.get("ref")
+                    or frame.get("reference_pair"),
+                ),
+                (
+                    "evt",
+                    scene_map.get("event_pair")
+                    or scene_map.get("evt")
+                    or frame.get("event_pair"),
+                ),
             ):
                 if not pair:
                     continue
@@ -221,6 +243,7 @@ def download_plan(event: dict) -> list[dict]:
                         "h5_path": HDF5_PATHS["GUNW"]["coherenceMagnitude"],
                         "track": track,
                         "frame": frame_no,
+                        "granule_id": granule_ids.get(which),
                         "collection": collections.get(
                             "BETA", COLLECTIONS["GUNW"]
                         ),
@@ -364,6 +387,13 @@ def _find_granule(step: dict, bbox: tuple):
             f"No {step['collection']} granules intersect the AOI around "
             f"{step.get('date')} — check the event's NISAR scene dates."
         )
+
+    # A granule_id declared in the event wins outright.
+    wanted = step.get("granule_id")
+    if wanted:
+        hit = next((g for g in results if _native_id(g) == wanted), None)
+        if hit is not None:
+            return hit
 
     tl = _track_look(step.get("track"))
     frame_txt = str(step.get("frame") or "")
