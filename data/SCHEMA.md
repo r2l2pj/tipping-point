@@ -5,10 +5,11 @@ app never computes. This file is the single source of truth for the contract
 between this repo and `tipping-point-app` — the app's `docs/app-contract.md`
 only points here and lists what the app does with each item.
 
-**Case ids.** Canonical case keys are `rs_2024` and `wa_2025` (config.yaml,
-manifest keys, `<caso>` filename stems). Event ids `rs-2024-05` /
-`wa-2025-12` name the data directories, `events.json` entries, and each
-manifest node's `event_id`. `now` is both the key and the directory for the
+**Case ids.** Canonical case keys are `rs_2024` and `wa_2025` — they name the
+data directories (`data/rs_2024/`, `data/wa_2025/`), the manifest keys,
+config.yaml and the `<caso>` filename stems. Event ids `rs-2024-05` /
+`wa-2025-12` remain ONLY as each manifest node's `event_id` and the
+`events.json` entry ids. `now` is both the key and the directory for the
 live bundle. The app's `caseAlias()` maps both directions, so asset paths are
 always written out explicitly — the app never derives a path from a key.
 
@@ -33,15 +34,15 @@ CRS rules (v4):
 data/
 ├── events.json                  # case index the app loads first
 ├── manifest.json                # the contract the app reads — written LAST
+├── metrics.json                 # ONE file: per-case blobs keyed by case id
 ├── SCHEMA.md                    # this file
 ├── raw/                         # downloads — gitignored, never app-read
-├── <event-id>/                  # one dir per case (rs-2024-05, wa-2025-12)
+├── <case-id>/                   # one dir per case (rs_2024, wa_2025)
 │   ├── cog/                     # rasters, clipped to AOI, keep each <= ~20 MB
 │   ├── png/                     # pre-rendered EPSG:3857 PNGs (one per layer/day)
 │   ├── geojson/                 # polygons/points, EPSG:4326
 │   ├── series/                  # time series JSON for charts
-│   ├── metrics.json             # validation + impact numbers (flat keys)
-│   └── nisar_products.json      # granule ids used (→ metrics.collections)
+│   └── nisar_products.json      # granule ids used (→ metrics collections)
 └── now/                         # live bundle, overwritten every 3 h
     ├── manifest.json            # schema tipping-point/now@2 — written LAST
     ├── summary.json             # headline numbers for the side panel
@@ -54,7 +55,7 @@ data/
 
 ## File naming
 
-Stable app-read names, per event directory — the app reads exactly these:
+Stable app-read names, per case directory — the app reads exactly these:
 
 - `series/imerg_smap_daily.json`
 - `geojson/{priority_zones,permanent_water,flood_confirmed,landslide_candidates,places,municipal_boundaries,landslide_catalog}.geojson`
@@ -65,7 +66,7 @@ Stable app-read names, per event directory — the app reads exactly these:
 Dated pipeline outputs keep the `<caso>_<camada>_<AAAAMMDD>.*` stem under
 `cog/`, `geojson/` and `series/` — e.g. `rs_2024_tpi_slide_20240502.tif`,
 `wa_2025_swot_20251210.json`. `<caso>` is the config.yaml case key
-(`rs_2024`, `wa_2025`) even though the directory uses the event id.
+(`rs_2024`, `wa_2025`) — the same id that names the directory.
 
 `now/` forecast PNGs are `png/<layer>_d<k>.png` (d0 = today, d1..d3 =
 forecast days).
@@ -82,8 +83,9 @@ The case index, schema `tipping-point/events-index@1`:
 ```
 
 Entry `id` is the hyphen **event id** — it equals the manifest node's
-`event_id`, NOT the underscore manifest case key. `layers[]` is refreshed at
-publish time (runtime only; the app uses it for layer hints).
+`event_id`, NOT the underscore manifest case key (which names the directory
+and `<caso>` stems). `layers[]` is refreshed at publish time (runtime only;
+the app uses it for layer hints).
 
 ## data/manifest.json (root)
 
@@ -97,20 +99,22 @@ publish time (runtime only; the app uses it for layer hints).
       "forecast_source": "perfect-forecast",
       "layers": [
         { "id": "tpi_slide", "date": "2024-05-02",
-          "png": "rs-2024-05/png/tpi_slide_20240502.png",
-          "cog": "rs-2024-05/cog/rs_2024_tpi_slide_20240502.tif",
+          "png": "rs_2024/png/tpi_slide_20240502.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_slide_20240502.tif",
           "legend": ["Baixo", "Moderado", "Alto", "Crítico"],
           "bounds": [-52.6, -30.6, -50.4, -28.9] },
         { "id": "tpi_slide_d1", "date": "2024-05-03",
-          "png": "rs-2024-05/png/tpi_slide_d1_20240503.png",
-          "cog": "rs-2024-05/cog/rs_2024_tpi_forecast_d1_20240502.tif",
+          "png": "rs_2024/png/tpi_slide_d1_20240503.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_forecast_d1_20240502.tif",
           "legend": ["Baixo", "Moderado", "Alto", "Crítico"],
           "bounds": [-52.6, -30.6, -50.4, -28.9],
-          "forecast": true }
+          "forecast": true },
+        { "id": "r_series", "date": "2024-05-02",
+          "png": null, "cog": "rs_2024/cog/rs_2024_r_series_20240502.tif" }
       ],
-      "metrics": "rs-2024-05/metrics.json",
+      "metrics": "metrics.json#rs_2024",
       "data_dates": { "imerg": "2024-05-02", "smap": "2024-04-30" },
-      "products": { "places": "rs-2024-05/geojson/places.geojson", "...": "..." },
+      "products": { "places": "rs_2024/geojson/places.geojson", "...": "..." },
       "_null_reasons": { "flood_confirmed": "no NISAR coverage — event predates launch (Jul 2025)" }
     },
     "wa_2025": { "event_id": "wa-2025-12", "...": "..." },
@@ -120,11 +124,12 @@ publish time (runtime only; the app uses it for layer hints).
 
 - Case keys are the canonical underscore ids (`rs_2024`, `wa_2025`, `now`).
 - Every asset path is a repo-relative path under `data/` (which syncs to the
-  app's `public/data/`): `rs-2024-05/png/...`, `now/summary.json`. Never
+  app's `public/data/`): `rs_2024/png/...`, `now/summary.json`. Never
   derived from the key or `event_id`.
 - Per-case node fields: `event_id`, `mode` (`replay` | `live`), `bounds`
-  `[w, s, e, n]`, `layers[]`, `metrics` (path to metrics.json), `data_dates`,
-  `products`, `forecast_source`, `_null_reasons`.
+  `[w, s, e, n]`, `layers[]`, `metrics` (`metrics.json#<case>` fragment into
+  the single root metrics file), `data_dates`, `products`,
+  `forecast_source`, `_null_reasons`.
 - `data_dates`: the freshest date of each input actually used —
   `{imerg, smap, geos_fp_issued?, nisar_pre?, nisar_post?, ...}`.
 - `forecast_source`: `"perfect-forecast"` for replay cases (D+1..D+3 =
@@ -132,7 +137,7 @@ publish time (runtime only; the app uses it for layer hints).
   render forecast days differently (never like observed).
 - The `now` node is copied from `data/now/manifest.json` by
   `tools/build_manifest.py` (schema `tipping-point/now@2`).
-- Per-case `data/<event>/manifest.json` files are not part of the contract —
+- Per-case `data/<case>/manifest.json` files are not part of the contract —
   the root manifest is authoritative (the app only falls back to them for
   legacy synced data).
 
@@ -143,9 +148,10 @@ publish time (runtime only; the app uses it for layer hints).
 - `id` — one of the layer ids below; repeated ids with different `date`s are
   a per-day series.
 - `date` — `YYYY-MM-DD`, the day the layer depicts.
-- `png` — EPSG:3857 pre-render for the MapLibre image source.
+- `png` — EPSG:3857 pre-render for the MapLibre image source; `null` on
+  COG-only layers (`bounds`/`legend` then unused).
 - `cog` — download/reproducibility raster (EPSG:4326 or NISAR native); may be
-  `null`.
+  `null` on PNG layers, required on COG-only layers.
 - `legend` — pt-BR class names in index order, pinned exactly as
   `live/config.py LABELS`: `["Baixo", "Moderado", "Alto", "Crítico"]` for
   class values 0–3. The app maps by index to its own label names — order
@@ -163,6 +169,13 @@ shade), `nisar_pre`, `nisar_post` (NISAR GCOV backscatter),
 `night_lights_pre`, `night_lights_post` (VIIRS Black Marble composites),
 `t_ml` (XGBoost-modeled hazard; same class legend).
 
+COG-only score layers — for geotiff.js range reads; `png: null`, EPSG:4326,
+still listed in `layers[]`: `r_series`, `s_series` (per-day R/S score
+series, one band per day named `YYYYMMDD`), `t_slide`, `t_flood` (static
+terrain-score rasters). Files `<caso>_r_series_<AAAAMMDD>.tif` etc. under
+`cog/`. `tpi_slide`/`tpi_flood` remain the CLASS renders — different layers
+from the score series.
+
 ### products map
 
 Non-raster discovery, per case node (D3). Every value is a repo-relative
@@ -170,13 +183,13 @@ path or `null`:
 
 ```json
 "products": {
-  "municipal_boundaries": "rs-2024-05/geojson/municipal_boundaries.geojson",
-  "landslide_catalog":    "rs-2024-05/geojson/landslide_catalog.geojson",
-  "places":               "rs-2024-05/geojson/places.geojson",
-  "priority_zones":       "rs-2024-05/geojson/priority_zones.geojson",
-  "permanent_water":      "rs-2024-05/geojson/permanent_water.geojson",
-  "flood_confirmed":      "rs-2024-05/geojson/flood_confirmed.geojson",
-  "landslide_candidates": "rs-2024-05/geojson/landslide_candidates.geojson"
+  "municipal_boundaries": "rs_2024/geojson/municipal_boundaries.geojson",
+  "landslide_catalog":    "rs_2024/geojson/landslide_catalog.geojson",
+  "places":               "rs_2024/geojson/places.geojson",
+  "priority_zones":       "rs_2024/geojson/priority_zones.geojson",
+  "permanent_water":      "rs_2024/geojson/permanent_water.geojson",
+  "flood_confirmed":      "rs_2024/geojson/flood_confirmed.geojson",
+  "landslide_candidates": "rs_2024/geojson/landslide_candidates.geojson"
 },
 "_null_reasons": {
   "flood_confirmed": "no NISAR coverage — event predates launch (Jul 2025)"
@@ -242,21 +255,29 @@ All FeatureCollections are EPSG:4326. `priority_zones` features carry:
 `municipal_boundaries`, `landslide_catalog`) are plain FeatureCollections;
 landslide polygons are always `landslide_candidates`.
 
-## metrics.json (per event)
+## data/metrics.json
 
-Flat v4 keys — this exact key set:
+ONE root file, per-case blobs keyed by case id. Each blob holds the flat v4
+key set plus `_null_reasons` and `collections`; the manifest case node points
+at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
 
 ```json
-{ "event": "wa-2025-12",
-  "iou": 0.0, "f1": 0.0, "cloud_pct": 0.0,
-  "landslide_hit_pct": 0.0, "hand_validation": 0.0,
-  "people_critical": 0, "people_flooded": 0, "flooded_km2": 0.0,
-  "night_light_drop_pct": 0.0,
-  "lead_time_mean_h": 0.0, "lead_time_median_h": 0.0, "warned_before_pct": 0.0,
-  "rf_auc": 0.0, "rule_auc": 0.0, "feature_importance": {},
-  "forecast_source": "perfect-forecast",
-  "collections": { "...": "..." },
-  "_null_reasons": { "...": "..." } }
+{ "cases": {
+    "rs_2024": {
+      "event": "rs-2024-05",
+      "iou": 0.0, "f1": 0.0, "cloud_pct": 0.0,
+      "landslide_hit_pct": 0.0, "hand_validation": 0.0,
+      "people_critical": 0, "people_flooded": 0, "flooded_km2": 0.0,
+      "night_light_drop_pct": 0.0,
+      "lead_time_mean_h": 0.0, "lead_time_median_h": 0.0,
+      "warned_before_pct": 0.0,
+      "rf_auc": 0.0, "rule_auc": 0.0, "feature_importance": {},
+      "forecast_source": "perfect-forecast",
+      "collections": { "...": "..." },
+      "_null_reasons": { "...": "..." }
+    },
+    "wa_2025": { "event": "wa-2025-12", "...": "same flat key set" }
+  } }
 ```
 
 - `forecast_source` — `"perfect-forecast"` for replay cases; the live now
@@ -265,8 +286,9 @@ Flat v4 keys — this exact key set:
   that produced the numbers (e.g. `NISAR_L2_GCOV_BETA_V1`,
   `OPERA_L3_DSWX-HLS_V1`, IMERG V07, SMAP L4, GPW epoch). General rule:
   record what was actually used.
-- `_null_reasons` — `{ "<key>": "<why>" }`; any key written `null` must have
-  a reason. `tp.metrics.merge_metrics` merges atomically: never drops keys,
+- `_null_reasons` — `{ "<key>": "<why>" }` inside each case blob; any key
+  written `null` must have a reason. `tp.metrics.merge_metrics` merges
+  atomically into the root file keyed by case: never drops keys or cases,
   never overwrites a written non-null value.
 - `iou`/`f1`/AUCs are 0–1 ratios; `*_pct` keys are 0–100 (the app normalizes
   `> 1` values to 0–1 for display).
@@ -274,8 +296,9 @@ Flat v4 keys — this exact key set:
   stability; public text says "XGBoost". Detailed sub-results may nest under
   extra sections (e.g. `landslide_ml`); the keys above stay flat.
 
-Writers (merge via `tp.metrics.merge_metrics`, never `write_text` on the
-file): `04_validation.py` (iou, f1, cloud_pct), `gee/09_impact.js` /
+Writers (merge via `tp.metrics.merge_metrics` into the case's blob in the
+root file, never `write_text` on the file): `04_validation.py` (iou, f1,
+cloud_pct), `gee/09_impact.js` /
 `gee/impact.py` (people_critical, people_flooded, flooded_km2,
 night_light_drop_pct — merge its CSV printout), `gee/04_hand_vs_merit.js` /
 `gee/hand.py` (hand_validation), `08_landslide_hit.py` (landslide_hit_pct),
@@ -355,17 +378,18 @@ not app-read.
 |---|---|
 | `data/events.json` | hand-maintained; `layers[]` refreshed by `tools/publish_case.py` |
 | `data/manifest.json` | `tools/build_manifest.py` — merges per-case nodes + `data/now/manifest.json`; written LAST |
-| `data/<event>/metrics.json` | `pipeline/tp/metrics.py::merge_metrics` (atomic); contributors listed above |
-| `data/<event>/cog/<caso>_tpi_{slide,flood}_<AAAAMMDD>.tif` | `python -m gee.tpi` (`gee/01_tpi_index.js`, `gee/07_tpi_wa.js` — multiband, one band per day) |
-| `data/<event>/cog/<caso>_tpi_forecast_d{1,2,3}_<AAAAMMDD>.tif` | `pipeline/scripts/07_forecast.py` / `tp/forecast.py` (perfect forecast) |
-| `data/<event>/cog/<caso>_water_nisar_<AAAAMMDD>.tif` | `pipeline/scripts/02_flood_mask.py` / `tp/flood_mask.py` (NISAR GCOV, wa) |
-| `data/<event>/cog/<caso>_landslide_candidates_<AAAAMMDD>.tif` | `pipeline/scripts/03_landslide_coh.py` (coherence) / `09_hls_scar.py` / `tp/hls_scar.py` (wa HLS optical) |
-| `data/<event>/cog/<caso>_hazard_slide_series_*.tif`, `hazard_classes.tif` | `ml/predict.py` (XGBoost — source of the `t_ml` layer) |
-| `data/<event>/geojson/<dated>.geojson` | `pipeline/scripts/06_polygonize.py` / `tp/polygonize.py` |
+| `data/metrics.json` | `pipeline/tp/metrics.py::merge_metrics` — atomic merge into the per-case blob keyed by case id; contributors listed above |
+| `data/<case>/cog/<caso>_tpi_{slide,flood}_<AAAAMMDD>.tif` | `python -m gee.tpi` (`gee/01_tpi_index.js`, `gee/07_tpi_wa.js` — multiband, one band per day) |
+| `data/<case>/cog/<caso>_{r,s}_series_<AAAAMMDD>.tif`, `<caso>_t_{slide,flood}_<AAAAMMDD>.tif` | `python -m gee.tpi` — score series + static terrain scores (COG-only geotiff.js layers) |
+| `data/<case>/cog/<caso>_tpi_forecast_d{1,2,3}_<AAAAMMDD>.tif` | `pipeline/scripts/07_forecast.py` / `tp/forecast.py` (perfect forecast) |
+| `data/<case>/cog/<caso>_water_nisar_<AAAAMMDD>.tif` | `pipeline/scripts/02_flood_mask.py` / `tp/flood_mask.py` (NISAR GCOV, wa) |
+| `data/<case>/cog/<caso>_landslide_candidates_<AAAAMMDD>.tif` | `pipeline/scripts/03_landslide_coh.py` (coherence) / `09_hls_scar.py` / `tp/hls_scar.py` (wa HLS optical) |
+| `data/<case>/cog/<caso>_hazard_slide_series_*.tif`, `hazard_classes.tif` | `ml/predict.py` (XGBoost — source of the `t_ml` layer) |
+| `data/<case>/geojson/<dated>.geojson` | `pipeline/scripts/06_polygonize.py` / `tp/polygonize.py` |
 | stable `geojson/*.geojson`, `png/<layer>_<YYYYMMDD>.png`, `series/imerg_smap_daily.json` | `tools/publish_case.py` / `tp/bundle.py` — PNGs via `live/render.layer_png_3857` + `tpi.classify` |
 | `geojson/municipal_boundaries.geojson`, `geojson/landslide_catalog.geojson` | lead-gathering fetchers (IBGE / US Census TIGER; GLC / UFRGS-Cemaden) |
-| `data/<event>/series/<caso>_swot_<AAAAMMDD>.json` | `pipeline/scripts/05_swot.py` / `tp/swot.py` |
-| `data/<event>/nisar_products.json` | `pipeline/scripts/01_get_nisar.py` / `tp/nisar.py` (granule ids → `collections`) |
+| `data/<case>/series/<caso>_swot_<AAAAMMDD>.json` | `pipeline/scripts/05_swot.py` / `tp/swot.py` |
+| `data/<case>/nisar_products.json` | `pipeline/scripts/01_get_nisar.py` / `tp/nisar.py` (granule ids → `collections`) |
 | `data/now/*` | `live/run_now.py` (static grid `static/sul_static.npz` from `live/build_static.py`) |
 | `data/raw/**` | fetch scripts (NISAR, OPERA DSWx, HLS, MODIS NRT) — gitignored |
 | `simular.json` | `tools/build_simular.py` — an **app-side fixture** for the Telegram `/simular` demo, NOT a contract product |

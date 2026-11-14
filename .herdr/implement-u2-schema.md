@@ -71,7 +71,24 @@ forecast_source       7
 
 `_null_reasons` hoisted OUT of the `products` map to case-node level
 (sibling of `products`); `products` values are strictly `string | null`.
-Committed `data/SCHEMA.md` + this report only (no push).
+
+## L4+L5 amendment (lead-analysis + lead-integration, second commit)
+
+- L4: directories are `data/<case-id>/` (`data/rs_2024/`, `data/wa_2025/`) —
+  event ids remain ONLY as `event_id` + `events.json` entry ids. All path
+  examples, layout tree, naming text and writer table updated.
+- L4: `metrics.json` is ONE root file `data/metrics.json`
+  (`{"cases":{"rs_2024":{...flat keys, _null_reasons, collections}}}`);
+  manifest `metrics` field = `"metrics.json#<case>"` fragment;
+  `merge_metrics` merges into the per-case blob.
+- L5: new COG-only layer ids `r_series`, `s_series` (per-day score series,
+  band=YYYYMMDD) and `t_slide`, `t_flood` (static terrain-score) —
+  `png: null`, EPSG:4326, for geotiff.js range reads; `tpi_slide`/`tpi_flood`
+  remain the class renders. Writer table row added (`python -m gee.tpi`).
+- Post-amend proof: no `rs-2024-05/` or `wa-2025-12/` path left (event ids
+  only in `event_id`/`id`/`event` fields); required greps still hit
+  (data/now/:10, imerg_smap_daily:4, _null_reasons:7, collections:5,
+  rs-2024-05:5, products:10, forecast_source:7); fences even (20).
 
 ## Scope / notes
 
