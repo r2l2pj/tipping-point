@@ -194,6 +194,21 @@ no tools/ file.
   assets.json shapes) → 14 total. `ruff check .` clean; TRY004 →
   TypeError.
 
+## Review round 2 (NEEDS-FIX, on merged f8d3f94 — rebased onto main a3d1b7d)
+
+- `collect_records` now wraps `load_records` per file:
+  `(TypeError, json.JSONDecodeError)` → stderr
+  `warning: skipping malformed series file <path>: <err>` + skip. Valid
+  files still load; all-corrupt still exits cleanly via the existing
+  "no SWOT records" SystemExit. Chosen policy: warn+skip (not abort).
+- +3 tests (bad-among-good warn+skip both for scalar and invalid-JSON,
+  all-malformed clean exit) → 17 in test_fetch_swot.py.
+- `$UV run pytest pipeline/tests -q` → 208 passed, 1 failed:
+  `test_fetch_opera.py::test_fetch_scenes_download_ingests` —
+  PRE-EXISTING on clean main (verified via stash; order-dependent,
+  passes in isolation). Sibling unit's flake, out of scope.
+- `$UV run ruff check .` → clean.
+
 ## Notes / assumptions
 
 - `assets.json` schema is owned by unit/ingest's `append_manifest`; my

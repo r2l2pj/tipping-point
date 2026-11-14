@@ -223,10 +223,20 @@ def build_feature_collection(
 def collect_records(
     case_id: str, data_dir: Path | None = None
 ) -> tuple[list[dict], dict]:
-    """All records + merged per-reach geometry map across the series files."""
+    """All records + merged per-reach geometry map across the series files.
+
+    A malformed file (bad JSON, or JSON that is not a list/dict) is warned
+    on stderr and skipped — valid files still load. If that leaves no
+    records, run() exits with its 'no SWOT records' message.
+    """
     records, reaches = [], {}
     for path in series_files(case_id, data_dir):
-        recs, rmap = load_records(path)
+        try:
+            recs, rmap = load_records(path)
+        except (TypeError, json.JSONDecodeError) as e:
+            print(f"warning: skipping malformed series file {path}: {e}",
+                  file=sys.stderr)
+            continue
         records.extend(recs)
         for k, v in rmap.items():
             reaches.setdefault(str(k), v)

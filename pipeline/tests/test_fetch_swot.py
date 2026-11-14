@@ -193,6 +193,37 @@ def test_no_records_errors(tmp_path):
         swot.run(CASE, data_dir=tmp_path / "data", dry_run=True)
 
 
+def test_malformed_series_file_warns_and_skips(tmp_path, capsys):
+    """One bad file among good ones: stderr warning, valid records kept."""
+    data = _case_data(tmp_path)
+    sdir = data / CASE / "series"
+    bad = sdir / f"{CASE}_swot_20240503.json"
+    bad.write_text("null")
+    plan = swot.run(CASE, data_dir=data, dry_run=True)
+    err = capsys.readouterr().err
+    assert "skipping malformed series file" in err
+    assert bad.name in err
+    assert plan["features"] == len(RECORDS)
+
+
+def test_invalid_json_series_file_warns_and_skips(tmp_path, capsys):
+    data = _case_data(tmp_path)
+    bad = data / CASE / "series" / f"{CASE}_swot_20240503.json"
+    bad.write_text("{not json")
+    plan = swot.run(CASE, data_dir=data, dry_run=True)
+    assert bad.name in capsys.readouterr().err
+    assert plan["features"] == len(RECORDS)
+
+
+def test_all_malformed_series_files_clean_exit(tmp_path, capsys):
+    """Every series file malformed -> clean SystemExit, no traceback."""
+    data = _case_data(tmp_path, records=[])
+    (data / CASE / "series" / f"{CASE}_swot_20240502.json").write_text("null")
+    with pytest.raises(SystemExit, match="no SWOT records"):
+        swot.run(CASE, data_dir=data, dry_run=True)
+    assert "skipping malformed" in capsys.readouterr().err
+
+
 def test_scalar_series_file_clean_error(tmp_path):
     """A JSON scalar/null in a matching series file reports, not crashes."""
     for raw in ("null", "42", '"str"', "true"):
