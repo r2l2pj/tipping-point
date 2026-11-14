@@ -57,19 +57,7 @@ jobs:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GEE_PROJECT: ${{ vars.GEE_PROJECT }}
-          NOW_GCS_BUCKET: tipping-point-data
         run: uv run python live/jobs.py nisar
 
-      - name: Commit data back to the repo
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add 'data/*/assets.json' data/assets.json 2>/dev/null \
-            || git add data/assets.json || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-          git commit -m "nisar: GEE assets update"
-          git push origin "HEAD:${{ github.ref_name }}"
+      - name: Publish data/ to fallback branch
+        run: uv run python live/publish_fallback.py

@@ -1,6 +1,6 @@
 """Workflow shape tests — every workflow is a thin L8 shell: secrets-only env,
 an Earthdata token gate before any real work, one run step calling
-`uv run python live/jobs.py <job>`, and a commit step pushing data back."""
+`uv run python live/jobs.py <job>`, and fallback-only publishing for data jobs."""
 from pathlib import Path
 
 import pytest
@@ -72,10 +72,23 @@ def test_concurrency_group(name, cron, job):
     assert doc["concurrency"]["group"] == job
 
 
-def test_now_cron_and_commit_paths():
-    text, doc = _load("now.yml")
+@pytest.mark.parametrize("name,cron,job", PARAMS)
+def test_fallback_publish_and_permissions(name, cron, job):
+    text, doc = _load(name)
+    steps = _steps(doc)
+    assert "NOW_GCS_BUCKET" not in text
+    assert doc["permissions"]["contents"] == "write"
+    assert "git add" not in text
+    assert "git push" not in text
+    publish = [s for s in steps if "publish_fallback.py" in s.get("run", "")]
+    if job == "reference":
+        assert not publish
+    else:
+        assert len(publish) == 1
+        assert publish[0]["run"] == "uv run python live/publish_fallback.py"
+        assert _run_idx(steps, f"live/jobs.py {job}") < _run_idx(steps, "publish_fallback.py")
+
+
+def test_now_cron():
+    _, doc = _load("now.yml")
     assert _on(doc)["schedule"] == [{"cron": "0 */3 * * *"}]
-    commit = [s for s in _steps(doc) if "git add" in s.get("run", "")]
-    assert commit, "now.yml has no git add commit step"
-    assert "data/now" in commit[0]["run"]
-    assert "EDL_USER" not in text and "EDL_PASS" not in text

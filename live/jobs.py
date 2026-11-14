@@ -48,7 +48,6 @@ SUBPROCESS_ENV_KEYS = (
     "GCP_SA_KEY",
     "GOOGLE_APPLICATION_CREDENTIALS",
     "GEE_PROJECT",
-    "NOW_GCS_BUCKET",
 )
 
 _DATE_LINE = re.compile(r"^\s*(\S+)\s+(\d{4}-\d{2}-\d{2})\s*$")
