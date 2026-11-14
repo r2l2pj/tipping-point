@@ -19,11 +19,14 @@ import rioxarray as rxr
 from scipy.ndimage import label, median_filter
 from skimage.filters import threshold_otsu
 
-FLOOD_DROP_DB = -3.0
-WATER_DB = -15.0          # fallback and upper clamp for the adaptive threshold
+from tp.config import threshold
+
+FLOOD_DROP_DB = float(threshold("flood_db_drop", -3.0))
+WATER_DB = float(threshold("water_db_max", -15.0))  # fallback and upper clamp for the adaptive threshold
 BRIGHT_RISE_DB = 3.0
-HAND_FLOOD_M = 15.0
-HAND_BRIGHT_M = 5.0
+_HAND_RANGE_M = threshold("hand_range_m", [5, 15])
+HAND_FLOOD_M = float(_HAND_RANGE_M[1])
+HAND_BRIGHT_M = float(_HAND_RANGE_M[0])
 MMU_HA = 3.0
 TILE_PX = 512
 _FILL_DB = 10.0           # bright fill so nodata never reads as water
@@ -104,16 +107,18 @@ def compute_flood(
     threshold_db: float,
     watermask: np.ndarray | None = None,
     hand: np.ndarray | None = None,
+    drop_db: float = FLOOD_DROP_DB,
+    hand_flood_m: float = HAND_FLOOD_M,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Core rule: darkening > 3 dB into water-dark, not prior/permanent water, HAND gate."""
     water_before = pre_db < threshold_db
     water_now = post_db < threshold_db
-    flood = (post_db - pre_db < FLOOD_DROP_DB) & water_now & ~water_before
+    flood = (post_db - pre_db < drop_db) & water_now & ~water_before
     if watermask is not None:
         flood &= ~watermask.astype(bool)
         water_now &= ~watermask.astype(bool)
     if hand is not None:
-        flood &= np.isfinite(hand) & (hand < HAND_FLOOD_M)
+        flood &= np.isfinite(hand) & (hand < hand_flood_m)
     return flood & np.isfinite(post_db) & np.isfinite(pre_db), water_now
 
 
@@ -123,14 +128,16 @@ def compute_bright(
     threshold_db: float,
     watermask: np.ndarray | None = None,
     hand: np.ndarray | None = None,
+    rise_db: float = BRIGHT_RISE_DB,
+    hand_bright_m: float = HAND_BRIGHT_M,
 ) -> np.ndarray:
     """Bright-flood candidates: +3 dB brightening in the near-flat (HAND < 5 m)."""
     water_before = pre_db < threshold_db
-    bright = (post_db - pre_db > BRIGHT_RISE_DB) & ~water_before
+    bright = (post_db - pre_db > rise_db) & ~water_before
     if watermask is not None:
         bright &= ~watermask.astype(bool)
     if hand is not None:
-        bright &= np.isfinite(hand) & (hand < HAND_BRIGHT_M)
+        bright &= np.isfinite(hand) & (hand < hand_bright_m)
     return bright & np.isfinite(post_db) & np.isfinite(pre_db)
 
 
@@ -165,6 +172,7 @@ def flood_mask(
     hand_path: Path | None = None,
     mmu_ha: float = MMU_HA,
     fallback_db: float = WATER_DB,
+    drop_db: float = FLOOD_DROP_DB,
     bright: bool = True,
 ) -> dict:
     """Write flood/water/bright COGs; return stats incl. the threshold used."""
@@ -183,7 +191,9 @@ def flood_mask(
     watermask = _open_match(watermask_path, pre)
     hand = _open_match(hand_path, pre)
 
-    flood, water_now = compute_flood(pre_db, post_db, thr, watermask, hand)
+    flood, water_now = compute_flood(
+        pre_db, post_db, thr, watermask, hand, drop_db=drop_db
+    )
 
     res_x, res_y = pre.rio.resolution()
     px_ha = abs(res_x * res_y) / 1e4

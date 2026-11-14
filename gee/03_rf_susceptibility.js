@@ -13,7 +13,7 @@ var soil = ee.ImageCollection('NASA/SMAP/SPL4SMGP/008')
   .filterDate('2016-01-01', '2025-01-01').select('sm_rootzone_wetness').mean().rename('soil_mean');
 var stack = terrain.addBands([curv, lc, rain, soil]).clip(region);
 
-var slides = ee.FeatureCollection('projects/GEE_PROJECT/assets/tipping-point/glc_brasil')
+var slides = ee.FeatureCollection('projects/<GEE_PROJECT>/assets/tipping-point/glc_brasil')
   .map(function (f) { return f.set('label', 1); });
 var negs = ee.FeatureCollection.randomPoints(region, 3000, 42)
   .filter(ee.Filter.bounds(slides.geometry().buffer(5000)).not())

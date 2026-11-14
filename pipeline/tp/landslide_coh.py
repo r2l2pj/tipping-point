@@ -23,10 +23,12 @@ import numpy as np
 import rioxarray as rxr
 from scipy.ndimage import label
 
-COH_DROP = 0.3
-MIN_SLOPE_DEG = 15.0
-MIN_REF_COH = 0.4
-MIN_PATCH_PX = 10
+from tp.config import threshold
+
+COH_DROP = float(threshold("coherence_drop", 0.3))
+MIN_SLOPE_DEG = float(threshold("slope_range_deg", [15, 30])[0])
+MIN_REF_COH = float(threshold("coherence_ref_min", 0.4))
+MIN_PATCH_PX = int(threshold("min_blob_pixels", 10))
 MAX_ELEV_M = 600.0      # crude snow-line cap; tune visually per event
 HV_DROP_DB = 2.0        # high-confidence vote on HV backscatter loss
 
@@ -99,6 +101,9 @@ def landslide_candidates(
     hv_post_path: Path | None = None,
     min_patch_px: int = MIN_PATCH_PX,
     max_elev_m: float | None = MAX_ELEV_M,
+    min_drop: float = COH_DROP,
+    min_slope_deg: float = MIN_SLOPE_DEG,
+    min_ref_coh: float = MIN_REF_COH,
 ) -> dict:
     """Write the 3-class candidate COG; return patch counts."""
     coh_ref = rxr.open_rasterio(coh_ref_path).squeeze()
@@ -120,7 +125,8 @@ def landslide_candidates(
         compute_candidates(
             coh_ref.values, coh_evt.values, slope.values,
             flood=flood, snow=snow, elev=elev, hv_drop_db=hv_drop,
-            max_elev_m=max_elev_m,
+            min_drop=min_drop, min_slope_deg=min_slope_deg,
+            min_ref_coh=min_ref_coh, max_elev_m=max_elev_m,
         ),
         min_patch_px,
     )

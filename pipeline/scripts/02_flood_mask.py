@@ -9,6 +9,7 @@ from pathlib import Path
 
 from tp.events import artifact_stem, event_data_dir
 from tp.flood_mask import flood_mask
+from tp.metrics import merge_metrics
 
 
 def main() -> None:
@@ -37,6 +38,15 @@ def main() -> None:
         src = out / f"{layer}.tif"
         if src.exists():
             src.rename(out / f"{artifact_stem(args.event, layer)}.tif")
+    # v4 metrics.json keys are flat (data/SCHEMA.md); merge, never overwrite
+    flat = {
+        "flooded_km2": stats["flood_km2"],
+        "water_km2": stats["water_km2"],
+        "threshold_db": stats["threshold_db"],
+    }
+    if "flood_bright_km2" in stats:
+        flat["flood_bright_km2"] = stats["flood_bright_km2"]
+    merge_metrics(args.event, flat=flat)
     print(stats)
 
 

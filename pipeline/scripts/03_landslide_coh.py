@@ -10,6 +10,7 @@ from pathlib import Path
 
 from tp.events import artifact_stem, event_data_dir
 from tp.landslide_coh import MAX_ELEV_M, landslide_candidates
+from tp.metrics import merge_metrics
 
 
 def main() -> None:
@@ -33,17 +34,22 @@ def main() -> None:
 
     out = event_data_dir(args.event) / "cog" / (
         artifact_stem(args.event, "landslide_candidates") + ".tif")
-    print(
-        landslide_candidates(
-            Path(args.coh_ref), Path(args.coh_evt), Path(args.slope), out,
-            flood_path=Path(args.flood) if args.flood else None,
-            snow_path=Path(args.snow) if args.snow else None,
-            dem_path=Path(args.dem) if args.dem else None,
-            hv_pre_path=Path(args.hv_pre) if args.hv_pre else None,
-            hv_post_path=Path(args.hv_post) if args.hv_post else None,
-            max_elev_m=args.max_elev,
-        )
+    stats = landslide_candidates(
+        Path(args.coh_ref), Path(args.coh_evt), Path(args.slope), out,
+        flood_path=Path(args.flood) if args.flood else None,
+        snow_path=Path(args.snow) if args.snow else None,
+        dem_path=Path(args.dem) if args.dem else None,
+        hv_pre_path=Path(args.hv_pre) if args.hv_pre else None,
+        hv_post_path=Path(args.hv_post) if args.hv_post else None,
+        max_elev_m=args.max_elev,
     )
+    # v4 metrics.json keys are flat (data/SCHEMA.md); merge, never overwrite.
+    # These are candidates, never confirmed scars.
+    merge_metrics(args.event, flat={
+        "landslide_candidates": stats["candidate_patches"],
+        "landslide_high_conf_px": stats["high_confidence_px"],
+    })
+    print(stats)
 
 
 if __name__ == "__main__":
