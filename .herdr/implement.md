@@ -155,6 +155,17 @@ validation, rejects bad input); without it `glc_catalog` falls back to
 `event['glc_window']` as before.
 
 ## Files
+# implement — L8a nisar-update (unit/nisar-update)
+
+Daily NISAR new-pass search + ingest. Module IS the CLI per interface update —
+no tools/ file.
+
+## Files (2 created, 942 lines, amended commit 1013642 on unit/nisar-update)
+
+- `pipeline/fetch/nisar.py` (~460 lines) — search/plan/execute + CLI
+  `python -m pipeline.fetch.nisar [--case] [--since] [--alerts-geojson] [--dry-run|--execute]`
+- `pipeline/tests/test_fetch_nisar.py` (~480 lines) — 16 offline tests,
+  fake `asf_search` + fake `fetch.ingest` injected via `sys.modules`
 
 - `uv sync` (via $UV run): 119 packages, `tp` editable install OK.
 - `uv run pytest pipeline/tests/test_fetch_swot.py -q` → **11 passed**.
@@ -339,3 +350,69 @@ Commit: files above on `unit/opera-dswx`, not pushed.
   "assets":[{name,gee_id,gcs_uri,kind,status,ingested_at,operation?}]}`;
   staged URI is `gs://<bucket>/staging/<case>/<name><ext>`).
 - No subagents used. Two `todo` items logged (L8a reference unit, glc fix).
+## Behaviour
+
+- Iterates events/*.json with a `nisar` block (`--case` accepts case key
+  `wa_2025` or event id `wa-2025-12`). rs_2024 (maturity null, empty frames)
+  still searched — spec says "with a nisar block".
+- Known scenes = `nisar.frames[*].scenes` granule_ids/dates (dict+list+flat
+  shapes tolerated, same as `tp.nisar.download_plan`) + any string matching
+  `nisar_gcov_\d{8}` inside data/<case>/assets.json entries (tolerates list,
+  {"assets":[...]} and {"<id>":{...}} shapes).
+- `since` = --since > max known scene date > min(window.start or
+  reference_date, today). REVIEW-FIX: window.end fallback could be
+  future-dated and dropped passes between the event and its end; the
+  min(..., today) clamp keeps a future window.start from returning empty.
+- Search: lazy `import asf_search`, `search(shortName=<collections.BETA or
+  NISAR_L2_GCOV_BETA_V1>, intersectsWith=<wkt>, start=<since>)` per AOI.
+  VERIFIED LIVE (anonymous): 14 GCOV granules over the wa AOI since
+  2025-12-16. NB: adding `dataset=DATASET.NISAR` alongside shortName silently
+  defeats the filter (9176 results, all NISAR products) — kept shortName only.
+- Dedup: granule_id/date in known -> "known-scene"; asset_id in assets.json
+  -> "asset-exists"; second granule on an already-planned date ->
+  "duplicate-date". One asset per date (nisar_gcov_<yyyymmdd>); event's
+  declared (track,look,frame) wins the same-date pick (stable pre-sort).
+- --alerts-geojson: data/now/alerts.json candidates' centroids -> ±0.25 deg
+  box AOIs appended to the search (GeoJSON FeatureCollections also accepted).
+- --execute: creds EARTHDATA_TOKEN > tp.nisar._edl_credentials
+  (EDL_USER/EDL_PASS/netrc); GDAL env = GDAL_HTTP_BEARER (token) or
+  tp.nisar._gdal_auth_env. Per scene: `tp.nisar._subset_h5_variable` ->
+  data/raw/nisar/<case>_nisar_gcov_<ymd>.tif (gitignored), then
+  stage_to_gcs -> ingest_asset(asset_id=projects/<GEE_PROJECT>/assets/
+  tipping-point/<case>/nisar/nisar_gcov_<ymd>, kind='image') ->
+  append_manifest. Requires NOW_GCS_BUCKET + GEE_PROJECT + fetch.ingest;
+  clear RuntimeError naming whichever is missing. Idempotent: assets.json
+  re-read per case at execute time; second run over same plan is a no-op.
+- fetch.ingest imported lazily inside _load_ingest() (try/except) so
+  --dry-run works while ingest.py only exists on unit/ingest. Contract names
+  used exactly: stage_to_gcs(local_path, *, bucket, case, name),
+  ingest_asset(gcs_uri, *, asset_id, kind='image', force=False),
+  append_manifest(case, entry). asset_id is passed as the FULL gee path;
+  manifest entry carries both asset_id (short) and gee_asset — reconcile if
+  ingest lands expecting the short name.
+
+## Plan JSON (--dry-run stdout)
+
+`{schema: tipping-point/nisar-update@1, generated_at, alert_aois, cases:
+{<case>: {event_id, collection, since, bbox, search_aois[], known_dates[],
+found, new_scenes[{granule_id,date,track,look,frame,asset_id,gee_asset,
+variable,h5_path,h5_url,cog}], skipped[{granule_id,reason}]}}}` — plus
+`executed[]` when run with --execute.
+
+## Commands + results
+
+- `$UV sync` — ok (141 resolved, asf_search 14.1.0)
+- `$UV run pytest pipeline/tests/test_fetch_nisar.py -q` — 16 passed
+- `$UV run pytest pipeline/tests -q` — 107 passed (whole suite)
+- `$UV run ruff check .` — All checks passed (auto-fixed import sort)
+- LIVE `python -m pipeline.fetch.nisar --case wa_2025 --dry-run` — real asf
+  metadata search OK: found 14, new dates 2025-12-23/28, 2026-01-02/04/09
+  (declared frame 064 picked over 065 on shared dates), h5_url resolves to
+  nisar.asf.earthdatacloud.nasa.gov .h5 links.
+
+## Notes / risks
+
+- --execute untested end-to-end (no creds/GCS/GEE in env; fetch.ingest absent
+  on this branch). All ingest calls verified against the fake module.
+- GDAL_HTTP_BEARER for EARTHDATA_TOKEN assumed (GDAL >=3.9); user/pass path
+  reuses tp.nisar._gdal_auth_env unchanged.
