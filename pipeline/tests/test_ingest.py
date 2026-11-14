@@ -308,6 +308,53 @@ def test_ensure_collection_injected_ee_data():
     assert created == [({"type": "IMAGE_COLLECTION"}, parent)]
 
 
+def test_ensure_collection_create_race_returns_exists():
+    """get-then-create race: getAsset misses, createAsset raises
+    already-exists (text, 409 status, or grpc code) -> status 'exists'."""
+    def get_asset(aid):
+        raise RuntimeError(f"{aid} not found")
+
+    def with_error(err):
+        def create_asset(value, path=None):
+            raise err
+        return types.SimpleNamespace(getAsset=get_asset,
+                                     createAsset=create_asset)
+
+    parent = "projects/p/assets/tipping-point/c/x"
+    for err in (RuntimeError("resource already exists"),
+                RuntimeError("entity already exists in project")):
+        e = ingest.ensure_collection(parent, ee_data=with_error(err))
+        assert e["status"] == "exists"
+    err409 = RuntimeError("conflict")
+    err409.status_code = 409
+    assert ingest.ensure_collection(
+        parent, ee_data=with_error(err409))["status"] == "exists"
+    grpc = RuntimeError("rpc error")
+    grpc.code = lambda: "ALREADY_EXISTS"
+    assert ingest.ensure_collection(
+        parent, ee_data=with_error(grpc))["status"] == "exists"
+
+
+def test_ensure_collection_create_other_errors_propagate():
+    def get_asset(aid):
+        raise RuntimeError(f"{aid} not found")
+
+    def create_asset(value, path=None):
+        raise RuntimeError("PERMISSION_DENIED on create")
+
+    data = types.SimpleNamespace(getAsset=get_asset,
+                                 createAsset=create_asset)
+    with pytest.raises(RuntimeError, match="PERMISSION_DENIED"):
+        ingest.ensure_collection("projects/p/assets/a/b", ee_data=data)
+    # auth-flavoured 'already exists' text still propagates
+    def create_auth(value, path=None):
+        raise RuntimeError("permission denied: parent already exists")
+    data = types.SimpleNamespace(getAsset=get_asset,
+                                 createAsset=create_auth)
+    with pytest.raises(RuntimeError, match="permission denied"):
+        ingest.ensure_collection("projects/p/assets/a/b", ee_data=data)
+
+
 def test_ensure_collection_validates_id(monkeypatch):
     _install_fakes(monkeypatch)
     with pytest.raises(ValueError):

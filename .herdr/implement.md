@@ -2,10 +2,13 @@
 
 ## Changed files
 
-- `pipeline/fetch/ingest.py` (+26): new `ensure_collection(asset_parent_id,
-  ee_data=None)` — validates the id, `getAsset` → `exists` skip (only a
-  not-found proceeds, auth errors propagate), else
-  `createAsset({"type": "IMAGE_COLLECTION"}, path=...)` → `created`.
+- `pipeline/fetch/ingest.py` (+26, amended +29): new
+  `ensure_collection(asset_parent_id, ee_data=None)` — validates the id,
+  `getAsset` → `exists` skip (only a not-found proceeds, auth errors
+  propagate), else `createAsset({"type": "IMAGE_COLLECTION"}, path=...)` →
+  `created`. Race-safe per review: createAsset wrapped — already-exists
+  errors (409 / ALREADY_EXISTS / text) return `exists` via `_is_already_exists`
+  (same status-first/auth-veto rule as `_is_not_found`); other errors raise.
   `ee_data` injectable; otherwise creds + `_init_ee()` + lazy `ee` import.
 - `pipeline/fetch/imerg.py`: case-hindcast mode.
   - `collection_path(case)` replaces hard-coded `COLLECTION` (now-mode
@@ -27,8 +30,9 @@
     before — only fakes had exercised it).
   - `scan_cogs` product detection: `T`-tags → `halfhourly`.
 - `pipeline/tests/test_ingest.py`: fake ee records `createAsset` (feeds the
-  asset store); +3 `ensure_collection` tests (create-once, injected
-  ee_data, id validation).
+  asset store); +5 `ensure_collection` tests (create-once, injected
+  ee_data, create-race → exists across text/409/grpc-ALREADY_EXISTS,
+  non-exists + auth-veto create errors propagate, id validation).
 - `pipeline/tests/test_fetch_now.py`: fake ee + fake storage helpers; +7
   tests — granule tag parsing, collection created once + 3 child ids
   `rs-2024-05/imerg_early/<yyyymmddThhmm>`, `--start/--end` temporal window,
@@ -40,7 +44,7 @@
 ## Commands
 
 - `$UV sync` — ok
-- `$UV run pytest pipeline/tests -q` — **299 passed** (+10 new tests)
+- `$UV run pytest pipeline/tests -q` — **301 passed** (+12 new tests)
 - `$UV run ruff check .` — All checks passed
 
 ## Notes

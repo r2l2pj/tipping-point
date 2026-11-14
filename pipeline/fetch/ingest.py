@@ -281,6 +281,29 @@ def ingest_asset(gcs_uri, *, asset_id, kind, force=False) -> dict:
     return entry
 
 
+def _is_already_exists(exc: Exception) -> bool:
+    """True when a createAsset failure means 'asset already exists' — the
+    get-then-create race outcome. An explicit status decides first (409 /
+    ALREADY_EXISTS); message text is only matched when no status exists,
+    with auth markers vetoing (same rule as _is_not_found)."""
+    status = getattr(exc, "status_code", None)
+    if status is None:
+        status = getattr(getattr(exc, "resp", None), "status", None)
+    if status is None:
+        status = getattr(exc, "code", None)
+        if callable(status):
+            status = status()
+    if status is not None:
+        try:
+            return int(status) == 409
+        except (TypeError, ValueError):
+            return "ALREADY_EXISTS" in str(status).upper()
+    text = str(exc).lower()
+    if any(marker in text for marker in _AUTH_ERROR_MARKERS):
+        return False
+    return "already_exists" in text or "already exists" in text
+
+
 def ensure_collection(asset_parent_id, ee_data=None) -> dict:
     """Create an IMAGE_COLLECTION container at asset_parent_id if absent.
 
@@ -303,7 +326,16 @@ def ensure_collection(asset_parent_id, ee_data=None) -> dict:
     if asset is not None:
         return {"gee_id": asset_parent_id, "type": "IMAGE_COLLECTION",
                 "status": "exists"}
-    ee_data.createAsset({"type": "IMAGE_COLLECTION"}, path=asset_parent_id)
+    try:
+        ee_data.createAsset({"type": "IMAGE_COLLECTION"},
+                            path=asset_parent_id)
+    except Exception as exc:
+        # get-then-create race: another run created it after our getAsset —
+        # the container now exists, which is all this function guarantees
+        if not _is_already_exists(exc):
+            raise
+        return {"gee_id": asset_parent_id, "type": "IMAGE_COLLECTION",
+                "status": "exists"}
     return {"gee_id": asset_parent_id, "type": "IMAGE_COLLECTION",
             "status": "created"}
 
