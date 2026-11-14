@@ -209,3 +209,109 @@ def load_now_regions(now_dir: Path | str = NOW_DIR) -> list[dict]:
         if regions:
             return regions
     return _regions_from_summary(now_dir / "summary.json")
+
+
+# --------------------------------------------------------------------------
+# L12b subscriber store — Neon Postgres over its HTTPS SQL endpoint, plain
+# requests. DATABASE_URL (postgresql://...) is the only secret; the API host
+# is parsed out of it. LGPD: consent-only reads, lat/lon are never written
+# from here, /parar deletes app-side. The now job touching the table keeps
+# the free tier warm.
+
+
+def _neon_config() -> tuple[str | None, str | None]:
+    """-> (sql_endpoint, connection_string), or (None, None) if unset."""
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        return None, None
+    host = url.split("@", 1)[-1].split("/", 1)[0] if "@" in url else None
+    if not host:
+        return None, None
+    return f"https://{host}/sql", url
+
+
+def _neon_query(query: str, params: list | None = None) -> list[dict]:
+    import requests
+
+    endpoint, conn = _neon_config()
+    if not endpoint or not conn:
+        return []
+    resp = requests.post(
+        endpoint,
+        json={"query": query, "params": params or []},
+        headers={"Neon-Connection-String": conn,
+                 "Content-Type": "application/json"},
+        timeout=30,
+    )
+    if not 200 <= resp.status_code < 300:
+        raise RuntimeError(f"neon query failed: {resp.status_code}")
+    data = resp.json()
+    if isinstance(data, dict) and "rows" in data and "fields" in data:
+        names = [f["name"] if isinstance(f, dict) else f
+                 for f in data["fields"]]
+        return [dict(zip(names, row)) for row in data["rows"]]
+    return data
+
+
+def subscribers() -> list[dict]:
+    """Consenting subscriber rows (chat_id, lat, lon, last_class)."""
+    return _neon_query(
+        "SELECT chat_id, lat, lon, last_class FROM subscribers "
+        "WHERE consent = true")
+
+
+def update_subscriber(chat_id: str, fields: dict) -> None:
+    _neon_query(
+        "UPDATE subscribers SET last_class = $1, last_alert_ts = $2, "
+        "current_label = $3, data_date = $4 WHERE chat_id = $5",
+        [fields.get("last_class"), fields.get("last_alert_ts"),
+         fields.get("current_label"), fields.get("data_date"), chat_id])
+
+
+def update_subscribers_from_regions(regions: list[dict], data_date: str) -> int:
+    """Refresh last_class/current_label for each subscriber inside a region.
+
+    regions: dicts from critical_areas_from_assets/load_now_regions — each has
+    class, label, kind and a GeoJSON `geometry`. Returns updated row count.
+    No secrets configured -> skip note, 0 (local/dev runs must not fail).
+    """
+    endpoint, _ = _neon_config()
+    if not endpoint:
+        print("[subscribers] DATABASE_URL unset — skipping")
+        return 0
+    from shapely.geometry import Point, shape
+
+    shapes = []
+    for region in regions:
+        geom = region.get("geometry")
+        if not geom:
+            continue
+        try:
+            shapes.append((shape(geom), int(region.get("class") or 0),
+                           region.get("label") or ""))
+        except (ValueError, TypeError):
+            continue
+    now_iso = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")
+    updated = 0
+    for row in subscribers():
+        try:
+            point = Point(float(row["lon"]), float(row["lat"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+        cls, label = 0, ""
+        for geom, gcls, glabel in shapes:
+            if gcls > cls and geom.contains(point):
+                cls, label = gcls, glabel
+        prev = int(row.get("last_class") or 0)
+        if cls == prev:
+            continue
+        if cls == 0 and prev == 0:
+            continue
+        update_subscriber(row["chat_id"], {
+            "last_class": cls,
+            "last_alert_ts": now_iso,
+            "current_label": label,
+            "data_date": data_date,
+        })
+        updated += 1
+    return updated

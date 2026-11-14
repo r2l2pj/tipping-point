@@ -48,6 +48,7 @@ SUBPROCESS_ENV_KEYS = (
     "GCP_SA_KEY",
     "GOOGLE_APPLICATION_CREDENTIALS",
     "GEE_PROJECT",
+    "DATABASE_URL",
 )
 
 _DATE_LINE = re.compile(r"^\s*(\S+)\s+(\d{4}-\d{2}-\d{2})\s*$")
@@ -93,6 +94,13 @@ def _refresh_alerts(now_dir: Path = NOW_DIR) -> Path:
 
     regions = alerts.critical_areas_from_assets()
     now = dt.datetime.now(dt.UTC)
+    try:
+        n = alerts.update_subscribers_from_regions(
+            regions, data_date=now.date().isoformat())
+        if n:
+            print(f"[subscribers] updated {n} rows", flush=True)
+    except Exception as exc:  # noqa: BLE001 — subscriber failure must not kill alerts
+        print(f"[subscribers] pass failed (alerts unaffected): {exc}", flush=True)
     payload = {
         "generated_at": now.isoformat().replace("+00:00", "Z"),
         "quiet_hours": now.hour in QUIET_HOURS,

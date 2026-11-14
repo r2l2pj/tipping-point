@@ -6,7 +6,7 @@ name: modo-agora
 
 on:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 permissions:
@@ -58,6 +58,7 @@ jobs:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GEE_PROJECT: ${{ vars.GEE_PROJECT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: uv run python live/jobs.py now
 
       - name: Publish data/ to fallback branch
