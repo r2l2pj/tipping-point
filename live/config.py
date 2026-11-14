@@ -6,18 +6,24 @@ come from the same config.yaml the GEE scripts paste by hand.
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+_pipeline = str(REPO_ROOT / "pipeline")
+if _pipeline not in sys.path:
+    sys.path.insert(0, _pipeline)
+from tp.config import now_bounds as _now_bounds
+
 CONFIG_PATH = REPO_ROOT / "config.yaml"
 STATIC_DIR = REPO_ROOT / "static"
 NOW_DIR = REPO_ROOT / "data" / "now"
 STATIC_NPZ = "sul_static.npz"
 
 # Sul do Brasil inteiro (RS, SC, PR) — doc v4 manifest "now".bounds
-NOW_BOUNDS = (-58.0, -34.0, -48.0, -22.5)  # west, south, east, north
+NOW_BOUNDS = tuple(_now_bounds())          # west, south, east, north — config.yaml domains.now
 NOW_RES_DEG = 0.01                          # ~1 km
 IMERG_LOOKBACK_DAYS = 7
 NISAR_LOOKBACK_DAYS = 14

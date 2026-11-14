@@ -26,8 +26,6 @@ KNOWN_MIRRORS = {
     "pipeline/fetch/geosfp.py",
     "pipeline/fetch/imerg.py",
     "pipeline/fetch/smap.py",
-    "live/config.py",
-    "static/README.md",
     "docs/PLAN.md",
     "data/SCHEMA.md",
     "data/now/manifest.json",

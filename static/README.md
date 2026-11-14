@@ -3,7 +3,7 @@
 Built once by `uv run python live/build_static.py` (needs `GCP_SA_KEY` +
 `GEE_PROJECT` in env; GEE service account).
 
-`sul_static.npz` covers the south of Brazil (`-58,-34,-48,-22.5`, ~1 km):
+`sul_static.npz` covers the south of Brazil (bounds from `config.yaml` `domains.now`, ~1 km):
 
 | key            | shape        | source |
 |----------------|--------------|--------|
