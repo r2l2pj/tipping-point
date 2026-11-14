@@ -147,3 +147,80 @@ def test_predict_series_and_lead_time(tmp_path):
     assert clusters["lead_hours"].iloc[0] > 0
     summary = summarize(clusters)
     assert summary["warned_before_pct"] == pytest.approx(100.0)
+
+
+def test_lead_time_tpi_series_label_points(tmp_path):
+    """Float TPI series + labeled points → per-point anticipation vs anchor."""
+    import json
+
+    import rasterio
+    from rasterio.transform import from_origin
+
+    from ml.lead_time import (
+        frame_times_from_bands,
+        is_float_series,
+        main,
+        point_lead_times,
+        read_series,
+        summarize_points,
+    )
+
+    shape = (4, 4)
+    transform = from_origin(-52.0, -29.5, 0.01, 0.01)
+    days = pd.date_range("2024-04-29", periods=4, freq="D", tz="UTC")
+    tpi = np.zeros((4, *shape), dtype=np.float32)
+    tpi[2:, 0, 0] = 0.7   # crosses ≥0.6 at frame 2 (May 1) → 48 h before anchor
+    tpi[1:, 1, 1] = 0.9   # crosses at frame 1 (Apr 30) → 72 h
+    tpi[3, 0, 1] = 0.8    # crosses only at frame 3 (May 2) → 24 h
+    tpi[:, 2, 2] = 0.4    # never crosses → neg
+    tpi[:, 3, 3] = np.nan  # nodata pixel → null
+
+    path = tmp_path / "tpi_series.tif"
+    with rasterio.open(
+        path, "w", driver="GTiff", height=shape[0], width=shape[1],
+        count=4, dtype="float32", crs="EPSG:4326", transform=transform,
+        nodata=np.nan,
+    ) as dst:
+        dst.write(tpi)
+        for i, d in enumerate(days, start=1):
+            dst.set_band_description(i, d.strftime("%Y%m%d"))
+
+    # dtype auto-detect: float → values are already 0-1 (no /100 scaling)
+    assert is_float_series(path)
+    prob = read_series(path)
+    assert prob[1, 1, 1] == pytest.approx(0.9)
+    assert np.isnan(prob[:, 3, 3]).all()
+    assert list(frame_times_from_bands(path)) == list(days)
+
+    def center(r, c):
+        return (-52.0 + (c + 0.5) * 0.01, -29.5 - (r + 0.5) * 0.01)
+
+    points = pd.DataFrame(
+        [center(0, 0), center(1, 1), center(0, 1), center(2, 2), center(3, 3)],
+        columns=["lon", "lat"],
+    )
+    anchor = pd.Timestamp("2024-05-03", tz="UTC")
+    table = point_lead_times(prob, pd.DatetimeIndex(days), points,
+                             transform, "EPSG:4326", 0.6, anchor)
+    assert table["klass"].tolist() == ["pos", "pos", "pos", "neg", "null"]
+    assert table["anticipation_h"].tolist()[:3] == [48.0, 72.0, 24.0]
+    assert np.isnan(table["anticipation_h"].iloc[3:]).all()
+
+    summary = summarize_points(table)
+    assert summary["lead_time_mean_h"] == pytest.approx(48.0)
+    assert summary["lead_time_median_h"] == pytest.approx(48.0)
+    assert summary["warned_before_pct"] == pytest.approx(75.0)  # 3 pos / 4 evaluable
+    assert summary["n_null"] == 1
+
+    # end to end: labels CSV → metrics.json via merge (flat keys + detail)
+    labels_csv = tmp_path / "labels.csv"
+    points.assign(t_utc=pd.NaT, source="t").to_csv(labels_csv, index=False)
+    metrics_path = tmp_path / "rs-2024-05" / "metrics.json"
+    assert main(["--hazard", str(path), "--labels", str(labels_csv),
+                 "--anchor", "2024-05-03T00:00:00Z",
+                 "--event", "rs-2024-05",
+                 "--metrics-out", str(metrics_path)]) == 0
+    metrics = json.loads(metrics_path.read_text())
+    assert metrics["lead_time_mean_h"] == pytest.approx(48.0)
+    assert metrics["warned_before_pct"] == pytest.approx(75.0)
+    assert metrics["landslide_ml"]["lead_hours"]["mode"] == "label_points"
