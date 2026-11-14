@@ -116,6 +116,7 @@ def catalog_filter(gdf: gpd.GeoDataFrame, event: dict) -> gpd.GeoDataFrame:
     gdf = gdf.cx[west:east, south:north].copy()
     candidates = gdf.drop(columns="geometry")
     dates = pd.Series([None] * len(gdf), index=gdf.index, dtype=object)
+    source_dates = dates.copy()
     precision = pd.Series("none", index=gdf.index)
     while (col := _date_column(candidates)) is not None:
         for idx, raw in candidates[col].items():
@@ -124,6 +125,7 @@ def catalog_filter(gdf: gpd.GeoDataFrame, event: dict) -> gpd.GeoDataFrame:
             stamp = pd.to_datetime(raw, errors="coerce")
             if pd.isna(stamp):
                 continue
+            source_dates[idx] = stamp.strftime("%Y-%m-%d")
             has_time = ":" in raw if isinstance(raw, str) else bool(
                 stamp.hour or stamp.minute or stamp.second or stamp.microsecond)
             if not has_time:
@@ -133,9 +135,7 @@ def catalog_filter(gdf: gpd.GeoDataFrame, event: dict) -> gpd.GeoDataFrame:
             dates[idx] = stamp
             precision[idx] = "hour" if has_time else "date"
         candidates = candidates.drop(columns=col)
-    gdf["event_date"] = pd.Series(
-        [t.strftime("%Y-%m-%d") if t is not None else None for t in dates],
-        index=gdf.index, dtype=object)
+    gdf["event_date"] = source_dates
     gdf["t_precision"] = precision
     gdf["t_utc"] = pd.Series(
         [t.tz_convert("UTC").strftime("%Y-%m-%dT%H:%M:%SZ") if t is not None else None for t in dates],

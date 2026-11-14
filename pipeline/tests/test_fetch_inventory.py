@@ -121,6 +121,19 @@ def test_catalog_filter_native_dates():
     assert list(out["t_utc"]) == ["2024-05-02T15:00:00Z", "2024-05-03T11:30:00Z", None]
 
 
+def test_catalog_filter_preserves_source_date_across_utc_boundaries():
+    rows = gpd.GeoDataFrame({
+        "DATA": ["2024-05-31T23:30:00-03:00", "2024-04-20T00:30:00+14:00",
+                 "2024-06-01T00:30:00+14:00", "2024-04-19T23:30:00-12:00"],
+        "geometry": [Point(-51.5, -29.7)] * 4,
+    }, crs=4326)
+    out = inventory.catalog_filter(rows, RS_EVENT)
+    assert list(out.index) == [0, 1]
+    assert list(out["event_date"]) == ["2024-05-31", "2024-04-20"]
+    assert list(out["t_utc"]) == ["2024-06-01T02:30:00Z", "2024-04-19T10:30:00Z"]
+    assert list(out["t_precision"]) == ["hour", "hour"]
+
+
 def test_catalog_filter_empty_aoi():
     rows = _points_gdf()
     event = {**RS_EVENT, "aoi": {"bbox": [0, 0, 1, 1]}}

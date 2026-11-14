@@ -76,10 +76,15 @@
     ],
     "note": "Skagit River SWORD reaches with nodes inside the AOI, downstream->upstream (055 is the North Fork delta distributary; gap 68-121 km dist_out is upstream of the AOI's north edge). Via PO.DAAC FTS /v1/rivers/Skagit River filtered to bbox; Hydrocron timeseries per reach."
   },
+  "official_warning": {
+    "at": "2025-12-06T00:10:00Z",
+    "source": "NWS Seattle (KSEW) Flood Watch, VTEC O.NEW.KSEW.FA.A.0012",
+    "url": "https://mesonet.agron.iastate.edu/vtec/?eventid=12&phenomena=FA&radar=USCOMP&radar_product=N0Q&radar_time=202512081200&significance=A&tab=info&wfo=KSEW&year=2025"
+  },
   "damage_anchor": {
     "date": "2025-12-08",
     "time_utc": "2025-12-09T00:35:00Z",
-    "time_note": "16:35 PST (UTC-8)",
+    "time_note": "16:35 PST (UTC-8): Flood Warning Center opening for Phase 2 operations, not a separately-issued public alert timestamp",
     "reported": "King County Flood Warning Center opened as Snoqualmie hit Phase 2 (three-forks gauge 12,710 cfs > 12,000 threshold); county warned of minor flooding in low-lying areas",
     "source": "King County Flood Warning Center update",
     "url": "https://kingcountyfieldnotes.org/2025/12/31/update-king-county-flood-warning-center-remains-open-to-respond-to-widespread-flooding/",

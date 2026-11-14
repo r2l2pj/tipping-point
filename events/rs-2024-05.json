@@ -42,11 +42,18 @@
     ],
     "note": "Jacui main stem downstream->upstream into terminal reach 64110700015 at the Jacui delta / Guaiba head by Porto Alegre. SWORD names this stem no_data/'Taquari River', so FTS name search for 'Rio Jacui'/'Guaiba' fails; ids found via SWOT_L2_HR_RiverSP_reach_vD_Attributes FeatureServer bbox query on the AOI, ordered by dist_out via FTS /v1/rivers/reach/<id>. Hydrocron timeseries per reach."
   },
+  "official_warning": {
+    "at": "2024-04-26T16:50:00Z",
+    "source": "INMET aviso \"Tempestades atingem parte da Região Sul nos próximos dias\"",
+    "url": "https://portal.inmet.gov.br/noticias/results",
+    "note": "earliest warning with exact issuance time; earlier INMET forecast notice dated 2024-04-20 (date-only)"
+  },
   "damage_anchor": {
     "date": "2024-04-27",
     "time_utc": null,
-    "time_note": "date only; earliest defensible first-damage report",
-    "reported": "Flooding in parts of Livramento and Pelotas; afternoon storm damaged ~750 homes in Santa Cruz do Sul",
+    "time_note": "date only; first reported rain/flood damage in RS on 2024-04-27, not a timestamp for first damage in Canoas",
+    "reported": "First reported rain/flood damage in RS on 2024-04-27: flooding in parts of Livramento and Pelotas; afternoon storm damaged ~750 homes in Santa Cruz do Sul",
+    "qualification": "The MetSul report supports state-level rain/flood damage on 2024-04-27; it does not establish the date or time of first damage in Canoas.",
     "source": "MetSul meteorological report commissioned by Canoas city government",
     "url": "https://www.canoas.rs.gov.br/wp-content/uploads/2024/05/Laudo-Meterologico-031.2024-27.04.2024-a-02.05.2024.pdf",
     "confidence": "date-level",

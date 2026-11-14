@@ -1,4 +1,34 @@
 # implement: unit/imerg-range — IMERG Early case-window hindcast
+# implement — review follow-up: preserve inventory source dates (t120)
+
+- `pipeline/fetch/inventory.py`: captures `source_dates` immediately after parsing each row, before noon normalization or timezone localization. Both emitted `event_date` and the event-window filter use this separate original-calendar-date series; only the timestamp series becomes `t_utc`.
+- `pipeline/tests/test_fetch_inventory.py`: regression with four positive/negative-offset datetimes crossing UTC midnight at both event-window boundaries; asserts included row indices, exact original `event_date`, converted `t_utc`, and hour precision.
+- Reproduction result on pre-change `c1a703c`: `$UV run pytest pipeline/tests/test_fetch_inventory.py::test_catalog_filter_preserves_source_date_across_utc_boundaries -q` passed (`1 passed in 0.34s`). The reported shift was not reproduced: the existing implementation retained the parsed offset. This change makes the requested separation explicit rather than claiming a demonstrated failing case.
+- Post-change `$UV run pytest pipeline/tests -q`: `301 passed, 9 warnings in 7.39s` (existing Rasterio fixture warnings).
+- Post-change `$UV run ruff check .`: `All checks passed!`; `git diff --check`: exit 0.
+- Lead requested amendment; this follow-up amends the latest commit (formerly `c1a703c`) without modifying other files. Previous timestamp commit `2a2fc29` remains unchanged. Three files changed in this review follow-up, including this report.
+
+---
+
+# implement — event warning follow-up (unit/lsltime, t120)
+
+Requested after timestamp commit `2a2fc29`; only the two explicitly added event JSON files plus this report changed.
+
+- `events/wa-2025-12.json`: adds the supplied NWS Seattle Flood Watch issuance (`2025-12-06T00:10:00Z`) and VTEC URL; clarifies that the damage anchor's `2025-12-09T00:35:00Z` is the Flood Warning Center opening for Phase 2 operations, not a separate public alert.
+- `events/rs-2024-05.json`: adds the supplied INMET warning (`2024-04-26T16:50:00Z`), source URL, and earlier date-only forecast caveat; qualifies the April 27 damage as state-level RS rain/flood reports, not first damage in Canoas. Existing date and alternate sources retained.
+- Sources/times were supplied by lead-gathering; this follow-up does not independently verify the cited publications.
+
+Verification on base `2a2fc29` plus the event diff:
+
+- `$UV run python -m json.tool events/wa-2025-12.json > /dev/null`: exit 0.
+- `$UV run python -m json.tool events/rs-2024-05.json > /dev/null`: exit 0.
+- `$UV run pytest pipeline/tests/test_config.py -q`: `7 passed in 0.03s`.
+- `$UV run pytest pipeline/tests -q`: `300 passed, 9 warnings in 7.49s` (same Rasterio fixture warnings).
+- `$UV run ruff check .`: `All checks passed!`.
+- `git diff --check`: exit 0.
+
+---
+
 # implement — landslide timestamps (unit/lsltime, t120)
 
 ## Changed
