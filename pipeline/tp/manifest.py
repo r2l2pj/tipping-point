@@ -137,6 +137,14 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
     forecast = index_entry.get("forecast", True if m else None)
     if forecast is not None:
         entry["forecast"] = forecast
+    for extra in ("issued", "forecast_source", "kind"):
+        if extra in index_entry:
+            entry[extra] = index_entry[extra]
+    if entry.get("forecast") and "forecast_source" not in entry:
+        # L22: the copied-observation frames are the labelled upper bound,
+        # not a real issued forecast (NOAA GFS frames carry their own tag).
+        entry["forecast_source"] = "perfect-forecast"
+        entry["upper_bound"] = True
     return entry
 
 

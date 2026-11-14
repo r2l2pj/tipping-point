@@ -1,0 +1,18 @@
+{
+  "rs2024_slides": {
+    "task_id": "2YNYEJQJX6RHZK2OJWAIRNFO",
+    "asset_id": "projects/jovial-idiom-514715-j8/assets/tipping-point/models/rs2024_slides"
+  },
+  "rs2024_footprint": {
+    "task_id": "YDT5JLQJPW33FPNKYLRVGLW5",
+    "asset_id": "projects/jovial-idiom-514715-j8/assets/tipping-point/models/rs2024_footprint"
+  },
+  "rs2024_inventory_points": {
+    "task_id": "GHU2E2XL2THALNAR3IZ5EGCD",
+    "asset_id": "projects/jovial-idiom-514715-j8/assets/tipping-point/models/rs2024_inventory_points"
+  },
+  "imerg_daily_p99": {
+    "task_id": "CIQTFU3KX3ZJDQAVQRV33RV3",
+    "asset_id": "projects/jovial-idiom-514715-j8/assets/tipping-point/models/imerg_daily_p99"
+  }
+}

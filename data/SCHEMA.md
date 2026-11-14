@@ -153,7 +153,8 @@ the app uses it for layer hints).
 
 ### Layer fields
 
-`{id, date, png, cog, asset, legend, bounds, forecast?}`:
+`{id, date, png, cog, asset, legend, bounds, forecast?, issued?,
+forecast_source?, kind?, upper_bound?}`:
 
 - `id` — one of the layer ids below; repeated ids with different `date`s are
   a per-day series.
@@ -172,6 +173,14 @@ the app uses it for layer hints).
   must never change.
 - `bounds` — the PNG extent in lon/lat `[w, s, e, n]` (image-source corners).
 - `forecast: true` — forecast layers only (`<layer>_d<k>` ids, k = 1..3).
+- `issued` — `YYYY-MM-DD` issue day of a real issued forecast (L22 GFS
+  frames); the depicted `date` is issued + k.
+- `forecast_source` — `"noaa-gfs"` for the issued-GFS replay frames,
+  `"perfect-forecast"` for the copied-observation upper bound, `"geos-fp"`
+  live.
+- `kind` — `"observed"` | `"forecast"` when the index entry declares it.
+- `upper_bound: true` — on `perfect-forecast` frames only: they are the
+  labelled upper bound of predictability, not an issued forecast.
 
 ### Layer ids
 

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-14T22:13:57Z",
+  "updated_at": "2026-11-14T22:58:30Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -370,7 +370,9 @@
             -50.499253,
             -28.999504
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
         },
         {
           "id": "tpi_flood_d2",
@@ -389,7 +391,9 @@
             -50.499253,
             -28.999504
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
         },
         {
           "id": "tpi_flood_d3",
@@ -408,7 +412,1065 @@
             -50.499253,
             -28.999504
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-04-23",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240423.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-22",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-04-24",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240424.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-23",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-04-25",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240425.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-24",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-04-26",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240426.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-25",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-04-27",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240427.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-26",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-04-28",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240428.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-27",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-04-29",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240429.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-04-30",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240430.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-05-01",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240501.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-05-02",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240502.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-05-03",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240503.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-05-04",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240504.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-05-05",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240505.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-05-06",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240506.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-05-07",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240507.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2024-05-08",
+          "png": "rs_2024/png/tpi_flood_gfs_d1_20240508.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-04-24",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240424.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-22",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-04-25",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240425.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-23",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-04-26",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240426.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-24",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-04-27",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240427.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-25",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-04-28",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240428.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-26",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-04-29",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240429.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-27",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-04-30",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240430.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-01",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240501.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-02",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240502.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-03",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240503.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-04",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240504.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-05",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240505.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-06",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240506.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-07",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240507.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-08",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240508.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2024-05-09",
+          "png": "rs_2024/png/tpi_flood_gfs_d2_20240509.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-04-25",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240425.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-22",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-04-26",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240426.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-23",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-04-27",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240427.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-24",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-04-28",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240428.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-25",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-04-29",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240429.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-26",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-04-30",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240430.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-27",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-01",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240501.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-02",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240502.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-03",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240503.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-04",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240504.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-05",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240505.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-06",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240506.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-07",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240507.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-08",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240508.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-09",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240509.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2024-05-10",
+          "png": "rs_2024/png/tpi_flood_gfs_d3_20240510.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
         },
         {
           "id": "tpi_slide",
@@ -731,7 +1793,9 @@
             -50.499253,
             -28.999504
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
         },
         {
           "id": "tpi_slide_d2",
@@ -750,7 +1814,9 @@
             -50.499253,
             -28.999504
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
         },
         {
           "id": "tpi_slide_d3",
@@ -769,7 +1835,1065 @@
             -50.499253,
             -28.999504
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-04-23",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240423.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-22",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-04-24",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240424.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-23",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-04-25",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240425.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-24",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-04-26",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240426.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-25",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-04-27",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240427.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-26",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-04-28",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240428.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-27",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-04-29",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240429.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-04-30",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240430.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-05-01",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240501.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-05-02",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240502.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-05-03",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240503.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-05-04",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240504.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-05-05",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240505.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-05-06",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240506.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-05-07",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240507.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2024-05-08",
+          "png": "rs_2024/png/tpi_slide_gfs_d1_20240508.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-04-24",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240424.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-22",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-04-25",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240425.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-23",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-04-26",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240426.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-24",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-04-27",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240427.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-25",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-04-28",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240428.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-26",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-04-29",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240429.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-27",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-04-30",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240430.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-01",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240501.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-02",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240502.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-03",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240503.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-04",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240504.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-05",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240505.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-06",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240506.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-07",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240507.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-08",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240508.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2024-05-09",
+          "png": "rs_2024/png/tpi_slide_gfs_d2_20240509.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-04-25",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240425.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-22",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-04-26",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240426.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-23",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-04-27",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240427.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-24",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-04-28",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240428.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-25",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-04-29",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240429.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-26",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-04-30",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240430.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-27",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-01",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240501.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-02",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240502.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-03",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240503.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-04-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-04",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240504.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-05",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240505.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-06",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240506.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-07",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240507.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-08",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240508.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-09",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240509.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2024-05-10",
+          "png": "rs_2024/png/tpi_slide_gfs_d3_20240510.png",
+          "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.50051,
+            -30.503845,
+            -50.499253,
+            -28.999504
+          ],
+          "forecast": true,
+          "issued": "2024-05-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
         },
         {
           "id": "r_series",
@@ -882,7 +3006,8 @@
             46.990446,
             -121.455602,
             48.509603
-          ]
+          ],
+          "kind": "observed"
         },
         {
           "id": "nisar_pre",
@@ -900,7 +3025,8 @@
             46.990446,
             -121.455602,
             48.509603
-          ]
+          ],
+          "kind": "observed"
         },
         {
           "id": "tpi_flood",
@@ -1318,7 +3444,9 @@
             -121.499223,
             48.501749
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
         },
         {
           "id": "tpi_flood_d2",
@@ -1337,7 +3465,9 @@
             -121.499223,
             48.501749
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
         },
         {
           "id": "tpi_flood_d3",
@@ -1356,7 +3486,1395 @@
             -121.499223,
             48.501749
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-01",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251201.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-11-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-02",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251202.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-03",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251203.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251204.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-05",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251205.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-06",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251206.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-07",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251207.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-08",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251208.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-09",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251209.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-08",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-10",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251210.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-09",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-11",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251211.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-10",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-12",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251212.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-11",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-13",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251213.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-12",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-14",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251214.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-13",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-15",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251215.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-14",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-15",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-17",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251217.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-16",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-18",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251218.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-17",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-19",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251219.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-18",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-20",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251220.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-19",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2025-12-21",
+          "png": "wa_2025/png/tpi_flood_gfs_d1_20251221.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-20",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-02",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251202.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-11-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-03",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251203.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251204.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-05",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251205.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-06",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251206.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-07",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251207.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-08",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251208.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-09",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251209.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-10",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251210.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-08",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-11",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251211.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-09",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-12",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251212.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-10",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-13",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251213.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-11",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-14",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251214.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-12",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-15",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251215.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-13",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-14",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-17",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251217.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-15",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-18",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251218.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-16",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-19",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251219.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-17",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-20",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251220.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-18",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-21",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251221.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-19",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2025-12-22",
+          "png": "wa_2025/png/tpi_flood_gfs_d2_20251222.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-20",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-03",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251203.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-11-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251204.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-05",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251205.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-06",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251206.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-07",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251207.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-08",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251208.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-09",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251209.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-10",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251210.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-11",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251211.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-08",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-12",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251212.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-09",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-13",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251213.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-10",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-14",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251214.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-11",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-15",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251215.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-12",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-13",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-17",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251217.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-14",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-18",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251218.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-15",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-19",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251219.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-16",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-20",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251220.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-17",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-21",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251221.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-18",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-22",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251222.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-19",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2025-12-23",
+          "png": "wa_2025/png/tpi_flood_gfs_d3_20251223.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-20",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
         },
         {
           "id": "tpi_slide",
@@ -1774,7 +5292,9 @@
             -121.499223,
             48.501749
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
         },
         {
           "id": "tpi_slide_d2",
@@ -1793,7 +5313,9 @@
             -121.499223,
             48.501749
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
         },
         {
           "id": "tpi_slide_d3",
@@ -1812,7 +5334,1395 @@
             -121.499223,
             48.501749
           ],
-          "forecast": true
+          "forecast": true,
+          "forecast_source": "perfect-forecast",
+          "upper_bound": true
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-01",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251201.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-11-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-02",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251202.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-03",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251203.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251204.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-05",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251205.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-06",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251206.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-07",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251207.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-08",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251208.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-09",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251209.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-08",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-10",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251210.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-09",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-11",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251211.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-10",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-12",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251212.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-11",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-13",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251213.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-12",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-14",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251214.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-13",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-15",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251215.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-14",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-15",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-17",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251217.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-16",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-18",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251218.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-17",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-19",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251219.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-18",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-20",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251220.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-19",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d1",
+          "date": "2025-12-21",
+          "png": "wa_2025/png/tpi_slide_gfs_d1_20251221.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-20",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-02",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251202.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-11-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-03",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251203.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251204.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-05",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251205.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-06",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251206.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-07",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251207.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-08",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251208.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-09",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251209.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-10",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251210.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-08",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-11",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251211.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-09",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-12",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251212.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-10",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-13",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251213.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-11",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-14",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251214.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-12",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-15",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251215.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-13",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-14",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-17",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251217.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-15",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-18",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251218.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-16",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-19",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251219.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-17",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-20",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251220.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-18",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-21",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251221.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-19",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d2",
+          "date": "2025-12-22",
+          "png": "wa_2025/png/tpi_slide_gfs_d2_20251222.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-20",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-03",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251203.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-11-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251204.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-05",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251205.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-06",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251206.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-07",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251207.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-08",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251208.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-09",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251209.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-10",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251210.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-07",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-11",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251211.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-08",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-12",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251212.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-09",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-13",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251213.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-10",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-14",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251214.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-11",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-15",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251215.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-12",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-13",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-17",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251217.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-14",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-18",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251218.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-15",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-19",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251219.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-16",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-20",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251220.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-17",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-21",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251221.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-18",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-22",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251222.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-19",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
+        },
+        {
+          "id": "tpi_slide_gfs_d3",
+          "date": "2025-12-23",
+          "png": "wa_2025/png/tpi_slide_gfs_d3_20251223.png",
+          "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.600094,
+            46.999727,
+            -121.499223,
+            48.501749
+          ],
+          "forecast": true,
+          "issued": "2025-12-20",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast"
         },
         {
           "id": "r_series",
@@ -1864,7 +6774,7 @@
     "now": {
       "schema": "tipping-point/now@2",
       "mode": "live",
-      "updated_at": "2026-11-14T22:08:35.513754Z",
+      "updated_at": "2026-11-14T22:54:53.900593Z",
       "bounds": [
         -58.0,
         -34.0,

@@ -517,6 +517,1542 @@
         -50.497572,
         -28.997617
       ]
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-04-23",
+      "issued": "2024-04-22",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240423.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-04-23",
+      "issued": "2024-04-22",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240423.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-04-24",
+      "issued": "2024-04-22",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240424.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-04-24",
+      "issued": "2024-04-22",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240424.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-04-25",
+      "issued": "2024-04-22",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240425.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-04-25",
+      "issued": "2024-04-22",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240425.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240422.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-04-24",
+      "issued": "2024-04-23",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240424.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-04-24",
+      "issued": "2024-04-23",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240424.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-04-25",
+      "issued": "2024-04-23",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240425.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-04-25",
+      "issued": "2024-04-23",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240425.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-04-26",
+      "issued": "2024-04-23",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240426.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-04-26",
+      "issued": "2024-04-23",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240426.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-04-25",
+      "issued": "2024-04-24",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240425.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-04-25",
+      "issued": "2024-04-24",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240425.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-04-26",
+      "issued": "2024-04-24",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240426.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-04-26",
+      "issued": "2024-04-24",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240426.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-04-27",
+      "issued": "2024-04-24",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240427.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-04-27",
+      "issued": "2024-04-24",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240427.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240424.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-04-26",
+      "issued": "2024-04-25",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240426.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-04-26",
+      "issued": "2024-04-25",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240426.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-04-27",
+      "issued": "2024-04-25",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240427.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-04-27",
+      "issued": "2024-04-25",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240427.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-04-28",
+      "issued": "2024-04-25",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240428.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-04-28",
+      "issued": "2024-04-25",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240428.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240425.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-04-27",
+      "issued": "2024-04-26",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240427.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-04-27",
+      "issued": "2024-04-26",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240427.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-04-28",
+      "issued": "2024-04-26",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240428.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-04-28",
+      "issued": "2024-04-26",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240428.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-04-29",
+      "issued": "2024-04-26",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240429.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-04-29",
+      "issued": "2024-04-26",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240429.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240426.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-04-28",
+      "issued": "2024-04-27",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240428.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-04-28",
+      "issued": "2024-04-27",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240428.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-04-29",
+      "issued": "2024-04-27",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240429.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-04-29",
+      "issued": "2024-04-27",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240429.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-04-30",
+      "issued": "2024-04-27",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240430.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-04-30",
+      "issued": "2024-04-27",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240430.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240427.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-04-29",
+      "issued": "2024-04-28",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240429.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-04-29",
+      "issued": "2024-04-28",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240429.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-04-30",
+      "issued": "2024-04-28",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240430.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-04-30",
+      "issued": "2024-04-28",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240430.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-01",
+      "issued": "2024-04-28",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240501.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-01",
+      "issued": "2024-04-28",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240501.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240428.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-04-30",
+      "issued": "2024-04-29",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240430.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-04-30",
+      "issued": "2024-04-29",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240430.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-01",
+      "issued": "2024-04-29",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240501.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-01",
+      "issued": "2024-04-29",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240501.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-02",
+      "issued": "2024-04-29",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240502.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-02",
+      "issued": "2024-04-29",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240502.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240429.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-05-01",
+      "issued": "2024-04-30",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240501.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-05-01",
+      "issued": "2024-04-30",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240501.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-02",
+      "issued": "2024-04-30",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240502.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-02",
+      "issued": "2024-04-30",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240502.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-03",
+      "issued": "2024-04-30",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240503.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-03",
+      "issued": "2024-04-30",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240503.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240430.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-05-02",
+      "issued": "2024-05-01",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240502.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-05-02",
+      "issued": "2024-05-01",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240502.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-03",
+      "issued": "2024-05-01",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240503.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-03",
+      "issued": "2024-05-01",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240503.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-04",
+      "issued": "2024-05-01",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240504.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-04",
+      "issued": "2024-05-01",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240504.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240501.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-05-03",
+      "issued": "2024-05-02",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240503.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-05-03",
+      "issued": "2024-05-02",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240503.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-04",
+      "issued": "2024-05-02",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240504.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-04",
+      "issued": "2024-05-02",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240504.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-05",
+      "issued": "2024-05-02",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240505.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-05",
+      "issued": "2024-05-02",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240505.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240502.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-05-04",
+      "issued": "2024-05-03",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240504.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-05-04",
+      "issued": "2024-05-03",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240504.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-05",
+      "issued": "2024-05-03",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240505.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-05",
+      "issued": "2024-05-03",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240505.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-06",
+      "issued": "2024-05-03",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240506.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-06",
+      "issued": "2024-05-03",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240506.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240503.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-05-05",
+      "issued": "2024-05-04",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240505.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-05-05",
+      "issued": "2024-05-04",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240505.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-06",
+      "issued": "2024-05-04",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240506.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-06",
+      "issued": "2024-05-04",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240506.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-07",
+      "issued": "2024-05-04",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240507.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-07",
+      "issued": "2024-05-04",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240507.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240504.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-05-06",
+      "issued": "2024-05-05",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240506.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-05-06",
+      "issued": "2024-05-05",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240506.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-07",
+      "issued": "2024-05-05",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240507.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-07",
+      "issued": "2024-05-05",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240507.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-08",
+      "issued": "2024-05-05",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240508.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-08",
+      "issued": "2024-05-05",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240508.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240505.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-05-07",
+      "issued": "2024-05-06",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240507.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-05-07",
+      "issued": "2024-05-06",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240507.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-08",
+      "issued": "2024-05-06",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240508.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-08",
+      "issued": "2024-05-06",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240508.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-09",
+      "issued": "2024-05-06",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240509.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-09",
+      "issued": "2024-05-06",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240509.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240506.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2024-05-08",
+      "issued": "2024-05-07",
+      "png": "rs_2024/png/tpi_slide_gfs_d1_20240508.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2024-05-08",
+      "issued": "2024-05-07",
+      "png": "rs_2024/png/tpi_flood_gfs_d1_20240508.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2024-05-09",
+      "issued": "2024-05-07",
+      "png": "rs_2024/png/tpi_slide_gfs_d2_20240509.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2024-05-09",
+      "issued": "2024-05-07",
+      "png": "rs_2024/png/tpi_flood_gfs_d2_20240509.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2024-05-10",
+      "issued": "2024-05-07",
+      "png": "rs_2024/png/tpi_slide_gfs_d3_20240510.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2024-05-10",
+      "issued": "2024-05-07",
+      "png": "rs_2024/png/tpi_flood_gfs_d3_20240510.png",
+      "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240507.tif",
+      "bounds": [
+        -52.50051,
+        -30.503845,
+        -50.499253,
+        -28.999504
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
     }
   ]
 }

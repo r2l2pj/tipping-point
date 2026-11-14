@@ -673,6 +673,2022 @@
         48.509603
       ],
       "kind": "observed"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-01",
+      "issued": "2025-11-30",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251201.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-01",
+      "issued": "2025-11-30",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251201.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-02",
+      "issued": "2025-11-30",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251202.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-02",
+      "issued": "2025-11-30",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251202.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-03",
+      "issued": "2025-11-30",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251203.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-03",
+      "issued": "2025-11-30",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251203.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251130.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-02",
+      "issued": "2025-12-01",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251202.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-02",
+      "issued": "2025-12-01",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251202.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-03",
+      "issued": "2025-12-01",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251203.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-03",
+      "issued": "2025-12-01",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251203.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-04",
+      "issued": "2025-12-01",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251204.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-04",
+      "issued": "2025-12-01",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251204.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251201.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-03",
+      "issued": "2025-12-02",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251203.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-03",
+      "issued": "2025-12-02",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251203.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-04",
+      "issued": "2025-12-02",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251204.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-04",
+      "issued": "2025-12-02",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251204.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-05",
+      "issued": "2025-12-02",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251205.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-05",
+      "issued": "2025-12-02",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251205.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251202.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-04",
+      "issued": "2025-12-03",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251204.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-04",
+      "issued": "2025-12-03",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251204.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-05",
+      "issued": "2025-12-03",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251205.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-05",
+      "issued": "2025-12-03",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251205.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-06",
+      "issued": "2025-12-03",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251206.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-06",
+      "issued": "2025-12-03",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251206.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251203.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-05",
+      "issued": "2025-12-04",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251205.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-05",
+      "issued": "2025-12-04",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251205.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-06",
+      "issued": "2025-12-04",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251206.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-06",
+      "issued": "2025-12-04",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251206.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-07",
+      "issued": "2025-12-04",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251207.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-07",
+      "issued": "2025-12-04",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251207.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251204.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-06",
+      "issued": "2025-12-05",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251206.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-06",
+      "issued": "2025-12-05",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251206.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-07",
+      "issued": "2025-12-05",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251207.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-07",
+      "issued": "2025-12-05",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251207.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-08",
+      "issued": "2025-12-05",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251208.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-08",
+      "issued": "2025-12-05",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251208.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251205.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-07",
+      "issued": "2025-12-06",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251207.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-07",
+      "issued": "2025-12-06",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251207.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-08",
+      "issued": "2025-12-06",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251208.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-08",
+      "issued": "2025-12-06",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251208.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-09",
+      "issued": "2025-12-06",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251209.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-09",
+      "issued": "2025-12-06",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251209.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251206.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-08",
+      "issued": "2025-12-07",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251208.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-08",
+      "issued": "2025-12-07",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251208.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-09",
+      "issued": "2025-12-07",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251209.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-09",
+      "issued": "2025-12-07",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251209.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-10",
+      "issued": "2025-12-07",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251210.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-10",
+      "issued": "2025-12-07",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251210.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251207.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-09",
+      "issued": "2025-12-08",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251209.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-09",
+      "issued": "2025-12-08",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251209.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-10",
+      "issued": "2025-12-08",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251210.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-10",
+      "issued": "2025-12-08",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251210.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-11",
+      "issued": "2025-12-08",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251211.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-11",
+      "issued": "2025-12-08",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251211.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251208.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-10",
+      "issued": "2025-12-09",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251210.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-10",
+      "issued": "2025-12-09",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251210.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-11",
+      "issued": "2025-12-09",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251211.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-11",
+      "issued": "2025-12-09",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251211.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-12",
+      "issued": "2025-12-09",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251212.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-12",
+      "issued": "2025-12-09",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251212.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251209.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-11",
+      "issued": "2025-12-10",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251211.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-11",
+      "issued": "2025-12-10",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251211.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-12",
+      "issued": "2025-12-10",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251212.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-12",
+      "issued": "2025-12-10",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251212.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-13",
+      "issued": "2025-12-10",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251213.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-13",
+      "issued": "2025-12-10",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251213.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251210.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-12",
+      "issued": "2025-12-11",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251212.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-12",
+      "issued": "2025-12-11",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251212.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-13",
+      "issued": "2025-12-11",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251213.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-13",
+      "issued": "2025-12-11",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251213.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-14",
+      "issued": "2025-12-11",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251214.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-14",
+      "issued": "2025-12-11",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251214.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251211.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-13",
+      "issued": "2025-12-12",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251213.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-13",
+      "issued": "2025-12-12",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251213.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-14",
+      "issued": "2025-12-12",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251214.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-14",
+      "issued": "2025-12-12",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251214.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-15",
+      "issued": "2025-12-12",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251215.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-15",
+      "issued": "2025-12-12",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251215.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251212.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-14",
+      "issued": "2025-12-13",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251214.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-14",
+      "issued": "2025-12-13",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251214.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-15",
+      "issued": "2025-12-13",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251215.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-15",
+      "issued": "2025-12-13",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251215.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-16",
+      "issued": "2025-12-13",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-16",
+      "issued": "2025-12-13",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251213.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-15",
+      "issued": "2025-12-14",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251215.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-15",
+      "issued": "2025-12-14",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251215.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-16",
+      "issued": "2025-12-14",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-16",
+      "issued": "2025-12-14",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-17",
+      "issued": "2025-12-14",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251217.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-17",
+      "issued": "2025-12-14",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251217.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251214.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-16",
+      "issued": "2025-12-15",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-16",
+      "issued": "2025-12-15",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-17",
+      "issued": "2025-12-15",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251217.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-17",
+      "issued": "2025-12-15",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251217.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-18",
+      "issued": "2025-12-15",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251218.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-18",
+      "issued": "2025-12-15",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251218.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251215.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-17",
+      "issued": "2025-12-16",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251217.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-17",
+      "issued": "2025-12-16",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251217.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-18",
+      "issued": "2025-12-16",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251218.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-18",
+      "issued": "2025-12-16",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251218.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-19",
+      "issued": "2025-12-16",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251219.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-19",
+      "issued": "2025-12-16",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251219.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251216.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-18",
+      "issued": "2025-12-17",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251218.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-18",
+      "issued": "2025-12-17",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251218.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-19",
+      "issued": "2025-12-17",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251219.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-19",
+      "issued": "2025-12-17",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251219.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-20",
+      "issued": "2025-12-17",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251220.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-20",
+      "issued": "2025-12-17",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251220.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251217.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-19",
+      "issued": "2025-12-18",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251219.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-19",
+      "issued": "2025-12-18",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251219.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-20",
+      "issued": "2025-12-18",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251220.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-20",
+      "issued": "2025-12-18",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251220.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-21",
+      "issued": "2025-12-18",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251221.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-21",
+      "issued": "2025-12-18",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251221.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251218.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-20",
+      "issued": "2025-12-19",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251220.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-20",
+      "issued": "2025-12-19",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251220.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-21",
+      "issued": "2025-12-19",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251221.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-21",
+      "issued": "2025-12-19",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251221.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-22",
+      "issued": "2025-12-19",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251222.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-22",
+      "issued": "2025-12-19",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251222.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251219.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d1",
+      "date": "2025-12-21",
+      "issued": "2025-12-20",
+      "png": "wa_2025/png/tpi_slide_gfs_d1_20251221.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d1",
+      "date": "2025-12-21",
+      "issued": "2025-12-20",
+      "png": "wa_2025/png/tpi_flood_gfs_d1_20251221.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d2",
+      "date": "2025-12-22",
+      "issued": "2025-12-20",
+      "png": "wa_2025/png/tpi_slide_gfs_d2_20251222.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d2",
+      "date": "2025-12-22",
+      "issued": "2025-12-20",
+      "png": "wa_2025/png/tpi_flood_gfs_d2_20251222.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_slide_gfs_d3",
+      "date": "2025-12-23",
+      "issued": "2025-12-20",
+      "png": "wa_2025/png/tpi_slide_gfs_d3_20251223.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
+    },
+    {
+      "id": "tpi_flood_gfs_d3",
+      "date": "2025-12-23",
+      "issued": "2025-12-20",
+      "png": "wa_2025/png/tpi_flood_gfs_d3_20251223.png",
+      "cog": "wa_2025/cog/wa_2025_tpi_gfs_20251220.tif",
+      "bounds": [
+        -122.600094,
+        46.999727,
+        -121.499223,
+        48.501749
+      ],
+      "forecast": true,
+      "forecast_source": "noaa-gfs",
+      "kind": "forecast"
     }
   ]
 }

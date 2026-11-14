@@ -1,0 +1,128 @@
+{
+  "case": "rs_2024",
+  "basis": "GFS-forecast replay TPI: R_fc = score(obs IMERG daily <=D + GFS d1..dk) vs case climatology, S held at D, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor",
+  "anchor_utc": "2024-04-27 15:00:00+00:00",
+  "issue_days": [
+    {
+      "issue": "2024-04-22",
+      "earliest_critical_k": 3,
+      "first_critical_date": "2024-04-25",
+      "warned": true,
+      "lead_h": 135.0
+    },
+    {
+      "issue": "2024-04-23",
+      "earliest_critical_k": 2,
+      "first_critical_date": "2024-04-25",
+      "warned": true,
+      "lead_h": 111.0
+    },
+    {
+      "issue": "2024-04-24",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-04-25",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-04-26",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-04-27",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-04-28",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-04-29",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-04-30",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-05-01",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-05-02",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-05-03",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-05-04",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-05-05",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-05-06",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    },
+    {
+      "issue": "2024-05-07",
+      "earliest_critical_k": null,
+      "first_critical_date": null,
+      "warned": false,
+      "lead_h": null
+    }
+  ],
+  "earliest_critical_issue": "2024-04-22",
+  "would_have_warned_h": 135.0,
+  "lead_h_median": 123.0,
+  "lead_h_iqr": [
+    117.0,
+    129.0
+  ],
+  "n_warned": 2,
+  "n_issue_days": 16
+}

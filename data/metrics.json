@@ -120,7 +120,20 @@
         "2025-12-15",
         "2025-12-17"
       ],
-      "opera_scenes": 5
+      "opera_scenes": 5,
+      "forecast_lead_time": {
+        "forecast_source": "noaa-gfs",
+        "earliest_critical_issue": "2025-12-03",
+        "would_have_warned_h": 144.58333333333334,
+        "lead_h_median": 84.58333333333333,
+        "lead_h_iqr": [
+          54.583333333333336,
+          114.58333333333333
+        ],
+        "n_warned": 6,
+        "n_issue_days": 21,
+        "basis": "GFS-forecast replay TPI: R_fc = score(obs IMERG daily <=D + GFS d1..dk) vs case climatology, S held at D, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
+      }
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -168,9 +181,9 @@
       "_null_reasons": {
         "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog stub is empty (0 dated points)",
         "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson is an empty stub (1 feature, 0 coordinates): no dated inventory points available; fell back to cluster-lead vs damage_anchor",
-        "people_flooded": "no NISAR coverage — event predates launch (Jul 2025)",
-        "flooded_km2": "no NISAR coverage — event predates launch (Jul 2025)",
-        "flood_source": "no NISAR coverage — event predates launch (Jul 2025)",
+        "people_flooded": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "flooded_km2": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "flood_source": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
         "rf_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data.",
         "rule_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data."
       },
@@ -282,6 +295,19 @@
           "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog stub is empty (0 dated points)",
           "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson is an empty stub (1 feature, 0 coordinates): no dated inventory points available; fell back to cluster-lead vs damage_anchor"
         }
+      },
+      "forecast_lead_time": {
+        "forecast_source": "noaa-gfs",
+        "earliest_critical_issue": "2024-04-22",
+        "would_have_warned_h": 135.0,
+        "lead_h_median": 123.0,
+        "lead_h_iqr": [
+          117.0,
+          129.0
+        ],
+        "n_warned": 2,
+        "n_issue_days": 16,
+        "basis": "GFS-forecast replay TPI: R_fc = score(obs IMERG daily <=D + GFS d1..dk) vs case climatology, S held at D, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
       }
     }
   }
