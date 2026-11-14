@@ -116,5 +116,17 @@ def glc_catalog(event: dict, window: dict | None = None) -> Path:
     case = "_".join(event["id"].split("-")[:2])
     out = DATA_DIR / case / "geojson" / "landslide_catalog.geojson"
     out.parent.mkdir(parents=True, exist_ok=True)
+    if not features and out.exists():
+        # Never clobber a populated catalog with an empty query result
+        # (a service hiccup once wiped 16k published points on Neon).
+        try:
+            old = json.loads(out.read_text())
+            has_pts = any(
+                (f.get("geometry") or {}).get("coordinates")
+                for f in old.get("features", []))
+        except (OSError, ValueError):
+            has_pts = False
+        if has_pts:
+            return out
     out.write_text(json.dumps(fc, indent=2) + "\n")
     return out

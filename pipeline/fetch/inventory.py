@@ -165,6 +165,15 @@ def _load_point_shapefiles(raw_dir: Path) -> gpd.GeoDataFrame:
 
 def _write_feature_collection(features: list[dict], out: Path,
                               fetch_error: str | None = None) -> None:
+    if not features and out.exists():
+        # Never clobber a populated catalog with an empty/failed fetch.
+        try:
+            old = json.loads(out.read_text())
+            if any((f.get("geometry") or {}).get("coordinates")
+                   for f in old.get("features", [])):
+                return
+        except (OSError, ValueError):
+            pass
     fc = {"type": "FeatureCollection", "features": features}
     if fetch_error:
         fc["fetch_error"] = fetch_error
