@@ -117,3 +117,26 @@ Re-verified after rework:
   cloud_pct 13.33 + nulls/reasons; `--opera-wtr` found the NISAR COG at
   `data/rs_2024/cog/rs_2024_water_nisar_20240502.tif` (new case-dir layout)
   and merged iou=0.5/f1=0.667/cloud_pct=14.29.
+
+## Rework — ruling L6 (EARTHDATA_TOKEN auth)
+
+Third commit on unit/u7a.
+
+- `tp.validation._edl_login()` (lazy earthaccess import) logs in with
+  `earthaccess.login(strategy="environment")` — honors `EARTHDATA_TOKEN`
+  bearer auth, and first maps the repo's `EDL_USER`/`EDL_PASS` fallback
+  onto `EARTHDATA_USERNAME`/`EARTHDATA_PASSWORD` (same convention as
+  `live/fetch.py`). `search_download_opera` calls it; still lazy — no
+  earthaccess at import/parse.
+- New tests (11 total):
+  - `test_edl_login_environment_strategy` — fake earthaccess module via
+    `sys.modules`; asserts `login(strategy="environment")` and the
+    EDL_USER/EDL_PASS → EARTHDATA_* mapping. No network.
+  - `test_edl_token_env_wires_bearer_header` — real earthaccess with a fake
+    `EARTHDATA_TOKEN`: asserts `auth.token["access_token"]`,
+    `authenticated`, and `get_session().headers["Authorization"] ==
+    "Bearer fake-token-123"`. The environment-token path is purely local
+    (earthaccess sets the token dict without a request) — no network.
+
+Re-verified: 43 tests pass, `ruff check .` clean, `--help` resolves with
+no earthaccess import.

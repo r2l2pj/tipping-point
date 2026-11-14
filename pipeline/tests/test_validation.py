@@ -1,10 +1,14 @@
 import json
+import os
+import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 import rioxarray as rxr
 from conftest import write_tif
 from tp.validation import (
+    _edl_login,
     case_id,
     cloud_only_merge,
     cloud_pct,
@@ -126,6 +130,36 @@ def test_cloud_only_merge_preserves_keys(tmp_path):
     assert "clouded" in m["_null_reasons"]["f1"]
     assert m["flooded_km2"] == 10.0          # pre-existing key survives
     assert m["collections"]["cloud_pct_source"] == "hls_fmask"
+
+
+def test_edl_login_environment_strategy(monkeypatch):
+    # fake earthaccess: assert the login strategy + EDL_* env mapping,
+    # no real import, no network
+    calls = {}
+    fake = SimpleNamespace(
+        login=lambda **kw: calls.update(kw) or SimpleNamespace())
+    monkeypatch.setitem(sys.modules, "earthaccess", fake)
+    monkeypatch.delenv("EARTHDATA_USERNAME", raising=False)
+    monkeypatch.delenv("EARTHDATA_PASSWORD", raising=False)
+    monkeypatch.setenv("EDL_USER", "u1")
+    monkeypatch.setenv("EDL_PASS", "p1")
+    _edl_login()
+    assert calls == {"strategy": "environment"}
+    assert os.environ["EARTHDATA_USERNAME"] == "u1"
+    assert os.environ["EARTHDATA_PASSWORD"] == "p1"
+
+
+def test_edl_token_env_wires_bearer_header(monkeypatch):
+    # real earthaccess: a set EARTHDATA_TOKEN authenticates locally
+    # (no network) and wires the Authorization: Bearer session header
+    for var in ("EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+                "EDL_USER", "EDL_PASS"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("EARTHDATA_TOKEN", "fake-token-123")
+    auth = _edl_login()
+    assert auth.authenticated
+    assert auth.token["access_token"] == "fake-token-123"
+    assert auth.get_session().headers["Authorization"] == "Bearer fake-token-123"
 
 
 def test_write_metrics_preserves_existing_keys(tmp_path):

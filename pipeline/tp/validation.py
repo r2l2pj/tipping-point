@@ -45,6 +45,22 @@ def opera_product(case: str) -> str:
     return CASE_PRODUCT.get(case, DEFAULT_PRODUCT)
 
 
+def _edl_login():
+    """earthaccess environment login (lazy import).
+
+    L6: bearer token env EARTHDATA_TOKEN is the auth; EDL_USER/EDL_PASS are
+    the local fallback, mapped to the env names earthaccess reads
+    (EARTHDATA_USERNAME/EARTHDATA_PASSWORD). The token path needs no network.
+    """
+    import os
+
+    import earthaccess
+
+    os.environ.setdefault("EARTHDATA_USERNAME", os.environ.get("EDL_USER", ""))
+    os.environ.setdefault("EARTHDATA_PASSWORD", os.environ.get("EDL_PASS", ""))
+    return earthaccess.login(strategy="environment")
+
+
 def search_download_opera(
     bbox: tuple,
     temporal: tuple,
@@ -58,7 +74,7 @@ def search_download_opera(
     """
     import earthaccess
 
-    earthaccess.login()
+    _edl_login()
     granules = earthaccess.search_data(
         short_name=short_name, bounding_box=bbox, temporal=temporal
     )
