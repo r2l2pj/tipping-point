@@ -28,6 +28,7 @@
   "nisar": {
     "maturity": "BETA",
     "note": "Pre-calibration products from the Feb 2026 release (subset of acquisitions 2025-10-17 to 2026-01-20). Use relative before/after change on the same frame.",
+    "gunw_note": "No GUNW pair crosses the event — declared limitation; landslide candidates come from post-event HLS optical, always 'candidates' never 'confirmed'; radar confirms floods only.",
     "frames": [
       {
         "product": "GCOV",
@@ -35,21 +36,27 @@
         "frame": "064",
         "pre": "2025-12-04",
         "post": "2025-12-16",
+        "scenes": [
+          {
+            "date": "2025-11-10",
+            "role": "no-event reference",
+            "granule_id": "NISAR_L2_PR_GCOV_004_172_D_064_4005_DHDH_A_20251110T031814_20251110T031849_X05009_N_F_J_001"
+          },
+          {
+            "date": "2025-12-04",
+            "role": "pre",
+            "granule_id": "NISAR_L2_PR_GCOV_006_172_D_064_4005_DHDH_A_20251204T031815_20251204T031850_X05009_N_F_J_001"
+          },
+          {
+            "date": "2025-12-16",
+            "role": "post",
+            "granule_id": "NISAR_L2_PR_GCOV_007_172_D_064_4005_DHDH_A_20251216T031815_20251216T031850_X05009_N_F_J_001"
+          }
+        ],
         "collections": {
           "BETA": "NISAR_L2_GCOV_BETA_V1"
         },
         "note": "Covers Skagit/Snohomish valleys; crests were Dec 11-12, post image is 4-5 days after peak."
-      },
-      {
-        "product": "GUNW",
-        "track": "172D",
-        "frame": "064",
-        "reference_pair": "2025-11-22_to_2025-12-04",
-        "event_pair": "2025-12-04_to_2025-12-16",
-        "collections": {
-          "BETA": "NISAR_L2_GUNW_BETA_V1"
-        },
-        "note": "20 m coherence at /science/LSAR/GUNW/grids/frequencyA/wrappedInterferogram/HH/coherenceMagnitude"
       }
     ],
     "aux_collections": {
@@ -57,6 +64,17 @@
       "dem": "NISAR_DEM"
     },
     "access": "Harmony variable extraction + spatial subset -> COG (do not download full HDF5, ~6-7 GB/frame)"
+  },
+  "swot": {
+    "reach_ids": [
+      "78310800011",
+      "78310800021",
+      "78310800031",
+      "78310800055",
+      "78310800071",
+      "78310800141"
+    ],
+    "note": "Skagit River SWORD reaches with nodes inside the AOI, downstream->upstream (055 is the North Fork delta distributary; gap 68-121 km dist_out is upstream of the AOI's north edge). Via PO.DAAC FTS /v1/rivers/Skagit River filtered to bbox; Hydrocron timeseries per reach."
   },
   "hazards": [
     "flood",

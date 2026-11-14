@@ -22,5 +22,25 @@
     "note": "No NISAR coverage — event predates launch (Jul 2025). Validation via OPERA DSWx-HLS and MODIS NRT Flood on cloud-free days; HLS cloud fraction quantifies what optical missed.",
     "frames": []
   },
+  "swot": {
+    "reach_ids": [
+      "64110700015",
+      "64120100045",
+      "64120100031",
+      "64120100021",
+      "64120100011",
+      "64120300011",
+      "64120300024",
+      "64120300031",
+      "64120300041",
+      "64120300051",
+      "64120300061",
+      "64120300071",
+      "64120500011",
+      "64120500021",
+      "64120500031"
+    ],
+    "note": "Jacui main stem downstream->upstream into terminal reach 64110700015 at the Jacui delta / Guaiba head by Porto Alegre. SWORD names this stem no_data/'Taquari River', so FTS name search for 'Rio Jacui'/'Guaiba' fails; ids found via SWOT_L2_HR_RiverSP_reach_vD_Attributes FeatureServer bbox query on the AOI, ordered by dist_out via FTS /v1/rivers/reach/<id>. Hydrocron timeseries per reach."
+  },
   "hazards": ["flood", "landslide"]
 }
