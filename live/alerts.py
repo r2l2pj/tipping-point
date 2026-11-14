@@ -4,7 +4,7 @@ Doc "Regras de envio": only when the class upgrades to Alto or Crítico
 (considering today and D+1), never between 23h and 6h unless Crítico, at most
 one alert per 6h per person (rate limiting lives in the bot, not here).
 
-This emits now/alerts.json: the regions that WOULD trigger an alert, each with
+This emits data/now/alerts.json: the regions that WOULD trigger an alert, each with
 a `hold` flag for quiet hours. The related alerts-spec agent owns the real
 subscriber loop and message text.
 """

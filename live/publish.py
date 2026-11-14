@@ -1,4 +1,4 @@
-"""Write now/ artifacts — manifest.json is ALWAYS written last.
+"""Write data/now/ artifacts — manifest.json is ALWAYS written last.
 
 The app reads manifest.json first to discover the layer set; writing it last
 guarantees it never points at a half-updated set of files. The manifest dict
@@ -46,7 +46,7 @@ def upload_gcs(now_dir: str | Path, bucket: str, prefix: str = "now") -> None:
 
     Requires GCP_SA_KEY (service-account JSON) in env and the gcloud CLI.
     Skipped silently when NOW_GCS_BUCKET is unset, so a plain git commit of
-    now/ is a fully supported publish path.
+    data/now/ is a fully supported publish path.
     """
     key_json = os.environ.get("GCP_SA_KEY")
     if not key_json:

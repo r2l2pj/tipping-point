@@ -40,6 +40,36 @@ def classes_png_bytes(class_arr: np.ndarray, valid: np.ndarray | None = None) ->
         return mf.read()
 
 
+def cog_bytes(arr: np.ndarray, transform, crs: str = "EPSG:4326") -> bytes:
+    """Encode a float TPI grid as a single-band float32 COG.
+
+    NaN pixels are written as-is (float raster, nodata=nan) — the alert bot
+    samples these files directly. Falls back to a plain tiled deflate GTiff
+    when the GDAL COG driver is unavailable.
+    """
+    import rasterio
+    from rasterio.crs import CRS
+
+    arr = np.asarray(arr, dtype=np.float32)
+    profile = {
+        "driver": "COG",
+        "height": arr.shape[0],
+        "width": arr.shape[1],
+        "count": 1,
+        "dtype": "float32",
+        "crs": CRS.from_user_input(crs),
+        "transform": transform,
+        "nodata": np.nan,
+    }
+    with rasterio.Env() as env:
+        if "COG" not in env.drivers():
+            profile.update(driver="GTiff", tiled=True, compress="deflate")
+    with rasterio.MemoryFile() as mf:
+        with mf.open(**profile) as dst:
+            dst.write(arr, 1)
+        return mf.read()
+
+
 def warp_to_3857(arr: np.ndarray, src_transform, src_crs: str = "EPSG:4326"):
     """Nearest-neighbor warp of a (H,W) array onto an EPSG:3857 grid.
 

@@ -12,7 +12,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = REPO_ROOT / "config.yaml"
 STATIC_DIR = REPO_ROOT / "static"
-NOW_DIR = REPO_ROOT / "now"
+NOW_DIR = REPO_ROOT / "data" / "now"
 STATIC_NPZ = "sul_static.npz"
 
 # Sul do Brasil inteiro (RS, SC, PR) — doc v4 manifest "now".bounds

@@ -6,6 +6,7 @@ from rasterio.transform import from_origin
 
 from live.render import (
     classes_png_bytes,
+    cog_bytes,
     critical_features,
     feature_collection,
     layer_png_3857,
@@ -59,3 +60,18 @@ def test_critical_features_polygons_and_min_size():
     assert feats[0]["geometry"]["type"] in ("Polygon", "MultiPolygon")
     fc = feature_collection(feats)
     assert fc["type"] == "FeatureCollection" and len(fc["features"]) == 1
+
+
+def test_cog_bytes_roundtrip():
+    """Float TPI COGs: EPSG:4326, float32, values and NaNs preserved."""
+    arr = np.linspace(0.0, 1.0, 100, dtype=np.float32).reshape(10, 10)
+    arr[0, 0] = np.nan
+    arr[5, 5] = np.nan
+    data = cog_bytes(arr, TR)
+    with rasterio.MemoryFile(data) as mf, mf.open() as src:
+        assert src.crs.to_epsg() == 4326
+        assert src.dtypes[0] == "float32"
+        out = src.read(1)
+    assert np.isnan(out[0, 0]) and np.isnan(out[5, 5])
+    finite = np.isfinite(arr)
+    np.testing.assert_allclose(out[finite], arr[finite], rtol=1e-6)

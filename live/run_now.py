@@ -5,9 +5,9 @@ Each run (GitHub Actions, every 3 h):
   2. compute R, S, TPI today and the D+1..D+3 projection with static/ climatology
      and terrain — same thresholds as config.yaml / gee/01_tpi_index.js
   3. list recent NISAR passes over the area (metadata only)
-  4. write PNGs, critical-areas GeoJSON, summary.json, alerts.json into now/
+  4. write PNGs, critical-areas GeoJSON, summary.json, alerts.json into data/now/
   5. write manifest.json LAST (the app never reads a half-updated set)
-  6. optionally upload now/ to gs://$NOW_GCS_BUCKET/now/ (manifest last)
+  6. optionally upload data/now/ to gs://$NOW_GCS_BUCKET/now/ (manifest last)
 
 Requires static/sul_static.npz — build once with live/build_static.py.
 Credentials come from env (EDL_USER/EDL_PASS, GCP_SA_KEY); nothing is stored.
@@ -69,7 +69,7 @@ def _clim_for_month(static: dict[str, np.ndarray], month: int) -> dict[str, np.n
 
 
 def build_manifest(bounds, updated_at, data_dates, layers, nisar_passes) -> dict:
-    """now/manifest.json — the `now` node of the v4 manifest schema
+    """data/now/manifest.json — the `now` node of the v4 manifest schema
     (data/SCHEMA.md): {mode: "live", bounds, data_dates, layers:[...]}.
     `products`/`nisar_passes` are additive keys the side panel reads."""
     return {
@@ -112,29 +112,38 @@ def run(args) -> dict:
 
     # ---- TPI today + D+1..D+3 ----------------------------------------------
     rain3_today = tpi.accumulate3(obs_stack)[-1]
-    sm = np.nan_to_num(sm, nan=0.7)
     t_slide, t_flood = static["t_slide"], static["t_flood"]
 
-    days, slides, floods = [], [], []
+    days, slides, floods, slide_tpi, flood_tpi = [], [], [], [], []
     for k in range(FORECAST_DAYS + 1):
         day = today + dt.timedelta(days=k)
         rain3 = rain3_today if k == 0 else tpi.projected_rain3(obs_stack[-3:], fc_stack, k)
         out = tpi.tpi(rain3, sm, _clim_for_month(static, day.month), t_slide, t_flood)
         days.append(day)
+        slide_tpi.append(out["tpi_slide"])
+        flood_tpi.append(out["tpi_flood"])
         slides.append(tpi.classify(out["tpi_slide"]))
         floods.append(tpi.classify(out["tpi_flood"]))
 
     # ---- artifacts ----------------------------------------------------------
     files: dict[str, bytes | dict] = {}
     layers = []
-    for kind, arrs in (("tpi_slide", slides), ("tpi_flood", floods)):
+    # SMAP gaps stay NaN through the TPI product; `valid` keeps them out of
+    # every artifact (transparent PNG pixels, nodata km², honest classes).
+    for kind, arrs, tpis in (("tpi_slide", slides, slide_tpi),
+                            ("tpi_flood", floods, flood_tpi)):
         for k, cls in enumerate(arrs):
+            valid_k = np.isfinite(tpis[k])
             rel = f"png/{kind}_d{k}.png"
-            png, png_bounds = render.layer_png_3857(cls, transform)
+            png, png_bounds = render.layer_png_3857(cls, transform, valid=valid_k)
             files[rel] = png
+            cog_rel = None
+            if k <= 1:  # float TPI COGs only for today + D+1 (alert-bot contract)
+                cog_rel = f"cog/{kind}_{'today' if k == 0 else 'd1'}.tif"
+                files[cog_rel] = render.cog_bytes(tpis[k], transform)
             layers.append({  # v4 layer shape {id, date, png, cog, legend} + bounds
                 "id": f"{kind}_d{k}", "date": days[k].isoformat(),
-                "png": rel, "cog": None, "legend": LABELS,
+                "png": rel, "cog": cog_rel, "legend": LABELS,
                 "bounds": png_bounds, "forecast": k > 0,
             })
 
@@ -145,19 +154,25 @@ def run(args) -> dict:
     files["geojson/critical_areas.geojson"] = render.feature_collection(feats)
 
     area_km2 = pixel_area_km2(lats)
-    crit_mask = (slides[0] >= 2) | (slides[1] >= 2) | (floods[0] >= 2) | (floods[1] >= 2)
+    valid_s0 = np.isfinite(slide_tpi[0])
+    valid_f0 = np.isfinite(flood_tpi[0])
+    crit_mask = (((slides[0] >= 2) & valid_s0) | ((slides[1] >= 2) & np.isfinite(slide_tpi[1]))
+                 | ((floods[0] >= 2) & valid_f0) | ((floods[1] >= 2) & np.isfinite(flood_tpi[1])))
     pop = static.get("pop")
     people_critical = None if pop is None else float(np.nansum(pop * crit_mask))
     summary = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z"),
-        "critical_km2": {"slide": float((area_km2 * (slides[0] >= 2)).sum()),
-                          "flood": float((area_km2 * (floods[0] >= 2)).sum()),
+        "critical_km2": {"slide": float((area_km2 * ((slides[0] >= 2) & valid_s0)).sum()),
+                          "flood": float((area_km2 * ((floods[0] >= 2) & valid_f0)).sum()),
                           "any": float((area_km2 * crit_mask).sum())},
+        "nodata_km2": {"slide": float((area_km2 * ~valid_s0).sum()),
+                        "flood": float((area_km2 * ~valid_f0).sum())},
         "people_exposed": people_critical,
         "people_critical": people_critical,   # v4 metrics key (same value)
         "forecast_source": "geos-fp",         # v4 metrics key (D+1..D+3)
         "classes_km2": {
-            LABELS[c]: float((area_km2 * (slides[0] == c)).sum()) for c in range(4)},
+            LABELS[c]: float((area_km2 * ((slides[0] == c) & valid_s0)).sum())
+            for c in range(4)},
         "data_dates": {"imerg": imerg_date, "smap": smap_date,
                         "geos_fp_issued": geos_issued},
     }
@@ -185,7 +200,7 @@ def run(args) -> dict:
     written = publish.write_outputs(args.out_dir, files, manifest)
     assert written[-1].name == "manifest.json"
 
-    # ---- optional upload (env-gated; plain git commit of now/ also works) ----
+    # ---- optional upload (env-gated; plain git commit of data/now/ also works) ----
     bucket = os.environ.get("NOW_GCS_BUCKET")
     if bucket and not args.no_upload:
         publish.upload_gcs(args.out_dir, bucket)
@@ -195,7 +210,7 @@ def run(args) -> dict:
 def main(argv=None) -> None:
     args = parse_args(argv)
     manifest = run(args)
-    print(f"now/ updated_at={manifest['updated_at']} "
+    print(f"data/now/ updated_at={manifest['updated_at']} "
           f"layers={len(manifest['layers'])} nisar={len(manifest['nisar_passes'])}")
 
 
