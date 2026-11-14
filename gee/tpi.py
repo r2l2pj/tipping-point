@@ -374,12 +374,23 @@ def run(case_id: str, project: str | None = None, *,
         elif spec["kind"] == "asset" and "image" in spec:
             if not assets:
                 continue
+            target = common.asset_path(spec["asset"], proj)
+            try:
+                ee.data.getAsset(target)
+                continue            # exists — never overwrite
+            except ee.EEException:
+                pass
+            img = images[spec["image"]]
+            if spec["image"] in ("TPI_slide", "TPI_flood", "R", "S"):
+                # GEE band ids may not start with a digit — prefix the
+                # YYYYMMDD series names (local COGs keep the raw form)
+                img = img.rename([f"d{n}" for n in names])
             data_date = ("static" if spec["image"] in ("T_slide", "T_flood")
                          else plan["dates"][-1])
             ee.batch.Export.image.toAsset(
-                image=common.stamp(images[spec["image"]], data_date),
+                image=common.stamp(img, data_date),
                 description=spec["description"],
-                assetId=common.asset_path(spec["asset"], proj),
+                assetId=target,
                 region=aoi, scale=SCALE_M).start()
     cog_paths = {spec["image"]: Path(REPO_ROOT) / spec["path"]
                  for spec in plan["exports"] if spec["kind"] == "drive_cog"}
