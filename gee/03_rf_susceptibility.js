@@ -9,7 +9,7 @@ var lc = ee.ImageCollection('MODIS/061/MCD12Q1').filterDate('2023-01-01', '2024-
   .first().select('LC_Type1').rename('landcover');
 var rain = ee.ImageCollection('NASA/GPM_L3/IMERG_MONTHLY_V07')
   .filterDate('2001-01-01', '2025-01-01').select('precipitation').mean().rename('rain_mean');
-var soil = ee.ImageCollection('NASA/SMAP/SPL4SMGP/007')
+var soil = ee.ImageCollection('NASA/SMAP/SPL4SMGP/008')
   .filterDate('2016-01-01', '2025-01-01').select('sm_rootzone_wetness').mean().rename('soil_mean');
 var stack = terrain.addBands([curv, lc, rain, soil]).clip(region);
 

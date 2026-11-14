@@ -40,7 +40,7 @@ function tpiAt(t) {
     .where(rain3.gte(p90), rain3.subtract(p90).divide(p95.subtract(p90)).multiply(0.5))
     .where(rain3.gte(p95), rain3.subtract(p95).divide(p99.subtract(p95)).multiply(0.5).add(0.5))
     .where(rain3.gte(p99), 1).clamp(0, 1);
-  var S = ee.ImageCollection('NASA/SMAP/SPL4SMGP/007').select('sm_rootzone_wetness')
+  var S = ee.ImageCollection('NASA/SMAP/SPL4SMGP/008').select('sm_rootzone_wetness')
     .filterDate(t.advance(-1, 'day'), t).mean().unitScale(0.5, 0.9).clamp(0, 1);
   return R.multiply(S).multiply(T_slide).rename('TPI_slide')
     .addBands(R.multiply(S).multiply(T_flood).rename('TPI_flood'))

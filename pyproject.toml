@@ -17,6 +17,11 @@ dependencies = [
     "pandas>=2.2",
     "xarray>=2025.1",
     "requests>=2.32",
+    "xgboost>=2.1",
+    "scikit-learn>=1.6",
+    "scikit-image>=0.25",
+    "shap>=0.47",
+    "geopandas>=1.0",
 ]
 
 [dependency-groups]

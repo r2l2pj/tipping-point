@@ -4,15 +4,54 @@
   "country": "US",
   "start_date": "2025-12-08",
   "reference_date": "2025-12-12",
-  "window": { "start": "2025-11-01", "end": "2026-01-31" },
+  "window": {
+    "start": "2025-11-01",
+    "end": "2026-01-31"
+  },
   "aoi": {
-    "bbox": [-122.6, 47.0, -121.5, 48.5],
+    "bbox": [
+      -122.6,
+      47.0,
+      -121.5,
+      48.5
+    ],
     "wkt": "POLYGON((-122.6 47.0, -121.5 47.0, -121.5 48.5, -122.6 48.5, -122.6 47.0))"
   },
   "nisar": {
     "maturity": "BETA",
     "note": "Pre-calibration products from the Feb 2026 release (subset of acquisitions 2025-10-17 to 2026-01-20). Use relative before/after change on the same frame.",
-    "frames": []
+    "frames": [
+      {
+        "product": "GCOV",
+        "track": "172D",
+        "frame": "064",
+        "pre": "2025-12-04",
+        "post": "2025-12-16",
+        "collections": {
+          "BETA": "NISAR_L2_GCOV_BETA_V1"
+        },
+        "note": "Covers Skagit/Snohomish valleys; crests were Dec 11-12, post image is 4-5 days after peak."
+      },
+      {
+        "product": "GUNW",
+        "track": "172D",
+        "frame": "064",
+        "reference_pair": "2025-11-22_to_2025-12-04",
+        "event_pair": "2025-12-04_to_2025-12-16",
+        "collections": {
+          "BETA": "NISAR_L2_GUNW_BETA_V1"
+        },
+        "note": "20 m coherence at /science/LSAR/GUNW/grids/frequencyA/wrappedInterferogram/HH/coherenceMagnitude"
+      }
+    ],
+    "aux_collections": {
+      "watermask": "NISAR_WATERMASK",
+      "dem": "NISAR_DEM"
+    },
+    "access": "Harmony variable extraction + spatial subset -> COG (do not download full HDF5, ~6-7 GB/frame)"
   },
-  "hazards": ["flood", "landslide"]
+  "hazards": [
+    "flood",
+    "landslide"
+  ]
 }
