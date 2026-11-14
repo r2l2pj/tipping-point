@@ -41,9 +41,10 @@ COLLECTION = f"tipping-point/now/{LEAF}"
 SHORT_NAME = "SPL4SMGP"
 VERSION = "008"
 
-# Default "now" AOI (west, south, east, north) — mirrors live/config.NOW_BOUNDS,
-# the v4 manifest "now".bounds: Sul do Brasil (RS, SC, PR) at ~1 km. Override
-# with --bounds; a tighter RS-only window would be ~[-55.5,-33.8,-48.0,-27.0].
+# Fallback "now" AOI (west, south, east, north) — mirrors live/config.NOW_BOUNDS,
+# the v4 manifest "now".bounds: Sul do Brasil (RS, SC, PR) at ~1 km. Ruling L9:
+# the canonical default is config.yaml `domains.now` read through
+# tp.config.now_bounds() — see now_bounds() below; --bounds always wins.
 NOW_BOUNDS = (-58.0, -34.0, -48.0, -22.5)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -57,6 +58,22 @@ CLIP_PAD_DEG = 0.5                      # EASE cells kept beyond the bbox edge
 DEFAULT_BUCKET = "tipping-point-data"   # live/config.GCS_BUCKET; NOW_GCS_BUCKET wins
 
 _NATIVE_ID_DATE_RE = re.compile(r"(\d{8})T\d{6}")
+
+
+def now_bounds() -> tuple:
+    """Operational now AOI (west, south, east, north).
+
+    Canonical source: config.yaml `domains.now` via tp.config.now_bounds()
+    (ruling L9 — landing via lead-analysis). Falls back to the bundled
+    NOW_BOUNDS while that helper doesn't exist on this branch. An explicit
+    --bounds always overrides.
+    """
+    try:
+        from tp.config import now_bounds as _cfg_now_bounds
+    except ImportError:
+        return tuple(NOW_BOUNDS)
+    return tuple(_cfg_now_bounds())
+
 
 # The ingest contract lands on unit/ingest; try the plausible homes so this
 # module works whichever package it settles into. None of these existing is
@@ -366,10 +383,12 @@ def _resolve_bucket(bucket: str | None) -> str:
     return bucket or os.environ.get("NOW_GCS_BUCKET") or DEFAULT_BUCKET
 
 
-def run(date: dt.date, bounds, days_back: int, *, out_dir: Path, bucket=None,
-        project=None, download: bool = True, force: bool = False,
-        assets_json: Path = ASSETS_JSON, ingest: bool = True) -> list[dict]:
+def run(date: dt.date, bounds=None, days_back: int = DEFAULT_DAYS_BACK, *,
+        out_dir: Path, bucket=None, project=None, download: bool = True,
+        force: bool = False, assets_json: Path = ASSETS_JSON,
+        ingest: bool = True) -> list[dict]:
     """Fetch + grid + write + ingest; returns the asset list with status."""
+    bounds = tuple(bounds) if bounds is not None else now_bounds()
     project = _resolve_project(project)
     bucket = _resolve_bucket(bucket)
     if download:
@@ -387,9 +406,10 @@ def run(date: dt.date, bounds, days_back: int, *, out_dir: Path, bucket=None,
     return assets
 
 
-def plan(date: dt.date, bounds, days_back: int, *, out_dir: Path, bucket=None,
-         project=None) -> dict:
+def plan(date: dt.date, bounds=None, days_back: int = DEFAULT_DAYS_BACK, *,
+         out_dir: Path, bucket=None, project=None) -> dict:
     """The --dry-run document: projected asset, no network or credentials."""
+    bounds = tuple(bounds) if bounds is not None else now_bounds()
     proj = project or os.environ.get("GEE_PROJECT") or "<GEE_PROJECT>"
     ymd = date.strftime("%Y%m%d")
     return {
@@ -416,8 +436,10 @@ def parse_args(argv=None):
     p.add_argument("--date", type=dt.date.fromisoformat,
                    default=dt.datetime.now(dt.UTC).date(),
                    help="search end date, UTC (default: today)")
-    p.add_argument("--bounds", type=float, nargs=4, default=list(NOW_BOUNDS),
-                   metavar=("W", "S", "E", "N"))
+    p.add_argument("--bounds", type=float, nargs=4, default=None,
+                   metavar=("W", "S", "E", "N"),
+                   help="default: config.yaml domains.now via "
+                        "tp.config.now_bounds()")
     p.add_argument("--days", type=int, default=DEFAULT_DAYS_BACK,
                    help="granule search window in days (default: 10)")
     p.add_argument("--out-dir", type=Path, default=DEFAULT_COG_DIR)
@@ -439,13 +461,14 @@ def parse_args(argv=None):
 
 def main(argv=None) -> None:
     args = parse_args(argv)
+    bounds = tuple(args.bounds) if args.bounds is not None else now_bounds()
     if args.dry_run:
-        print(json.dumps(plan(args.date, tuple(args.bounds), args.days,
+        print(json.dumps(plan(args.date, bounds, args.days,
                               out_dir=args.out_dir, bucket=args.bucket,
                               project=args.project),
                          indent=2))
         return
-    assets = run(args.date, tuple(args.bounds), args.days,
+    assets = run(args.date, bounds, args.days,
                  out_dir=args.out_dir, bucket=args.bucket,
                  project=args.project, download=not args.no_download,
                  force=args.force, assets_json=args.assets_json,

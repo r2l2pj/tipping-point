@@ -320,6 +320,26 @@ def test_write_cog_north_up(tmp_path, monkeypatch):
     assert np.isnan(rec["kw"]["nodata"])
 
 
+def test_now_bounds_resolution(monkeypatch, capsys):
+    """Ruling L9: default AOI = config.yaml domains.now via tp.config, with
+    the bundled constant as fallback and --bounds always winning."""
+    import tp.config
+    # helper absent (not landed yet) -> bundled fallback
+    monkeypatch.delattr(tp.config, "now_bounds", raising=False)
+    for mod in (imerg, smap, geosfp):
+        assert mod.now_bounds() == mod.NOW_BOUNDS
+    # helper present -> config domains.now beats the constant
+    fake = (-55.5, -33.8, -48.0, -27.0)
+    monkeypatch.setattr(tp.config, "now_bounds", lambda: fake, raising=False)
+    for mod in (imerg, smap, geosfp):
+        assert mod.now_bounds() == fake
+    # --bounds still overrides the config source
+    geosfp.main(["--date", "2026-11-14", "--bounds",
+                 "-60", "-35", "-50", "-25", "--dry-run"])
+    plan = json.loads(capsys.readouterr().out)
+    assert plan["bounds"] == [-60.0, -35.0, -50.0, -25.0]
+
+
 def test_asset_ids():
     assert imerg.asset_id("p", "20261114") == (
         "projects/p/assets/tipping-point/now/imerg_early/20261114")
