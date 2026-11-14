@@ -1,4 +1,5 @@
 """Source-level checks for build_static (GEE needs creds, so no live runs)."""
+import datetime as dt
 import io
 import types
 import zipfile
@@ -119,6 +120,29 @@ def test_build_assets_dry_run_starts_nothing():
     assert len(tasks) == 368
     assert ee._exported == []
     assert ee._created == []
+
+
+def test_build_assets_clim_windows_are_per_doy():
+    """clim_rain must sample +-30d around EACH doy's month/day (01_tpi_index.js),
+    not reuse one monthly image for every doy of that month."""
+    ee = _fake_ee()
+    calls = []
+
+    def fromYMD(y, m, d):
+        calls.append((y, m, d))
+        return _Img()
+
+    ee.Date = types.SimpleNamespace(fromYMD=fromYMD)
+    build_static.build_assets(ee, dry_run=True)
+
+    expected_md = {
+        (d.month, d.day) for d in
+        (dt.date(2000, 1, 1) + dt.timedelta(days=i) for i in range(366))}
+    assert {(m, d) for _, m, d in calls} == expected_md
+    assert {y for y, _, _ in calls} == set(build_static.YEARS)
+    # one fromYMD per (year, offset) per doy: 366 * 23 * 21
+    assert len(calls) == 366 * len(list(build_static.YEARS)) * len(
+        list(build_static.OFFSETS))
 
 
 def _asset(name):

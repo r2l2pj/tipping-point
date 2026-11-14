@@ -85,7 +85,9 @@ def _download_band(ee, image, band: str, scale_m: int = 1000) -> np.ndarray:
         return src.read(1).astype(np.float64)
 
 
-def _climatology_for_month(ee, month: int):
+def _climatology(ee, month: int, day: int):
+    """p90/p95/p99 of 3-day IMERG accumulation over +-30d windows (step 3)
+    around the same month/day in each year of YEARS (gee/01_tpi_index.js)."""
     imerg = ee.ImageCollection("NASA/GPM_L3/IMERG_V07").select("precipitation")
 
     def accum(end):
@@ -94,10 +96,19 @@ def _climatology_for_month(ee, month: int):
     samples = []
     for y in YEARS:
         for o in OFFSETS:
-            end = ee.Date.fromYMD(y, month, 15).advance(o, "day")
+            end = ee.Date.fromYMD(y, month, day).advance(o, "day")
             samples.append(accum(end))
     pct = ee.ImageCollection(samples).reduce(ee.Reducer.percentile([90, 95, 99]))
     return pct.rename(["p90", "p95", "p99"])
+
+
+def _climatology_for_month(ee, month: int):
+    return _climatology(ee, month, 15)
+
+
+def _climatology_for_doy(ee, doy: int):
+    d = dt.date(2000, 1, 1) + dt.timedelta(days=doy - 1)
+    return _climatology(ee, d.month, d.day)
 
 
 def _terrain(ee):
@@ -129,9 +140,10 @@ def _ensure_collection(ee, path: str) -> None:
 def build_assets(ee, dry_run: bool = False) -> list:
     """Export the static/south_brazil/* GEE assets (L8; lead-analysis reads
     them): clim_rain ImageCollection (one image per day-of-year, 'doy'
-    property, p90/p95/p99 bands, ~10 km), slope (~30 m, degrees) and hand
-    (~30 m, meters). Population stays npz-only — it is not in the analysis
-    asset list. Returns the export tasks started."""
+    property, p90/p95/p99 bands computed over +-30d windows around that
+    month/day, ~10 km), slope (~30 m, degrees) and hand (~30 m, meters).
+    Population stays npz-only — it is not in the analysis asset list.
+    Returns the export tasks started."""
     region = ee.Geometry.Rectangle(list(NOW_BOUNDS))
     tasks = []
 
@@ -150,13 +162,8 @@ def build_assets(ee, dry_run: bool = False) -> list:
     coll = _asset_path("clim_rain")
     if not dry_run:
         _ensure_collection(ee, coll)
-    month_imgs: dict[int, object] = {}
     for doy in range(1, 367):
-        month = (dt.date(2000, 1, 1) + dt.timedelta(days=doy - 1)).month
-        img = month_imgs.get(month)
-        if img is None:
-            img = _climatology_for_month(ee, month)
-            month_imgs[month] = img
+        img = _climatology_for_doy(ee, doy)
         _export(img.set("doy", doy), f"{coll}/doy_{doy:03d}",
                 ASSET_CLIM_SCALE_M, f"clim_rain_doy_{doy:03d}")
 
