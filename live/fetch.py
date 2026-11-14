@@ -109,18 +109,15 @@ def fetch_smap_l4(bounds, days_back: int = 10):
         raise RuntimeError(f"no SPL4SMGP granules in the last {days_back} days")
     latest = results[-1]
     f = earthaccess.open([latest])[0]
-    ds = xr.open_dataset(f, group="Geophysical_Data", engine="h5netcdf")
+    ds = xr.open_dataset(f, group="Geophysical_Data", engine="h5netcdf", phony_dims="sort")
     sm = ds["sm_rootzone_wetness"].load()
-    try:
-        lats, lons = ds["cell_lat"].values, ds["cell_lon"].values
-    except KeyError:
-        geo = xr.open_dataset(f, group="Metadata", engine="h5netcdf")
-        lats, lons = geo["cell_lat"].values, geo["cell_lon"].values
+    geo = xr.open_dataset(f, engine="h5netcdf", phony_dims="sort")
+    lats, lons = geo["cell_lat"].values, geo["cell_lon"].values
     w, s, e, n = bounds
     m = (lats >= s - 0.5) & (lats <= n + 0.5) & (lons >= w - 0.5) & (lons <= e + 0.5)
     if m.ndim == 2:
-        rows, cols = np.where(m.any(axis=1)), np.where(m.any(axis=0))
-        sl = np.s_[rows.min():rows.max() + 1, cols.min():cols.max() + 1]
+        rows, cols = np.flatnonzero(m.any(axis=1)), np.flatnonzero(m.any(axis=0))
+        sl = np.s_[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
         return lats[sl], lons[sl], sm.values[sl], str(latest["meta"]["native-id"])
     return lats[m], lons[m], sm.values[m], str(latest["meta"]["native-id"])
 
@@ -277,14 +274,11 @@ def nisar_recent_passes(bounds, days: int = 14) -> list[dict]:
     import asf_search as asf
     from shapely.geometry import box
 
-    token = os.environ.get("EARTHDATA_TOKEN")
-    session = asf.ASFSession().auth_with_token(token) if token else None
     wkt = box(*bounds).wkt
     end = dt.datetime.now(dt.UTC)
     results = asf.geo_search(
         intersectsWith=wkt, platform=asf.PLATFORM.NISAR,
         start=end - dt.timedelta(days=days), end=end,
-        session=session,
     )
     return [
         {

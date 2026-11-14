@@ -251,22 +251,19 @@ def test_edl_login_falls_back_to_edl_user_pass(monkeypatch):
     assert "GDAL_HTTP_HEADERS" not in os.environ
 
 
-def test_nisar_recent_passes_uses_bearer_session(monkeypatch):
+def test_nisar_recent_passes_is_anonymous(monkeypatch):
     import asf_search as asf
 
     monkeypatch.setenv("EARTHDATA_TOKEN", "fake")
-
-    class _Resp:
-        status_code = 200
-
-    monkeypatch.setattr(asf.ASFSession, "post", lambda self, **kw: _Resp())
+    posts = []
+    monkeypatch.setattr(asf.ASFSession, "post", lambda self, **kw: posts.append(kw))
     captured = {}
     monkeypatch.setattr(asf, "geo_search",
                         lambda **kw: captured.update(kw) or [])
 
     assert fetch.nisar_recent_passes(BOUNDS) == []
-    session = captured["session"]
-    assert session.headers["Authorization"] == "Bearer fake"
+    assert "session" not in captured
+    assert posts == []
 
 
 def test_check_earthdata_token_exits_loudly_on_rejection(monkeypatch):
@@ -290,3 +287,33 @@ def test_check_earthdata_token_returns_on_success(monkeypatch):
     monkeypatch.setattr(earthaccess, "login", lambda **kw: object())
     monkeypatch.setattr(earthaccess, "search_data", lambda **kw: [object()])
     fetch.check_earthdata_token()  # returns quietly, no SystemExit
+
+
+# ---- SMAP L4 --------------------------------------------------------------
+
+def test_smap_l4_reads_root_coords_and_crops_bbox(monkeypatch, tmp_path):
+    import earthaccess
+    import xarray as xr
+
+    for var in ("EARTHDATA_TOKEN", "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME",
+                "EARTHDATA_PASSWORD", "GDAL_HTTP_HEADERS"):
+        monkeypatch.delenv(var, raising=False)
+    path = tmp_path / "SPL4SMGP.h5"
+    lat, lon = (a.astype(np.float32) for a in np.indices((6, 8)))
+    sm = np.arange(48, dtype=np.float32).reshape(6, 8)
+    dims = ("y", "x")
+    xr.Dataset({"cell_lat": (dims, lat), "cell_lon": (dims, lon)}).to_netcdf(
+        path, engine="h5netcdf")
+    xr.Dataset({"sm_rootzone_wetness": (dims, sm)}).to_netcdf(
+        path, engine="h5netcdf", mode="a", group="Geophysical_Data")
+    monkeypatch.setattr(earthaccess, "login", lambda **kw: object())
+    monkeypatch.setattr(earthaccess, "search_data",
+                        lambda **kw: [{"meta": {"native-id": "FAKE-SPL4SMGP"}}])
+    monkeypatch.setattr(earthaccess, "open", lambda results: [str(path)])
+
+    lats, lons, vals, pid = fetch.fetch_smap_l4((2, 2, 4, 3))
+    assert lats.shape == lons.shape == vals.shape == (2, 3)
+    np.testing.assert_array_equal(lats, lat[2:4, 2:5])
+    np.testing.assert_array_equal(lons, lon[2:4, 2:5])
+    np.testing.assert_array_equal(vals, sm[2:4, 2:5])
+    assert pid == "FAKE-SPL4SMGP"
