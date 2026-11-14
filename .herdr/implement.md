@@ -541,3 +541,105 @@ NEEDS-FIX; no push, no merge).
   Already fixed upstream: `e52403d "Keep OPERA ingest mocks isolated from
   cached package imports"` on main / unit/nisar-update / unit/opera-dswx.
   This worktree predates that merge; not cherry-picked (out of scope).
+# implement — Modo Agora inputs (IMERG Early, SMAP L4, GEOS-FP)
+
+Branch `unit/now-inputs`, worktree `now-inputs`. Scope per the interface update:
+three `python -m` fetch modules + one offline test file. No tools/ file, no
+now_inputs.py, no live/ edits. Not pushed, not merged.
+
+## Files created (4)
+
+| File | Lines | Role |
+|---|---|---|
+| `pipeline/fetch/imerg.py` | ~440 | GPM_3IMERGHHE v07 -> daily mm/day + rolling 3-day COGs -> `now/imerg_early` |
+| `pipeline/fetch/smap.py` | ~330 | SPL4SMGP v008 sm_rootzone_wetness -> regular-grid daily COG -> `now/smap_l4` |
+| `pipeline/fetch/geosfp.py` | ~380 | GMAO GDS `.ascii` fcast PRECTOT -> per-lead-day COGs D+1..D+3 -> `now/geosfp` |
+| `pipeline/tests/test_fetch_now.py` | ~620 | 28 offline tests (fake earthaccess, rasterio, requests, ingest) |
+
+Not modified: `.gitignore` (see Open items), any existing file.
+
+## Interface, as implemented
+
+- CLI per module: `--date`, `--bounds W S E N` (default `NOW_BOUNDS` = v4 manifest
+  bounds -58,-34,-48,-22.5), `--days`, `--out-dir`, `--assets-json`, `--bucket`
+  (env `NOW_GCS_BUCKET`, default `tipping-point-data`), `--project` (env
+  `GEE_PROJECT`), `--dry-run`, `--no-download`, `--no-ingest`, `--force`.
+- Collections: `projects/<GEE_PROJECT>/assets/tipping-point/now/{imerg_early,smap_l4,geosfp}`.
+- Asset ids: `.../<collection>/<YYYYMMDD>` (imerg 3-day: `<YYYYMMDD>_3day`;
+  geosfp tag = forecast valid date).
+- Outputs: `data/now/cog/<leaf>/<leaf>_<tag>.tif`, EPSG:4326 float32, NaN nodata.
+- Idempotency: `data/now/assets.json`, read by a schema-tolerant scan of
+  `asset_id`/`asset`/`id` keys; matching ids skip unless `--force`.
+- Auth split: CMR search is anonymous in all three; `download_granules` is the
+  only place that calls `earthaccess.login`. Order: `EARTHDATA_TOKEN` bearer →
+  `EDL_USER`+`EDL_PASS` pair (mapped onto `EARTHDATA_USERNAME`/`PASSWORD`,
+  partial pairs rejected — same rule as `fetch/opera.py`, review fix) →
+  `~/.netrc`. Clean `RuntimeError` otherwise. `GOOGLE_APPLICATION_CREDENTIALS`
+  is read by Google's libraries, not by these modules.
+- Ingest contract: `stage_to_gcs(path, bucket=, case='now', name=)`,
+  `ingest_asset(uri, asset_id=, kind='image', force=)`,
+  `append_manifest('now', entry)`. Looked up best-effort by module name at import;
+  if absent, status is `ingest_unavailable` and `--dry-run` / `--no-download` /
+  `--no-ingest` still work.
+
+## Math (covered by tests)
+
+- IMERG: daily = sum(mm/h half-hourly) * 0.5. 3-day = rolling sum over 3
+  calendar days, min_periods=3, so the first two days are NaN. Test: 2 mm/h
+  gives 48 mm/day and 144 mm rolling. Partial last day counted (24 steps -> 24 mm).
+- SMAP: EASE 2-D cell lat/lon scattered -> regular 0.09 deg grid via linear
+  griddata with nearest fill. Coverage is gridded over all source cells, so a
+  hole stays NaN. Mirrors the `run_now` rule.
+- GEOS-FP: PRECTOT (mm/s) * 3600 summed per UTC day. Newest run whose coverage
+  reaches end of D+N (last step >= 23:00). Runs that are too short fall back to
+  older runs. Time decode and parsers are the live/fetch.py logic, condensed.
+
+## Commands run
+
+- `$UV sync` — resolved 141 packages, ok.
+- `$UV run pytest pipeline/tests/test_fetch_now.py -q` — first run: 5 failed,
+  21 passed. Fixed: fake rasterio never created the output file (test fake, now
+  touches on close), `_gds_vector` missing trailing newline (test fake), and
+  SMAP coverage mask computed over valid points only (real bug, now gridded
+  over all source cells). Rerun: **26 passed**; **28** after the review fix
+  (+ partial-creds rejection + netrc fallback tests).
+- `$UV run ruff check .` — first run: 8 errors (unused noqa x4, unused unpacked
+  vars x3, missing `check=` x1). All fixed. Rerun: **All checks passed**.
+- `$UV run pytest pipeline/tests -q` — **119 passed** (full suite, no regressions).
+- Review NEEDS-FIX applied + amended (`128844d` → `d782095`): `_edl_login` in
+  imerg.py/smap.py now requires the full `EDL_USER`+`EDL_PASS` pair before
+  mapping (partial creds rejected, `~/.netrc` fallback added), mirroring
+  `fetch/opera.py` on unit/opera-dswx.
+- `$UV run python -m pipeline.fetch.{imerg,smap,geosfp} --dry-run --date 2026-11-14`
+  — each prints valid plan JSON, rc=0.
+- `python -m pipeline.fetch.imerg --no-download` with no GEE_PROJECT — clean
+  `RuntimeError: set GEE_PROJECT or pass --project`, raised before any network call.
+
+## Not verified (no network, no creds)
+
+- Real CMR short names/versions (GPM_3IMERGHHE/07, SPL4SMGP/008) and the
+  SMAP `native-id` date format were not checked online. Test fakes assume them.
+- The GEOS-FP `.ascii` path is the live/fetch.py logic, copied; not run against
+  the live server.
+- rasterio COG driver path is covered only by the GTiff-fallback fake.
+- No earthaccess download, no GCS staging, no GEE ingest was exercised. Those
+  need real credentials and unit/ingest.
+
+## Open items / deviations
+
+1. **`.gitignore` not changed.** `now.yml` runs `git-auto-commit` with
+   `file_pattern: data/now/**`. The default `--out-dir` writes COGs to
+   `data/now/cog/<leaf>/`, so a CI run would commit those rasters. Needs one of:
+   `data/now/cog/imerg_early/`, `data/now/cog/smap_l4/`, `data/now/cog/geosfp/`
+   added to `.gitignore`, or the workflow `file_pattern` narrowed. I did not do
+   this because it is outside the file scope. Owner: lead-live or conductor.
+2. **Ingest module name is a guess.** `_INGEST_CANDIDATES` tries
+   `tp.ingest`, `tools.ingest`, and a few variants. Once unit/ingest lands, replace
+   this with the real import path.
+3. **Duplicated plumbing.** `write_cog`, `manifest_asset_ids`,
+   `stage_and_ingest`, `_load_ingest`, and `_resolve_*` are copied across the
+   three modules. Moving them into one shared helper module would be cleaner,
+   but that would be a fourth file, which the scope excluded.
+4. **Flag coupling.** `imerg.py` duplicates `run_now.py` logic in
+   `_subset` and the 0.5 factor. This is intentional so the module has no import
+   from `live/`.
