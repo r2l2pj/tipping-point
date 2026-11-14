@@ -42,12 +42,6 @@ COLLECTION = f"tipping-point/now/{LEAF}"
 SHORT_NAME = "GPM_3IMERGHHE"
 VERSION = "07"
 
-# Fallback "now" AOI (west, south, east, north) — mirrors live/config.NOW_BOUNDS,
-# the v4 manifest "now".bounds: Sul do Brasil (RS, SC, PR) at ~1 km. Ruling L9:
-# the canonical default is config.yaml `domains.now` read through
-# tp.config.now_bounds() — see now_bounds() below; --bounds always wins.
-NOW_BOUNDS = (-58.0, -34.0, -48.0, -22.5)
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 NOW_DIR = REPO_ROOT / "data" / "now"
 DEFAULT_COG_DIR = NOW_DIR / "cog" / LEAF
@@ -61,14 +55,9 @@ def now_bounds() -> tuple:
     """Operational now AOI (west, south, east, north).
 
     Canonical source: config.yaml `domains.now` via tp.config.now_bounds()
-    (ruling L9 — landing via lead-analysis). Falls back to the bundled
-    NOW_BOUNDS while that helper doesn't exist on this branch. An explicit
-    --bounds always overrides.
+    (ruling L9). An explicit --bounds always overrides.
     """
-    try:
-        from tp.config import now_bounds as _cfg_now_bounds
-    except ImportError:
-        return tuple(NOW_BOUNDS)
+    from tp.config import now_bounds as _cfg_now_bounds
     return tuple(_cfg_now_bounds())
 
 

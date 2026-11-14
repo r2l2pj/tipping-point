@@ -321,14 +321,10 @@ def test_write_cog_north_up(tmp_path, monkeypatch):
 
 
 def test_now_bounds_resolution(monkeypatch, capsys):
-    """Ruling L9: default AOI = config.yaml domains.now via tp.config, with
-    the bundled constant as fallback and --bounds always winning."""
+    """Ruling L9: default AOI = config.yaml domains.now via tp.config;
+    --bounds always wins."""
     import tp.config
-    # helper absent (not landed yet) -> bundled fallback
-    monkeypatch.delattr(tp.config, "now_bounds", raising=False)
-    for mod in (imerg, smap, geosfp):
-        assert mod.now_bounds() == mod.NOW_BOUNDS
-    # helper present -> config domains.now beats the constant
+    # config domains.now is the source of truth
     fake = (-55.5, -33.8, -48.0, -27.0)
     monkeypatch.setattr(tp.config, "now_bounds", lambda: fake, raising=False)
     for mod in (imerg, smap, geosfp):
