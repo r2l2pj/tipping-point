@@ -176,11 +176,16 @@ hls-scar:
 
 lead-time:
 	@echo "== $@ (event $(EVENT))"
-	@if [ ! -f "$(TPI_COG)" ]; then \
-		echo "SKIP $@: missing $(TPI_COG)"; \
+	@if $(MISSING_EDL); then \
+		echo "SKIP $@: missing EARTHDATA_TOKEN"; \
+	elif $(MISSING_GEE); then \
+		echo "SKIP $@: missing $(GEE_VARS)"; \
+	elif [ ! -f "$(CATALOG_CSV)" ]; then \
+		echo "SKIP $@: missing $(CATALOG_CSV)"; \
 	else \
-		$(PY) -m ml.lead_time --hazard $(TPI_COG) \
-			--anchor $(REFDATE)T00:00:00Z; \
+		$(PY) -m gee.lead_time --case $(CASE) && \
+		$(PY) -m ml.lead_time --replay $(COG)/$(CASE)_lead_time_slide_3h.tif \
+			--labels $(CATALOG_CSV) --event $(EVENT); \
 	fi
 
 # --- publish (always last) --------------------------------------------------

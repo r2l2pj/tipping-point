@@ -6,7 +6,7 @@ over a radius; for each of the three radii (1000/1500/3000 m) we validate
 against MERIT with (1) Pearson r on a 5k-pixel sample and (2) IoU of the
 HAND<5 m zone, then pick the radius with the highest combined r+iou.
 
-Merges hand_validation {radius_m: {r, iou}} + hand_best_radius_m into
+Merges hand_validation (best IoU percent), hand_validation_radii, and hand_best_radius_m into
 data/metrics.json (keyed by case) via tp.metrics.merge_metrics.
 
 Usage: python -m gee.hand --case <id> [--dry-run|--tasks]
@@ -14,6 +14,8 @@ Usage: python -m gee.hand --case <id> [--dry-run|--tasks]
 from __future__ import annotations
 
 import argparse
+import math
+import re
 from pathlib import Path
 
 import ee
@@ -68,7 +70,7 @@ def _radius_stats(dem, merit, aoi, radius_m: int) -> dict:
 
 def best_radius(stats: dict) -> int:
     """Radius with the highest combined r + iou (ties -> smallest radius)."""
-    return max(stats, key=lambda r: stats[r]["r"] + stats[r]["iou"])
+    return max(stats, key=lambda r: (stats[r]["r"] + stats[r]["iou"], -int(r)))
 
 
 def compute(case_id: str) -> dict:
@@ -78,18 +80,37 @@ def compute(case_id: str) -> dict:
     return {r: _radius_stats(dem, merit, aoi, r) for r in RADII_M}
 
 
-def run(case_id: str, metrics_path: Path | None = None, merge: bool = True) -> dict:
+def run(case_id: str, metrics_path: Path | None = None, merge: bool = True,
+        config_path: Path | None = None) -> dict:
+    from tp.config import CONFIG_PATH
+
     _common_ready()
     init()
     stats = compute(case_id)
+    valid = {r: s for r, s in stats.items()
+             if all(isinstance(s.get(k), (float, int)) and math.isfinite(s[k])
+                    for k in ("r", "iou"))}
+    radius = best_radius(valid) if valid else None
     flat = {
-        "hand_validation": {str(r): stats[r] for r in RADII_M},
-        "hand_best_radius_m": best_radius(stats),
+        "hand_validation": 100 * valid[radius]["iou"] if radius is not None else None,
+        "hand_validation_radii": {str(r): stats[r] for r in RADII_M},
+        "hand_best_radius_m": radius,
     }
+    reasons = ({"hand_validation": "No valid MERIT comparison samples",
+                "hand_best_radius_m": "No valid MERIT comparison samples"} if radius is None else {})
+    if merge and radius is not None:
+        path = config_path or CONFIG_PATH
+        text, count = re.subn(r"(?m)^(\s*hand_proxy_radius_m:)\s*\d+",
+                              rf"\g<1> {radius}", path.read_text())
+        if count != 1:
+            raise ValueError("config must contain exactly one hand_proxy_radius_m")
+        path.write_text(text)
+        load_config.cache_clear()
     merged = (
         merge_metrics(
             case_id,
             flat=flat,
+            reasons=reasons,
             collections={"NASADEM": IMG_NASADEM, "MERIT_Hydro": COL_MERIT},
             path=metrics_path,
         )
@@ -109,7 +130,7 @@ def plan(case_id: str) -> str:
             f"  radii: {list(RADII_M)} — per radius: Pearson r on"
             f" sample(scale={SAMPLE_SCALE}, numPixels={SAMPLE_PIXELS}, seed={SAMPLE_SEED})"
             + f" + IoU of HAND<{LOW_HAND_M} m zone",
-            "  best radius = argmax(r + iou) → hand_validation{radius:{r,iou}}, hand_best_radius_m",
+            "  best radius = argmax(r + iou) → hand_validation=IoU percent, hand_validation_radii, hand_best_radius_m",
             f"  merge → data/metrics.json[{case_id}] (collections: {nasadem}, {COL_MERIT})",
         ]
     )
@@ -127,7 +148,7 @@ def main(argv=None) -> int:
         print(plan(args.case))
         return 0
     out = run(args.case, metrics_path=args.metrics_path, merge=not args.tasks)
-    for r, s in out["metrics"]["hand_validation"].items():
+    for r, s in out["metrics"]["hand_validation_radii"].items():
         print(f"  radius {r} m: r={s['r']} iou={s['iou']}")
     print(f"  hand_best_radius_m: {out['metrics']['hand_best_radius_m']}"
           + ("; metrics not merged (--tasks)" if args.tasks else ""))

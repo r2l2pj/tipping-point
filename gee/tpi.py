@@ -268,10 +268,13 @@ def run(case_id: str, project: str | None = None) -> dict:
     images["T_flood"] = t_flood.toFloat().clip(aoi)
     for spec in plan["exports"]:
         if spec["kind"] == "drive_cog":
-            ee.batch.Export.image.toDrive(
-                image=images[spec["image"]], description=spec["description"],
-                region=aoi, scale=spec["scale"], fileFormat="GeoTIFF",
-                formatOptions={"cloudOptimized": True}).start()
+            from tp.fallback import _download, _write_cog
+
+            path = Path(REPO_ROOT) / spec["path"]
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not _write_cog(images[spec["image"]], aoi, path, fetch=_download,
+                              max_bytes=32 * 1024 * 1024):
+                raise RuntimeError(f"direct GEE download exceeds size limit: {path}")
         elif spec["kind"] == "asset" and "image" in spec:
             data_date = ("static" if spec["image"] in ("T_slide", "T_flood")
                          else plan["dates"][-1])
