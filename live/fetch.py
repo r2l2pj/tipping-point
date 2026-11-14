@@ -131,11 +131,21 @@ _GEOSFP_TRIES = 8              # candidate runs, newest first
 
 
 def _gds_get(url: str) -> str:
+    import time
+
     import requests
 
-    r = requests.get(url, timeout=_GEOSFP_TIMEOUT)
-    r.raise_for_status()
-    return r.text
+    tries = 3
+    for i in range(tries):
+        try:
+            r = requests.get(url, timeout=_GEOSFP_TIMEOUT)
+            r.raise_for_status()
+            return r.text
+        except (requests.exceptions.ReadTimeout,
+                requests.exceptions.ConnectionError):
+            if i == tries - 1:
+                raise
+            time.sleep(2 * (i + 1))
 
 
 def _geosfp_runs(html: str) -> list[str]:
@@ -206,6 +216,7 @@ def fetch_geosfp_daily(bounds, issued: dt.date | None = None):
     (* 3600 -> mm/day; PRECTOT is a time-averaged flux, NOT mm/h).
     Returns (daily_xarray(time,lat,lon) with 3 steps, issued_iso).
     """
+    import requests
     import xarray as xr
 
     issued = issued or dt.date.today()
@@ -218,8 +229,12 @@ def fetch_geosfp_daily(bounds, issued: dt.date | None = None):
 
     run, times, seen = None, [], []
     for cand in runs[:_GEOSFP_TRIES]:
-        vec = _gds_parse_vectors(
-            _gds_get(f"{_GEOSFP_BASE}/{cand}.ascii?prectot.time"))
+        try:
+            vec = _gds_parse_vectors(
+                _gds_get(f"{_GEOSFP_BASE}/{cand}.ascii?prectot.time"))
+        except requests.exceptions.RequestException as exc:
+            seen.append(f"{cand} listing failed: {exc}")
+            continue
         ts = _gds_times(vec["time"])
         seen.append(f"{cand} covers {ts[0]}..{ts[-1]}" if ts
                     else f"{cand} has no time axis")

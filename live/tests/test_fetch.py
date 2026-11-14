@@ -317,3 +317,50 @@ def test_smap_l4_reads_root_coords_and_crops_bbox(monkeypatch, tmp_path):
     np.testing.assert_array_equal(lons, lon[2:4, 2:5])
     np.testing.assert_array_equal(vals, sm[2:4, 2:5])
     assert pid == "FAKE-SPL4SMGP"
+
+
+def test_gds_get_retries_readtimeout_then_succeeds(monkeypatch):
+    """Two ReadTimeouts then a good response: returns text after 3 calls."""
+    import time
+
+    import requests
+
+    monkeypatch.setattr(time, "sleep", lambda s: None)
+    calls = []
+
+    class _Resp:
+        text = "payload"
+
+        def raise_for_status(self):
+            pass
+
+    def _get(url, timeout):
+        calls.append(url)
+        if len(calls) < 3:
+            raise requests.exceptions.ReadTimeout("slow")
+        return _Resp()
+
+    monkeypatch.setattr(requests, "get", _get)
+
+    assert fetch._gds_get("http://x") == "payload"
+    assert calls == ["http://x"] * 3
+
+
+def test_gds_get_gives_up_after_three_connection_errors(monkeypatch):
+    """Always-failing connection: raises ConnectionError after 3 calls."""
+    import time
+
+    import requests
+
+    monkeypatch.setattr(time, "sleep", lambda s: None)
+    calls = []
+
+    def _get(url, timeout):
+        calls.append(url)
+        raise requests.exceptions.ConnectionError("down")
+
+    monkeypatch.setattr(requests, "get", _get)
+
+    with pytest.raises(requests.exceptions.ConnectionError):
+        fetch._gds_get("http://x")
+    assert len(calls) == 3

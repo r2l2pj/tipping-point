@@ -14,8 +14,8 @@ manifest last. `--local` runs the local numpy pipeline below instead
   6. optionally upload data/now/ to gs://$NOW_GCS_BUCKET/now/ (manifest last)
 
 The --local path requires static/sul_static.npz — build once with
-live/build_static.py. Credentials come from env (EDL_USER/EDL_PASS,
-GCP_SA_KEY); nothing is stored.
+live/build_static.py. Credentials come from env (EARTHDATA_TOKEN canonical,
+EDL_USER/EDL_PASS local fallback, GCP_SA_KEY); nothing is stored.
 """
 from __future__ import annotations
 
