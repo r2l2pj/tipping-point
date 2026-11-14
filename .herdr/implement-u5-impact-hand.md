@@ -92,3 +92,18 @@
   `_asset_root()`, and uses `tp.config.event_id` for the event id.
 - Proof: `$UV run python -m pytest gee/tests pipeline/tests -q` → 199 passed;
   `$UV run ruff check .` → clean; both `--dry-run` plans print.
+
+## Flood-source contract addition
+
+- `gee/impact.py` emits flat `flood_source`: classifies the resolved flood
+  asset id as `nisar` (NISAR), `opera` (OPERA/DSWx), or `observed` (other);
+  emits null + reason when no flood mask is used. Existing flood asset gate
+  is unchanged; this does not add an OPERA retrieval pipeline for RS.
+- String results survive `run()` materialization without `.getInfo()`.
+- `data/SCHEMA.md` documents the flat key and mock sources (WA=NISAR,
+  RS=OPERA), distinct from actual runtime availability.
+- Parameterized fake-mask tests assert the emitted/merged source for all
+  three sources and null; a seeded `cases.rs_2024.flood_source='opera'`
+  remains intact when the next impact run emits null.
+- Commands: `$UV run python -m pytest gee/tests pipeline/tests -q` →
+  **204 passed**; `$UV run ruff check .` → **clean**.

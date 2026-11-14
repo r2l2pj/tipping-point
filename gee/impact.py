@@ -128,6 +128,17 @@ def _pop_sum(pop, mask, aoi):
     ).get(BAND_POP)
 
 
+def flood_source(asset_id: str | None) -> str | None:
+    if asset_id is None:
+        return None
+    name = asset_id.lower()
+    if "nisar" in name:
+        return "nisar"
+    if "opera" in name or "dswx" in name:
+        return "opera"
+    return "observed"
+
+
 def _flood_mask(case_id: str):
     """NISAR flood mask for wa_2025 when the asset exists; else None."""
     if case_id != "wa_2025":
@@ -151,7 +162,7 @@ def _null_reasons(case_id: str) -> dict:
             f"NISAR flood asset {_flood_asset(case_id)} not found — "
             "run 02_flood_mask.py and `earthengine upload` the COG first"
         )
-    return {"people_flooded": reason, "flooded_km2": reason}
+    return {"people_flooded": reason, "flooded_km2": reason, "flood_source": reason}
 
 
 def compute(case_id: str) -> dict:
@@ -173,6 +184,7 @@ def compute(case_id: str) -> dict:
         "people_critical": _pop_sum(pop, critical, aoi),
         "people_flooded": _pop_sum(pop, flood, aoi) if flood is not None else None,
         "flooded_km2": None,
+        "flood_source": flood_source(_flood_asset(case_id)) if flood is not None else None,
         "night_light_drop_pct": ee.Number(before)
         .subtract(ee.Number(after))
         .divide(ee.Number(before))
@@ -240,7 +252,7 @@ def run(
     _common_ready()
     init()
     res = compute(case_id)
-    flat = {k: (v.getInfo() if v is not None else None) for k, v in res.items()}
+    flat = {k: (v if v is None or isinstance(v, str) else v.getInfo()) for k, v in res.items()}
     collections = {
         "GPWv4": f"{COL_GPW} (epoch {flat['gpw_year']})",
         "VIIRS": f"{COL_VNP46A2} ({BAND_NTL}, {BAND_MQF}==0)",

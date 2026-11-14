@@ -235,6 +235,31 @@ def test_flood_gate_pass_wa(tmp_path, commons):
     assert cols["flood_nisar"] == f"{impact.ASSET_ROOT}/wa_2025/flood_nisar"
 
 
+@pytest.mark.parametrize(
+    ("asset", "expected"),
+    [
+        ("projects/p/assets/tipping-point/wa_2025/flood_nisar", "nisar"),
+        ("projects/p/assets/tipping-point/rs_2024/opera_dswx", "opera"),
+        ("projects/p/assets/tipping-point/rs_2024/flood_observed", "observed"),
+        (None, None),
+    ],
+)
+def test_emitted_flood_source(tmp_path, commons, monkeypatch, asset, expected):
+    monkeypatch.setattr(impact, "_flood_asset", lambda cid: asset)
+    monkeypatch.setattr(impact, "_flood_mask", lambda cid: FAKE_EE.Image(asset) if asset else None)
+    out = impact.run("wa_2025", metrics_path=tmp_path / "metrics.json", pull=False)
+    assert out["metrics"]["flood_source"] == expected
+    assert out["merged"]["cases"]["wa_2025"]["flood_source"] == expected
+
+
+def test_null_flood_source_preserves_written_value(tmp_path, commons):
+    path = tmp_path / "metrics.json"
+    path.write_text(json.dumps({"cases": {"rs_2024": {"flood_source": "opera"}}}))
+    out = impact.run("rs_2024", metrics_path=path, pull=False)
+    assert out["metrics"]["flood_source"] is None
+    assert out["merged"]["cases"]["rs_2024"]["flood_source"] == "opera"
+
+
 def test_asset_prefers_assets_json(tmp_path, commons, monkeypatch):
     monkeypatch.setattr(impact, "DATA_DIR", tmp_path)
     assert impact._asset("wa_2025", "flood_nisar") == f"{impact.ASSET_ROOT}/wa_2025/flood_nisar"

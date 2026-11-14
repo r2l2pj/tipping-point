@@ -275,6 +275,7 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
       "iou": 0.0, "f1": 0.0, "cloud_pct": 0.0,
       "landslide_hit_pct": 0.0, "hand_validation": 0.0,
       "people_critical": 0, "people_flooded": 0, "flooded_km2": 0.0,
+      "flood_source": "opera",
       "night_light_drop_pct": 0.0,
       "lead_time_mean_h": 0.0, "lead_time_median_h": 0.0,
       "warned_before_pct": 0.0,
@@ -287,6 +288,12 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   } }
 ```
 
+- `flood_source` — flat string identifying the input behind the flood numbers:
+  `"nisar"` for a NISAR GCOV flood-mask asset, `"opera"` for a validated OPERA
+  DSWx product, `"observed"` for other observed inputs; `null` with a reason
+  when no flood number is emitted. A null update never clobbers a written
+  source (`tp.metrics.merge_metrics`). Mock cases use `wa_2025: "nisar"` and
+  `rs_2024: "opera"`; runtime values describe the input actually used.
 - `forecast_source` — `"perfect-forecast"` for replay cases; the live now
   bundle uses `"geos-fp"`.
 - `collections` — `{ "<dataset>": "<collection id/version>" }` for the inputs
