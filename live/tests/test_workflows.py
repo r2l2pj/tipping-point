@@ -95,6 +95,12 @@ def test_fallback_publish_and_permissions(name, cron, job):
             detect = [s for s in steps if s.get("id") == "data_changed"]
             assert len(detect) == 1
             assert "git status --porcelain -- data/" in detect[0]["run"]
+    # L17: Neon object storage is the primary publish everywhere.
+    neon = [s for s in steps if "publish_s3.sh" in s.get("run", "")]
+    assert len(neon) == 1
+    assert _run_idx(steps, f"live/jobs.py {job}") < _run_idx(steps, "publish_s3.sh")
+    if publish:
+        assert _run_idx(steps, "publish_s3.sh") < _run_idx(steps, "publish_fallback.py")
 
 
 def test_now_cron():
