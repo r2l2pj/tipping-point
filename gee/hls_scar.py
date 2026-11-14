@@ -43,24 +43,14 @@ from tp.config import case as config_case
 from tp.config import load_config, threshold
 from tp.metrics import merge_metrics
 
-try:
-    from gee.common import (
-        ASSET_ROOT,
-        BAND_DEM,
-        GEE_PROJECT,
-        IMG_NASADEM,
-        aoi_geom,
-        asset_path,
-        init,
-        stamp,
-    )
-except ModuleNotFoundError as exc:  # gee.common lands with U4 — --dry-run needs none of it
-    if exc.name != "gee.common":
-        raise
-    GEE_PROJECT = "<GEE_PROJECT>"
-    ASSET_ROOT = f"projects/{GEE_PROJECT}/assets/tipping-point"
-    IMG_NASADEM, BAND_DEM = "NASA/NASADEM_HGT/001", "elevation"
-    aoi_geom = asset_path = init = stamp = None
+from gee.common import (
+    BAND_DEM,
+    IMG_NASADEM,
+    aoi_geom,
+    asset_path,
+    init,
+    stamp,
+)
 
 PRODUCTS = {
     "HLSL30": ("NASA/HLS/HLSL30/v002", {"red": "B04", "nir": "B05", "swir2": "B07"}),
@@ -76,12 +66,6 @@ SCALE_M = 30                 # HLS native
 MAX_PIXELS = 1e9
 MIN_BLOB_PX = int(threshold("min_blob_pixels", 10))
 MIN_SLOPE_DEG = float(threshold("slope_range_deg", [15, 30])[0])
-
-
-def _common_ready() -> None:
-    if init is None:
-        raise RuntimeError(
-            "gee.common not on this branch yet (U4) — only --dry-run works")
 
 
 def _windows(cfg: dict) -> tuple[tuple, tuple]:
@@ -175,7 +159,7 @@ def export_task(case_id: str, image, project: str | None = None):
     """The candidate-mask asset export task (created, not started)."""
     # data_date = freshest source date — the post-window end (L8 stamp).
     (_, _), (_, qe) = _windows(config_case(case_id))
-    img = image if stamp is None else stamp(image, qe.isoformat())
+    img = stamp(image, qe.isoformat())
     return ee.batch.Export.image.toAsset(
         image=img, description=_asset_name(case_id),
         assetId=asset_path(_asset_name(case_id), project),
@@ -191,7 +175,6 @@ def run(
     ndvi_vote: bool = False,
 ) -> dict:
     """getInfo all computes; merge metrics + start the asset export."""
-    _common_ready()
     proj = init()
     res = compute(case_id, dnbr_min=dnbr_min, ndvi_vote=ndvi_vote)
     flat = {k: v.getInfo() for k, v in res.items() if k != "image"}

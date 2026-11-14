@@ -60,6 +60,44 @@ def _sa_key_file() -> str | None:
     return None
 
 
+def ee_init() -> str:
+    project = os.environ.get("GEE_PROJECT", "").strip()
+    if not project:
+        raise RuntimeError("GEE_PROJECT is required for Earth Engine initialization.")
+    key_file = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
+    key_data = os.environ.get("GCP_SA_KEY", "").strip()
+    source = "GOOGLE_APPLICATION_CREDENTIALS" if key_file else "GCP_SA_KEY"
+    if not key_file and not key_data:
+        raise RuntimeError(
+            "Set GOOGLE_APPLICATION_CREDENTIALS to a service-account JSON key file "
+            "or GCP_SA_KEY to the whole service-account JSON key."
+        )
+    try:
+        key = json.loads(Path(key_file).read_text() if key_file else key_data)
+        email = key["client_email"]
+        if not email:
+            raise ValueError("empty client_email")
+        if key_file:
+            creds = ee.ServiceAccountCredentials(email, key_file=key_file)
+        else:
+            if not key["private_key"]:
+                raise ValueError("empty private_key")
+            creds = ee.ServiceAccountCredentials(email, key_data=key_data)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Invalid {source}: provide a service-account JSON key with client_email "
+            "and private_key."
+        ) from exc
+    try:
+        ee.Initialize(credentials=creds, project=project)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Earth Engine initialization failed: verify GEE_PROJECT and {source}; "
+            "grant this service account the required Earth Engine roles on GEE_PROJECT."
+        ) from exc
+    return project
+
+
 def init(project: str | None = None) -> str:
     """ee.Initialize with service-account creds; return the resolved project.
 

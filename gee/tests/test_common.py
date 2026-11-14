@@ -1,4 +1,7 @@
 """gee.common pinned API — pure-python parts and fake-ee construction."""
+import json
+from types import SimpleNamespace
+
 import pytest
 
 from gee import common
@@ -97,6 +100,97 @@ def test_init_no_project_is_a_clear_error(fake_ee, monkeypatch):
     monkeypatch.setattr(common, "GEE_PROJECT", "")
     with pytest.raises(RuntimeError, match="GEE project"):
         common.init()
+
+
+@pytest.mark.parametrize("file_env,json_env", [(True, False), (False, True), (True, True)])
+def test_ee_init_credentials(fake_ee, monkeypatch, tmp_path, file_env, json_env):
+    key_data = json.dumps({"client_email": "fake@example.invalid", "private_key": "fake-key"})
+    key_file = tmp_path / "fake-sa.json"
+    key_file.write_text(key_data)
+    monkeypatch.setenv("GEE_PROJECT", "env-project")
+    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+    monkeypatch.delenv("GCP_SA_KEY", raising=False)
+    if file_env:
+        monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(key_file))
+    if json_env:
+        monkeypatch.setenv("GCP_SA_KEY", key_data)
+    assert common.ee_init() == "env-project"
+    cred_call, init_call = fake_ee.log
+    assert cred_call == (
+        "ee.ServiceAccountCredentials", ("fake@example.invalid",),
+        {"key_file": str(key_file)} if file_env else {"key_data": key_data},
+    )
+    assert init_call[0] == "ee.Initialize"
+    assert init_call[2]["project"] == "env-project"
+    assert init_call[2]["credentials"].name == "ee.ServiceAccountCredentials()"
+
+
+@pytest.mark.parametrize("project", ["", "env-project"])
+def test_ee_init_missing_env(fake_ee, monkeypatch, project):
+    monkeypatch.setenv("GEE_PROJECT", project)
+    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+    monkeypatch.delenv("GCP_SA_KEY", raising=False)
+    missing = "GOOGLE_APPLICATION_CREDENTIALS.*GCP_SA_KEY" if project else "GEE_PROJECT"
+    with pytest.raises(RuntimeError, match=missing):
+        common.ee_init()
+    assert not fake_ee.log
+
+
+@pytest.mark.parametrize("key_data", ["not-json", "{}", '{"client_email": "fake@example.invalid"}'])
+def test_ee_init_invalid_json_env(fake_ee, monkeypatch, key_data):
+    monkeypatch.setenv("GEE_PROJECT", "env-project")
+    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+    monkeypatch.setenv("GCP_SA_KEY", key_data)
+    with pytest.raises(RuntimeError, match="Invalid GCP_SA_KEY"):
+        common.ee_init()
+    assert not fake_ee.log
+
+
+def test_ee_init_missing_file(fake_ee, monkeypatch, tmp_path):
+    monkeypatch.setenv("GEE_PROJECT", "env-project")
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(tmp_path / "missing.json"))
+    with pytest.raises(RuntimeError, match="Invalid GOOGLE_APPLICATION_CREDENTIALS"):
+        common.ee_init()
+    assert not fake_ee.log
+
+
+def test_ee_init_role_error(fake_ee, monkeypatch):
+    monkeypatch.setenv("GEE_PROJECT", "env-project")
+    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+    monkeypatch.setenv("GCP_SA_KEY", json.dumps({
+        "client_email": "fake@example.invalid", "private_key": "fake-key",
+    }))
+
+    def denied(**kwargs):
+        raise RuntimeError("permission denied")
+
+    monkeypatch.setattr(fake_ee, "Initialize", denied)
+    with pytest.raises(RuntimeError, match="GEE_PROJECT.*GCP_SA_KEY.*roles"):
+        common.ee_init()
+
+
+def test_stamp_reaches_hls_export(monkeypatch):
+    from gee import hls_scar
+
+    class Image:
+        def __init__(self, props=None):
+            self.props = props or {}
+
+        def set(self, key, value):
+            return Image({**self.props, key: value})
+
+    exports = []
+    monkeypatch.setattr(hls_scar, "ee", SimpleNamespace(batch=SimpleNamespace(
+        Export=SimpleNamespace(image=SimpleNamespace(toAsset=lambda **kw: exports.append(kw)))
+    )))
+    monkeypatch.setattr(hls_scar, "aoi_geom", lambda case_id: "aoi")
+    image = Image()
+    hls_scar.export_task("wa_2025", image, project="proj")
+    exported = exports[0]["image"]
+    assert exported is not image
+    assert exported.props["data_date"] == "2025-12-20"
+    assert exported.props["updated_at"]
+    assert not image.props
 
 
 def test_stamp_sets_data_date_and_updated_at(fake_ee):
