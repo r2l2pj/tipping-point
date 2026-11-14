@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -267,10 +268,48 @@ def build_root(data_root: Path | str = DATA_DIR) -> dict:
     return {"updated_at": _now_z(), "cases": cases}
 
 
+def _prune_missing(root: dict, data_root: Path) -> list[str]:
+    """Drop manifest references to files that were never written.
+
+    Every `png`/`cog`/product path in the manifest must exist locally —
+    the app 404s otherwise (wa_2025 forecast frames slipped out stale).
+    Returns the dropped paths for the caller to report.
+    """
+    dropped = []
+
+    def _rel(p):
+        return p if isinstance(p, str) and not p.startswith("http") else None
+
+    for case in root.get("cases", {}).values():
+        if not isinstance(case, dict):
+            continue
+        layers = []
+        for layer in case.get("layers", []):
+            for key in ("png", "cog"):
+                rel = _rel(layer.get(key))
+                if rel and not (data_root / rel).exists():
+                    dropped.append(rel)
+                    layer[key] = None
+            if layer.get("png") or layer.get("cog"):
+                layers.append(layer)
+        case["layers"] = layers
+        for name, rel in list((case.get("products") or {}).items()):
+            if _rel(rel) and not (data_root / rel).exists():
+                dropped.append(rel)
+                case["products"][name] = None
+                case.setdefault("_null_reasons", {})[name] = (
+                    f"{rel} not present at publish")
+    return dropped
+
+
 def write_root_manifest(data_root: Path | str = DATA_DIR) -> dict:
     """Build and atomically write data_root/manifest.json — always LAST."""
     data_root = Path(data_root)
     root = build_root(data_root)
+    dropped = _prune_missing(root, data_root)
+    if dropped:
+        print(f"manifest: dropped {len(dropped)} missing refs: "
+              + ", ".join(dropped[:8]), file=sys.stderr)
     path = data_root / "manifest.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")

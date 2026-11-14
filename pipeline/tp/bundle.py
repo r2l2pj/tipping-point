@@ -94,6 +94,105 @@ def _band_date(src, b: int) -> dt.date | None:
     return None
 
 
+# Published-geojson budget: every product must be < 1 MB (L15 — the app
+# was inlining multi-MB layers into the RSC payload). Per-product rules:
+# `tol` simplify tolerance in metres (preserve topology), `min_km2`
+# drops tiny polygons, `props` keeps only these property keys.
+# Full-detail sources stay as COGs / GEE table assets, never geojson.
+GEOJSON_COMPACT = {
+    "critical_areas":      {"tol_m": 40, "min_km2": 0.02},
+    "permanent_water":     {"tol_m": 80, "min_km2": 0.1},
+    "flood_confirmed":     {"tol_m": 20, "min_km2": 0.005},
+    "municipal_boundaries": {"tol_m": 80},
+    "landslide_catalog":   {"tol_m": 0, "props": [], "multipoint": True},
+    "priority_zones":      {"tol_m": 15, "min_km2": 0.01},
+}
+GEOJSON_BUDGET_BYTES = 980 * 1024
+COORD_DECIMALS = 5                    # ~1 m — plenty for display
+
+
+def _round_coords(coords, nd=COORD_DECIMALS):
+    if isinstance(coords[0], (int, float)):
+        return [round(float(v), nd) for v in coords]
+    return [_round_coords(c, nd) for c in coords]
+
+
+def _compact_geojson(path: Path, rules: dict) -> int:
+    """Simplify + round a FeatureCollection in place; returns final size."""
+    import geopandas as gpd
+    from shapely.geometry import shape, mapping
+
+    doc = json.loads(path.read_text())
+    feats = doc.get("features", [])
+    if not feats:
+        return path.stat().st_size
+    keep_props = rules.get("props")
+    min_km2 = rules.get("min_km2")
+    tol = rules.get("tol_m", 0) / 111320.0  # m -> approx degrees
+    if rules.get("multipoint"):
+        # Point catalogs: Feature-per-point boilerplate is ~60% of the
+        # bytes — one MultiPoint keeps every coordinate in budget.
+        coords = [_round_coords(f["geometry"]["coordinates"])
+                  for f in feats if (f.get("geometry") or {}).get("type")
+                  == "Point"]
+        blob = json.dumps(
+            {"type": "FeatureCollection", "features": [
+                {"type": "Feature",
+                 "geometry": {"type": "MultiPoint", "coordinates": coords},
+                 "properties": {}}]},
+            separators=(",", ":"), ensure_ascii=False) + "\n"
+        path.write_text(blob)
+        return len(blob)
+    for _ in range(4):  # escalate tolerance if still over budget
+        out = []
+        for f in feats:
+            geom = f.get("geometry")
+            if not geom:
+                continue
+            g = shape(geom)
+            if tol:
+                g = g.simplify(tol, preserve_topology=True)
+                if g.is_empty:
+                    continue
+            if min_km2:
+                area = gpd.GeoSeries([g], crs="EPSG:4326") \
+                    .to_crs("EPSG:6933").area.iloc[0] / 1e6
+                if area < min_km2:
+                    continue
+            props = f.get("properties") or {}
+            if keep_props is not None:
+                props = {k: props[k] for k in keep_props if k in props}
+            out.append({"type": "Feature",
+                        "geometry": mapping(g),
+                        "properties": props})
+        for f in out:
+            f["geometry"]["coordinates"] = _round_coords(
+                f["geometry"]["coordinates"])
+        blob = json.dumps({"type": "FeatureCollection", "features": out},
+                          separators=(",", ":"), ensure_ascii=False) + "\n"
+        if len(blob) <= GEOJSON_BUDGET_BYTES or not tol:
+            break
+        tol *= 2.5
+    path.write_text(blob)
+    return len(blob)
+
+
+def _compact_geojsons(gj_dir: Path, out: dict, dry_run: bool) -> None:
+    for path in sorted(gj_dir.glob("*.geojson")):
+        if "_nisar_" in path.stem:
+            # ingest intermediates — full detail stays in GEE/COGs,
+            # never published (would also be mangled by simplification)
+            continue
+        rules = GEOJSON_COMPACT.get(path.stem, {"tol_m": 40})
+        if dry_run:
+            out["planned"].append(f"{path.name} compact")
+            continue
+        size = _compact_geojson(path, rules)
+        if size > GEOJSON_BUDGET_BYTES:
+            out["nulls"].append({"target": path.name,
+                                 "reason": f"geojson {size}B > budget"})
+
+
 def _valid(arr: np.ndarray, nodata) -> np.ndarray:
     v = np.isfinite(np.asarray(arr, dtype=np.float64))
     if nodata is not None:
@@ -509,6 +608,9 @@ def publish_case(event_id: str, dry_run: bool = False,
             target.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n")
             out["written"].append(rel)
         out["series_days"] = len(rows)
+
+    # ---- publish-size budget: compact every geojson product < 1 MB ----
+    _compact_geojsons(gj_dir, out, dry_run)
 
     # ---- sidecar for the manifest builder (U8b) ------------------------
     index_path = png_dir / "_index.json"

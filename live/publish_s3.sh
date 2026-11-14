@@ -77,7 +77,25 @@ for f in "${JSONS[@]}"; do
 done
 
 if [ -f "$DATA/manifest.json" ]; then
+  # publish gate: every URL the manifest references must already serve
+  # 200 on Neon before the manifest itself goes up (a published manifest
+  # pointing at missing frames is worse than a stale one)
+  PUBLIC="$NEON_S3_ENDPOINT/$BUCKET/data/"
+  mapfile -t REFS < <(grep -oE '"[^"]+\.(png|tif|tiff|geojson|json|npz|nc|gz)"' \
+    "$DATA/manifest.json" | tr -d '"' | sed 's|^data/||' | sort -u)
+  missing=0
+  for ref in "${REFS[@]}"; do
+    code="$(curl -s -o /dev/null -w '%{http_code}' -I "$PUBLIC$ref")"
+    if [ "$code" != "200" ]; then
+      echo "[publish_s3] GATE FAIL: $PUBLIC$ref -> $code" >&2
+      missing=$((missing + 1))
+    fi
+  done
+  if [ "$missing" -gt 0 ]; then
+    echo "[publish_s3] gate: $missing manifest reference(s) missing on Neon — manifest.json NOT uploaded" >&2
+    exit 1
+  fi
   upload_json "manifest.json" "public,max-age=60"
-  echo "[publish_s3] manifest.json uploaded last"
+  echo "[publish_s3] manifest.json uploaded last (${#REFS[@]} refs verified)"
 fi
 echo "[publish_s3] done"
