@@ -47,7 +47,7 @@ MANIFEST_SCHEMA = "tipping-point/gee-assets@1"
 BUCKET_ENV_VARS = ("NOW_GCS_BUCKET", "GCS_BUCKET")
 # D10 convention (gee/common.py): GCP_SA_KEY is canonical for SA creds.
 SA_KEY_ENV_VARS = ("GCP_SA_KEY", "GEE_SERVICE_ACCOUNT_KEY")
-_SEGMENT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
+_SEGMENT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 
 
 def _import(module_name: str):
@@ -134,10 +134,14 @@ def _init_ee() -> None:
 
 def _validate_segment(value, field: str) -> None:
     """Reject path separators/traversal in a value interpolated into a GCS
-    blob or GEE asset path segment."""
-    if not isinstance(value, str) or not _SEGMENT_RE.fullmatch(value):
+    blob or GEE asset path segment. Dots are allowed (callers pass real
+    filenames like 'wa_2025_nisar_gcov_20251228.tif'); '..' and a trailing
+    '.' are not."""
+    if (not isinstance(value, str) or not _SEGMENT_RE.fullmatch(value)
+            or ".." in value or value.endswith(".")):
         raise ValueError(
-            f"invalid {field} {value!r}; expected [A-Za-z0-9][A-Za-z0-9_-]*"
+            f"invalid {field} {value!r}; expected [A-Za-z0-9][A-Za-z0-9._-]* "
+            "with no '..'"
         )
 
 

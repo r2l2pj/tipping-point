@@ -241,7 +241,10 @@ def test_getAsset_grpc_not_found_code_means_absent(monkeypatch):
 
 
 def test_invalid_case_and_name_rejected(tmp_path):
-    for bad in ("a/b", "..", "a\\b", "a.b", "", " has space"):
+    # real filenames keep their dots; separators/traversal are rejected
+    assert (ingest.asset_id("wa_2025", "wa_2025_nisar_gcov_20251228.tif")
+            .endswith("/wa_2025/wa_2025_nisar_gcov_20251228.tif"))
+    for bad in ("a/b", "..", "a..b", "a\\b", "", " has space", "trail."):
         with pytest.raises(ValueError):
             ingest.asset_id(bad, "x")
         with pytest.raises(ValueError):

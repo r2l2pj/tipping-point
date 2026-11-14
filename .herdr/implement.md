@@ -1,50 +1,34 @@
-# implement — ingest (GEE asset ingest unit, t9r)
-# L8a — SWOT series -> GEE table asset — implementation report
-# implement — edlauth (L6: Earthdata bearer-token auth)
-# implement — ingest (GEE asset ingest unit, t9r) — round 2 fixes
+# implement — ingest (GEE asset ingest unit, t9r) — round 3 fixes
 
-## Changed (this round, on rebased unit/ingest @ main a3d1b7d)
+## Changed (this round)
 
-- `pipeline/fetch/ingest.py`
-  - `_is_not_found` tightened (re-review): an explicit status decides
-    FIRST — `status_code` / `resp.status` / callable `code()` of 404 or a
-    NOT_FOUND string/enum (grpc-style) means absent; ANY other status
-    returns False so the caller re-raises (403/500/auth can never mask as
-    'missing'). Message text is only consulted when NO status exists, and
-    auth markers (`permission|denied|unauthoriz|forbidden|unauthenticated|
-    credential`) veto the 'not found' text match.
-  - EE init delegated to shared `gee.common.init` (conductor ruling):
-    `_init_ee()` lazily appends the repo root to sys.path, imports
-    `gee.common`, calls `common.init(project=gee_project())` — which
-    builds `ee.ServiceAccountCredentials` from `GCP_SA_KEY` /
-    `GEE_SERVICE_ACCOUNT_KEY` (path or raw JSON blob) and falls back to
-    ADC. Fake-ee tests never need the helper because a
-    `sys.modules['gee.common']` injection or the real module under a fake
-    `ee` both work.
-  - Creds check widened to repo convention: `GOOGLE_APPLICATION_CREDENTIALS`
-    OR `GCP_SA_KEY`/`GEE_SERVICE_ACCOUNT_KEY` satisfy `_require_creds`
-    (message still names GOOGLE_APPLICATION_CREDENTIALS).
-  - `_storage_client`: `storage.Client()` (ADC) when
-    GOOGLE_APPLICATION_CREDENTIALS is set, else
-    `Client.from_service_account_json(_sa_key_path())` — so GCS staging
-    works with only `GCP_SA_KEY`.
-- `pipeline/fetch/opera.py` — `_ingest()` now uses
-  `importlib.import_module("fetch.ingest")`: `from . import ingest`
-  returned the `fetch` package's already-bound real attribute and bypassed
-  the `sys.modules['fetch.ingest']` fake that test_fetch_opera injects —
-  that made test_fetch_scenes_download_ingests fail whenever a real
-  `fetch.ingest` import ran first in the suite (pre-existing on main).
-- `pipeline/tests/test_ingest.py` — 21 tests (+5): non-404 status with
-  'not found' text propagates; auth-marker text with 'not found'
-  propagates; grpc `code()='NOT_FOUND'` means absent; `gee.common.init`
-  passes `ServiceAccountCredentials(key_file=GCP_SA_KEY)` to
-  `ee.Initialize`; `stage_to_gcs` falls back to
-  `from_service_account_json` when only `GCP_SA_KEY` is set. Fakes gained
-  `ee.ServiceAccountCredentials` and `Client.from_service_account_json`;
-  `_install_fakes` clears SA-key envs and drops the `gee.common` module
-  cache (it binds `ee` at its own import time).
+- `pipeline/fetch/ingest.py` — `_validate_segment` now allows dots in
+  names (`[A-Za-z0-9][A-Za-z0-9._-]*`): callers pass real filenames like
+  `wa_2025_nisar_gcov_20251228.tif` as `name` (cross-unit break caught by
+  lead-analysis, test_fetch_nisar::test_execute_stages_ingests_and_appends).
+  Still rejects `/`, `\`, `..` (incl. embedded `a..b`), empty, leading
+  non-alnum, and trailing `.`.
+- `pipeline/fetch/nisar.py` — `_edl_credentials`/`_gdal_auth_env` now
+  delegate to shared `fetch.edl` (`ensure_earthdata`/`gdal_auth_env`); the
+  edlauth merge had deleted `tp_nisar._edl_credentials`, breaking
+  `execute_plan` with AttributeError (pre-existing suite failure on main,
+  fixed here to get pipeline/tests green). Side effect: token creds now
+  use the correct `GDAL_HTTP_HEADERS` Bearer option.
+- `pipeline/tests/test_ingest.py` — `test_invalid_case_and_name_rejected`
+  updated: real filename with dots asserted valid; `a..b` and trailing `.`
+  asserted invalid.
+- `pipeline/fetch/opera.py` — user-restyled `_ingest` importlib fix kept
+  (f"{__package__}.ingest" + top-level importlib, moved bucket check
+  before EDL login).
 
-## Prior state (unchanged contract)
+## Commands run
+
+- `$UV run pytest pipeline/tests -q` — **288 passed** (was 1 failed:
+  test_fetch_nisar::test_execute_requires_creds — tp_nisar creds helpers
+  removed by the edlauth merge).
+- `$UV run ruff check .` — **All checks passed**.
+
+## Contract (unchanged)
 
 `stage_to_gcs(local_path,*,bucket,case,name)->str`,
 `ingest_asset(gcs_uri,*,asset_id,kind,force=False)->dict`,
@@ -655,3 +639,8 @@ Not modified: `.gitignore` (see Open items), any existing file.
    from `live/`.
 pipeline/fetch/ingest.py, pipeline/fetch/opera.py,
 pipeline/tests/test_ingest.py, .herdr/implement.md
+EE init via shared `gee.common.init` (SA creds from
+GCP_SA_KEY/GEE_SERVICE_ACCOUNT_KEY or ADC via
+GOOGLE_APPLICATION_CREDENTIALS); `data/<case>/assets.json` upserts keyed
+by name; `_is_not_found` = status/code first, text fallback with auth
+veto.
