@@ -91,6 +91,17 @@ def adaptive_threshold(
     return min(float(np.median(thresholds)), fallback), "adaptive"
 
 
+def _px_area_km2(ref) -> float:
+    """Pixel area in km^2. EPSG:4326 grids need a lat-aware metre conversion."""
+    res_x, res_y = ref.rio.resolution()
+    if ref.rio.crs and ref.rio.crs.is_geographic:
+        lat = float(np.asarray(ref.rio.bounds())[1::2].mean())
+        m_per_deg_lat = 111_132.0
+        m_per_deg_lon = 111_320.0 * np.cos(np.deg2rad(lat))
+        return abs(res_x * res_y) * m_per_deg_lon * m_per_deg_lat / 1e6
+    return abs(res_x * res_y) / 1e6
+
+
 def min_mapping_unit(mask: np.ndarray, min_px: int) -> np.ndarray:
     """Drop connected components smaller than `min_px` pixels."""
     if min_px <= 1 or not mask.any():
@@ -195,8 +206,8 @@ def flood_mask(
         pre_db, post_db, thr, watermask, hand, drop_db=drop_db
     )
 
-    res_x, res_y = pre.rio.resolution()
-    px_ha = abs(res_x * res_y) / 1e4
+    px_km2 = _px_area_km2(pre)
+    px_ha = px_km2 * 100
     flood = min_mapping_unit(flood, int(np.ceil(mmu_ha / px_ha)))
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -206,8 +217,8 @@ def flood_mask(
     stats = {
         "threshold_db": thr,
         "threshold_method": method,
-        "flood_km2": float(flood.sum() * abs(res_x * res_y) / 1e6),
-        "water_km2": float(water_now.sum() * abs(res_x * res_y) / 1e6),
+        "flood_km2": float(flood.sum() * px_km2),
+        "water_km2": float(water_now.sum() * px_km2),
     }
     if bright:
         bright_mask = min_mapping_unit(
@@ -215,7 +226,5 @@ def flood_mask(
             int(np.ceil(mmu_ha / px_ha)),
         )
         _write_mask(pre, bright_mask, out_dir / "flood_bright_nisar.tif")
-        stats["flood_bright_km2"] = float(
-            bright_mask.sum() * abs(res_x * res_y) / 1e6
-        )
+        stats["flood_bright_km2"] = float(bright_mask.sum() * px_km2)
     return stats

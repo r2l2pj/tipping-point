@@ -49,6 +49,12 @@ ASSET_REGISTRY = [
      "patterns": ["{case}/geojson/landslide_catalog.geojson"]},
     {"product": "municipal_boundaries", "kind": "table",
      "patterns": ["{case}/geojson/municipal_boundaries.geojson"]},
+    # Polygonized NISAR masks -> table assets (L10; 06_polygonize.py writes
+    # <case>/geojson/<case>_<flood|water>_nisar_<date>.geojson).
+    {"product": "nisar_polygons", "kind": "table",
+     "patterns": ["{case}/geojson/*flood_nisar*.geojson",
+                  "{case}/geojson/*water_nisar*.geojson",
+                  "{case}/geojson/*flood_bright_nisar*.geojson"]},
 ]
 
 
