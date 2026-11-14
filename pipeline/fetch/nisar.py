@@ -37,6 +37,8 @@ from pathlib import Path
 from tp import events as events_mod
 from tp import nisar as tp_nisar
 
+from .edl import ensure_earthdata, gdal_auth_env
+
 GCOV_COLLECTION = "NISAR_L2_GCOV_BETA_V1"
 ASSET_STEM = "nisar_gcov"           # asset ids are nisar_gcov_<yyyymmdd>
 GCOV_VARIABLE = "HHHH"              # primary-pol gamma0 for the image asset
@@ -357,24 +359,6 @@ def build_plan(
     return plan
 
 
-def _edl_credentials() -> dict:
-    """EARTHDATA_TOKEN wins; else EDL_USER/EDL_PASS or ~/.netrc via tp.nisar."""
-    token = os.environ.get("EARTHDATA_TOKEN")
-    if token:
-        return {"token": token}
-    return tp_nisar._edl_credentials()
-
-
-def _gdal_auth_env(creds: dict) -> dict:
-    """GDAL config options carrying the creds to the /vsicurl/ layer."""
-    if "token" in creds:
-        return {
-            "GDAL_HTTP_BEARER": creds["token"],
-            "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
-        }
-    return tp_nisar._gdal_auth_env(creds)
-
-
 def _load_ingest():
     """The unit/ingest contract module, imported lazily + guarded.
 
@@ -423,8 +407,8 @@ def execute_plan(
     if not proj:
         raise RuntimeError(
             "GEE_PROJECT not set — cannot build the target asset path.")
-    creds = _edl_credentials()
-    gdal_env = _gdal_auth_env(creds)
+    creds = ensure_earthdata()
+    gdal_env = gdal_auth_env(creds)
 
     results = []
     for ck, info in plan["cases"].items():
