@@ -116,6 +116,19 @@ def test_picks_newest_run_reaching_need_by(monkeypatch):
     assert daily.sizes["time"] == 3
 
 
+def test_skips_run_ending_mid_d3(monkeypatch):
+    # freshest ends 05:30 on D+3 (partial day) -> must fall back to the
+    # older run that covers D+3 through 23:30
+    runs = {
+        "tavg1_2d_flx_Nx.20261112_00": _span(dt.datetime(2026, 11, 12, 0, 30), 29),
+        "tavg1_2d_flx_Nx.20261111_00": _span(dt.datetime(2026, 11, 11, 0, 30), 200),
+    }
+    monkeypatch.setattr(fetch, "_gds_get", _fake_get(runs))
+    daily, issued_iso = fetch.fetch_geosfp_daily(BOUNDS, ISSUED)
+    assert issued_iso == "2026-11-11T00:00:00Z"
+    assert daily.sizes["time"] == 3
+
+
 def test_raises_when_no_run_reaches(monkeypatch):
     runs = {
         "tavg1_2d_flx_Nx.20261112_00": _span(dt.datetime(2026, 11, 12, 0, 30), 20),

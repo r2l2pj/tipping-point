@@ -175,15 +175,18 @@ def fetch_geosfp_daily(bounds, issued: dt.date | None = None):
 
     Source: GMAO GrADS-OPeNDAP server, tavg1_2d_flx_Nx fcast collection (no
     auth). No DAP backend is installed, so this reads the '.ascii' interface:
-    pick the NEWEST run whose time coverage reaches `issued + 3 days`, pull
-    the PRECTOT (kg m-2 s-1 = mm/s) subset, and sum the hourly steps per UTC
-    day (* 3600 -> mm/day; PRECTOT is a time-averaged flux, NOT mm/h).
+    pick the NEWEST run whose coverage reaches the END of `issued + 3 days`
+    (steps stamp :30, so a last step >= 23:00 means a complete D+3 — a run
+    ending mid-D+3 would understate that day's total), pull the PRECTOT
+    (kg m-2 s-1 = mm/s) subset, and sum the hourly steps per UTC day
+    (* 3600 -> mm/day; PRECTOT is a time-averaged flux, NOT mm/h).
     Returns (daily_xarray(time,lat,lon) with 3 steps, issued_iso).
     """
     import xarray as xr
 
     issued = issued or dt.date.today()
     need_by = issued + dt.timedelta(days=3)
+    full_d3 = dt.datetime.combine(need_by, dt.time(23))
 
     runs = _geosfp_runs(_gds_get(f"{_GEOSFP_BASE}/"))
     if not runs:
@@ -194,14 +197,14 @@ def fetch_geosfp_daily(bounds, issued: dt.date | None = None):
         vec = _gds_parse_vectors(
             _gds_get(f"{_GEOSFP_BASE}/{cand}.ascii?prectot.time"))
         ts = _gds_times(vec["time"])
-        seen.append(f"{cand} covers {ts[0].date()}..{ts[-1].date()}" if ts
+        seen.append(f"{cand} covers {ts[0]}..{ts[-1]}" if ts
                     else f"{cand} has no time axis")
-        if ts and ts[-1].date() >= need_by:
+        if ts and ts[-1] >= full_d3:
             run, times = cand, ts
             break
     if run is None:
         raise RuntimeError(
-            f"no GEOS-FP run reaches {need_by} ({'; '.join(seen)})")
+            f"no GEOS-FP run reaches end of {need_by} ({'; '.join(seen)})")
 
     vec = _gds_parse_vectors(
         _gds_get(f"{_GEOSFP_BASE}/{run}.ascii?prectot.lat,prectot.lon"))
