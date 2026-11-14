@@ -30,8 +30,9 @@ from pathlib import Path
 
 import ee
 from tp.config import case as config_case
+from tp.config import event_id as tp_event_id
 from tp.config import load_config, threshold
-from tp.events import DATA_DIR, artifact_stem, list_events
+from tp.events import DATA_DIR, artifact_stem
 from tp.metrics import merge_metrics
 
 try:
@@ -63,10 +64,14 @@ def _common_ready() -> None:
 
 def _event_id(case_id: str) -> str:
     """'wa_2025' -> 'wa-2025-12' (the events/*.json entry for the case)."""
-    for eid in list_events():
-        if "_".join(eid.split("-")[:2]) == case_id:
-            return eid
-    raise KeyError(f"no events/*.json maps to case {case_id!r}")
+    return tp_event_id(case_id)
+
+
+def _asset_root() -> str:
+    # common.ASSET_ROOT is the template "projects/{GEE_PROJECT}/assets/tipping-point"
+    if "{" in ASSET_ROOT:
+        return ASSET_ROOT.format(GEE_PROJECT=GEE_PROJECT or "<GEE_PROJECT>")
+    return ASSET_ROOT
 
 
 def _asset(case_id: str, name: str) -> str:
@@ -77,7 +82,7 @@ def _asset(case_id: str, name: str) -> str:
         mapped = json.loads(assets_json.read_text()).get(name)
         if mapped:
             return mapped
-    return f"{ASSET_ROOT}/{case_id}/{name}"
+    return f"{_asset_root()}/{case_id}/{name}"
 
 
 def _flood_asset(case_id: str) -> str:

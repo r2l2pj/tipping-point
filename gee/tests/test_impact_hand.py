@@ -214,13 +214,13 @@ def test_flood_gate_failure_writes_null_reasons(tmp_path, commons, monkeypatch):
     monkeypatch.setattr(impact.ee, "data", SimpleNamespace(getAsset=_missing))
     path = tmp_path / "metrics.json"
     impact.run("wa_2025", metrics_path=path, pull=False)
-    m = json.loads(path.read_text())
+    blob = json.loads(path.read_text())["cases"]["wa_2025"]
     assert seen == [f"{impact.ASSET_ROOT}/wa_2025/flood_nisar"]
-    assert m["people_flooded"] is None and m["flooded_km2"] is None
-    assert {"people_flooded", "flooded_km2"} <= set(m["_null_reasons"])
-    assert "flood_nisar" in m["_null_reasons"]["people_flooded"]
-    assert m["people_critical"] == 0 and m["gpw_year"] == 0
-    assert m["night_light_drop_pct"] == 0
+    assert blob["people_flooded"] is None and blob["flooded_km2"] is None
+    assert {"people_flooded", "flooded_km2"} <= set(blob["_null_reasons"])
+    assert "flood_nisar" in blob["_null_reasons"]["people_flooded"]
+    assert blob["people_critical"] == 0 and blob["gpw_year"] == 0
+    assert blob["night_light_drop_pct"] == 0
 
 
 def test_flood_gate_pass_wa(tmp_path, commons):
@@ -230,7 +230,7 @@ def test_flood_gate_pass_wa(tmp_path, commons):
     assert out["metrics"]["flooded_km2"] == 0
     assert _called("ee.data.getAsset")
     # L8: concrete asset ids recorded in collections
-    cols = out["merged"]["collections"]
+    cols = out["merged"]["cases"]["wa_2025"]["collections"]
     assert cols["tpi_slide_series"] == f"{impact.ASSET_ROOT}/wa_2025/tpi_slide_series"
     assert cols["flood_nisar"] == f"{impact.ASSET_ROOT}/wa_2025/flood_nisar"
 
@@ -249,12 +249,12 @@ def test_asset_prefers_assets_json(tmp_path, commons, monkeypatch):
 
 def test_flood_keys_null_for_rs(tmp_path, commons):
     out = impact.run("rs_2024", metrics_path=tmp_path / "m.json", pull=False)
-    m = out["merged"]
-    assert m["people_flooded"] is None
-    assert "predates launch" in m["_null_reasons"]["people_flooded"]
+    blob = out["merged"]["cases"]["rs_2024"]
+    assert blob["people_flooded"] is None
+    assert "predates launch" in blob["_null_reasons"]["people_flooded"]
     assert not _called("ee.data.getAsset")  # rs never checks the gate
-    assert "flood_nisar" not in m["collections"]  # gate closed: no asset id recorded
-    assert m["collections"]["tpi_slide_series"].endswith("/rs_2024/tpi_slide_series")
+    assert "flood_nisar" not in blob["collections"]  # gate closed: no asset id recorded
+    assert blob["collections"]["tpi_slide_series"].endswith("/rs_2024/tpi_slide_series")
 
 
 # ---------- hand: radii + best pick ----------
@@ -270,9 +270,9 @@ def test_hand_three_radii(tmp_path, commons):
     assert _called("ee.Image", ["MERIT/Hydro/v1_0_1"])
     assert _called("ee.Reducer.pearsonsCorrelation")
     assert _called(".sample", scale=90, numPixels=5000, seed=1)
-    m = json.loads((tmp_path / "m.json").read_text())
-    assert set(m["hand_validation"]) == {"1000", "1500", "3000"}
-    assert m["collections"]["MERIT_Hydro"] == "MERIT/Hydro/v1_0_1"
+    blob = json.loads((tmp_path / "m.json").read_text())["cases"]["rs_2024"]
+    assert set(blob["hand_validation"]) == {"1000", "1500", "3000"}
+    assert blob["collections"]["MERIT_Hydro"] == "MERIT/Hydro/v1_0_1"
 
 
 def test_best_radius_picks_highest_combined(tmp_path, commons, monkeypatch):
@@ -285,7 +285,7 @@ def test_best_radius_picks_highest_combined(tmp_path, commons, monkeypatch):
     monkeypatch.setattr(hand, "_radius_stats", lambda dem, merit, aoi, r: canned[r])
     out = hand.run("rs_2024", metrics_path=tmp_path / "m.json")
     assert out["metrics"]["hand_best_radius_m"] == 1500
-    assert out["merged"]["hand_validation"]["1500"] == {"r": 0.7, "iou": 0.6}
+    assert out["merged"]["cases"]["rs_2024"]["hand_validation"]["1500"] == {"r": 0.7, "iou": 0.6}
 
 
 # ---------- dry-run: plan without init ----------
