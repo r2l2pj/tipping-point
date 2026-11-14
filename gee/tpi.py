@@ -97,7 +97,8 @@ def climatology(case_id: str, project: str):
         aoi = common.aoi_geom(case_id)
         img = climatology_image(common.case_cfg(case_id)["event_date"])
         ee.batch.Export.image.toAsset(
-            image=img.toFloat().clip(aoi), description=name, assetId=asset,
+            image=common.stamp(img.toFloat().clip(aoi), "static"),
+            description=name, assetId=asset,
             region=aoi, scale=CLIM_SCALE_M).start()
         return img
 
@@ -272,8 +273,11 @@ def run(case_id: str, project: str | None = None) -> dict:
                 region=aoi, scale=spec["scale"], fileFormat="GeoTIFF",
                 formatOptions={"cloudOptimized": True}).start()
         elif spec["kind"] == "asset" and "image" in spec:
+            data_date = ("static" if spec["image"] in ("T_slide", "T_flood")
+                         else plan["dates"][-1])
             ee.batch.Export.image.toAsset(
-                image=images[spec["image"]], description=spec["description"],
+                image=common.stamp(images[spec["image"]], data_date),
+                description=spec["description"],
                 assetId=common.asset_path(spec["asset"], proj),
                 region=aoi, scale=SCALE_M).start()
     rows = [f["properties"]

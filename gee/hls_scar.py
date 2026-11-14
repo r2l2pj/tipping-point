@@ -52,6 +52,7 @@ try:
         aoi_geom,
         asset_path,
         init,
+        stamp,
     )
 except ModuleNotFoundError as exc:  # gee.common lands with U4 — --dry-run needs none of it
     if exc.name != "gee.common":
@@ -59,7 +60,7 @@ except ModuleNotFoundError as exc:  # gee.common lands with U4 — --dry-run nee
     GEE_PROJECT = "<GEE_PROJECT>"
     ASSET_ROOT = f"projects/{GEE_PROJECT}/assets/tipping-point"
     IMG_NASADEM, BAND_DEM = "NASA/NASADEM_HGT/001", "elevation"
-    aoi_geom = asset_path = init = None
+    aoi_geom = asset_path = init = stamp = None
 
 PRODUCTS = {
     "HLSL30": ("NASA/HLS/HLSL30/v002", {"red": "B04", "nir": "B05", "swir2": "B07"}),
@@ -172,8 +173,11 @@ def _asset_name(case_id: str) -> str:
 
 def export_task(case_id: str, image, project: str | None = None):
     """The candidate-mask asset export task (created, not started)."""
+    # data_date = freshest source date — the post-window end (L8 stamp).
+    (_, _), (_, qe) = _windows(config_case(case_id))
+    img = image if stamp is None else stamp(image, qe.isoformat())
     return ee.batch.Export.image.toAsset(
-        image=image, description=_asset_name(case_id),
+        image=img, description=_asset_name(case_id),
         assetId=asset_path(_asset_name(case_id), project),
         region=aoi_geom(case_id), scale=SCALE_M, maxPixels=MAX_PIXELS)
 

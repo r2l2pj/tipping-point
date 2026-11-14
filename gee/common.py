@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import ee
@@ -123,6 +123,16 @@ def case_dir(case_id: str) -> Path:
 def data_dir(case_id: str) -> Path:
     """Absolute data/<case-id>/ path for writers."""
     return Path(REPO_ROOT) / case_dir(case_id)
+
+
+def stamp(img, data_date: str, now: str | None = None):
+    """Set the data_date + updated_at properties on an asset-exported image.
+
+    `data_date` is the YYYY-MM-DD of the source data ('static' for statics);
+    `updated_at` is the ISO-8601 UTC export time (injectable for tests).
+    """
+    ts = now or datetime.now(UTC).isoformat()
+    return img.set("data_date", data_date).set("updated_at", ts)
 
 
 def asset_path(name: str, project: str | None = None) -> str:

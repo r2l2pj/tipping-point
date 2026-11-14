@@ -22,6 +22,8 @@ function smapMean(end) {
 // depois marque true — o asset é reutilizado em todas as próximas corridas.
 var CLIM_ASSET = 'projects/<GEE_PROJECT>/assets/tipping-point/rs_2024_clim_rain3_2001_2023';
 var CLIM_ASSET_EXISTS = false;
+// Asset stamps (L8): data_date = data mais recente; updated_at = UTC da exportação.
+var updated_at = new Date().toISOString();
 var pct;
 if (CLIM_ASSET_EXISTS) {
   pct = ee.Image(CLIM_ASSET);
@@ -36,7 +38,7 @@ if (CLIM_ASSET_EXISTS) {
   }).flatten());
   pct = clim.reduce(ee.Reducer.percentile([90, 95, 99]));
   Export.image.toAsset({
-    image: pct.toFloat().clip(aoi),
+    image: pct.toFloat().clip(aoi).set('data_date', 'static').set('updated_at', updated_at),
     description: 'rs_2024_clim_rain3_2001_2023',
     assetId: CLIM_ASSET, region: aoi, scale: 10000
   });
@@ -78,6 +80,7 @@ function tpiAt(t) {
 var dates = ee.List.sequence(-10, 5).map(function (d) { return ref.advance(d, 'day'); });
 // Nome da banda = data do dia (YYYYMMDD); 1ª banda = 1º dia da janela
 var bandNames = dates.map(function (d) { return ee.Date(d).format('YYYYMMdd'); });
+var lastDay = ee.Date(dates.get(dates.size().subtract(1))).format('YYYY-MM-dd');
 var series = ee.ImageCollection(dates.map(tpiAt));
 
 // Classes: 0 Baixo, 1 Moderado, 2 Alto, 3 Crítico
@@ -134,27 +137,32 @@ var derived = {
   r_series: 'R', s_series: 'S'};
 Object.keys(derived).forEach(function (name) {
   Export.image.toAsset({
-    image: series.select(derived[name]).toBands().rename(bandNames).toFloat().clip(aoi),
+    image: series.select(derived[name]).toBands().rename(bandNames).toFloat().clip(aoi)
+      .set('data_date', lastDay).set('updated_at', updated_at),
     description: 'rs_2024_' + name,
     assetId: CASE_ASSETS + '/' + name, region: aoi, scale: 1000});
 });
 Export.image.toAsset({
-  image: T_slide.toFloat().clip(aoi), description: 'rs_2024_t_slide',
+  image: T_slide.toFloat().clip(aoi).set('data_date', 'static').set('updated_at', updated_at),
+  description: 'rs_2024_t_slide',
   assetId: CASE_ASSETS + '/t_slide', region: aoi, scale: 1000});
 Export.image.toAsset({
-  image: T_flood.toFloat().clip(aoi), description: 'rs_2024_t_flood',
+  image: T_flood.toFloat().clip(aoi).set('data_date', 'static').set('updated_at', updated_at),
+  description: 'rs_2024_t_flood',
   assetId: CASE_ASSETS + '/t_flood', region: aoi, scale: 1000});
 
 // E TAMBÉM com os nomes antigos — o gee/08_simular_table.js (Telegram
 // /simular) e o gee/09_impact.js leem ESTES assets planos, não os COGs.
 Export.image.toAsset({
-  image: series.select('TPI_slide').toBands().rename(bandNames).toFloat().clip(aoi),
+  image: series.select('TPI_slide').toBands().rename(bandNames).toFloat().clip(aoi)
+    .set('data_date', lastDay).set('updated_at', updated_at),
   description: 'tpi_slide_series_rs_asset',
   assetId: 'projects/<GEE_PROJECT>/assets/tipping-point/rs_2024_tpi_slide_series',
   region: aoi, scale: 1000
 });
 Export.image.toAsset({
-  image: series.select('TPI_flood').toBands().rename(bandNames).toFloat().clip(aoi),
+  image: series.select('TPI_flood').toBands().rename(bandNames).toFloat().clip(aoi)
+    .set('data_date', lastDay).set('updated_at', updated_at),
   description: 'tpi_flood_series_rs_asset',
   assetId: 'projects/<GEE_PROJECT>/assets/tipping-point/rs_2024_tpi_flood_series',
   region: aoi, scale: 1000

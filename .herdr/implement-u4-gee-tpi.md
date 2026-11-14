@@ -118,3 +118,28 @@ as GEE assets — single source of truth — COGs stay as fallback output).
   `.env.example` documents a key-file path — `gee.common.init` accepts
   both.
 - `data/SCHEMA.md` modifications in the worktree belong to U2 — unstaged.
+
+## Lead-back L8 mini-task — asset stamps (branch `unit/u4-asset-props`, from main)
+
+Every `Export.image.toAsset` image is stamped `.set('data_date', …).set('updated_at', …)`:
+
+- `gee/common.py`: new `stamp(img, data_date, now=None)` — `data_date` = YYYY-MM-DD of
+  source data ('static' for statics), `updated_at` = ISO-8601 UTC export time.
+- `gee/tpi.py`: 6 derived + 2 compat assets stamped `data_date` = last window day
+  (`plan["dates"][-1]`); `t_slide`, `t_flood`, clim asset stamped `'static'`.
+- `gee/hls_scar.py`: `export_task` stamps `data_date` = post-window end (`qe`) —
+  the freshest HLS scene date; `stamp` added to the `gee.common` import (None in the
+  fallback so --dry-run still works without it).
+- `gee/opera.py`: no image exports (validation via getInfo only) — nothing to stamp.
+- `gee/impact.py`: does not exist yet — nothing to stamp.
+- JS parity (01/07): same `.set()` on all `toAsset` images — `updated_at` =
+  `new Date().toISOString()` (declared before the clim block), `lastDay` = last
+  window date; statics/clim get `'static'`. `toDrive` COGs unstamped (data/ fallback).
+
+Tests: `test_stamp_sets_data_date_and_updated_at` asserts both `.set` calls via fake-ee.
+
+Proofs: `pytest gee/tests` = 51 passed; `ruff check gee/` clean;
+`node --check` 01+07 OK; `python -m gee.tpi --case wa_2025 --dry-run` prints all
+exports w/o creds. Full suite: 234 passed, 1 known flake
+(`test_edl_token_env_wires_bearer_header` — passes in isolation, env-ordering issue,
+untouched by this diff).

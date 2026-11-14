@@ -97,3 +97,12 @@ def test_init_no_project_is_a_clear_error(fake_ee, monkeypatch):
     monkeypatch.setattr(common, "GEE_PROJECT", "")
     with pytest.raises(RuntimeError, match="GEE project"):
         common.init()
+
+
+def test_stamp_sets_data_date_and_updated_at(fake_ee):
+    img = fake_ee.node("img")
+    common.stamp(img, "2025-12-20", now="2026-01-01T00:00:00+00:00")
+    calls = [(n, a) for n, a, _ in fake_ee.log]
+    assert ("img.set", ("data_date", "2025-12-20")) in calls
+    assert any(a == ("updated_at", "2026-01-01T00:00:00+00:00")
+               for n, a in calls)
