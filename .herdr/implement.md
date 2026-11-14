@@ -520,3 +520,24 @@ EARTHDATA_TOKEN-first auth wired everywhere in scope; EDL_USER/EDL_PASS and
 ~/.netrc fallbacks preserved; clean RuntimeError when nothing set. Committed
 on branch `unit/edlauth` as `e83bab6` (amended once for the review
 NEEDS-FIX; no push, no merge).
+
+## Review round 2 (NEEDS-FIX — credential-leak sanitization)
+
+- `fetch/edl.py::earthaccess_login` no longer interpolates the raw
+  exception (`{e}`) into the raised RuntimeError — an underlying auth
+  error can echo credentials. It now raises a fixed
+  "Earthdata login failed: check EARTHDATA_TOKEN, EDL_USER/EDL_PASS, or
+  ~/.netrc credentials" message, still chained `from e` for tracebacks.
+- Committed as `fa749fd` on `unit/edlauth` (small follow-up commit — HEAD
+  was the `8e8b6ce` report commit; amending it would have folded a source
+  change into a docs commit).
+- `ruff check .` clean; `pytest pipeline/tests -q` — **211 passed, 1
+  failed**: `test_fetch_opera.py::test_fetch_scenes_download_ingests`,
+  which is NOT mine and NOT caused by this change (verified by stashing
+  the edit — it still fails). Cause: cross-unit test-isolation bug —
+  `test_ingest.py` imports real `fetch.ingest` at collection time, binding
+  it as a `fetch` package attribute, which defeats `opera._ingest()`'s
+  `from . import ingest` + the test's `sys.modules["fetch.ingest"]` fake.
+  Already fixed upstream: `e52403d "Keep OPERA ingest mocks isolated from
+  cached package imports"` on main / unit/nisar-update / unit/opera-dswx.
+  This worktree predates that merge; not cherry-picked (out of scope).
