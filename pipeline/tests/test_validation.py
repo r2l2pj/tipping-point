@@ -127,16 +127,18 @@ def test_hls_fmask_bit_choice(tmp_path):
 
 
 def test_cloud_only_merge_preserves_keys(tmp_path):
+    # root metrics.json shape (L4): {"cases": {<case_id>: {...flat keys}}}
     path = tmp_path / "metrics.json"
     path.write_text(json.dumps(
-        {"event": "rs-2024-05", "flooded_km2": 10.0}))
+        {"cases": {"rs_2024": {"event": "rs-2024-05", "flooded_km2": 10.0}}}))
     m = cloud_only_merge("rs-2024-05", 92.5, "hls_fmask", path=path)
-    assert m["cloud_pct"] == 92.5
-    assert m["iou"] is None and m["f1"] is None
-    assert "clouded" in m["_null_reasons"]["iou"]
-    assert "clouded" in m["_null_reasons"]["f1"]
-    assert m["flooded_km2"] == 10.0          # pre-existing key survives
-    assert m["collections"]["cloud_pct_source"] == "hls_fmask"
+    blob = m["cases"]["rs_2024"]
+    assert blob["cloud_pct"] == 92.5
+    assert blob["iou"] is None and blob["f1"] is None
+    assert "clouded" in blob["_null_reasons"]["iou"]
+    assert "clouded" in blob["_null_reasons"]["f1"]
+    assert blob["flooded_km2"] == 10.0       # pre-existing key survives
+    assert blob["collections"]["cloud_pct_source"] == "hls_fmask"
 
 
 def test_edl_login_environment_strategy(monkeypatch):
@@ -173,12 +175,12 @@ def test_write_metrics_preserves_existing_keys(tmp_path):
     # the old write_metrics clobbered metrics.json via write_text
     path = tmp_path / "metrics.json"
     path.write_text(json.dumps(
-        {"event": "rs-2024-05", "flooded_km2": 42.0}))
+        {"cases": {"rs_2024": {"event": "rs-2024-05", "flooded_km2": 42.0}}}))
     m = write_metrics("rs-2024-05", {"iou": 0.5, "f1": 0.66}, path=path)
-    on_disk = json.loads(path.read_text())
-    assert on_disk == m
-    assert on_disk["flooded_km2"] == 42.0
-    assert on_disk["iou"] == 0.5 and on_disk["f1"] == 0.66
+    blob = json.loads(path.read_text())["cases"]["rs_2024"]
+    assert blob == m["cases"]["rs_2024"]
+    assert blob["flooded_km2"] == 42.0
+    assert blob["iou"] == 0.5 and blob["f1"] == 0.66
 
 
 def _script_main(monkeypatch, tmp_path, argv):
@@ -210,7 +212,7 @@ def test_script_hls_cloud_alone(tmp_path, monkeypatch):
     )
     files = list(tmp_path.rglob("metrics.json"))
     assert len(files) == 1
-    m = json.loads(files[0].read_text())
+    m = json.loads(files[0].read_text())["cases"]["rs_2024"]
     assert m["cloud_pct"] == pytest.approx(200 / 15)
     assert m["iou"] is None and m["f1"] is None
     assert m["_null_reasons"]["iou"] and m["_null_reasons"]["f1"]

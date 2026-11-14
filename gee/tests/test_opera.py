@@ -202,7 +202,7 @@ def test_merge_hand_computed(tmp_path, commons, monkeypatch):
     monkeypatch.setattr(_FakeObj, "getInfo", lambda self: dict(counts))
     path = tmp_path / "metrics.json"
     out = opera.run("rs_2024", metrics_path=path, data_root=tmp_path)
-    m = json.loads(path.read_text())
+    m = json.loads(path.read_text())["cases"]["rs_2024"]
     assert m["iou"] == pytest.approx(0.5)
     assert m["f1"] == pytest.approx(6 / 9)
     assert m["cloud_pct"] == pytest.approx(200 / 14)
@@ -222,7 +222,7 @@ def test_nisar_gate_null_reasons(tmp_path, commons, monkeypatch):
     monkeypatch.setattr(_FakeObj, "getInfo", lambda self: {"cloud": 5, "valid": 10})
     path = tmp_path / "metrics.json"
     opera.run("rs_2024", metrics_path=path, data_root=tmp_path)
-    m = json.loads(path.read_text())
+    m = json.loads(path.read_text())["cases"]["rs_2024"]
     assert m["iou"] is None and m["f1"] is None
     assert "NISAR" in m["_null_reasons"]["iou"]
     assert m["cloud_pct"] == 50.0
@@ -237,7 +237,7 @@ def test_all_null_when_no_opera(tmp_path, commons, monkeypatch):
     monkeypatch.setattr(opera.ee, "data", SimpleNamespace(getAsset=_ga))
     path = tmp_path / "metrics.json"
     opera.run("rs_2024", metrics_path=path, data_root=tmp_path)
-    m = json.loads(path.read_text())
+    m = json.loads(path.read_text())["cases"]["rs_2024"]
     assert m["iou"] is None and m["f1"] is None and m["cloud_pct"] is None
     assert {"iou", "f1", "cloud_pct"} <= set(m["_null_reasons"])
 
