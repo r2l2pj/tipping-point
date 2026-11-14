@@ -226,6 +226,7 @@ def _run_download(monkeypatch, payload):
     import requests
 
     ee = _fake_ee()
+    monkeypatch.setattr(build_static, "TILES", 1)
     monkeypatch.setattr(
         requests, "get",
         lambda *a, **k: types.SimpleNamespace(content=payload))
@@ -270,3 +271,62 @@ def test_ee_init_returns_ee_module_not_project_string(monkeypatch):
 
     assert build_static._ee_init() is fake_ee
     assert init_calls == [(("creds", "sa@example.com"), "p")]
+
+
+def test_download_band_mosaics_tiles(monkeypatch):
+    import requests
+
+    monkeypatch.setattr(build_static, "NOW_BOUNDS", (0, 0, 0.10, 0.11))
+    calls = []
+
+    class TileImage(_DlImg):
+        def getDownloadURL(self, params):
+            calls.append(params)
+            return str(len(calls) - 1)
+
+    def get(url, timeout):
+        assert timeout == 600
+        width, height = calls[int(url)]["dimensions"]
+        return types.SimpleNamespace(content=_tif_bytes(
+            np.full((height, width), int(url), dtype=np.float64)))
+
+    monkeypatch.setattr(requests, "get", get)
+    out = build_static._download_band(_fake_ee(), TileImage(), "band")
+
+    assert build_static.TILES == 3
+    assert out.shape == (11, 10)
+    assert out.dtype == np.float64
+    x_edges, y_edges = [0, 3, 7, 10], [0, 4, 7, 11]
+    for row in range(3):
+        for col in range(3):
+            index = row * 3 + col
+            np.testing.assert_array_equal(
+                out[y_edges[row]:y_edges[row + 1],
+                    x_edges[col]:x_edges[col + 1]], index)
+            params = calls[index]
+            assert params["scale"] == 1000
+            assert params["crs"] == "EPSG:4326"
+            np.testing.assert_allclose(params["crs_transform"], [
+                0.01, 0, x_edges[col] * 0.01,
+                0, -0.01, 0.11 - y_edges[row] * 0.01])
+            assert "region" not in params
+            assert params["dimensions"] == [
+                x_edges[col + 1] - x_edges[col], y_edges[row + 1] - y_edges[row]]
+    assert len(calls) == 9
+
+
+def test_download_band_reports_error_body(monkeypatch):
+    import pytest
+
+    payload = b'{"error": {"code": 400, "message": "User memory limit exceeded."}}'
+    with pytest.raises(RuntimeError, match=r"tile \(0, 0\).*User memory limit exceeded"):
+        _run_download(monkeypatch, payload)
+
+
+def test_download_tiles_respects_scale(monkeypatch):
+    monkeypatch.setattr(build_static, "NOW_BOUNDS", (0, 0, 0.12, 0.12))
+    tiles = list(build_static._download_tiles(2000))
+    assert len(tiles) == 9
+    row, col, bounds, width, height, scale_deg = tiles[0]
+    assert (row, col, width, height, scale_deg) == (0, 0, 2, 2, 0.02)
+    np.testing.assert_allclose(bounds, [0.0, 0.08, 0.04, 0.12])

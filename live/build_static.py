@@ -35,6 +35,7 @@ from live.config import (
     ASSET_ROOT,
     HAND_PROXY_RADIUS_M,
     NOW_BOUNDS,
+    NOW_RES_DEG,
     STATIC_DIR,
     STATIC_DOMAIN,
     STATIC_NPZ,
@@ -47,6 +48,7 @@ POP_BAND = "population_count"
 ASSET_TERRAIN_SCALE_M = 30
 ASSET_CLIM_SCALE_M = 10_000
 NOW_PAD_DAYS = 35
+TILES = 3
 EVENTS_DIR = Path(__file__).resolve().parents[1] / "events"
 
 
@@ -71,23 +73,51 @@ def _ee_init():
     return ee
 
 
+def _download_tiles(scale_m):
+    west, south, east, north = NOW_BOUNDS
+    scale_deg = NOW_RES_DEG * scale_m / 1000
+    width = round((east - west) / scale_deg)
+    height = round((north - south) / scale_deg)
+    xs = [round(col * width / TILES) for col in range(TILES + 1)]
+    ys = [round(row * height / TILES) for row in range(TILES + 1)]
+    for row in range(TILES):
+        for col in range(TILES):
+            bounds = [west + xs[col] * scale_deg,
+                      north - ys[row + 1] * scale_deg,
+                      west + xs[col + 1] * scale_deg,
+                      north - ys[row] * scale_deg]
+            yield (row, col, bounds, xs[col + 1] - xs[col],
+                   ys[row + 1] - ys[row], scale_deg)
+
+
 def _download_band(ee, image, band: str, scale_m: int = 1000) -> np.ndarray:
     import rasterio
     import requests
 
-    rect = ee.Geometry.Rectangle(list(NOW_BOUNDS))
-    url = image.select(band).getDownloadURL({
-        "region": rect, "scale": scale_m, "format": "GEO_TIFF",
-    })
-    data = requests.get(url, timeout=600).content
-    if data[:4] == b"PK\x03\x04":
-        with zipfile.ZipFile(io.BytesIO(data)) as z:
-            name = next(n for n in z.namelist() if n.endswith(".tif"))
-            tif = io.BytesIO(z.read(name))
-    else:
-        tif = io.BytesIO(data)
-    with rasterio.open(tif) as src:
-        return src.read(1).astype(np.float64)
+    rows = [[] for _ in range(TILES)]
+    selected = image.select(band)
+    for row, col, bounds, width, height, scale_deg in _download_tiles(scale_m):
+        url = selected.getDownloadURL({
+            "scale": scale_m, "format": "GEO_TIFF",
+            "crs": "EPSG:4326", "dimensions": [width, height],
+            "crs_transform": [scale_deg, 0, bounds[0], 0, -scale_deg, bounds[3]],
+        })
+        response = requests.get(url, timeout=600)
+        data = response.content
+        is_zip = data[:4] == b"PK\x03\x04"
+        is_tiff = data[:4] in (b"II*\x00", b"MM\x00*", b"II+\x00", b"MM\x00+")
+        if getattr(response, "status_code", 200) >= 400 or not (is_zip or is_tiff):
+            body = data[:200].decode("utf-8", errors="replace")
+            raise RuntimeError(f"Download {band} tile ({row}, {col}) failed: {body!r}")
+        if is_zip:
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                name = next(n for n in z.namelist() if n.endswith(".tif"))
+                tif = io.BytesIO(z.read(name))
+        else:
+            tif = io.BytesIO(data)
+        with rasterio.open(tif) as src:
+            rows[row].append(src.read(1).astype(np.float64))
+    return np.concatenate([np.concatenate(row, axis=1) for row in rows], axis=0)
 
 
 def _climatology(ee, month: int, day: int):
