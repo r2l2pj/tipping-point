@@ -5,7 +5,7 @@ import pytest
 import rioxarray as rxr
 from conftest import write_tif
 from tp.validation import (
-    case_key,
+    case_id,
     cloud_only_merge,
     cloud_pct,
     hls_fmask_cloud_pct,
@@ -16,9 +16,9 @@ from tp.validation import (
 )
 
 
-def test_case_key_and_opera_product():
-    assert case_key("wa-2025-12") == "wa_2025"
-    assert case_key("rs-2024-05") == "rs_2024"
+def test_case_id_and_opera_product():
+    assert case_id("wa-2025-12") == "wa_2025"
+    assert case_id("rs-2024-05") == "rs_2024"
     assert opera_product("wa_2025") == "OPERA_L3_DSWX-S1_V1"
     assert opera_product("rs_2024") == "OPERA_L3_DSWX-HLS_V1"
 

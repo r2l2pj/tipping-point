@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import rioxarray as rxr
 
+from tp import config
 from tp.metrics import merge_metrics
 
 WATER_VALS = (1, 2)
@@ -29,14 +30,19 @@ CASE_PRODUCT = {"wa_2025": "OPERA_L3_DSWX-S1_V1"}
 CLOUDED_REASON = "optical fully clouded in the event window — cloud_pct is the 'why radar' number"
 
 
-def case_key(event_id: str) -> str:
-    """'wa-2025-12' -> 'wa_2025': the config.yaml case key for an event id."""
-    return "_".join(event_id.split("-")[:2])
+def case_id(event_id: str) -> str:
+    """'wa-2025-12' -> 'wa_2025': the config.yaml case key for an event id.
+
+    Delegates to tp.config.case_id once the metrics-root rework lands (L4:
+    data/<case>/ dirs); the '<caso>' naming convention is the fallback.
+    """
+    fn = getattr(config, "case_id", None)
+    return fn(event_id) if fn else "_".join(event_id.split("-")[:2])
 
 
-def opera_product(case_id: str) -> str:
+def opera_product(case: str) -> str:
     """OPERA DSWx collection short name for a config.yaml case."""
-    return CASE_PRODUCT.get(case_id, DEFAULT_PRODUCT)
+    return CASE_PRODUCT.get(case, DEFAULT_PRODUCT)
 
 
 def search_download_opera(

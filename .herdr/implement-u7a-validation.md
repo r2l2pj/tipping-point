@@ -87,3 +87,33 @@ Unit: U7a for lead-analysis, worktree branch `unit/u7a`. Model: SWE-2 High.
 - `earthaccess` granule ids recorded as
   `collections.opera_dswx_granules` (comma-joined native-ids) alongside
   `collections.opera_dswx` = collection short name.
+
+## Rework — spec delta L4 (data/<case>/ dirs + root metrics.json)
+
+Second commit on unit/u7a.
+
+- `tp.validation.case_key()` renamed to `case_id(event_id)`; it delegates to
+  `tp.config.case_id()` via `getattr` once that function lands with the
+  metrics-root rework (`unit/u3-metrics-root`, owned by another lead —
+  config.py/metrics.py are outside this unit's write scope). Until then it
+  falls back to the `<caso>` naming convention, so tests stay green on this
+  branch either way.
+- `04_validation.py` no longer calls `tp.events.event_data_dir` (being
+  updated by the other lead). Case data dir is resolved as
+  `DATA_DIR / case_id(event)` → `data/rs_2024/cog/<caso>_water_nisar_…`;
+  OPERA downloads go to `data/raw/opera/<case>/`.
+- All `merge_metrics` calls pass just the event id (no `path=`), so the
+  updated auto-routing to root `data/metrics.json` keyed by case applies
+  the moment it lands; the signature is unchanged per the delta.
+- Tests updated (`case_key` → `case_id`); merge tests still pass `path=`
+  to a tmp file for isolation.
+
+Re-verified after rework:
+
+- `pytest pipeline/tests -q` — 41 passed; `ruff check .` — clean;
+  `python pipeline/scripts/04_validation.py --help` — resolves, no
+  earthaccess import.
+- Smoke (DATA_DIR patched to tmpdir): `--hls-cloud … --cloud-only` →
+  cloud_pct 13.33 + nulls/reasons; `--opera-wtr` found the NISAR COG at
+  `data/rs_2024/cog/rs_2024_water_nisar_20240502.tif` (new case-dir layout)
+  and merged iou=0.5/f1=0.667/cloud_pct=14.29.

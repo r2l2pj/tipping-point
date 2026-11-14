@@ -20,10 +20,10 @@ from pathlib import Path
 import rioxarray as rxr
 from rioxarray.exceptions import RioXarrayError
 from tp import config
-from tp.events import DATA_DIR, artifact_stem, event_data_dir
+from tp.events import DATA_DIR, artifact_stem
 from tp.metrics import merge_metrics
 from tp.validation import (
-    case_key,
+    case_id,
     cloud_only_merge,
     cloud_pct,
     compare_wtr,
@@ -36,12 +36,12 @@ from tp.validation import (
 
 def _download_opera(event: str, short_name: str, collections: dict) -> list:
     """earthaccess fetch of OPERA DSWx over the case AOI, event_date..+5d."""
-    c = config.case(case_key(event))
+    c = config.case(case_id(event))
     start = c["event_date"]
     if isinstance(start, str):
         start = date.fromisoformat(start)
     temporal = (start.isoformat(), (start + timedelta(days=5)).isoformat())
-    dest = DATA_DIR / "raw" / "opera" / event
+    dest = DATA_DIR / "raw" / "opera" / case_id(event)
     dest.mkdir(parents=True, exist_ok=True)
     paths, ids = search_download_opera(
         tuple(c["aoi"]), temporal, dest, short_name=short_name
@@ -85,9 +85,9 @@ def main() -> None:
         ap.error("--cloud-only needs a cloud source: --hls-cloud or OPERA")
 
     event = args.event
-    d = event_data_dir(event)
+    d = DATA_DIR / case_id(event)          # L4: data/<case>/, not data/<event>/
     nisar_path = d / "cog" / f"{artifact_stem(event, 'water_nisar')}.tif"
-    short_name = opera_product(case_key(event))
+    short_name = opera_product(case_id(event))
     collections: dict = {}
 
     paths = []
@@ -108,7 +108,7 @@ def main() -> None:
             nisar = rxr.open_rasterio(nisar_path).squeeze()
             wtr = mosaic_tiles(paths, nisar)
         else:
-            wtr = mosaic_tiles(paths, _aoi_ref(paths[0], case_key(event)))
+            wtr = mosaic_tiles(paths, _aoi_ref(paths[0], case_id(event)))
             print(f"no NISAR water mask at {nisar_path} — cloud stats only")
 
     if args.cloud_only:
@@ -118,7 +118,7 @@ def main() -> None:
             pct, source = hls_fmask_cloud_pct(args.hls_cloud), "hls_fmask"
         else:
             ap.error("--cloud-only: no OPERA tiles and no --hls-cloud raster")
-        merged = cloud_only_merge(event, pct, source, path=d / "metrics.json")
+        merged = cloud_only_merge(event, pct, source)
         print(merged)
         return
 
@@ -127,7 +127,6 @@ def main() -> None:
             event,
             flat=compare_wtr(nisar, wtr),
             collections={**collections, "cloud_pct_source": short_name},
-            path=d / "metrics.json",
         )
     elif wtr is not None or args.hls_cloud:
         # cloud stat only: OPERA mosaic preferred, Fmask as fallback
@@ -143,7 +142,6 @@ def main() -> None:
         merged = merge_metrics(
             event, flat=flat, reasons=reasons,
             collections={**collections, "cloud_pct_source": source},
-            path=d / "metrics.json",
         )
     print(merged)
 
