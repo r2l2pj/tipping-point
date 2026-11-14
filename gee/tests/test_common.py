@@ -1,5 +1,7 @@
 """gee.common pinned API — pure-python parts and fake-ee construction."""
+import importlib
 import json
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -45,6 +47,29 @@ def test_case_dir_is_data_case_key():
     assert common.data_dir("rs_2024").parent.name == "data"
     with pytest.raises(KeyError, match="unknown case"):
         common.case_dir("xx_1999")
+
+
+@pytest.mark.parametrize("module_name", ["common", "tpi"])
+def test_fake_ee_patches_duplicate_modules(monkeypatch, request, module_name):
+    import gee
+
+    importlib.import_module("gee.tpi")
+    original = importlib.import_module(f"gee.{module_name}")
+    monkeypatch.setattr(gee, module_name, getattr(gee, module_name))
+    stub_ee = SimpleNamespace()
+    with monkeypatch.context() as reimport:
+        reimport.delitem(sys.modules, f"gee.{module_name}")
+        reimport.setitem(sys.modules, "ee", stub_ee)
+        duplicate = importlib.import_module(f"gee.{module_name}")
+    assert sys.modules[f"gee.{module_name}"] is original
+    assert getattr(gee, module_name) is duplicate
+    assert duplicate is not original
+    fake = request.getfixturevalue("fake_ee")
+    assert original.ee is fake
+    assert duplicate.ee is fake
+    assert common.ee is fake
+    common.aoi_geom("wa_2025")
+    assert fake.log[-1][0] == "ee.Geometry.Rectangle"
 
 
 def test_aoi_geom(fake_ee):

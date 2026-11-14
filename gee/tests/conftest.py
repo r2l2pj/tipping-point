@@ -8,6 +8,8 @@ real `ee` stays in place for the other test suites sharing the process.
 """
 from __future__ import annotations
 
+import importlib
+
 import pytest
 
 
@@ -35,10 +37,13 @@ class Fake:
 @pytest.fixture
 def fake_ee(monkeypatch):
     """Install the recording fake as `ee` in gee.common and gee.tpi."""
-    import gee.common
-    import gee.tpi
+    import gee
 
     fake = Fake([])
-    monkeypatch.setattr(gee.common, "ee", fake)
-    monkeypatch.setattr(gee.tpi, "ee", fake)
+    for name in ("common", "tpi"):
+        module = importlib.import_module(f"gee.{name}")
+        monkeypatch.setattr(module, "ee", fake)
+        package_module = getattr(gee, name, None)
+        if package_module is not None and package_module is not module:
+            monkeypatch.setattr(package_module, "ee", fake)
     return fake

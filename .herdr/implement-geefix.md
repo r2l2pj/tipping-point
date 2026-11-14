@@ -30,4 +30,24 @@ UV executable used throughout: `$HOME/.local/share/mise/installs/uv/0.13.8/uv-x8
 
 Additional task coordination commands: `todo log`, `todo add`, `todo`, `todo edit 62` after the scope reduction, and `hc send lead-analysis` to report the absent impact.py before task 3 was dropped.
 
-Credential coverage is fake-only and uses fake@example.invalid / fake-key; no live Earth Engine authentication or export was attempted. Original isolated stamp test remains as well as the new export-call-site test. No pre-change failing regression run was recorded.
+Credential coverage is fake-only and uses fake@example.invalid / fake-key; no live Earth Engine authentication or export was attempted. Original isolated stamp test remains as well as the new export-call-site test. No pre-change failing regression run was recorded for the initial implementation.
+
+## Follow-up: duplicate module fixture isolation
+
+Verified diff based on `c5c27ed24eb3888335ad4fce3be3f5932cea978a`; this follow-up commit contains its report.
+
+- Updated `gee/tests/conftest.py::fake_ee` to obtain canonical modules through importlib (sys.modules), patch their ee attributes, and also patch differing gee package common/tpi attributes. All patches use monkeypatch for teardown.
+- Added a parameterized regression for both common and tpi: remove the canonical sys.modules entry, re-import under a stub ee, restore sys.modules while leaving the duplicate package attribute, then dynamically request fake_ee. Assert both modules and the test-held common use the fake; call common.aoi_geom and assert the recording geometry call. Preload tpi before duplication so the regression does not introduce a lingering tpi.common reference to its temporary common module.
+- Inspected other gee test fixtures: no other fixture patches ee on common/tpi. The HLS export test patches its locally held hls_scar module directly, not a module resolved via a potentially stale package attribute.
+
+Commands (same UV executable as above):
+
+1. Before changes: `uv run pytest pipeline/tests/test_ingest.py gee/tests/test_common.py -q`: **40 passed in 0.46s**. This branch's test_ingest.py does not contain the integration branch's common re-import, so that exact existing-order reproduction did not fail here.
+2. Added regression, before fixture fix: `uv run pytest gee/tests/test_common.py -k duplicate_modules -q`: **2 failed, 24 deselected in 0.27s**. Both fail at `assert original.ee is fake`; original.ee is the real ee module, proving the fixture leak without invoking real EE.
+3. After fix, final ordered check: `uv run pytest pipeline/tests/test_ingest.py gee/tests/test_common.py -q`: **42 passed in 0.20s**.
+4. Final `uv run pytest gee/tests pipeline/tests -q`: **1 failed, 346 passed, 9 warnings in 7.88s**. Only the previously reported unrelated test_fetch_nisar.py::test_execute_requires_creds fails with missing tp.nisar._edl_credentials. No GEE failures.
+5. Also ran reversed full ordering `uv run pytest pipeline/tests gee/tests -q`: **1 failed, 346 passed, 9 warnings in 7.15s**, same sole unrelated NISAR failure (before the final regression-only tpi preload refinement).
+6. `uv run ruff check gee/tests/conftest.py gee/tests/test_common.py`: **All checks passed!**
+7. `git diff --check`: exit 0. Reviewed git diff/status/log. Only scoped tests and this report changed; no production modules changed in this follow-up.
+
+No helpers, no model switch, no push.
