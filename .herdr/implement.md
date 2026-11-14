@@ -1,77 +1,71 @@
 # implement — ingest (GEE asset ingest unit, t9r)
 # L8a — SWOT series -> GEE table asset — implementation report
 # implement — edlauth (L6: Earthdata bearer-token auth)
+# implement — ingest (GEE asset ingest unit, t9r) — round 2 fixes
 
-Ruling: validation.yml L8a (data-plan). Interface per conductor update:
-module IS the CLI (`python -m pipeline.fetch.swot`), no tools/ file,
-bucket env `NOW_GCS_BUCKET`. Scope respected: `pipeline/fetch/swot.py`,
-`pipeline/tests/test_fetch_swot.py`, this report. No helpers spawned,
-no pushes.
+## Changed (this round, on rebased unit/ingest @ main a3d1b7d)
 
-- `pipeline/fetch/ingest.py` — NEW. Contract exports (confirmed by lead):
-  `stage_to_gcs(local_path,*,bucket,case,name)->str` (uploads to
-  `gs://<bucket>/staging/<case>/<name><ext>` via google.cloud.storage),
-  `ingest_asset(gcs_uri,*,asset_id,kind,force=False)->dict` (kind "image" ->
-  `ee.data.startIngestion`, kind "table" -> `ee.data.startTableIngestion`;
-  idempotent skip -> `status:"exists"` when `ee.data.getAsset` finds the
-  asset unless force; ONLY 404/NOT_FOUND getAsset errors mean absence —
-  auth/permission/service errors propagate via `_is_not_found`),
-  `append_manifest(case,entry)->Path` (exact 2-arg contract signature;
-  upserts rows keyed by `name` in `data/<case>/assets.json`, reads
-  `events.DATA_DIR` at call time). Path-safety: `case`/`name` validated
-  against `[A-Za-z0-9][A-Za-z0-9_-]*`, bucket/project/suffix/asset_id
-  reject separators + `..` (`_validate_segment`/`_validate_path_safe`/
-  `_validate_asset_id`). Helpers: `gee_project()` (GEE_PROJECT env, default
-  `hermes-fesolucoes`), `staging_bucket()` (**NOW_GCS_BUCKET** primary,
-  `GCS_BUCKET` accepted alias — conductor contract), `asset_id()`,
-  `staging_uri()`. ee + google.cloud.storage are lazy `importlib` imports
-  inside functions so fakes inject via `sys.modules`; missing
-  GOOGLE_APPLICATION_CREDENTIALS -> RuntimeError naming the var before any
-  SDK call.
+- `pipeline/fetch/ingest.py`
+  - `_is_not_found` tightened (re-review): an explicit status decides
+    FIRST — `status_code` / `resp.status` / callable `code()` of 404 or a
+    NOT_FOUND string/enum (grpc-style) means absent; ANY other status
+    returns False so the caller re-raises (403/500/auth can never mask as
+    'missing'). Message text is only consulted when NO status exists, and
+    auth markers (`permission|denied|unauthoriz|forbidden|unauthenticated|
+    credential`) veto the 'not found' text match.
+  - EE init delegated to shared `gee.common.init` (conductor ruling):
+    `_init_ee()` lazily appends the repo root to sys.path, imports
+    `gee.common`, calls `common.init(project=gee_project())` — which
+    builds `ee.ServiceAccountCredentials` from `GCP_SA_KEY` /
+    `GEE_SERVICE_ACCOUNT_KEY` (path or raw JSON blob) and falls back to
+    ADC. Fake-ee tests never need the helper because a
+    `sys.modules['gee.common']` injection or the real module under a fake
+    `ee` both work.
+  - Creds check widened to repo convention: `GOOGLE_APPLICATION_CREDENTIALS`
+    OR `GCP_SA_KEY`/`GEE_SERVICE_ACCOUNT_KEY` satisfy `_require_creds`
+    (message still names GOOGLE_APPLICATION_CREDENTIALS).
+  - `_storage_client`: `storage.Client()` (ADC) when
+    GOOGLE_APPLICATION_CREDENTIALS is set, else
+    `Client.from_service_account_json(_sa_key_path())` — so GCS staging
+    works with only `GCP_SA_KEY`.
+- `pipeline/fetch/opera.py` — `_ingest()` now uses
+  `importlib.import_module("fetch.ingest")`: `from . import ingest`
+  returned the `fetch` package's already-bound real attribute and bypassed
+  the `sys.modules['fetch.ingest']` fake that test_fetch_opera injects —
+  that made test_fetch_scenes_download_ingests fail whenever a real
+  `fetch.ingest` import ran first in the suite (pre-existing on main).
+- `pipeline/tests/test_ingest.py` — 21 tests (+5): non-404 status with
+  'not found' text propagates; auth-marker text with 'not found'
+  propagates; grpc `code()='NOT_FOUND'` means absent; `gee.common.init`
+  passes `ServiceAccountCredentials(key_file=GCP_SA_KEY)` to
+  `ee.Initialize`; `stage_to_gcs` falls back to
+  `from_service_account_json` when only `GCP_SA_KEY` is set. Fakes gained
+  `ee.ServiceAccountCredentials` and `Client.from_service_account_json`;
+  `_install_fakes` clears SA-key envs and drops the `gee.common` module
+  cache (it binds `ee` at its own import time).
 
-  Review fixes (NEEDS-FIX r1, amended): (a) `append_manifest` is now
-  exactly `(case, entry)` — `data_dir` kwarg dropped, tests monkeypatch
-  `events.DATA_DIR`; (b) getAsset non-404 errors propagate; (c)
-  case/name/bucket/asset_id validated before interpolation.
-  `tools/ingest_assets.py --case` now uses `choices=` from config.yaml
-  case keys.
-- `tools/ingest_assets.py` — NEW. Batch/registry CLI: `--case rs_2024|wa_2025`
-  or `--event <id>` (via `tp.events.case_key`), `--dry-run`, `--manifest-only`,
-  `--force`. `ASSET_REGISTRY` is data-driven: `product`/`kind`/`patterns`
-  (globs under `data/` with `{case}`); covers nisar_gcov
-  (`{case}/cog/*gcov*.tif` + `raw/nisar/gcov_*.tif` from
-  `pipeline/tp/nisar.py`), opera_dswx_wtr (`{case}/cog/*dswx*.tif`),
-  landslide_catalog + municipal_boundaries geojson (kind table). Appending
-  flood_nisar/water_nisar = one registry dict. Asset name = file stem minus
-  `<case>_` prefix. Dry-run prints plan only (no creds, no manifest write);
-  manifest-only writes `status:"pending"` rows; real run stages -> ingests
-  -> appends manifest per asset.
-- `pipeline/tests/test_ingest.py` — NEW, 16 tests. Fake `ee` (module type,
-  records `init`/`image`/`table` calls, `getAsset` raises not-found or a
-  caller-supplied error) and fake `google.cloud.storage` (records uploads)
-  injected via `sys.modules`; covers staging path, image-vs-table dispatch,
-  idempotent skip, `--force`, 404-vs-403-vs-PERMISSION_DENIED getAsset
-  handling, case/name/bucket/asset_id validation, manifest upsert,
-  missing-creds RuntimeError naming the var, bucket env + alias, registry
-  resolution, dry-run with ALL env vars deleted (no manifest written),
-  manifest-only, and a full fake real-run path. No network, no real ee/gcs.
+## Prior state (unchanged contract)
 
-## Decisions
+`stage_to_gcs(local_path,*,bucket,case,name)->str`,
+`ingest_asset(gcs_uri,*,asset_id,kind,force=False)->dict`,
+`append_manifest(case,entry)->Path`; NOW_GCS_BUCKET + GCS_BUCKET alias;
+`data/<case>/assets.json` upserts keyed by name; segment/path validation
+on case/name/bucket/project/asset_id; `tools/ingest_assets.py` registry
+CLI (`--case` choices from config.yaml, `--event`, `--dry-run`,
+`--manifest-only`, `--force`).
 
-- `config.yaml` untouched (conductor owns it); bucket from env only.
-- `data/<case>/assets.json` envelope: `{schema: "tipping-point/gee-assets@1",
-  updated_at, assets: [...]}` matching repo manifest conventions.
-- hermes-fesolucoes is NOT EE-registered (see
-  `.herdr/implement-gee-verify.md`: `earthengine.computations.create`
-  denied) — real runs blocked; dry-run + fake tests are the proof.
-# unit/opera-dswx — OPERA DSWx-HLS fetch + ingest (validation.yml ruling L8a)
+## Commands run
 
-## Files created (2 source + this report)
+- `git rebase main` — clean; prior work already merged as e2109d5, so the
+  rebase produced no new commit.
+- `$UV run pytest pipeline/tests -q` — **211 passed** (was 1 failed:
+  test_fetch_opera, fixed via opera.py importlib change; confirmed the
+  failure pre-existed on main by stashing).
+- `$UV run ruff check .` — **All checks passed**.
+- `env -u GOOGLE_APPLICATION_CREDENTIALS -u GCP_SA_KEY $UV run python
+  tools/ingest_assets.py --case rs_2024 --dry-run` — exit 0, correct plan.
 
-- `pipeline/fetch/opera.py` (417 lines) — module IS the CLI:
-  `python -m pipeline.fetch.opera --event <id>|--case <id>
-  [--start/--end] [--limit N] [--no-download|--dry-run]`
-- `pipeline/tests/test_fetch_opera.py` (329 lines, 13 tests)
+## Files in this commit
 
 ## What it does
 
@@ -643,3 +637,5 @@ Not modified: `.gitignore` (see Open items), any existing file.
 4. **Flag coupling.** `imerg.py` duplicates `run_now.py` logic in
    `_subset` and the 0.5 factor. This is intentional so the module has no import
    from `live/`.
+pipeline/fetch/ingest.py, pipeline/fetch/opera.py,
+pipeline/tests/test_ingest.py, .herdr/implement.md

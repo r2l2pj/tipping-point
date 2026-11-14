@@ -14,13 +14,18 @@ Env vars:
   GEE_PROJECT                     Earth Engine cloud project
                                   (default 'hermes-fesolucoes')
   NOW_GCS_BUCKET                  staging bucket (GCS_BUCKET accepted alias)
-  GOOGLE_APPLICATION_CREDENTIALS  service-account JSON path
+  GCP_SA_KEY                      service-account JSON (path or raw blob —
+                                  repo convention, shared with gee.common)
+  GEE_SERVICE_ACCOUNT_KEY         fallback SA key env
+  GOOGLE_APPLICATION_CREDENTIALS  service-account JSON path (ADC)
 
-Missing creds raise RuntimeError naming the missing env var. ee and
-google.cloud.storage are imported lazily (importlib, so tests inject fakes
-through sys.modules) — --dry-run and the test suite need no credentials, no
-SDK and no network. NOTE: hermes-fesolucoes is not registered with Earth
-Engine yet, so real ingestion is blocked until it is.
+Missing creds raise RuntimeError naming what to set. ee,
+google.cloud.storage and gee.common are imported lazily (importlib, so
+tests inject fakes through sys.modules) — --dry-run and the test suite
+need no credentials, no SDK and no network. EE is initialized through the
+shared gee.common.init helper (ServiceAccountCredentials). NOTE:
+hermes-fesolucoes is not registered with Earth Engine yet, so real
+ingestion is blocked until it is.
 """
 from __future__ import annotations
 
@@ -28,6 +33,8 @@ import importlib
 import json
 import os
 import re
+import sys
+import tempfile
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -38,6 +45,8 @@ DEFAULT_GEE_PROJECT = "hermes-fesolucoes"
 ASSET_ROOT = "tipping-point"
 MANIFEST_SCHEMA = "tipping-point/gee-assets@1"
 BUCKET_ENV_VARS = ("NOW_GCS_BUCKET", "GCS_BUCKET")
+# D10 convention (gee/common.py): GCP_SA_KEY is canonical for SA creds.
+SA_KEY_ENV_VARS = ("GCP_SA_KEY", "GEE_SERVICE_ACCOUNT_KEY")
 _SEGMENT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 
 
@@ -72,11 +81,55 @@ def staging_bucket() -> str:
 
 
 def _require_creds() -> None:
-    if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+    """RuntimeError naming what to set when no SA credentials are in env."""
+    if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") and not any(
+        os.environ.get(v) for v in SA_KEY_ENV_VARS
+    ):
         raise RuntimeError(
-            "GOOGLE_APPLICATION_CREDENTIALS is not set; it must point at a "
-            "service-account JSON before staging to GCS or ingesting to GEE"
+            "no service-account credentials in env; set "
+            "GOOGLE_APPLICATION_CREDENTIALS or GCP_SA_KEY "
+            "(GEE_SERVICE_ACCOUNT_KEY also works) to the SA JSON key path"
         )
+
+
+def _sa_key_path() -> str | None:
+    """Service-account JSON path from the SA key envs, or None.
+
+    Values may be a file path or a raw JSON blob (written to a temp file —
+    same convention as gee.common._sa_key_file).
+    """
+    for var in SA_KEY_ENV_VARS:
+        value = os.environ.get(var, "").strip()
+        if not value:
+            continue
+        if value.startswith("{"):
+            fd, path = tempfile.mkstemp(suffix=".json", prefix="tp-sa-")
+            with os.fdopen(fd, "w") as f:
+                f.write(value)
+            return path
+        return value
+    return None
+
+
+def _storage_client(storage):
+    """google.cloud.storage.Client: ADC when GOOGLE_APPLICATION_CREDENTIALS
+    is set, otherwise built from the SA key env."""
+    if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+        return storage.Client()
+    return storage.Client.from_service_account_json(_sa_key_path())
+
+
+def _init_ee() -> None:
+    """Initialize Earth Engine through the shared gee.common.init helper
+    (ServiceAccountCredentials from the SA key envs, else ADC). The repo
+    root is appended to sys.path so `gee` resolves wherever ingest is
+    imported from; everything is lazy so fake-ee tests never need it."""
+    repo_root = str(Path(__file__).resolve().parents[2])
+    if repo_root not in sys.path:
+        sys.path.append(repo_root)
+    _import("ee")  # resolves sys.modules fakes; errors early if missing
+    common = _import("gee.common")
+    common.init(project=gee_project())
 
 
 def _validate_segment(value, field: str) -> None:
@@ -108,19 +161,38 @@ def _validate_asset_id(value) -> None:
         raise ValueError(f"invalid GEE asset id {value!r}")
 
 
+# Words that mean an auth/permission/service failure even when the message
+# happens to contain 'not found' — they veto the text fallback below.
+_AUTH_ERROR_MARKERS = (
+    "permission", "denied", "unauthoriz", "forbidden",
+    "unauthenticated", "credential",
+)
+
+
 def _is_not_found(exc: Exception) -> bool:
-    """True only when a getAsset failure means 'asset missing' (HTTP 404 /
-    NOT_FOUND). Auth, permission and service errors return False so the
-    caller can re-raise them — they must not be mistaken for absence."""
+    """True only when a getAsset failure means 'asset missing'.
+
+    An explicit status decides first: HTTP-style `status_code` /
+    `resp.status` / `code()` of 404 (or a NOT_FOUND enum/string) means
+    absent, any other status returns False so the caller re-raises it.
+    Only when no status exists at all is the message text matched — and
+    auth/denied markers always veto that match.
+    """
     status = getattr(exc, "status_code", None)
     if status is None:
         status = getattr(getattr(exc, "resp", None), "status", None)
+    if status is None:
+        status = getattr(exc, "code", None)
+        if callable(status):
+            status = status()
     if status is not None:
         try:
             return int(status) == 404
         except (TypeError, ValueError):
-            return False
+            return "NOT_FOUND" in str(status).upper()
     text = str(exc).lower()
+    if any(marker in text for marker in _AUTH_ERROR_MARKERS):
+        return False
     return "not_found" in text or "not found" in text
 
 
@@ -154,7 +226,7 @@ def stage_to_gcs(local_path, *, bucket, case, name) -> str:
     _require_creds()
     storage = _import("google.cloud.storage")
     blob_name = uri.removeprefix(f"gs://{bucket}/")
-    client = storage.Client()
+    client = _storage_client(storage)
     client.bucket(bucket).blob(blob_name).upload_from_filename(str(local))
     return uri
 
@@ -172,10 +244,8 @@ def ingest_asset(gcs_uri, *, asset_id, kind, force=False) -> dict:
         raise ValueError(f"unknown asset kind {kind!r}; expected image|table")
     _validate_asset_id(asset_id)
     _require_creds()
+    _init_ee()
     ee = _import("ee")
-    init = getattr(ee, "Initialize", None)
-    if callable(init):
-        init(project=gee_project())
 
     entry = {
         "name": asset_id.rsplit("/", 1)[-1],

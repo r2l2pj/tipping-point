@@ -47,6 +47,9 @@ def _fake_ee(calls, assets=None, get_error=None):
         startTableIngestion=start_table,
     )
     ee.Initialize = lambda **kw: calls.append(("init", kw))
+    ee.ServiceAccountCredentials = (
+        lambda email, key_file: types.SimpleNamespace(
+            email=email, key_file=key_file))
     return ee
 
 
@@ -73,17 +76,28 @@ def _fake_storage(uploads):
         def bucket(self, name):
             return _Bucket(name)
 
+        @classmethod
+        def from_service_account_json(cls, path):
+            uploads.append(("from_service_account_json", path))
+            return cls()
+
     mod.Client = Client
     return mod
 
 
 def _install_fakes(monkeypatch, assets=None, get_error=None):
-    """Inject fake ee + fake google.cloud.storage; return (uploads, calls)."""
+    """Inject fake ee + fake google.cloud.storage; return (uploads, calls).
+    SA-key envs are cleared so ambient credentials can't leak in."""
     uploads, calls = [], []
     monkeypatch.setitem(
         sys.modules, "ee", _fake_ee(calls, assets, get_error))
     monkeypatch.setitem(
         sys.modules, "google.cloud.storage", _fake_storage(uploads))
+    # gee.common binds `ee` at its own import time — drop the cache so the
+    # real helper re-imports under THIS test's fake ee.
+    monkeypatch.delitem(sys.modules, "gee.common", raising=False)
+    for var in ("GCP_SA_KEY", "GEE_SERVICE_ACCOUNT_KEY"):
+        monkeypatch.delenv(var, raising=False)
     return uploads, calls
 
 
@@ -193,6 +207,39 @@ def test_getAsset_403_status_propagates(monkeypatch):
                             kind="image")
 
 
+def test_getAsset_non_404_status_with_not_found_text_propagates(monkeypatch):
+    err = RuntimeError("requested entity was not found in project")
+    err.status_code = 403
+    _install_fakes(monkeypatch, get_error=err)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    with pytest.raises(RuntimeError, match="not found"):
+        ingest.ingest_asset("gs://b/x.tif",
+                            asset_id="projects/p/assets/a/b/c",
+                            kind="image")
+
+
+def test_getAsset_auth_text_with_not_found_propagates(monkeypatch):
+    err = RuntimeError("Permission denied: asset project not found")
+    _install_fakes(monkeypatch, get_error=err)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    with pytest.raises(RuntimeError, match="not found"):
+        ingest.ingest_asset("gs://b/x.tif",
+                            asset_id="projects/p/assets/a/b/c",
+                            kind="image")
+
+
+def test_getAsset_grpc_not_found_code_means_absent(monkeypatch):
+    err = RuntimeError("rpc error")
+    err.code = lambda: "NOT_FOUND"  # grpc-style callable status
+    _, calls = _install_fakes(monkeypatch, get_error=err)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    entry = ingest.ingest_asset("gs://b/x.tif",
+                                asset_id="projects/p/assets/a/b/c",
+                                kind="image")
+    assert entry["status"] == "ingesting"
+    assert calls[-1][0] == "image"
+
+
 def test_invalid_case_and_name_rejected(tmp_path):
     for bad in ("a/b", "..", "a\\b", "a.b", "", " has space"):
         with pytest.raises(ValueError):
@@ -233,13 +280,40 @@ def test_append_manifest_writes_and_upserts(monkeypatch, tmp_path):
 
 
 def test_missing_creds_raise_naming_var(monkeypatch, tmp_path):
-    _install_fakes(monkeypatch)
+    _install_fakes(monkeypatch)  # SA key envs cleared
     monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
     local = _write(tmp_path / "x.tif")
     with pytest.raises(RuntimeError, match="GOOGLE_APPLICATION_CREDENTIALS"):
         ingest.stage_to_gcs(local, bucket="b", case="c", name="n")
     with pytest.raises(RuntimeError, match="GOOGLE_APPLICATION_CREDENTIALS"):
         ingest.ingest_asset("gs://b/x", asset_id="a", kind="image")
+
+
+def test_ee_init_via_common_with_sa_key(monkeypatch, tmp_path):
+    """gee.common.init builds ServiceAccountCredentials from GCP_SA_KEY and
+    passes them to ee.Initialize (real common.init, fake ee underneath)."""
+    _, calls = _install_fakes(monkeypatch)
+    key = _write(tmp_path / "sa.json", b'{"client_email": "a@b.iam"}')
+    monkeypatch.setenv("GCP_SA_KEY", str(key))
+    monkeypatch.setenv("GEE_PROJECT", "proj-x")
+    ingest.ingest_asset("gs://b/x.tif",
+                        asset_id="projects/p/assets/a/b/c", kind="image")
+    assert calls[0][0] == "init"
+    assert calls[0][1]["project"] == "proj-x"
+    assert calls[0][1]["credentials"].key_file == str(key)
+    assert calls[1][0] == "image"
+
+
+def test_stage_to_gcs_uses_sa_key_when_no_adc(monkeypatch, tmp_path):
+    uploads, _ = _install_fakes(monkeypatch)
+    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+    key = _write(tmp_path / "sa.json", b'{"client_email": "a@b.iam"}')
+    monkeypatch.setenv("GCP_SA_KEY", str(key))
+    local = _write(tmp_path / "x.tif")
+    uri = ingest.stage_to_gcs(local, bucket="b", case="c", name="n")
+    assert uri == "gs://b/staging/c/n.tif"
+    assert ("from_service_account_json", str(key)) in uploads
+    assert uploads[-1] == ("b", "staging/c/n.tif", str(local))
 
 
 def test_staging_bucket_env_and_alias(monkeypatch):
