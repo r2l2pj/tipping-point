@@ -161,7 +161,7 @@ def test_edl_login_environment_strategy(monkeypatch):
 def test_edl_token_env_wires_bearer_header(monkeypatch):
     # real earthaccess: a set EARTHDATA_TOKEN authenticates locally
     # (no network) and wires the Authorization: Bearer session header
-    for var in ("EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+    for var in ("EARTHDATA_TOKEN", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
                 "EDL_USER", "EDL_PASS"):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("EARTHDATA_TOKEN", "fake-token-123")
