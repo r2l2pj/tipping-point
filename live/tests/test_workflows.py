@@ -10,7 +10,7 @@ WORKFLOWS = Path(__file__).resolve().parents[2] / ".github" / "workflows"
 
 # file -> (cron, job name passed to live/jobs.py)
 SPECS = {
-    "now.yml": ("0 */3 * * *", "now"),
+    "now.yml": ("0 */6 * * *", "now"),
     "nisar.yml": ("30 6 * * *", "nisar"),
     "validation.yml": ("0 7 * * *", "validation"),
     "reference.yml": ("0 8 * * 1", "reference"),
