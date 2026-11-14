@@ -81,8 +81,42 @@ if [ -f "$DATA/manifest.json" ]; then
   # 200 on Neon before the manifest itself goes up (a published manifest
   # pointing at missing frames is worse than a stale one)
   PUBLIC="$NEON_S3_ENDPOINT/$BUCKET/data/"
-  mapfile -t REFS < <(grep -oE '"[^"]+\.(png|tif|tiff|geojson|json|npz|nc|gz)"' \
-    "$DATA/manifest.json" | tr -d '"' | sed 's|^data/||' | sort -u)
+  # Extract refs with node context (python3 stdlib): refs under a case
+  # node are checked under data/<ref>; refs under the `now` node are
+  # relative to data/now/; a node with null updated_at is "in progress"
+  # per SCHEMA and its refs are skipped.
+  PYBIN="$ROOT/.venv/bin/python"
+  [ -x "$PYBIN" ] || PYBIN=python3
+  mapfile -t REFS < <("$PYBIN" - "$DATA/manifest.json" <<'PY'
+import json, re, sys
+m = json.load(open(sys.argv[1]))
+EXT = re.compile(r'\.(png|tiff?|geojson|json|npz|nc|gz)$')
+out = []
+def walk(o, prefix):
+    if isinstance(o, dict):
+        for v in o.values():
+            walk(v, prefix)
+    elif isinstance(o, list):
+        for v in o:
+            walk(v, prefix)
+    elif isinstance(o, str) and EXT.search(o):
+        ref = o[5:] if o.startswith("data/") else o
+        if "/" not in ref or ref.split("/", 1)[0] not in (
+                "rs_2024", "wa_2025", "now", "inmet", "reference"):
+            ref = prefix + ref
+        out.append(ref)
+for key, node in m.items():
+    if key == "cases" and isinstance(node, dict):
+        for cid, case in node.items():
+            if isinstance(case, dict):
+                if cid == "now" and case.get("updated_at") is None:
+                    continue
+                walk(case, f"{cid}/" if cid == "now" else "")
+    else:
+        walk(node, "")
+print("\n".join(sorted(set(out))))
+PY
+)
   missing=0
   for ref in "${REFS[@]}"; do
     code="$(curl -s -o /dev/null -w '%{http_code}' -I "$PUBLIC$ref")"

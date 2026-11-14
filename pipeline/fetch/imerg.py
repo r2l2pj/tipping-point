@@ -298,11 +298,15 @@ def _decode_time(da):
     if "time" in da.dims and not np.issubdtype(
             da["time"].dtype, np.datetime64):
         units = str(da["time"].attrs.get("units", ""))
-        m = re.search(r"seconds since (\d{4}-\d{2}-\d{2})", units)
-        epoch = np.datetime64(m.group(1) if m else "1980-01-06")
-        secs = np.asarray(da["time"].values).astype("int64")
+        # half-hourly: 'seconds since 1980-01-06'; daily: 'days since ...'
+        m = re.search(r"(seconds|minutes|hours|days) since "
+                      r"(\d{4}-\d{2}-\d{2})", units)
+        unit = {"seconds": "s", "minutes": "m",
+                "hours": "h", "days": "D"}[m.group(1)] if m else "s"
+        epoch = np.datetime64(m.group(2) if m else "1980-01-06")
+        vals = np.asarray(da["time"].values)
         da = da.assign_coords(
-            time=epoch + secs.astype("timedelta64[s]"))
+            time=epoch + vals.astype(f"timedelta64[{unit}]"))
     return da
 
 
@@ -319,10 +323,10 @@ def open_granule(path, bounds, daily=False):
     import xarray as xr
 
     try:
-        ds = xr.open_dataset(str(path), group="Grid",
+        ds = xr.open_dataset(path, group="Grid",
                              engine="h5netcdf", decode_times=False)
     except (OSError, KeyError, ValueError):
-        ds = xr.open_dataset(str(path), engine="h5netcdf",
+        ds = xr.open_dataset(path, engine="h5netcdf",
                              decode_times=False)
     try:
         var = "precipitation" if "precipitation" in ds else "precipitationCal"
@@ -331,12 +335,22 @@ def open_granule(path, bounds, daily=False):
             if "time" in da.dims:
                 da = da.isel(time=slice(0, 1))
             else:
-                m = _IMERG_NAME_RE.search(Path(path).name)
+                m = _IMERG_NAME_RE.search(Path(getattr(
+                    path, 'name', str(path))).name)
                 ymd = m.group(1) if m else "19700101"
                 da = da.expand_dims(
                     time=[np.datetime64(
                         f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}")])
-        return da.load()
+        da = da.load()
+        # Normalize float32 lat/lon to rounded coords so granule subsets
+        # from different products compare exactly equal at concat time —
+        # a join='outer' on mismatched coords union-joins the grids and
+        # NaN-pads the result (was a >7 GB blowup on the runner).
+        lat_name = next(d for d in da.dims if "lat" in d.lower())
+        lon_name = next(d for d in da.dims if "lon" in d.lower())
+        return da.assign_coords(
+            {lat_name: np.round(da[lat_name].values.astype(np.float64), 4),
+             lon_name: np.round(da[lon_name].values.astype(np.float64), 4)})
     finally:
         ds.close()
 
@@ -352,7 +366,7 @@ def open_halfhourly(paths, bounds):
 
     arrays = [open_granule(p, bounds) for p in paths]
     return arrays[0] if len(arrays) == 1 else xr.concat(
-        arrays, dim="time").sortby("time")
+        arrays, dim="time", join="exact").sortby("time")
 
 
 def _accumulate(increments):
@@ -400,13 +414,11 @@ def _stream_granules(granules, bounds, dest_dir, daily=False):
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     def work(g):
+        # earthaccess.open streams the granule over HTTP range requests —
+        # only the chunks covering the AOI are fetched, nothing hits disk
         out = []
-        for f in earthaccess.download([g], str(dest_dir)) or []:
-            path = Path(f)
-            try:
-                out.append((g, open_granule(path, bounds, daily=daily)))
-            finally:
-                path.unlink(missing_ok=True)
+        for f in earthaccess.open([g]) or []:
+            out.append((g, open_granule(f, bounds, daily=daily)))
         return out
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
@@ -458,7 +470,7 @@ def fetch_daily(bounds, end: dt.date, days: int, work_dir: Path):
 
     incs = fetch_increments(bounds, end, days, work_dir)
     inc = incs[0] if len(incs) == 1 else xr.concat(
-        incs, dim="time").sortby("time")
+        incs, dim="time", join="exact").sortby("time")
     return _accumulate(inc)
 
 

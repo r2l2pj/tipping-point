@@ -314,7 +314,7 @@ def _fake_streaming_earthaccess(monkeypatch, by_short_name):
     """earthaccess fake: search_data dispatches on short_name; download
     writes a real file per requested granule into dest."""
     mod = types.ModuleType("earthaccess")
-    calls = {"search": [], "download": []}
+    calls = {"search": [], "download": [], "open": []}
 
     def search_data(short_name=None, **kw):
         calls["search"].append({"short_name": short_name, **kw})
@@ -329,9 +329,14 @@ def _fake_streaming_earthaccess(monkeypatch, by_short_name):
             out.append(str(p))
         return out
 
+    def open_(gs):
+        calls["open"].append(list(gs))
+        return [Path(g["producer_granule_id"]) for g in gs]
+
     mod.search_data = search_data
     mod.login = lambda **kw: object()
     mod.download = download
+    mod.open = open_
     mod.calls = calls
     monkeypatch.setitem(sys.modules, "earthaccess", mod)
     return mod

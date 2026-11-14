@@ -74,12 +74,15 @@ def parse_args(argv=None):
     return p.parse_args(argv)
 
 
-def _load_static(static_dir: Path) -> dict[str, np.ndarray]:
+def _load_static(static_dir: Path, days: list[dt.date] | None = None):
+    """Static inputs: full sul_static.npz when present (legacy), else L20 —
+    fetch only the needed climatology doys + terrain from the GEE assets,
+    cached under static/cache/."""
     path = static_dir / STATIC_NPZ
-    if not path.exists():
-        sys.exit(f"missing {path} — run `uv run python -m live.build_static` once "
-                 f"with GCP_SA_KEY/GEE_PROJECT set")
-    return dict(np.load(path))
+    if path.exists():
+        return dict(np.load(path))
+    from live import static_fetch
+    return static_fetch.load_static(days=days)
 
 
 def _clim_for_month(static: dict[str, np.ndarray], month: int) -> dict[str, np.ndarray]:
@@ -106,8 +109,18 @@ def build_manifest(bounds, updated_at, data_dates, layers, nisar_passes) -> dict
     }
 
 
+def _clim_for_day(static: dict, day: dt.date) -> dict[str, np.ndarray]:
+    if "clim" in static:
+        from live import static_fetch
+        return static_fetch.clim_for_day(static, day)
+    return _clim_for_month(static, day.month)
+
+
 def run(args) -> dict:
-    static = _load_static(args.static_dir)
+    static = _load_static(
+        args.static_dir,
+        days=[args.date + dt.timedelta(days=k)
+              for k in range(FORECAST_DAYS + 1)])
     lats, lons = dst_lats_lons(tuple(args.bounds))
     transform = dst_transform(tuple(args.bounds))
     today = args.date
@@ -158,7 +171,7 @@ def run(args) -> dict:
     for k in range(FORECAST_DAYS + 1):
         day = today + dt.timedelta(days=k)
         rain3 = rain3_today if k == 0 else tpi.projected_rain3(obs_stack[-3:], fc_stack, k)
-        out = tpi.tpi(rain3, sm, _clim_for_month(static, day.month), t_slide, t_flood)
+        out = tpi.tpi(rain3, sm, _clim_for_day(static, day), t_slide, t_flood)
         days.append(day)
         slide_tpi.append(out["tpi_slide"])
         flood_tpi.append(out["tpi_flood"])
