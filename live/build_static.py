@@ -165,6 +165,15 @@ def _doys_between(start: dt.date, end: dt.date) -> list[int]:
     return list(range(a, 367)) + list(range(1, b + 1))
 
 
+def _case_id(event_id: str) -> str:
+    """Canonical case id ('rs_2024') from an events/*.json id ('rs-2024-05')."""
+    try:
+        from tp.config import case_id as resolve
+        return resolve(event_id)
+    except Exception:
+        return "_".join(event_id.split("-")[:2])
+
+
 def _clim_cases(events_dir: Path = EVENTS_DIR) -> list[dict]:
     """Per-case clim_rain specs from events/*.json: id, aoi.bbox and the
     doy range of window.start..window.end inclusive (window used as-is)."""
@@ -172,7 +181,7 @@ def _clim_cases(events_dir: Path = EVENTS_DIR) -> list[dict]:
     for path in sorted(events_dir.glob("*.json")):
         case = json.loads(path.read_text())
         cases.append({
-            "id": case["id"],
+            "id": _case_id(case["id"]),
             "bbox": case["aoi"]["bbox"],
             "doys": _doys_between(
                 dt.date.fromisoformat(case["window"]["start"]),
@@ -198,12 +207,24 @@ def _asset_path(name: str) -> str:
     return f"{ASSET_ROOT}/static/{STATIC_DOMAIN}/{name}"
 
 
+def _ensure_parents(ee, path: str) -> None:
+    """Create any missing FOLDER ancestors of an asset id."""
+    parts = path.split("/")
+    for i in range(4, len(parts)):
+        folder = "/".join(parts[:i])
+        try:
+            ee.data.getAsset(folder)
+        except ee.EEException:
+            ee.data.createAsset({"type": "FOLDER"}, folder)
+
+
 def _ensure_collection(ee, path: str) -> None:
     try:
         info = ee.data.getAsset(path)
     except ee.EEException:
         info = None
     if not info:
+        _ensure_parents(ee, path)
         ee.data.createAsset({"type": "ImageCollection"}, path)
 
 
