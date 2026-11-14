@@ -1,5 +1,6 @@
 """Offline tests for fetch.nisar — fake asf_search + fake fetch.ingest."""
 import json
+import os
 import sys
 import types
 from pathlib import Path
@@ -8,6 +9,16 @@ import fetch.nisar as nisar_update
 import pytest
 import tp.nisar as tp_nisar
 from tp import events as events_mod
+
+
+@pytest.fixture(autouse=True)
+def isolated_environment(monkeypatch):
+    for var in ("EARTHDATA_TOKEN", "EDL_USER", "EDL_PASS",
+                "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+                "GOOGLE_APPLICATION_CREDENTIALS", "GEE_PROJECT",
+                "NOW_GCS_BUCKET"):
+        monkeypatch.setenv(var, os.environ.get(var, ""))
+        monkeypatch.delenv(var, raising=False)
 
 G_PRE = (
     "NISAR_L2_PR_GCOV_006_172_D_064_4005_DHDH_A_20251204T031815_"
@@ -330,8 +341,9 @@ def test_dry_run_cli_needs_no_creds(monkeypatch, workspace, capsys):
     monkeypatch.delenv("GEE_PROJECT", raising=False)
     fake = _fake_asf([_FakeProduct(G_NEW)])
     monkeypatch.setitem(sys.modules, "asf_search", fake)
-    # fetch.ingest is absent from this worktree — dry-run must not need it
-    sys.modules.pop("fetch.ingest", None)
+    # dry-run must never touch the ingest contract at all
+    for name in ("fetch.ingest", "pipeline.fetch.ingest", "ingest"):
+        sys.modules.pop(name, None)
     monkeypatch.setattr(events_mod, "EVENTS_DIR", events_dir)
     monkeypatch.setattr(events_mod, "DATA_DIR", data_dir)
 
@@ -349,6 +361,8 @@ def _stub_execute(monkeypatch, workspace):
     monkeypatch.setitem(sys.modules, "asf_search", fake_asf)
     fake_ingest = _fake_ingest(data_dir)
     monkeypatch.setitem(sys.modules, "fetch.ingest", fake_ingest)
+    monkeypatch.setitem(sys.modules, "pipeline.fetch.ingest", fake_ingest)
+    assert nisar_update._load_ingest() is fake_ingest
     monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
     monkeypatch.setenv("GEE_PROJECT", "test-proj")
     monkeypatch.setenv("NOW_GCS_BUCKET", "test-bucket")
@@ -424,9 +438,12 @@ def test_execute_requires_ingest_module(monkeypatch, workspace):
     monkeypatch.setitem(sys.modules, "asf_search",
                         _fake_asf([_FakeProduct(G_NEW)]))
     monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
-    sys.modules.pop("fetch.ingest", None)
+    # real fetch.ingest exists on merged main — block every import path
+    # (sys.modules[name]=None raises ImportError on lookup)
+    for name in ("fetch.ingest", "pipeline.fetch.ingest", "ingest"):
+        monkeypatch.setitem(sys.modules, name, None)
     plan = nisar_update.build_plan(events_dir=events_dir, data_dir=data_dir)
-    with pytest.raises(RuntimeError, match="fetch.ingest"):
+    with pytest.raises(RuntimeError, match="ingest"):
         nisar_update.execute_plan(plan, data_dir=data_dir)
 
 
@@ -434,8 +451,9 @@ def test_execute_requires_bucket_and_project(monkeypatch, workspace):
     events_dir, data_dir = workspace
     monkeypatch.setitem(sys.modules, "asf_search",
                         _fake_asf([_FakeProduct(G_NEW)]))
-    monkeypatch.setitem(sys.modules, "fetch.ingest",
-                        _fake_ingest(data_dir))
+    fake_ingest = _fake_ingest(data_dir)
+    monkeypatch.setitem(sys.modules, "fetch.ingest", fake_ingest)
+    monkeypatch.setitem(sys.modules, "pipeline.fetch.ingest", fake_ingest)
     monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
     monkeypatch.delenv("NOW_GCS_BUCKET", raising=False)
     plan = nisar_update.build_plan(events_dir=events_dir, data_dir=data_dir)

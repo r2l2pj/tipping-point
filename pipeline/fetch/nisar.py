@@ -27,6 +27,7 @@ unit/ingest).
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
 import re
@@ -375,14 +376,23 @@ def _gdal_auth_env(creds: dict) -> dict:
 
 
 def _load_ingest():
-    """fetch.ingest lands on unit/ingest — --dry-run works without it."""
+    """The unit/ingest contract module, imported lazily + guarded.
+
+    importlib at call time — `from fetch import ingest` would reuse the
+    cached package attribute once the real submodule was imported anywhere,
+    silently bypassing a sys.modules fake in tests.
+    """
     try:
-        from fetch import ingest
-    except ImportError as e:
-        raise RuntimeError(
-            "fetch.ingest is required for --execute (lands on unit/ingest); "
-            "--dry-run needs only the asf metadata search."
-        ) from e
+        ingest = importlib.import_module(f"{__package__}.ingest")
+    except ImportError:
+        try:
+            import ingest  # script-context fallback (sys.path=pipeline/fetch)
+        except ImportError as e:
+            raise RuntimeError(
+                "pipeline/fetch/ingest.py (unit/ingest) is not available — "
+                "stage_to_gcs/ingest_asset/append_manifest are required for "
+                "--execute; --dry-run needs only the asf metadata search."
+            ) from e
     missing = [
         n for n in ("stage_to_gcs", "ingest_asset", "append_manifest")
         if not hasattr(ingest, n)
@@ -404,8 +414,6 @@ def execute_plan(
     run over the same plan is a no-op. Needs Earthdata creds, GEE_PROJECT and
     NOW_GCS_BUCKET.
     """
-    creds = _edl_credentials()
-    gdal_env = _gdal_auth_env(creds)
     ingest = _load_ingest()
     bucket = bucket or os.environ.get("NOW_GCS_BUCKET")
     if not bucket:
@@ -415,6 +423,8 @@ def execute_plan(
     if not proj:
         raise RuntimeError(
             "GEE_PROJECT not set — cannot build the target asset path.")
+    creds = _edl_credentials()
+    gdal_env = _gdal_auth_env(creds)
 
     results = []
     for ck, info in plan["cases"].items():
