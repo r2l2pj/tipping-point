@@ -19,6 +19,8 @@ from .config import LABELS, MIN_BLOB_PIXELS, PALETTE_HEX
 def _rgba(class_arr: np.ndarray, valid: np.ndarray) -> np.ndarray:
     rgba = np.zeros((*class_arr.shape, 4), dtype=np.uint8)
     for cls, hexcol in enumerate(PALETTE_HEX):
+        if cls == 0:
+            continue  # doc: Baixo renders at 0% opacity in the overview
         rgb = tuple(int(hexcol[i:i + 2], 16) for i in (0, 2, 4))
         m = (class_arr == cls) & valid
         rgba[m] = (*rgb, 255)

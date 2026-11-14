@@ -45,7 +45,9 @@
       "official_warning_at": "2025-12-06T00:10:00Z",
       "critical_km2": 4127.458,
       "critical_km2_date": "2025-12-12",
-      "people_critical": 229782
+      "people_critical": 229782,
+      "critical_slide_km2": 2662.718,
+      "critical_flood_km2": 1464.74
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -83,11 +85,13 @@
         "note": "TPI_slide sampled at the 16,027 RS landslide inventory points; at 1 km scale slope flattening kept the same series below 0.6."
       },
       "official_warning_delta_h": -51.3,
-      "first_critical_at": "2024-05-02",
+      "first_critical_at": "2024-04-28",
       "official_warning_at": "2024-04-26T16:50:00Z",
-      "critical_km2": 430.081,
-      "critical_km2_date": "2024-05-02",
-      "people_critical": 1488833
+      "critical_km2": 10870.642,
+      "critical_km2_date": "2024-05-03",
+      "people_critical": 1488833,
+      "critical_slide_km2": 3223.806,
+      "critical_flood_km2": 7646.837
     }
   }
 }

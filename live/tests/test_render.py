@@ -25,7 +25,8 @@ def test_png_rgba_and_alpha():
         assert src.count == 4 and src.height == 8 and src.width == 8
         bands = src.read()
     assert bands[3, 0, 0] == 0          # invalid pixel is transparent
-    assert bands[3, 4, 0] == 255
+    assert bands[3, 0, 1] == 255        # class 3 pixel is opaque
+    assert bands[3, 4, 0] == 0          # class 0 (Baixo) is transparent
     assert bands[0, 0, 1] == 0xBD       # class 3 -> bd0026 red channel
 
 
@@ -43,10 +44,10 @@ def test_layer_png_3857():
     assert bounds[1] == pytest.approx(-29.1, abs=0.01)
     assert bounds[2] == pytest.approx(-51.8, abs=0.01)
     assert bounds[3] == pytest.approx(-29.0, abs=0.01)
-    # both classes survive the warp (class 3 -> bd0026, class 0 -> ffffb2)
+    # class 3 survives the warp opaque; class 0 (Baixo) stays transparent
     with rasterio.MemoryFile(png) as mf, mf.open() as src:
-        red = src.read(1)
-    assert (red == 0xBD).sum() > 0 and (red == 0xFF).sum() > 0
+        red, alpha = src.read(1), src.read(4)
+    assert (red == 0xBD).sum() > 0 and (alpha == 0).sum() > 0
 
 
 def test_critical_features_polygons_and_min_size():

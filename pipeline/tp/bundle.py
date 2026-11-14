@@ -271,6 +271,23 @@ def _load_places(path: Path) -> list[tuple[float, float, str]]:
     return out
 
 
+def _load_municipal(path: Path):
+    """[(shapely geom, name)] from municipal_boundaries.geojson — the
+    containing polygon is the zone's display name (prod showed the
+    nearest-place heuristic labelling far-south WA pins 'Everett')."""
+    if not path.exists():
+        return []
+    from shapely.geometry import shape
+    out = []
+    for f in json.loads(path.read_text()).get("features", []):
+        try:
+            out.append((shape(f["geometry"]),
+                        str((f.get("properties") or {}).get("name", ""))))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return out
+
+
 def _pop_sum(pop_path: Path, geom: dict) -> float:
     import rasterio.features
 
@@ -440,6 +457,7 @@ def publish_case(event_id: str, dry_run: bool = False,
     pop_cog = _first(cog_dir, POP_PATTERNS)
     for day in sorted(set(bands_by_date["slide"]) | set(bands_by_date["flood"])):
         mask, tr, crs = None, None, None
+        per_hazard = {}
         for h in ("slide", "flood"):
             cb = bands_by_date[h].get(day)
             if cb is None:
@@ -448,6 +466,7 @@ def publish_case(event_id: str, dry_run: bool = False,
                 a = np.asarray(src.read(cb[1]), dtype=np.float64)
                 m = _valid(a, src.nodata) & (a >= TPI_THRESHOLD)
                 tr, crs = src.transform, src.crs
+            per_hazard[h] = m
             mask = m if mask is None else (mask | m)
         if mask is None:
             continue
@@ -456,6 +475,8 @@ def publish_case(event_id: str, dry_run: bool = False,
         px_km2 = (abs(tr.a) * 111320.0 * np.cos(np.deg2rad(lats))
                   * abs(tr.e) * 110540.0) / 1e6
         km2 = float((mask * px_km2[:, None]).sum())
+        hz_km2 = {h: round(float((m * px_km2[:, None]).sum()), 3)
+                  for h, m in per_hazard.items()}
         people = None
         if pop_cog is not None and not dry_run:
             with rasterio.open(pop_cog) as ps:
@@ -471,7 +492,9 @@ def publish_case(event_id: str, dry_run: bool = False,
                 people = int(round(float(
                     (frac * np.where(pvalid, parr, 0.0)).sum())))
         crit_stats[day.isoformat()] = {
-            "critical_km2": round(km2, 3), "people_critical": people}
+            "critical_km2": round(km2, 3), "people_critical": people,
+            "critical_slide_km2": hz_km2.get("slide"),
+            "critical_flood_km2": hz_km2.get("flood")}
     if pop_cog is None:
         null("series.people_critical", "no population COG (GPW)")
 
@@ -568,8 +591,10 @@ def publish_case(event_id: str, dry_run: bool = False,
             geometry="geometry", crs="EPSG:4326")
         gdf["area_km2"] = gdf.to_crs(gdf.estimate_utm_crs()).area / 1e6
         places = _load_places(gj_dir / "places.geojson")
-        if not places:
-            null("priority_zones.name", "no geojson/places.geojson")
+        muni = _load_municipal(gj_dir / "municipal_boundaries.geojson")
+        if not muni and not places:
+            null("priority_zones.name",
+                 "no municipal_boundaries.geojson or places.geojson")
         pop = _first(cog_dir, POP_PATTERNS)
         if pop is None:
             null("priority_zones.people", "no population COG")
@@ -593,9 +618,12 @@ def publish_case(event_id: str, dry_run: bool = False,
         def _feature(row, rank):
             geom = row["geometry"]
             c = geom.representative_point()
-            name = (min(places,
-                        key=lambda p: (p[0] - c.x) ** 2 + (p[1] - c.y) ** 2)[2]
-                    if places else None)
+            name = next((nm for g, nm in muni if nm and g.contains(c)),
+                        None)
+            if name is None and places:
+                name = min(
+                    places,
+                    key=lambda p: (p[0] - c.x) ** 2 + (p[1] - c.y) ** 2)[2]
             return {"type": "Feature", "geometry": geom.__geo_interface__,
                     "properties": {
                         "rank": rank, "name": name,
@@ -668,6 +696,10 @@ def publish_case(event_id: str, dry_run: bool = False,
                          "tpi": tpi_max.get(iso),
                          "critical_km2": crit_stats.get(iso, {})
                                      .get("critical_km2"),
+                         "critical_slide_km2": crit_stats.get(iso, {})
+                                     .get("critical_slide_km2"),
+                         "critical_flood_km2": crit_stats.get(iso, {})
+                                     .get("critical_flood_km2"),
                          "people_critical": crit_stats.get(iso, {})
                                         .get("people_critical"),
                          "river_m": river.get(iso)})
@@ -694,6 +726,10 @@ def publish_case(event_id: str, dry_run: bool = False,
                    key=lambda kv: kv[1]["critical_km2"], default=None)
         flat["critical_km2"] = peak[1]["critical_km2"] if peak else None
         flat["critical_km2_date"] = peak[0] if peak else None
+        flat["critical_slide_km2"] = \
+            peak[1]["critical_slide_km2"] if peak else None
+        flat["critical_flood_km2"] = \
+            peak[1]["critical_flood_km2"] if peak else None
         flat["people_critical"] = peak[1]["people_critical"] if peak else None
         if not peak:
             reasons["critical_km2"] = "no TPI series"
