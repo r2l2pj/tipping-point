@@ -38,3 +38,22 @@ Tests: 53/53 nisar+fetch_now pass on the branch; full suite 417 pass, 1 PRE-EXIS
 ## Notes
 - `python -m pipeline.fetch.reference --refresh` runs the fetch step but then REQUIRES NOW_GCS_BUCKET for GEE ingest (absent from .env) — geojson regenerates before the error; ingest waits for impl-gsl10.
 - Earlier /vsicurl attempt left data/raw/nisar/h5/*.h5.part in MAIN checkout (gitignored, stale — safe to delete).
+
+## Vector table ingests (real EE, ingest_table client-side Export.table.toAsset)
+Ran in worktree (main lacked ingest fixes at run time); assets.json manifests copied to main checkout.
+SA creds: GCP_SA_KEY must be bridged from GOOGLE_APPLICATION_CREDENTIALS (gee/common.init reads only GCP_SA_KEY/GEE_SERVICE_ACCOUNT_KEY).
+
+| asset | features | parts/tasks | state |
+|---|---|---|---|
+| rs_2024/municipal_boundaries | 138 | UZKAQGYMPIYTWO2AVI4KQHUT | READY/ingesting |
+| rs_2024/landslide_catalog (inventory, 16027 pts) | 16027 | part00 DRLLV6M6GS3LSIGGJPWWJIXY, part01 L42O7N75FUFA32MYYL3N4ZMJ, part02 BJWLUADOBZOJRQBJ7QJ3KECI, part03 5WJ2MMP2M6ZIFLY5SMZNIHCW | READY/ingesting |
+| wa_2025/municipal_boundaries | 260 | part00 E6GZSPK32B7CTLIKIVVHU6QK, part01 Y3BOX4UYPNYZ6PESMSL565QG, part02 6TH2GEYS5M5Y2BLLR2DHCAGS | READY/ingesting |
+| wa_2025/landslide_catalog (GLC) | 259 | OQ4YUYI7DWFIBVNR7T7KNJCS | READY/ingesting |
+
+Elapsed: boundaries 75s, glc 6s, inventory 35s. No serviceUsageConsumer/perm errors — EE writes work.
+
+### Additional ingest bugs fixed on fix/realrun during this run
+- `dd38387` _is_not_found: EE getAsset missing-asset text is "does not exist or doesn't allow this operation" (no status code) — added to text fallback; first ingest died on idempotency check.
+- `ee7cd2a` chunk exports by payload bytes too: serialized collection must stay <10MB; wa boundaries (8.8MB, 260 feats) exceeded it under feature-count-only chunking. TABLE_CHUNK_BYTES=4_000_000.
+- `7b9aaf8` _ensure_parent creates missing ancestors top-down below /assets/ (tipping-point/<case> folders absent on fresh project).
+Tests: pipeline/tests 346 pass, ruff clean.
