@@ -182,6 +182,50 @@ def test_compute_selects_d0_vs_forecast(fake_ee, patched_tags):
 # ---------- run: exports + metrics merge ----------
 
 
+def test_export_deletes_existing_asset_before_export(fake_ee, monkeypatch):
+    aid = f"{ROOT}/now/r_d0"
+    existing = {aid}
+
+    def delete(asset_id):
+        existing.remove(asset_id)
+        fake_ee.log.append(("delete", (asset_id,), {}))
+
+    monkeypatch.setattr(fake_ee, "data", SimpleNamespace(deleteAsset=delete))
+    now_tpi.export_images({"r_d0": fake_ee.node("r")},
+                          lambda name: f"{ROOT}/{name}", fake_ee.node("aoi"))
+    assert not existing
+    assert fake_ee.log[0] == ("delete", (aid,), {})
+    assert fake_ee.log[1][0] == "ee.batch.Export.image.toAsset"
+
+
+@pytest.mark.parametrize("message,raises", [("Asset not found", False),
+                                            ("Permission denied", True)])
+def test_export_only_ignores_not_found(fake_ee, monkeypatch, message, raises):
+    def delete(asset_id):
+        raise RuntimeError(message)
+
+    monkeypatch.setattr(fake_ee, "EEException", RuntimeError)
+    monkeypatch.setattr(fake_ee, "data", SimpleNamespace(deleteAsset=delete))
+    if raises:
+        with pytest.raises(RuntimeError, match=message):
+            now_tpi.export_images({"r_d0": fake_ee.node("r")}, str, None)
+        assert not _called(fake_ee.log, "ee.batch.Export.image.toAsset")
+    else:
+        now_tpi.export_images({"r_d0": fake_ee.node("r")}, str, None)
+        assert _called(fake_ee.log, "ee.batch.Export.image.toAsset")
+
+
+def test_real_merge_supports_now_node(tmp_path):
+    from tp.metrics import merge_metrics
+
+    path = tmp_path / "metrics.json"
+    merge_metrics("rs_2024", flat={"existing": 1}, path=path)
+    merge_metrics("now", flat={"forecast_source": "geos-fp"}, path=path)
+    result = json.loads(path.read_text())["cases"]
+    assert result["now"] == {"event": "now", "forecast_source": "geos-fp"}
+    assert result["rs_2024"]["existing"] == 1
+
+
 def test_run_exports_and_merges_under_now(
         tmp_path, fake_ee, patched_tags, monkeypatch):
     monkeypatch.setattr(now_tpi, "_utcnow", lambda: "2026-11-14T00:00:00Z")

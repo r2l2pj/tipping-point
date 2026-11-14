@@ -37,7 +37,6 @@ import argparse
 import json
 from datetime import UTC, date, datetime
 from pathlib import Path
-from unittest.mock import patch
 
 import ee
 import tp.metrics as _metrics
@@ -223,6 +222,11 @@ def export_images(images: dict, asset, aoi) -> list[dict]:
     for name, img in images.items():
         spec = {"description": f"now_{name}",
                 "assetId": asset(f"now/{name}")}
+        try:
+            ee.data.deleteAsset(spec["assetId"])
+        except ee.EEException as exc:
+            if "not found" not in str(exc).lower() and getattr(exc, "code", None) != 404:
+                raise
         ee.batch.Export.image.toAsset(
             image=img, description=spec["description"],
             assetId=spec["assetId"], region=aoi, scale=SCALE_M).start()
@@ -232,18 +236,9 @@ def export_images(images: dict, asset, aoi) -> list[dict]:
 
 def _merge_now_metrics(flat: dict, collections: dict,
                        path: Path | None = None) -> dict:
-    """merge_metrics under cases['now'].
-
-    'now' is a manifest node, not a config.yaml case, so tp.config's
-    case/event resolution cannot see it — the resolvers are pinned to
-    'now' for the duration of this call (merge_metrics looks them up in
-    its own module namespace).
-    """
-    resolve = lambda name: "now"
-    with (patch.object(_metrics, "case_id", resolve),
-          patch.object(_metrics, "event_id", resolve)):
-        return _metrics.merge_metrics(
-            "now", flat=flat, collections=collections, path=path)
+    """merge_metrics under the explicitly supported live node cases['now']."""
+    return _metrics.merge_metrics(
+        "now", flat=flat, collections=collections, path=path)
 
 
 def run(project: str | None = None, metrics_path: Path | None = None,
@@ -273,7 +268,7 @@ def plan(project: str | None = None) -> str:
         lines.append(f"  collection {root}/now/{leaf} (tags -> date window)")
     for leaf in STATICS:
         lines.append(f"  {root}/static/south_brazil/{leaf}")
-    lines.append("writes (one Image asset each, stamped "
+    lines.append("writes (delete existing asset, then export one Image each, stamped "
                  "data_date + updated_at):")
     for aid in derived_asset_ids(project).values():
         lines.append(f"  {aid}")

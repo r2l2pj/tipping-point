@@ -4,6 +4,35 @@ Branch `unit/now-tpi`, worktree `nowtpi`. Scope: `gee/now_tpi.py`,
 `tools/now_tpi.py`, `gee/tests/test_now_tpi.py` (all new). No other files
 touched. No push. No helpers spawned.
 
+## Review revision (supersedes earlier design decision 1)
+
+Lead requested fixes to e53e426; these checks ran on e53e426 plus the
+revision diff committed with this report. Scope explicitly expanded by
+lead to `pipeline/tp/metrics.py`.
+
+- Removed all production `unittest.mock` usage. `tp.metrics.merge_metrics`
+  now explicitly accepts the live manifest node `now`, documented in its
+  docstring, without relaxing validation for other names. Real tmp-file
+  merge test verifies `cases['now']` and preservation of another case.
+- Each fixed derived asset id is deleted before its toAsset export.
+  Only not-found/404 errors are ignored; permission and other errors abort.
+  Tests assert deletion precedes export, not-found permits export, and
+  permission failure prevents export. Dry-run also describes deletion.
+- No live assets were deleted and no live exports were run.
+
+Commands (uv is the exact requested binary):
+
+```text
+$HOME/.local/share/mise/installs/uv/0.13.8/uv-x86_64-unknown-linux-gnu/uv run pytest gee/tests pipeline/tests -q
+206 passed in 6.07s
+
+$HOME/.local/share/mise/installs/uv/0.13.8/uv-x86_64-unknown-linux-gnu/uv run ruff check gee/now_tpi.py tools/now_tpi.py gee/tests/test_now_tpi.py pipeline/tp/metrics.py
+All checks passed!
+
+env -u GEE_PROJECT -u GCP_SA_KEY -u GEE_SERVICE_ACCOUNT_KEY $HOME/.local/share/mise/installs/uv/0.13.8/uv-x86_64-unknown-linux-gnu/uv run python tools/now_tpi.py --dry-run
+exit 0; printed planned reads, writes, and cases['now'] metrics
+```
+
 ## What was built
 
 - `gee/now_tpi.py`

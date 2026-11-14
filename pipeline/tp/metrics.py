@@ -29,7 +29,8 @@ def merge_metrics(
     """Merge ``flat`` keys into the case blob of data/metrics.json.
 
     ``event_or_case`` accepts an event id ('rs-2024-05') or a case id
-    ('rs_2024'); the case blob's "event" holds the event id. A ``flat``
+    ('rs_2024'), or the explicitly supported live manifest node 'now'.
+    The live node's "event" is 'now'; other blobs hold the event id. A ``flat``
     value of None is written null (unless a non-null value already exists —
     that is never clobbered) and its reason — from ``reasons`` or a generic
     fallback — recorded under "_null_reasons"; writing a real value clears
@@ -40,8 +41,9 @@ def merge_metrics(
     path = Path(path) if path else DATA_DIR / "metrics.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     metrics = json.loads(path.read_text()) if path.exists() else {}
-    blob = metrics.setdefault("cases", {}).setdefault(case_id(event_or_case), {})
-    blob["event"] = event_id(event_or_case)
+    node = "now" if event_or_case == "now" else case_id(event_or_case)
+    blob = metrics.setdefault("cases", {}).setdefault(node, {})
+    blob["event"] = "now" if node == "now" else event_id(event_or_case)
     reasons = reasons or {}
     null_reasons = blob.setdefault("_null_reasons", {})
     for key, value in (flat or {}).items():
