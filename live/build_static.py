@@ -49,6 +49,12 @@ ASSET_CLIM_SCALE_M = 10_000
 
 
 def _ee_init():
+    try:
+        from gee.common import ee_init
+        return ee_init()
+    except ImportError:
+        pass
+
     import ee
 
     key = json.loads(__import__("os").environ["GCP_SA_KEY"])
@@ -69,10 +75,14 @@ def _download_band(ee, image, band: str, scale_m: int = 1000) -> np.ndarray:
         "region": rect, "scale": scale_m, "format": "GEO_TIFF",
     })
     data = requests.get(url, timeout=600).content
-    with zipfile.ZipFile(io.BytesIO(data)) as z:
-        name = next(n for n in z.namelist() if n.endswith(".tif"))
-        with rasterio.open(io.BytesIO(z.read(name))) as src:
-            return src.read(1).astype(np.float64)
+    if data[:4] == b"PK\x03\x04":
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            name = next(n for n in z.namelist() if n.endswith(".tif"))
+            tif = io.BytesIO(z.read(name))
+    else:
+        tif = io.BytesIO(data)
+    with rasterio.open(tif) as src:
+        return src.read(1).astype(np.float64)
 
 
 def _climatology_for_month(ee, month: int):

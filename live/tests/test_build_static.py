@@ -1,6 +1,10 @@
 """Source-level checks for build_static (GEE needs creds, so no live runs)."""
+import io
 import types
+import zipfile
 from pathlib import Path
+
+import numpy as np
 
 from live import build_static
 from live.config import ASSET_ROOT, STATIC_DOMAIN
@@ -119,3 +123,52 @@ def test_build_assets_dry_run_starts_nothing():
 
 def _asset(name):
     return f"{ASSET_ROOT}/static/{STATIC_DOMAIN}/{name}"
+
+
+# ---------------------------------------------------------------------------
+# _download_band: GEE returns a zip OR a raw GeoTIFF — both must decode
+
+
+class _DlImg:
+    def select(self, _band):
+        return self
+
+    def getDownloadURL(self, _params):
+        return "http://fake.example/tif"
+
+
+def _tif_bytes(arr):
+    from rasterio.io import MemoryFile
+
+    with MemoryFile() as mf:
+        with mf.open(driver="GTiff", height=arr.shape[0],
+                     width=arr.shape[1], count=1, dtype="float64") as ds:
+            ds.write(arr, 1)
+        return mf.read()
+
+
+def _run_download(monkeypatch, payload):
+    import requests
+
+    ee = _fake_ee()
+    monkeypatch.setattr(
+        requests, "get",
+        lambda *a, **k: types.SimpleNamespace(content=payload))
+    return build_static._download_band(ee, _DlImg(), "band")
+
+
+def test_download_band_accepts_zip_payload(monkeypatch):
+    arr = np.arange(12, dtype=np.float64).reshape(3, 4)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("band.tif", _tif_bytes(arr))
+    out = _run_download(monkeypatch, buf.getvalue())
+    np.testing.assert_array_equal(out, arr)
+    assert out.dtype == np.float64
+
+
+def test_download_band_accepts_raw_tiff_payload(monkeypatch):
+    arr = np.arange(12, dtype=np.float64).reshape(3, 4) + 0.5
+    out = _run_download(monkeypatch, _tif_bytes(arr))
+    np.testing.assert_array_equal(out, arr)
+    assert out.dtype == np.float64
