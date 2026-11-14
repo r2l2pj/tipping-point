@@ -24,6 +24,7 @@ from pathlib import Path
 import numpy as np
 import rasterio
 import rasterio.features
+import rasterio.warp
 from scipy.ndimage import label
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -384,6 +385,32 @@ def publish_case(event_id: str, dry_run: bool = False,
                     bands_by_date[hazard][day] = (cog, b)
                     emit_png(layer, day, cog, b, forecast=False)
 
+    # ---- perfect-forecast COGs ----------------------------------------
+    # forecast_source="perfect-forecast": the D+k forecast issued on the
+    # reference date is the observed band of ref+k (SCHEMA). Materialize
+    # <case>_tpi_forecast_d<k>_<ref>.tif (2 bands: slide, flood) so the
+    # emit loop below can render + record them like every other layer.
+    for k in range(1, FORECAST_DAYS + 1):
+        fc = cog_dir / f"{case}_tpi_forecast_d{k}_{ref:%Y%m%d}.tif"
+        depicts = ref + dt.timedelta(days=k)
+        if fc.exists() or dry_run:
+            continue
+        srcs = [(bands_by_date[h].get(depicts), h)
+                for h in ("slide", "flood")]
+        srcs = [(cb, h) for cb, h in srcs if cb is not None]
+        if not srcs:
+            null(f"tpi_*_d{k}", f"no observed bands for {depicts}")
+            continue
+        with rasterio.open(srcs[0][0][0]) as base:
+            prof = base.profile
+        prof.update(count=len(srcs))
+        with rasterio.open(fc, "w", **prof) as dst:
+            for i, ((cpath, b), haz) in enumerate(srcs, 1):
+                with rasterio.open(cpath) as s:
+                    dst.write(s.read(b), i)
+                dst.set_band_description(i, haz)
+        out["written"].append(str(fc.relative_to(data_dir)))
+
     # ---- PNGs: perfect-forecast D+1..D+3 ------------------------------
     for cog in sorted(cog_dir.glob(f"{case}_tpi_forecast_d*_*.tif")):
         m = _FORECAST_RE.search(cog.stem)
@@ -404,6 +431,49 @@ def publish_case(event_id: str, dry_run: bool = False,
             continue
         for b, hazard in hazards:
             emit_png(f"tpi_{hazard}_d{k}", depicts, cog, b, forecast=True)
+
+    # ---- per-day critical area + exposed population (L19 alert card) --
+    # critical_km2 = union of pixels with TPI >= 0.6 (either hazard) on the
+    # native lon/lat grid; people_critical = GPWv4 population under that
+    # union (coverage fraction on the ~1 km GPW grid).
+    crit_stats: dict[str, dict] = {}
+    pop_cog = _first(cog_dir, POP_PATTERNS)
+    for day in sorted(set(bands_by_date["slide"]) | set(bands_by_date["flood"])):
+        mask, tr, crs = None, None, None
+        for h in ("slide", "flood"):
+            cb = bands_by_date[h].get(day)
+            if cb is None:
+                continue
+            with rasterio.open(cb[0]) as src:
+                a = np.asarray(src.read(cb[1]), dtype=np.float64)
+                m = _valid(a, src.nodata) & (a >= TPI_THRESHOLD)
+                tr, crs = src.transform, src.crs
+            mask = m if mask is None else (mask | m)
+        if mask is None:
+            continue
+        # per-row pixel area on the geographic grid
+        lats = tr.f + (np.arange(mask.shape[0]) + 0.5) * tr.e
+        px_km2 = (abs(tr.a) * 111320.0 * np.cos(np.deg2rad(lats))
+                  * abs(tr.e) * 110540.0) / 1e6
+        km2 = float((mask * px_km2[:, None]).sum())
+        people = None
+        if pop_cog is not None and not dry_run:
+            with rasterio.open(pop_cog) as ps:
+                frac = np.zeros((ps.height, ps.width), dtype=np.float32)
+                rasterio.warp.reproject(
+                    mask.astype(np.float32), frac,
+                    src_transform=tr, src_crs=crs,
+                    dst_transform=ps.transform, dst_crs=ps.crs,
+                    resampling=rasterio.warp.Resampling.average)
+                parr = np.asarray(ps.read(1), dtype=np.float64)
+                # GPW marks water/uninhabited as -3.4e38 with no nodata tag
+                pvalid = _valid(parr, ps.nodata) & (parr >= 0)
+                people = int(round(float(
+                    (frac * np.where(pvalid, parr, 0.0)).sum())))
+        crit_stats[day.isoformat()] = {
+            "critical_km2": round(km2, 3), "people_critical": people}
+    if pop_cog is None:
+        null("series.people_critical", "no population COG (GPW)")
 
     # ---- PNGs: single-date reference layers ---------------------------
     for layer, (patterns, kind) in SINGLE_LAYERS.items():
@@ -596,6 +666,10 @@ def publish_case(event_id: str, dry_run: bool = False,
                          "imerg_mm": days[day]["imerg_mm"],
                          "smap": days[day]["smap"],
                          "tpi": tpi_max.get(iso),
+                         "critical_km2": crit_stats.get(iso, {})
+                                     .get("critical_km2"),
+                         "people_critical": crit_stats.get(iso, {})
+                                        .get("people_critical"),
                          "river_m": river.get(iso)})
         doc = {"event": event_id, "reference_date": ref.isoformat(),
                "rain_p95_mm": rain_p95, "tpi_threshold": TPI_THRESHOLD,
@@ -610,28 +684,21 @@ def publish_case(event_id: str, dry_run: bool = False,
             out["written"].append(rel)
         out["series_days"] = len(rows)
 
-        # L19: first Critical frame vs first official warning (+ = earlier).
-        # Label day D = end of its accumulation window at 00:00Z (SCHEMA).
+        # peak-day critical footprint for the alert card
         flat, reasons = {}, {}
         first_crit = next(
             (d for d in sorted(tpi_max)
              if tpi_max[d] >= TPI_THRESHOLD), None)
-        warn_at = ((load_event(event_id).get("official_warning") or {})
-                   .get("at"))
-        if first_crit and warn_at and not dry_run:
-            t_first = dt.datetime.fromisoformat(first_crit) \
-                .replace(tzinfo=dt.timezone.utc)
-            t_warn = dt.datetime.fromisoformat(
-                warn_at.replace("Z", "+00:00"))
-            flat["official_warning_delta_h"] = round(
-                (t_warn - t_first).total_seconds() / 3600.0, 1)
-            flat["first_critical_at"] = first_crit
-        else:
-            flat["official_warning_delta_h"] = None
-            flat["first_critical_at"] = first_crit
-            reasons["official_warning_delta_h"] = (
-                "no TPI series" if not first_crit
-                else "no official_warning.at in events/" + event_id + ".json")
+        flat["first_critical_at"] = first_crit
+        peak = max(crit_stats.items(),
+                   key=lambda kv: kv[1]["critical_km2"], default=None)
+        flat["critical_km2"] = peak[1]["critical_km2"] if peak else None
+        flat["critical_km2_date"] = peak[0] if peak else None
+        flat["people_critical"] = peak[1]["people_critical"] if peak else None
+        if not peak:
+            reasons["critical_km2"] = "no TPI series"
+        if peak and peak[1]["people_critical"] is None:
+            reasons["people_critical"] = "no population COG (GPW)"
         if not dry_run:
             merge_metrics(event_id, flat, reasons=reasons)
 

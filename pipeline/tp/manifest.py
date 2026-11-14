@@ -84,16 +84,18 @@ def _reference_date(event_id: str):
         return None
 
 
-def _png_index(case_dir: Path) -> dict:
-    """data/<case>/png/_index.json -> {layer_id: {date,png,cog,bounds,forecast}}."""
+def _png_index(case_dir: Path) -> list:
+    """data/<case>/png/_index.json -> [{id,date,png,cog,bounds,forecast}] —
+    one entry per rendered frame; repeated ids are the per-day series."""
     path = case_dir / "png" / "_index.json"
     if not path.exists():
-        return {}
+        return []
     try:
         raw = json.loads(path.read_text())
     except (OSError, ValueError):
-        return {}
-    return {e["id"]: e for e in raw.get("layers", []) if isinstance(e, dict) and e.get("id")}
+        return []
+    return [e for e in raw.get("layers", [])
+            if isinstance(e, dict) and e.get("id")]
 
 
 def _derived_date(layer_id: str, ref_date) -> str | None:
@@ -155,26 +157,28 @@ def _cog_only_entry(case_id: str, case_dir: Path, layer_id: str, ref_date) -> di
 
 
 def _layers(case_id: str, case_dir: Path, ref_date) -> tuple[list, dict]:
-    """(layers, null_reasons) — expected tpi_* + cog-only score layers + index extras."""
+    """(layers, null_reasons) — every rendered frame (per-day series and
+    forecast d1..d3) from _index.json, placeholders for expected layers the
+    publisher has not produced yet, plus cog-only score layers."""
     index = _png_index(case_dir)
+    index_ids = {e["id"] for e in index}
     layers, missing, seen = [], {}, set()
+    # every rendered frame: repeated ids = per-day series (SCHEMA)
+    for e in sorted(index, key=lambda x: (x["id"], x.get("date") or "")):
+        seen.add(e["id"])
+        layers.append(_layer_entry(case_id, e["id"], ref_date, e))
+    # expected-but-unproduced layers keep a placeholder (pruned later if
+    # their derived png/cog paths do not exist either)
     for lid in EXPECTED_LAYERS:
-        seen.add(lid)
-        layers.append(_layer_entry(case_id, lid, ref_date, index.get(lid)))
+        if lid not in index_ids:
+            layers.append(_layer_entry(case_id, lid, ref_date, None))
     for lid in COG_ONLY_LAYERS:
         seen.add(lid)
-        if lid in index:
-            e = index[lid]
-            layers.append({"id": lid, "date": e.get("date"),
-                           "png": None, "cog": e.get("cog")})
-        else:
-            entry = _cog_only_entry(case_id, case_dir, lid, ref_date)
-            if entry:
-                layers.append(entry)
-            else:
-                missing[lid] = f"{case_id}_{lid} COG not yet produced"
-    for lid in sorted(set(index) - seen):
-        layers.append(_layer_entry(case_id, lid, ref_date, index[lid]))
+        entry = _cog_only_entry(case_id, case_dir, lid, ref_date)
+        if entry:
+            layers.append(entry)
+        elif lid not in index_ids:
+            missing[lid] = f"{case_id}_{lid} COG not yet produced"
     return layers, missing
 
 
@@ -280,16 +284,18 @@ def _prune_missing(root: dict, data_root: Path) -> list[str]:
     def _rel(p):
         return p if isinstance(p, str) and not p.startswith("http") else None
 
-    for case in root.get("cases", {}).values():
-        if not isinstance(case, dict):
+    for key, case in root.get("cases", {}).items():
+        if not isinstance(case, dict) or key == "now":
+            # `now` is copied verbatim from data/now/manifest.json — the
+            # live pipeline owns its paths (they resolve under data/now/).
             continue
         layers = []
         for layer in case.get("layers", []):
-            for key in ("png", "cog"):
-                rel = _rel(layer.get(key))
+            for fld in ("png", "cog"):
+                rel = _rel(layer.get(fld))
                 if rel and not (data_root / rel).exists():
                     dropped.append(rel)
-                    layer[key] = None
+                    layer[fld] = None
             if layer.get("png") or layer.get("cog"):
                 layers.append(layer)
         case["layers"] = layers
