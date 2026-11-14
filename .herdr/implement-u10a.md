@@ -28,6 +28,25 @@
 - wa-2025-12 `reference_date` "2025-12-12" -> "2025-12-10". Single-token edit;
   all other bytes identical (verified via `git diff`).
 
+## Follow-up (ruling E7) — `damage_anchor` blocks
+
+Added a top-level `damage_anchor` object to each `events/*.json` (inserted
+between `swot` and `hazards`), verbatim from the lead's spec — earliest
+independent, dated, citable first-damage report anchoring the public
+"warned X hours before" claim (wording pending Lucas).
+
+- **rs-2024-05**: date `2024-04-27`, `time_utc: null` (date-level confidence),
+  MetSul report for Canoas city gov; alternates: Defesa Civil RS alert 254
+  (2024-04-28, alert not damage) and State Civil Defense bulletin (2024-04-30).
+- **wa-2025-12**: date `2025-12-08`, `time_utc: 2025-12-09T00:35:00Z`
+  (timestamped), King County Flood Warning Center opening at Snoqualmie
+  Phase 2; alternates: NWS FLW for Cowlitz at Packwood (2025-12-08) and
+  Snohomish County release (2025-12-09).
+
+Fields: `date`, `time_utc`, `time_note`, `reported`, `source`, `url`,
+`confidence`, `alternates[]` (`date`, `kind`, `url`). Committed as a second
+commit on `unit/u10a`; both files re-validated with `python -m json.tool`.
+
 ## SWOT reach lookup (real, not null)
 
 - **WA** — FTS name lookup worked:

@@ -76,6 +76,27 @@
     ],
     "note": "Skagit River SWORD reaches with nodes inside the AOI, downstream->upstream (055 is the North Fork delta distributary; gap 68-121 km dist_out is upstream of the AOI's north edge). Via PO.DAAC FTS /v1/rivers/Skagit River filtered to bbox; Hydrocron timeseries per reach."
   },
+  "damage_anchor": {
+    "date": "2025-12-08",
+    "time_utc": "2025-12-09T00:35:00Z",
+    "time_note": "16:35 PST (UTC-8)",
+    "reported": "King County Flood Warning Center opened as Snoqualmie hit Phase 2 (three-forks gauge 12,710 cfs > 12,000 threshold); county warned of minor flooding in low-lying areas",
+    "source": "King County Flood Warning Center update",
+    "url": "https://kingcountyfieldnotes.org/2025/12/31/update-king-county-flood-warning-center-remains-open-to-respond-to-widespread-flooding/",
+    "confidence": "timestamped",
+    "alternates": [
+      {
+        "date": "2025-12-08",
+        "kind": "First verifiable NWS Seattle river Flood Warning (Cowlitz at Packwood, 16:04 PST, forecast)",
+        "url": "https://mesonet.agron.iastate.edu/wx/afos/p.php?pil=FLWSEW&e=202512090004"
+      },
+      {
+        "date": "2025-12-09",
+        "kind": "Snohomish County release: roads closed + Monroe mobile-home park evacuation (had happened by Tue morning)",
+        "url": "https://www.snohomishcountywa.gov/DocumentCenter/View/140750/FloodProc_News-Release_12092025"
+      }
+    ]
+  },
   "hazards": [
     "flood",
     "landslide"
