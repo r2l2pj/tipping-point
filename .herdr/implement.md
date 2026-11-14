@@ -1,3 +1,39 @@
+# implement: unit/l19-alerts — L19a official-warning anchors
+
+Base SHA: 42f5eb6feb2e384233ec09089282d44a051f40cc. Only two event JSON files and this report changed. No code/dependency additions, no push/merge.
+
+## Verdict and changes
+
+- WA: retain `2025-12-06T00:10:00Z` and existing `{at,source,url}` shape. Tighten source with actual header **WGUS66 KSEW 060010**, not the WGUS46 in the briefing. FFASEW explicitly covers King, Skagit, Snohomish, Whatcom and ten neighboring counties, and warns of landslides/debris flows from saturated soils. Issued 16:10 PST Dec 5; VTEC effective start Dec 8 12Z is NOT issuance.
+- IEM metadata query confirms no earlier December FFASEW, FLWSEW, FFWSEW or SPSSEW product. This verifies the earliest rainfall/river-flood/landslide warning, not every possible coastal warning: a Dec 3 21:29Z CFWSEW Coastal Flood Watch/Advisory covers Grays Harbor coast high tides Dec 4–5, a separate tidal event, excluded from this atmospheric-river anchor.
+- RS: NEW earlier official municipal Eclima/Prefeitura de Canoas forecast notice published **2024-04-25T20:40:20Z** (17:40:20 BRT), replacing Apr 26 16:50Z. It explicitly warns of exceptional rain and possible flooding at Praia do Paquetá / Rio dos Sinos basin. Canonical public page date is Apr 25; page JSON-LD `datePublished` and official WordPress REST `date_gmt` independently agree. This is publication time, NOT a demonstrated operational alert-dispatch time. Both qualifications are kept in event note.
+- RS caveats: current page was modified Nov 11 2024; body weekday/day pairings are inconsistent (Friday 25, Saturday 26). Timestamp comes from publication metadata, not those body labels. This is earlier evidence, not a proof that no still-earlier official warning exists. Previously found Apr 20 INMET forecast remains date-only. State/federal-specific earlier timestamp was not established.
+
+## Live source queries and results (2026-11-14)
+
+Used webfetch on documented legacy IEM JSON endpoints after `/api/1/nwstext/` and `/api/1/docs/nwstext.md` returned 404. Documentation: https://mesonet.agron.iastate.edu/json/nwstext_search.py?help and https://mesonet.agron.iastate.edu/json/vtec_events_bywfo.py?help .
+
+- https://mesonet.agron.iastate.edu/json/nwstext_search.py?awipsid=FFASEW&sts=2025-12-01T00:00Z&ets=2026-01-01T00:00Z : first result `ttaaii=WGUS66`, `utcvalid=2025-12-06T00:10Z`, `/O.NEW.KSEW.FA.A.0012.251208T1200Z-251213T0000Z/`; full text includes the four counties and landslide risk.
+- https://mesonet.agron.iastate.edu/json/nwstext_search.py?awipsid=FLWSEW&sts=2025-12-01T00:00Z&ets=2025-12-09T01:00Z : first result Dec 8 20:29Z, Skokomish at Potlatch (Mason County), then Dec 8 23:56Z Lewis County. Incidental finding: existing damage_anchor alternate claiming Dec 9 00:04Z is first Seattle river warning is not globally first; left untouched (out of official_warning scope).
+- https://mesonet.agron.iastate.edu/json/nwstext_search.py?awipsid=FFWSEW&sts=2025-12-01T00:00Z&ets=2025-12-06T00:11Z : `results=[]`.
+- https://mesonet.agron.iastate.edu/json/nwstext_search.py?awipsid=SPSSEW&sts=2025-12-01T00:00Z&ets=2025-12-06T00:11Z : `results=[]` (no earlier standalone landslide statement).
+- https://mesonet.agron.iastate.edu/json/vtec_events_bywfo.py?wfo=SEW&year=2025&start=2025-12-01T00:00Z&end=2025-12-06T00:11Z : marine/wind/coastal events; cross-check against broader VTEC archive, with coastal exception described above.
+- https://mesonet.agron.iastate.edu/json/nwstext_search.py?awipsid=CFWSEW&sts=2025-12-03T21:28Z&ets=2025-12-03T21:30Z : WHUS46 KSEW 032129, Grays Harbor County Coast, flooding around high tide 11:30 AM Thursday / noon Friday.
+- https://www.canoas.rs.gov.br/noticias/aviso-canoas-tera-incidencia-de-chuva-forte-nos-proximos-dias/ : dated Apr 25, official Eclima notice; HTML JSON-LD `datePublished=2024-04-25T20:40:20+00:00`.
+- https://canoas.rs.gov.br/wp-json/wp/v2/noticias/99605 : `date=2024-04-25T17:40:20`, `date_gmt=2024-04-25T20:40:20`, `modified_gmt=2024-11-11T22:33:22`, same title/content.
+- INMET direct article discovered by web search: https://portal.inmet.gov.br/noticias/tempestades-atingem-parte-da-regi%C3%A3o-sul-nos-pr%C3%B3ximos-dias ; publication Apr 26 13h50 BRT corroborates old anchor. Earlier news reports cite Apr 25/26 INMET alerts but are not primary-source exact issuance evidence.
+
+## Commands and verification
+
+- `pwd && git status --short && git branch --show-current && todo log && ls -a`: correct dedicated worktree, clean initial state, branch unit/l19-alerts, logging on.
+- `todo add "L19a: verify official-warning anchors for WA 2025 and RS 2024; report and commit scoped changes"`: item 91.
+- `curl -fsSL "https://www.canoas.rs.gov.br/noticias/aviso-canoas-tera-incidencia-de-chuva-forte-nos-proximos-dias/" | python -c 'import sys,re; s=sys.stdin.read(); print("\n".join(re.findall(r".{0,100}(?:datePublished|dateModified|published_time|modified_time|wp-json|date_gmt).{0,180}",s)))'`: exit 0, exact datePublished and official REST link above.
+- `curl -fsSL "https://mesonet.agron.iastate.edu/json/nwstext_search.py?awipsid=FFASEW&sts=2025-12-01T00:00Z&ets=2025-12-06T00:11Z"`: exit 0, exactly one result, WGUS66 Dec 6 00:10Z, full text checked.
+- `git diff --check && python -m json.tool events/wa-2025-12.json > /dev/null && python -m json.tool events/rs-2024-05.json > /dev/null && git diff --stat && git log -4 --oneline && git rev-parse HEAD`: exit 0 on base SHA plus working changes, both JSON valid; event diff 5 insertions/5 deletions. Manual diff review: only official_warning values changed.
+- No fetcher was added; these were one-off HTTP research commands, so no live-network test or dependency was introduced. No unrelated tests claimed as evidence of historical truth.
+
+---
+
 # implement: unit/wainv — WGS validation reference (A1/B5)
 
 Base SHA: e1d8f18. Seven scoped files including this report; no push/merge.

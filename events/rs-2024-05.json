@@ -43,10 +43,10 @@
     "note": "Jacui main stem downstream->upstream into terminal reach 64110700015 at the Jacui delta / Guaiba head by Porto Alegre. SWORD names this stem no_data/'Taquari River', so FTS name search for 'Rio Jacui'/'Guaiba' fails; ids found via SWOT_L2_HR_RiverSP_reach_vD_Attributes FeatureServer bbox query on the AOI, ordered by dist_out via FTS /v1/rivers/reach/<id>. Hydrocron timeseries per reach."
   },
   "official_warning": {
-    "at": "2024-04-26T16:50:00Z",
-    "source": "INMET aviso \"Tempestades atingem parte da Região Sul nos próximos dias\"",
-    "url": "https://portal.inmet.gov.br/noticias/results",
-    "note": "earliest warning with exact issuance time; earlier INMET forecast notice dated 2024-04-20 (date-only)"
+    "at": "2024-04-25T20:40:20Z",
+    "source": "Prefeitura de Canoas / Eclima: Aviso: Canoas terá incidência de chuva forte nos próximos dias",
+    "url": "https://www.canoas.rs.gov.br/noticias/aviso-canoas-tera-incidencia-de-chuva-forte-nos-proximos-dias/",
+    "note": "Official municipal forecast notice warning of heavy rain and possible flooding at Praia do Paquetá; publication time, not operational alert issuance. Page JSON-LD datePublished agrees with date_gmt at https://canoas.rs.gov.br/wp-json/wp/v2/noticias/99605 (17:40:20 local, UTC-3). Page was modified 2024-11-11; body has inconsistent weekday/day labels. Earlier than INMET's 2024-04-26T16:50:00Z notice; earlier INMET forecast dated 2024-04-20 remains date-only."
   },
   "damage_anchor": {
     "date": "2024-04-27",

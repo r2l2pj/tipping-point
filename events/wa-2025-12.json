@@ -78,7 +78,7 @@
   },
   "official_warning": {
     "at": "2025-12-06T00:10:00Z",
-    "source": "NWS Seattle (KSEW) Flood Watch, VTEC O.NEW.KSEW.FA.A.0012",
+    "source": "NWS Seattle Flood Watch FFASEW (WGUS66 KSEW 060010), VTEC O.NEW.KSEW.FA.A.0012; issued 16:10 PST Dec 5 for King, Skagit, Snohomish, Whatcom and neighboring counties; includes landslide/debris-flow risk",
     "url": "https://mesonet.agron.iastate.edu/vtec/?eventid=12&phenomena=FA&radar=USCOMP&radar_product=N0Q&radar_time=202512081200&significance=A&tab=info&wfo=KSEW&year=2025"
   },
   "damage_anchor": {
