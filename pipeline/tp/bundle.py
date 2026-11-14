@@ -33,6 +33,7 @@ if str(REPO_ROOT) not in sys.path:
 from live.render import classes_png_bytes, warp_to_3857
 from live.tpi import classify
 from tp.events import DATA_DIR, load_event
+from tp.metrics import merge_metrics
 from tp.polygonize import mask_to_geojson
 
 EN_CLASS_LABELS = ["Low", "Moderate", "High", "Critical"]
@@ -608,6 +609,31 @@ def publish_case(event_id: str, dry_run: bool = False,
             target.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n")
             out["written"].append(rel)
         out["series_days"] = len(rows)
+
+        # L19: first Critical frame vs first official warning (+ = earlier).
+        # Label day D = end of its accumulation window at 00:00Z (SCHEMA).
+        flat, reasons = {}, {}
+        first_crit = next(
+            (d for d in sorted(tpi_max)
+             if tpi_max[d] >= TPI_THRESHOLD), None)
+        warn_at = ((load_event(event_id).get("official_warning") or {})
+                   .get("at"))
+        if first_crit and warn_at and not dry_run:
+            t_first = dt.datetime.fromisoformat(first_crit) \
+                .replace(tzinfo=dt.timezone.utc)
+            t_warn = dt.datetime.fromisoformat(
+                warn_at.replace("Z", "+00:00"))
+            flat["official_warning_delta_h"] = round(
+                (t_warn - t_first).total_seconds() / 3600.0, 1)
+            flat["first_critical_at"] = first_crit
+        else:
+            flat["official_warning_delta_h"] = None
+            flat["first_critical_at"] = first_crit
+            reasons["official_warning_delta_h"] = (
+                "no TPI series" if not first_crit
+                else "no official_warning.at in events/" + event_id + ".json")
+        if not dry_run:
+            merge_metrics(event_id, flat, reasons=reasons)
 
     # ---- publish-size budget: compact every geojson product < 1 MB ----
     _compact_geojsons(gj_dir, out, dry_run)
