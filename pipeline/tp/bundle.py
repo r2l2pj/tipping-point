@@ -288,6 +288,62 @@ def _load_municipal(path: Path):
     return out
 
 
+def _critical_stats(bands_by_date: dict, pop_cog: Path | None,
+                    people: bool = True) -> dict:
+    """{iso_date: {critical_km2, critical_slide_km2, critical_flood_km2,
+    people_critical}} — ONE definition shared by the series rows and the
+    metrics scalar: area of pixels with TPI >= TPI_THRESHOLD, per hazard,
+    geodesic on the source lon/lat grid (per-row cos(lat) correction);
+    critical_km2 is the slide∪flood union. people_critical = GPWv4 count
+    under the union via coverage-fraction reproject to the ~1 km GPW grid
+    (GPW -3.4e38 water/nodata values masked)."""
+    import rasterio.warp
+
+    stats = {}
+    days = sorted(set(bands_by_date.get("slide", {}))
+                  | set(bands_by_date.get("flood", {})))
+    for day in days:
+        mask, tr, crs = None, None, None
+        per_hazard = {}
+        for h in ("slide", "flood"):
+            cb = bands_by_date.get(h, {}).get(day)
+            if cb is None:
+                continue
+            with rasterio.open(cb[0]) as src:
+                a = np.asarray(src.read(cb[1]), dtype=np.float64)
+                m = _valid(a, src.nodata) & (a >= TPI_THRESHOLD)
+                tr, crs = src.transform, src.crs
+            per_hazard[h] = m
+            mask = m if mask is None else (mask | m)
+        if mask is None:
+            continue
+        lats = tr.f + (np.arange(mask.shape[0]) + 0.5) * tr.e
+        px_km2 = (abs(tr.a) * 111320.0 * np.cos(np.deg2rad(lats))
+                  * abs(tr.e) * 110540.0) / 1e6
+        hz_km2 = {h: round(float((m * px_km2[:, None]).sum()), 3)
+                  for h, m in per_hazard.items()}
+        n_people = None
+        if pop_cog is not None and people:
+            with rasterio.open(pop_cog) as ps:
+                frac = np.zeros((ps.height, ps.width), dtype=np.float32)
+                rasterio.warp.reproject(
+                    mask.astype(np.float32), frac,
+                    src_transform=tr, src_crs=crs,
+                    dst_transform=ps.transform, dst_crs=ps.crs,
+                    resampling=rasterio.warp.Resampling.average)
+                parr = np.asarray(ps.read(1), dtype=np.float64)
+                # GPW marks water/uninhabited as -3.4e38 with no nodata tag
+                pvalid = _valid(parr, ps.nodata) & (parr >= 0)
+                n_people = int(round(float(
+                    (frac * np.where(pvalid, parr, 0.0)).sum())))
+        stats[day.isoformat()] = {
+            "critical_km2": round(float((mask * px_km2[:, None]).sum()), 3),
+            "critical_slide_km2": hz_km2.get("slide"),
+            "critical_flood_km2": hz_km2.get("flood"),
+            "people_critical": n_people}
+    return stats
+
+
 def _pop_sum(pop_path: Path, geom: dict) -> float:
     import rasterio.features
 
@@ -450,52 +506,9 @@ def publish_case(event_id: str, dry_run: bool = False,
             emit_png(f"tpi_{hazard}_d{k}", depicts, cog, b, forecast=True)
 
     # ---- per-day critical area + exposed population (L19 alert card) --
-    # critical_km2 = union of pixels with TPI >= 0.6 (either hazard) on the
-    # native lon/lat grid; people_critical = GPWv4 population under that
-    # union (coverage fraction on the ~1 km GPW grid).
-    crit_stats: dict[str, dict] = {}
-    pop_cog = _first(cog_dir, POP_PATTERNS)
-    for day in sorted(set(bands_by_date["slide"]) | set(bands_by_date["flood"])):
-        mask, tr, crs = None, None, None
-        per_hazard = {}
-        for h in ("slide", "flood"):
-            cb = bands_by_date[h].get(day)
-            if cb is None:
-                continue
-            with rasterio.open(cb[0]) as src:
-                a = np.asarray(src.read(cb[1]), dtype=np.float64)
-                m = _valid(a, src.nodata) & (a >= TPI_THRESHOLD)
-                tr, crs = src.transform, src.crs
-            per_hazard[h] = m
-            mask = m if mask is None else (mask | m)
-        if mask is None:
-            continue
-        # per-row pixel area on the geographic grid
-        lats = tr.f + (np.arange(mask.shape[0]) + 0.5) * tr.e
-        px_km2 = (abs(tr.a) * 111320.0 * np.cos(np.deg2rad(lats))
-                  * abs(tr.e) * 110540.0) / 1e6
-        km2 = float((mask * px_km2[:, None]).sum())
-        hz_km2 = {h: round(float((m * px_km2[:, None]).sum()), 3)
-                  for h, m in per_hazard.items()}
-        people = None
-        if pop_cog is not None and not dry_run:
-            with rasterio.open(pop_cog) as ps:
-                frac = np.zeros((ps.height, ps.width), dtype=np.float32)
-                rasterio.warp.reproject(
-                    mask.astype(np.float32), frac,
-                    src_transform=tr, src_crs=crs,
-                    dst_transform=ps.transform, dst_crs=ps.crs,
-                    resampling=rasterio.warp.Resampling.average)
-                parr = np.asarray(ps.read(1), dtype=np.float64)
-                # GPW marks water/uninhabited as -3.4e38 with no nodata tag
-                pvalid = _valid(parr, ps.nodata) & (parr >= 0)
-                people = int(round(float(
-                    (frac * np.where(pvalid, parr, 0.0)).sum())))
-        crit_stats[day.isoformat()] = {
-            "critical_km2": round(km2, 3), "people_critical": people,
-            "critical_slide_km2": hz_km2.get("slide"),
-            "critical_flood_km2": hz_km2.get("flood")}
-    if pop_cog is None:
+    crit_stats = _critical_stats(
+        bands_by_date, _first(cog_dir, POP_PATTERNS), people=not dry_run)
+    if not any(s["people_critical"] is not None for s in crit_stats.values()):
         null("series.people_critical", "no population COG (GPW)")
 
     # ---- PNGs: single-date reference layers ---------------------------

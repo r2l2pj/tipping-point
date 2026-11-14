@@ -218,3 +218,41 @@ def test_dry_run_writes_nothing(tmp_path):
     assert not (d / "png" / "_index.json").exists()
     assert not (d / "series" / "imerg_smap_daily.json").exists()
     assert json.loads(events.read_text())["events"][0]["layers"] == []
+
+
+def test_critical_stats_matches_independent_count(tmp_path):
+    """series days[].critical_* and the metrics scalar share ONE definition:
+    pixel count with TPI >= 0.6, geodesic px area, per hazard + union."""
+    from tp.bundle import _critical_stats, TPI_THRESHOLD
+    d = _data_dir(tmp_path)
+    import datetime as dt
+    day1, day2 = dt.date(2024, 5, 1), dt.date(2024, 5, 2)
+    s1, s2 = _tpi(), _tpi()
+    s1[:10, :10] = 0.7; s2[:15, :15] = 0.7          # slide crit grows
+    f1, f2 = _tpi(), _tpi()
+    f1[15:, 15:] = 0.9                               # flood crit const
+    cs = _write_cog(d / "cog" / "rs_2024_tpi_slide_20240502.tif",
+                    [s1, s2], ["20240501", "20240502"])
+    cf = _write_cog(d / "cog" / "rs_2024_tpi_flood_20240502.tif",
+                    [f1, f2], ["20240501", "20240502"])
+    bbd = {"slide": {day1: (cs, 1), day2: (cs, 2)},
+           "flood": {day1: (cf, 1), day2: (cf, 2)}}
+    stats = _critical_stats(bbd, None)
+
+    # independent recount for day2, same band, same geodesic formula
+    with rasterio.open(cs) as src:
+        a = src.read(2).astype(np.float64); tr = src.transform
+    m = np.isfinite(a) & (a >= TPI_THRESHOLD)
+    lats = tr.f + (np.arange(a.shape[0]) + 0.5) * tr.e
+    px = (abs(tr.a) * 111320.0 * np.cos(np.deg2rad(lats))
+          * abs(tr.e) * 110540.0) / 1e6
+    expected = (m * px[:, None]).sum()
+    s = stats["2024-05-02"]
+    assert s["critical_slide_km2"] == pytest.approx(expected, abs=0.01)
+    # union = slide ∪ flood (flood is a disjoint block)
+    assert s["critical_km2"] == pytest.approx(
+        s["critical_slide_km2"] + s["critical_flood_km2"], abs=0.01)
+    # metrics scalar = peak-day union of THE SAME dict -> agreement by construction
+    peak = max(stats.items(), key=lambda kv: kv[1]["critical_km2"])
+    assert peak[0] == "2024-05-02"
+    assert peak[1]["critical_km2"] == s["critical_km2"]
