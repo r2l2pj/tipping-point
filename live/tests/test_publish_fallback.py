@@ -80,6 +80,8 @@ def test_unchanged(snapshot, monkeypatch, capsys):
 
 
 def test_oversized_and_stale_files(tmp_path, capsys):
+    """Merge semantics: target-only files survive; oversized sources are skipped
+    and never clobber an existing target copy."""
     source, target = tmp_path / "source", tmp_path / "target"
     source.mkdir()
     target.mkdir()
@@ -88,8 +90,23 @@ def test_oversized_and_stale_files(tmp_path, capsys):
     (target / "stale.json").write_text('{}')
     (target / "large.tif").write_text('old')
     assert publish.sync_data(source, target, 0.001) == 1
-    assert [path.name for path in target.iterdir()] == ["small.tif"]
+    assert {path.name for path in target.iterdir()} == {"small.tif", "stale.json", "large.tif"}
+    assert (target / "stale.json").read_text() == '{}'
+    assert (target / "large.tif").read_text() == 'old'
     assert "WARNING" in capsys.readouterr().out
+
+
+def test_merge_preserves_files_absent_from_source(tmp_path):
+    """Regression for S1: a file that only exists on the fallback branch
+    (produced by another job) must not be deleted by sync."""
+    source, target = tmp_path / "source", tmp_path / "target"
+    (source / "case_a").mkdir(parents=True)
+    (source / "case_a" / "assets.json").write_text('[]')
+    (target / "now").mkdir(parents=True)
+    (target / "now" / "summary.png").write_bytes(b"png")
+    publish.sync_data(source, target, 10)
+    assert (target / "now" / "summary.png").read_bytes() == b"png"
+    assert (target / "case_a" / "assets.json").read_text() == '[]'
 
 
 def test_cleanup_on_commit_failure(snapshot, monkeypatch):
@@ -114,8 +131,8 @@ def test_rsync_size_exclusions(snapshot, monkeypatch):
     monkeypatch.setattr(publish.shutil, "which", lambda name: "/usr/bin/rsync")
     assert publish.sync_data(data, data.parent / "target", 0.001) == 1
     assert calls[0][0] == "/usr/bin/rsync"
-    assert "--delete" in calls[0]
-    assert "--delete-excluded" in calls[0]
+    assert "--delete" not in calls[0]
+    assert "--delete-excluded" not in calls[0]
     assert "--exclude=/large.tif" in calls[0]
 
 

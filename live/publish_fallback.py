@@ -32,22 +32,13 @@ def sync_data(source: Path, target: Path, max_mb: float) -> int:
             print(f"WARNING: skipping oversized file {path.relative_to(source)}")
     if rsync := shutil.which("rsync"):
         result = subprocess.run(
-            [rsync, "-a", "--delete", "--delete-excluded",
+            [rsync, "-a",
              *(f"--exclude=/{path.as_posix()}" for path in sorted(skipped)),
              f"{source}/", f"{target}/"], capture_output=True, text=True, check=False)
         if result.returncode:
             raise SystemExit(f"ERROR: rsync failed (exit {result.returncode})")
         print(f"snapshot: skipped {len(skipped)} oversized files")
         return len(skipped)
-    if target.exists():
-        for path in sorted(target.rglob("*"), key=lambda p: len(p.parts), reverse=True):
-            relative = path.relative_to(target)
-            original = source / relative
-            if path.is_dir() and not path.is_symlink():
-                if not original.is_dir():
-                    path.rmdir()
-            elif not original.is_file() or relative in skipped:
-                path.unlink()
 
     def ignore(directory, names):
         return [name for name in names
