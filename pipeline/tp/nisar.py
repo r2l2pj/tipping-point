@@ -75,13 +75,27 @@ def search(event: dict, product: str = "GCOV", collection: str | None = None) ->
     )
 
 
+def _meta(granule) -> dict:
+    """earthaccess DataGranule is a dict subclass: meta lives under keys, not
+    attributes. Tolerate attribute-style objects too."""
+    if isinstance(granule, dict):
+        return granule.get("meta") or {}
+    return getattr(granule, "meta", None) or {}
+
+
+def _props(granule) -> dict:
+    if isinstance(granule, dict):
+        return granule.get("properties") or granule.get("umm") or {}
+    return getattr(granule, "properties", None) or {}
+
+
 def _granule_meta(granule) -> dict | None:
     """Parse track/look/frame/date out of a granule native-id or fileID."""
     name = granule
     if not isinstance(name, str):
-        meta = getattr(granule, "meta", None) or {}
-        props = getattr(granule, "properties", None) or {}
-        name = meta.get("native-id") or props.get("fileID") or ""
+        name = _meta(granule).get("native-id") or _props(granule).get(
+            "fileID"
+        ) or _props(granule).get("GranuleUR") or ""
     m = GRANULE_RE.search(str(name))
     if not m:
         return None
@@ -306,9 +320,10 @@ def _track_look(value) -> tuple[int, str] | None:
 
 
 def _native_id(granule) -> str:
-    meta = getattr(granule, "meta", None) or {}
-    props = getattr(granule, "properties", None) or {}
-    return str(meta.get("native-id") or props.get("fileID") or granule)
+    name = _meta(granule).get("native-id") or _props(granule).get(
+        "fileID"
+    ) or _props(granule).get("GranuleUR")
+    return str(name or granule)
 
 
 def _find_granule(step: dict, bbox: tuple):
