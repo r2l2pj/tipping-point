@@ -15,6 +15,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 from scipy.ndimage import label
@@ -43,7 +44,7 @@ def emit_alerts(prev_cls: np.ndarray | None, cls_today: np.ndarray, cls_d1: np.n
     worst = np.maximum(cls_today, cls_d1).astype(np.int16)
     prev = np.zeros_like(worst) if prev_cls is None else np.asarray(prev_cls, dtype=np.int16)
     upgraded = (worst >= ALERT_MIN_CLASS) & (worst > prev)
-    quiet = now_utc.hour in QUIET_HOURS
+    quiet = now_utc.astimezone(ZoneInfo("America/Sao_Paulo")).hour in QUIET_HOURS
 
     candidates = []
     for cls in (3, 2):
@@ -172,18 +173,19 @@ def critical_areas_from_assets(ee_module=None) -> list[dict]:
     geometry = ee_module.Geometry.Rectangle(list(NOW_BOUNDS))
     regions = []
     for kind in ("slide", "flood"):
-        image = ee_module.Image(f"{ASSET_ROOT}/now/tpi_{kind}_d0")
-        for threshold, label_name in ((0.6, "Crítico"), (0.4, "Alto")):
-            cls = _class_index(label_name)
-            features = image.gte(threshold).selfMask().reduceToVectors(
-                scale=1000, geometry=geometry, maxPixels=1e9).getInfo()["features"]
-            for feature in features:
-                region = dict(feature.get("properties") or {})
-                region["class"] = cls
-                region["label"] = LABELS[cls]
-                region["kind"] = kind
-                region["geometry"] = feature["geometry"]
-                regions.append(region)
+        for day in (0, 1):
+            image = ee_module.Image(f"{ASSET_ROOT}/now/tpi_{kind}_d{day}")
+            for threshold, label_name in ((0.6, "Crítico"), (0.4, "Alto")):
+                cls = _class_index(label_name)
+                features = image.gte(threshold).selfMask().reduceToVectors(
+                    scale=1000, geometry=geometry, maxPixels=1e9).getInfo()["features"]
+                for feature in features:
+                    region = dict(feature.get("properties") or {})
+                    region["class"] = cls
+                    region["label"] = LABELS[cls]
+                    region["kind"] = kind
+                    region["geometry"] = feature["geometry"]
+                    regions.append(region)
     return regions
 
 
@@ -307,13 +309,13 @@ def update_subscriber(chat_id: str, fields: dict) -> None:
             fields.get("current_label"), fields.get("data_date")]
     if kind == "neon":
         _neon_query(
-            "UPDATE subscribers SET last_class = $1, last_alert_ts = $2, "
+            "UPDATE subscribers SET last_class = $1, last_alert_ts = COALESCE($2, last_alert_ts), "
             "current_label = $3, data_date = $4 WHERE chat_id = $5",
             [*vals, chat_id])
     elif kind == "sqlite":
         with _sqlite_conn() as conn:
             conn.execute(
-                "UPDATE subscribers SET last_class = ?, last_alert_ts = ?, "
+                "UPDATE subscribers SET last_class = ?, last_alert_ts = COALESCE(?, last_alert_ts), "
                 "current_label = ?, data_date = ? WHERE chat_id = ?",
                 [*vals, chat_id])
 
@@ -341,7 +343,11 @@ def update_subscribers_from_regions(regions: list[dict], data_date: str) -> int:
                            region.get("label") or ""))
         except (ValueError, TypeError):
             continue
-    now_iso = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")
+    now = dt.datetime.now(dt.UTC)
+    quiet = now.astimezone(ZoneInfo("America/Sao_Paulo")).hour in QUIET_HOURS
+    token = os.environ.get("TELEGRAM_TOKEN")
+    if not token:
+        print("[telegram] TELEGRAM_TOKEN unset — skipping sends")
     updated = 0
     try:
         rows = subscribers()
@@ -358,12 +364,28 @@ def update_subscribers_from_regions(regions: list[dict], data_date: str) -> int:
             if gcls > cls and geom.contains(point):
                 cls, label = gcls, glabel
         prev = int(row.get("last_class") or 0)
-        if cls == prev:
-            continue
+        sent_at = None
+        deferred = quiet and cls != prev and cls >= ALERT_MIN_CLASS
+        # Preserve last_class while quiet so the next daytime pass can send the change.
+        if cls != prev and cls >= ALERT_MIN_CLASS and token and not quiet:
+            import requests
+
+            text = (f"Alerta: risco {label} hoje ou amanhã. Dados: {data_date}."
+                    "\n— Defesa Civil • Tipping Point (NASA GPM/SMAP/NISAR)")
+            try:
+                response = requests.post(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    json={"chat_id": row["chat_id"], "text": text}, timeout=30)
+                if 200 <= response.status_code < 300 and response.json().get("ok") is True:
+                    sent_at = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")
+                else:
+                    print(f"[telegram] send failed (HTTP {response.status_code})")
+            except (requests.RequestException, ValueError):
+                print("[telegram] send failed — skipping delivery")
         try:
             update_subscriber(row["chat_id"], {
-                "last_class": cls,
-                "last_alert_ts": now_iso,
+                "last_class": prev if deferred else cls,
+                "last_alert_ts": sent_at,
                 "current_label": label,
                 "data_date": data_date,
             })

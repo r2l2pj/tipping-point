@@ -103,7 +103,7 @@ def _refresh_alerts(now_dir: Path = NOW_DIR) -> Path:
         print(f"[subscribers] pass failed (alerts unaffected): {exc}", flush=True)
     payload = {
         "generated_at": now.isoformat().replace("+00:00", "Z"),
-        "quiet_hours": now.hour in QUIET_HOURS,
+        "quiet_hours": now.astimezone(alerts.ZoneInfo("America/Sao_Paulo")).hour in QUIET_HOURS,
         "source": "gee-assets",
         "candidates": regions,
     }

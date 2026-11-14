@@ -219,21 +219,20 @@ def test_critical_areas_from_assets(monkeypatch, inject_module):
     monkeypatch.setitem(sys.modules, "gee.common", SimpleNamespace(
         ee_init=lambda: calls.append(("init", None))))
     regions = alerts.critical_areas_from_assets(ee if inject_module else None)
-    assert [region["kind"] for region in regions] == ["slide", "slide", "flood", "flood"]
+    assert [region["kind"] for region in regions] == ["slide"] * 4 + ["flood"] * 4
     assert all(region["geometry"] == geometry for region in regions)
     assert [(region["threshold"], region["class"], region["label"])
-            for region in regions] == [
-        (0.6, 3, "Crítico"), (0.4, 2, "Alto"),
-        (0.6, 3, "Crítico"), (0.4, 2, "Alto"),
-    ]
+            for region in regions] == [(0.6, 3, "Crítico"), (0.4, 2, "Alto")] * 4
     assert [value for op, value in calls if op == "image"] == [
         f"{alerts.ASSET_ROOT}/now/tpi_slide_d0",
+        f"{alerts.ASSET_ROOT}/now/tpi_slide_d1",
         f"{alerts.ASSET_ROOT}/now/tpi_flood_d0",
+        f"{alerts.ASSET_ROOT}/now/tpi_flood_d1",
     ]
-    assert [value for op, value in calls if op == "gte"] == [0.6, 0.4, 0.6, 0.4]
+    assert [value for op, value in calls if op == "gte"] == [0.6, 0.4] * 4
     assert [value for op, value in calls if op == "vectors"] == [
         {"scale": 1000, "geometry": list(alerts.NOW_BOUNDS), "maxPixels": 1e9},
-    ] * 4
+    ] * 8
 
 
 def test_refresh_alerts_reads_assets_not_stale_bundle(tmp_path, monkeypatch):

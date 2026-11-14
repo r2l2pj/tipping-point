@@ -190,14 +190,16 @@ def test_subscribers_post_to_sql_endpoint(neon):
     assert "from subscribers" in q and "consent = true" in q
 
 
-def test_update_flow_updates_only_changed_rows(neon):
+def test_update_flow_refreshes_all_rows(neon, monkeypatch):
+    monkeypatch.delenv("TELEGRAM_TOKEN", raising=False)
+    _freeze_now(monkeypatch, NOON)
     srv, _ = neon(_ROWS)
     n = alerts.update_subscribers_from_regions([_REGION], "2026-11-14")
     updates = [r for r in srv.requests if r[0] == "POST"
                and json.loads(r[3])["query"].lower().startswith("update")]
     # inside (0->3) and outside (1->0) change; same (3->3) does not.
-    assert n == 2
-    assert len(updates) == 2
+    assert n == 3
+    assert len(updates) == 3
     by_id = {}
     for _, _, _, body in updates:
         payload = json.loads(body)
@@ -206,7 +208,7 @@ def test_update_flow_updates_only_changed_rows(neon):
         by_id[payload["params"][4]] = payload["params"]
     inside = by_id["inside"]
     assert inside[0] == 3 and inside[2] == "Crítico"
-    assert inside[3] == "2026-11-14" and inside[1].endswith("Z")
+    assert inside[3] == "2026-11-14" and inside[1] is None
     outside = by_id["outside"]
     assert outside[0] == 0 and outside[2] == ""
 
@@ -244,11 +246,13 @@ def _seed_sqlite(path, rows):
 
 
 def test_sqlite_backend_update_flow(monkeypatch, tmp_path):
+    monkeypatch.delenv("TELEGRAM_TOKEN", raising=False)
+    _freeze_now(monkeypatch, NOON)
     db = tmp_path / "subs.sqlite"
     _seed_sqlite(db, _ROWS)
     monkeypatch.setenv("DATABASE_URL", f"sqlite:{db}")
     n = alerts.update_subscribers_from_regions([_REGION], "2026-11-14")
-    assert n == 2
+    assert n == 3
     import sqlite3
 
     conn = sqlite3.connect(db)
@@ -258,7 +262,7 @@ def test_sqlite_backend_update_flow(monkeypatch, tmp_path):
     conn.close()
     assert got["inside"][1] == 3 and got["inside"][2] == "Crítico"
     assert got["inside"][3] == "2026-11-14"
-    assert got["inside"][4].endswith("Z")
+    assert got["inside"][4] is None
     assert got["outside"][1] == 0 and got["outside"][2] == ""
     assert got["same"][1] == 3  # unchanged
 
@@ -277,3 +281,136 @@ def test_sqlite_default_path_and_schema_autocreate(monkeypatch, tmp_path):
     assert cols == ["chat_id", "lat", "lon", "consent", "last_class",
                     "last_alert_ts", "current_label", "data_date",
                     "created_at"]
+
+
+@pytest.mark.parametrize("hour,quiet", [(4, True), (23, False), (9, False)])
+def test_quiet_hours_use_brasilia(hour, quiet, monkeypatch, tmp_path):
+    from live import jobs
+
+    when = NOON.replace(hour=hour)
+    out = emit_alerts(None, _classes(2), _classes(), when, TR)
+    assert out["quiet_hours"] is quiet
+    assert out["candidates"][0]["hold"] is quiet
+    _freeze_now(monkeypatch, when)
+    monkeypatch.setattr(alerts, "critical_areas_from_assets", list)
+    monkeypatch.setattr(alerts, "update_subscribers_from_regions", lambda *a, **k: 0)
+    assert json.loads(jobs._refresh_alerts(tmp_path).read_text())["quiet_hours"] is quiet
+
+
+def _freeze_now(monkeypatch, when):
+    class Clock(dt.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return when.astimezone(tz)
+
+    monkeypatch.setattr(alerts.dt, "datetime", Clock)
+
+
+def test_assets_d0_d1_worst_class_updates_subscriber(monkeypatch, tmp_path):
+    from unittest.mock import Mock
+
+    _freeze_now(monkeypatch, NOON)
+
+    ee = Mock()
+    images = []
+
+    def image(asset):
+        images.append(asset)
+        result = Mock()
+
+        def gte(threshold):
+            active = "slide_d0" in asset and threshold == 0.4 or "flood_d1" in asset
+            result.selfMask.return_value.reduceToVectors.return_value.getInfo.return_value = {
+                "features": [{"geometry": _REGION["geometry"]}] if active else []}
+            return result
+
+        result.gte.side_effect = gte
+        return result
+
+    ee.Image.side_effect = image
+    regions = alerts.critical_areas_from_assets(ee)
+    assert len(images) == 4
+    assert {asset.rsplit("/", 1)[1] for asset in images} == {
+        "tpi_slide_d0", "tpi_slide_d1", "tpi_flood_d0", "tpi_flood_d1"}
+    db = tmp_path / "subs.sqlite"
+    _seed_sqlite(db, _ROWS[:1])
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:{db}")
+    monkeypatch.delenv("TELEGRAM_TOKEN", raising=False)
+    assert alerts.update_subscribers_from_regions(regions, "2026-11-14") == 1
+    import sqlite3
+
+    with sqlite3.connect(db) as conn:
+        assert conn.execute("SELECT last_class, current_label FROM subscribers").fetchone() == (3, "Crítico")
+
+
+@pytest.mark.parametrize("mode", ["success", "unset", "quiet", "http_error", "api_error", "exception"])
+def test_telegram_delivery_and_timestamp(monkeypatch, tmp_path, capsys, mode):
+    import sqlite3
+    from unittest.mock import Mock
+
+    import requests
+
+    db = tmp_path / "subs.sqlite"
+    _seed_sqlite(db, _ROWS)
+    old_ts = "2026-11-13T12:00:00Z"
+    with sqlite3.connect(db) as conn:
+        conn.execute("UPDATE subscribers SET last_alert_ts = ?", [old_ts])
+        conn.execute("UPDATE subscribers SET consent = 0 WHERE chat_id = 'same'")
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:{db}")
+    monkeypatch.setenv("TELEGRAM_TOKEN", "test-token")
+    if mode == "unset":
+        monkeypatch.delenv("TELEGRAM_TOKEN")
+    when = NOON.replace(hour=4) if mode == "quiet" else NOON
+    _freeze_now(monkeypatch, when)
+    post = Mock(return_value=Mock(status_code=500 if mode == "http_error" else 200))
+    post.return_value.json.return_value = {"ok": mode != "api_error"}
+    if mode == "exception":
+        post.side_effect = requests.ConnectionError("do not log token-bearing URLs")
+    monkeypatch.setattr(requests, "post", post)
+    assert alerts.update_subscribers_from_regions([_REGION], "2026-11-14") == 2
+    with sqlite3.connect(db) as conn:
+        got = {r[0]: r[1:] for r in conn.execute(
+            "SELECT chat_id, last_class, current_label, data_date, last_alert_ts FROM subscribers")}
+    assert got["inside"][:3] == (0 if mode == "quiet" else 3, "Crítico", "2026-11-14")
+    assert got["inside"][3] == (when.isoformat().replace("+00:00", "Z") if mode == "success" else old_ts)
+    assert got["outside"][3] == old_ts
+    assert got["same"][2] is None
+    if mode in ("unset", "quiet"):
+        post.assert_not_called()
+    else:
+        post.assert_called_once()
+        assert post.call_args.args == ("https://api.telegram.org/bottest-token/sendMessage",)
+        payload = post.call_args.kwargs["json"]
+        assert payload["chat_id"] == "inside"
+        assert payload["text"].endswith("\n— Defesa Civil • Tipping Point (NASA GPM/SMAP/NISAR)")
+    if mode == "unset":
+        assert "TELEGRAM_TOKEN unset" in capsys.readouterr().out
+    elif mode in ("http_error", "api_error", "exception"):
+        assert "send failed" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("risk_persists", [True, False])
+def test_quiet_delivery_deferred_until_daytime(monkeypatch, tmp_path, risk_persists):
+    import sqlite3
+    from unittest.mock import Mock
+
+    import requests
+
+    db = tmp_path / "subs.sqlite"
+    _seed_sqlite(db, _ROWS[:1])
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:{db}")
+    monkeypatch.setenv("TELEGRAM_TOKEN", "test-token")
+    post = Mock(return_value=Mock(status_code=200))
+    post.return_value.json.return_value = {"ok": True}
+    monkeypatch.setattr(requests, "post", post)
+    _freeze_now(monkeypatch, NOON.replace(hour=4))
+    alerts.update_subscribers_from_regions([_REGION], "2026-11-14")
+    post.assert_not_called()
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT last_class, current_label, last_alert_ts FROM subscribers").fetchone() == (0, "Crítico", None)
+    _freeze_now(monkeypatch, NOON)
+    alerts.update_subscribers_from_regions([_REGION] if risk_persists else [], "2026-11-14")
+    assert post.call_count == int(risk_persists)
+    alerts.update_subscribers_from_regions([_REGION] if risk_persists else [], "2026-11-14")
+    assert post.call_count == int(risk_persists)
