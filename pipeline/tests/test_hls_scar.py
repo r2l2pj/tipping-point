@@ -56,17 +56,19 @@ def test_dnbr_detection_fires(tmp_path):
     assert arr.sum() == 16
 
 
-def test_fmask_cloud_and_shadow_bits_mask(tmp_path):
+def test_fmask_bits_1_to_4_mask(tmp_path):
     fmask = np.zeros(SHAPE, np.float32)
     fmask[2, 2] = 2                       # bit1 cloud
-    fmask[3, 3] = 4                       # bit2 cloud shadow
-    fmask[4, 4] = 8                       # bit3 snow -> NOT masked
+    fmask[3, 3] = 4                       # bit2 adjacent to cloud/shadow
+    fmask[2, 3] = 8                       # bit3 cloud shadow
+    fmask[3, 4] = 16                      # bit4 snow/ice
+    fmask[4, 4] = 64                      # aerosol bits6-7 -> NOT masked
     pre_p, post_p = _pair(tmp_path, fmask=fmask)
     slope_p = _slope(tmp_path)
     stats = detect(pre_p, post_p, tmp_path / "out.tif", slope_tif=slope_p)
     assert stats["fmask"] == "applied"
-    assert stats["fmask_masked_px"] == 2
-    assert stats["candidate_px"] == 14     # 16 - 2 masked
+    assert stats["fmask_masked_px"] == 4
+    assert stats["candidate_px"] == 12     # 16 - 4 masked
 
 
 def test_slope_gate_excludes(tmp_path):

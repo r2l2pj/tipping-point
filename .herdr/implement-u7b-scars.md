@@ -58,12 +58,35 @@ Branch `unit/u7b`, worktree `tipping-point-data-wt/u7b`.
 - New test `test_scripts_use_case_data_dirs_not_event_dirs` greps both
   scripts for `event_data_dir` and `data/<event-id>` literals.
 
+## L7 rework (ruling — HLS scar + cloud fraction move into GEE)
+
+- `gee/hls_scar.py` (new) — `python -m gee.hls_scar --case wa_2025
+  [--dry-run|--tasks]`; server-side port of tp/hls_scar.py (local raster
+  path kept as fallback). Merged `NASA/HLS/HLSL30/v002` (NIR B05, SWIR2
+  B07) + `NASA/HLS/HLSS30/v002` (NIR B8A, SWIR2 B12), fill -9999/255
+  masked; median composites on Fmask-clear pixels per case window
+  (pre = event - before .. event, post = event .. event + after).
+  candidate = dNBR>dnbr_min & NASADEM slope>slope_range_deg[0] &
+  blob>=min_blob_pixels via connectedPixelCount/connectedComponents;
+  --ndvi-vote adds NDVI_post<pre as a second vote. Merges `cloud_pct`
+  (mean Fmask bits1-3, AOI+window), `landslide_hls_candidates`,
+  `landslide_hls_candidate_px` + collections.HLS; candidate mask →
+  planned `{case}_landslide_candidates` asset export.
+- `gee/tests/test_hls_gee.py` (new) — u5-style sys.modules stub: fake ee
+  call-recorder + gee.common stub only when U4's module is absent. No
+  `gee/common.py` or `__init__.py` created (u4 owns them).
+- Corrected Fmask decode (research r-fmask.md, applied to BOTH paths):
+  bit1 cloud | bit2 cloud-adjacent | bit3 cloud shadow | bit4 snow are
+  masked (FMASK_BAD=0b11110; was wrongly bits1-2); snow gated since Dec
+  storms leave cover; water left in (runout reaches channels); fill 255.
+  `cloud_pct` uses bits1-3 per the research note. dnbr_min=0.1 documented
+  as exploratory burn-severity — calibration needed.
+
 ## Commands run + results
 
 - `uv sync` — ok (env synced, tipping-point-pipeline 0.1.0 editable).
-- `uv run pytest pipeline/tests -q` — 50 passed (17 new tests across the two
-  new test files, incl. the 4-way column-alias parametrization and the L4
-  script-paths guard).
+- `uv run pytest pipeline/tests gee/tests -q` — 59 passed (17 local +
+  9 gee fake-ee tests across the three new test files).
 - `uv run ruff check .` — clean after `ruff check --fix` (import sort +
   unnecessary `int()`).
 - `uv run python pipeline/scripts/08_landslide_hit.py --help` and

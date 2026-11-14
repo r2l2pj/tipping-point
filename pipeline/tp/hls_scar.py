@@ -1,10 +1,17 @@
 """wa_2025 landslide scar CANDIDATES from post-event HLS optical dNBR.
 
 A landslide strips vegetation, so the Normalized Burn Ratio drops:
-dNBR = NBR_pre - NBR_post > dnbr_min marks a candidate pixel. Extra gates:
-the post scene's Fmask must be clear (bit 1 cloud + bit 2 cloud shadow are
-masked out), terrain slope must exceed the config minimum (scars need
-steep ground), and blobs smaller than min_blob_pixels are dropped.
+dNBR = NBR_pre - NBR_post > dnbr_min marks a candidate pixel (positive =
+vegetation loss; dnbr_min=0.1 is the burn-severity convention —
+EXPLORATORY, no validated landslide threshold exists, the cut needs
+calibration). Extra gates: the post scene's Fmask must be clear, terrain
+slope must exceed the config minimum (scars need steep ground), and blobs
+smaller than min_blob_pixels are dropped.
+
+Fmask (HLS v2.0, bits from LSB): bit1 cloud, bit2 cloud-adjacent, bit3
+cloud shadow, bit4 snow/ice, bit5 water, bits6-7 aerosol; fill 255.
+FMASK_BAD masks bits1-4 (snow gated — December storms leave cover);
+water stays in (runout deposits reach channels).
 
 Input layout per GeoTIFF (documented — no band-name metadata):
   1 band   -> precomputed NBR
@@ -30,8 +37,8 @@ from tp.config import threshold
 
 MIN_SLOPE_DEG = float(threshold("slope_range_deg", [15, 30])[0])
 MIN_BLOB_PX = int(threshold("min_blob_pixels", 10))
-DNBR_MIN = 0.1                 # USGS burn-severity convention: 0.1 = low severity
-FMASK_CLOUD_SHADOW = 0b110     # Fmask bit1 cloud + bit2 cloud shadow
+DNBR_MIN = 0.1                 # exploratory burn-severity cut — needs calibration
+FMASK_BAD = 0b11110            # Fmask bits1-4: cloud | adjacent | shadow | snow/ice
 
 
 def _as_nbr(da) -> np.ndarray:
@@ -86,7 +93,7 @@ def detect(
     fmask = _fmask(post)
     if fmask is not None:
         fm_int = np.where(np.isfinite(fmask), fmask, 0).astype(np.int64)
-        clear = np.isfinite(fmask) & ((fm_int & FMASK_CLOUD_SHADOW) == 0)
+        clear = np.isfinite(fmask) & ((fm_int & FMASK_BAD) == 0)
         stats["fmask"] = "applied"
         stats["fmask_masked_px"] = int((cand & ~clear).sum())
         cand &= clear
