@@ -1,21 +1,21 @@
-"""NISAR x OPERA DSWx validation metrics — Earth Engine compute (L7).
+"""Validate NISAR flood polygons against the public EE OPERA DSWx catalog.
 
-Server-side port of pipeline/scripts/04_validation.py (kept as the local
-fallback): the uploaded water_nisar asset is compared against an OPERA DSWx
-WTR mosaic and iou/f1/cloud_pct merge into data/metrics.json via
-tp.metrics.merge_metrics.
+Prefer the flood polygon FeatureCollection listed in data/<case>/assets.json
+(L10: vectors are ingested as table assets via Export.table.toAsset; raster
+assets cannot exist). OPERA inputs are exclusively OPERA/DSWX/L3_V1/HLS and
+OPERA/DSWX/L3_V1/S1 (ruling L10b). Catalog documentation confirms
+WTR_Water_classification for BOTH products (not the downloadable granule's
+B01_WTR). Live runs verify the schema via
+ImageCollection(collection).first().bandNames().getInfo() before computing.
+Live confirmation requires EE credentials; --dry-run makes no EE calls.
 
-Inputs, in resolution order:
-  water_nisar — data/<case>/assets.json "water_nisar", else
-      <ASSET_ROOT>/<case>/water_nisar when ee.data.getAsset finds it.
-  OPERA WTR   — data/<case>/assets.json "opera_wtr", else
-      <ASSET_ROOT>/<case>/opera_wtr when present, else a catalog mosaic of
-      the OPERA_CATALOG collection (filterBounds+filterDate event..+5d)
-      when that collection exists in the EE catalog.
-
-WTR values: 0 land, 1 open water, 2 partial water (water = 1|2);
-253 cloud/shadow and 255 no data are excluded. cloud_pct = px==253 / px!=255
-— the "why radar" number.
+HLS WTR water classes are 1 (open water), 2 (partial water); 253 is cloud and
+255 nodata. S1 WTR water classes are 1 (open water), 3 (inundated vegetation),
+NOT 1/2: S1 CONF classes 1/2 instead describe high/moderate confidence.
+Only observed water/nonwater classes enter IoU/F1. cloud_pct is the HLS cloud
+class fraction over non-nodata pixels in the event..+5d window/AOI, for either
+case; S1 is radar and cannot measure optical cloud cover.
+Flat iou/f1/cloud_pct merge through tp.metrics.merge_metrics.
 
 Usage: python -m gee.opera --case <id> [--dry-run|--tasks]
 """
@@ -41,15 +41,17 @@ except ModuleNotFoundError as exc:  # gee.common lands with U4 — --dry-run nee
     ASSET_ROOT = f"projects/{GEE_PROJECT}/assets/tipping-point"
     aoi_geom = case_cfg = data_dir = init = None
 
-# Candidate OPERA DSWx collection ids in the EE catalog — "if present": the
-# uploaded mosaic asset is always preferred; the catalog is the fallback.
-OPERA_CATALOG = {
-    "rs_2024": "OPERA_L3_DSWX-HLS_V1",
-    "wa_2025": "OPERA_L3_DSWX-S1_V1",
-}
-WTR_BAND = "B01_WTR"   # DSWx-HLS water-class band (DSWx-S1 also exposes WTR)
-SEARCH_DAYS = 5        # catalog window: event_date .. event_date + 5d (as 04 --auto)
-SCALE = 30             # OPERA/NISAR ~30 m
+HLS_COLLECTION = "OPERA/DSWX/L3_V1/HLS"
+HLS_WATER_CLASSES = (1, 2)
+S1_COLLECTION = "OPERA/DSWX/L3_V1/S1"
+S1_WATER_CLASSES = (1, 3)
+OPERA_CATALOG = {"rs_2024": HLS_COLLECTION, "wa_2025": S1_COLLECTION}
+WATER_CLASSES = {HLS_COLLECTION: HLS_WATER_CLASSES, S1_COLLECTION: S1_WATER_CLASSES}
+WTR_BAND = "WTR_Water_classification"
+CLOUD_CLASS = 253
+NODATA_CLASS = 255
+SEARCH_DAYS = 5
+SCALE = 30
 MAX_PIXELS = 1e9
 
 
@@ -60,18 +62,24 @@ def _common_ready() -> None:
 
 def _asset_root() -> str:
     """ASSET_ROOT with the {GEE_PROJECT} placeholder filled (or verbatim)."""
-    return str(ASSET_ROOT).format(GEE_PROJECT=GEE_PROJECT)
+    return str(ASSET_ROOT).format(GEE_PROJECT=GEE_PROJECT or "<GEE_PROJECT>")
 
 
 def _assets_map(case_id: str, data_root: Path | None = None) -> dict:
-    """data/<case>/assets.json name->asset-path map; {} when absent/unreadable."""
+    """Read the ingest manifest (or legacy name->path map) -> name->row."""
     root = Path(data_root) if data_root is not None else (
         data_dir(case_id) if data_dir else REPO_ROOT / "data" / case_id)
     try:
-        m = json.loads((root / "assets.json").read_text())
+        doc = json.loads((root / "assets.json").read_text())
     except (OSError, json.JSONDecodeError):
         return {}
-    return {k: v for k, v in m.items() if isinstance(v, str) and v}
+    if not isinstance(doc, dict):
+        return {}
+    assets = {k: {"gee_id": v} for k, v in doc.items() if isinstance(v, str) and v}
+    for row in doc.get("assets", []):
+        if isinstance(row, dict) and row.get("name") and row.get("gee_id"):
+            assets[row["name"]] = row
+    return assets
 
 
 def _asset_exists(path: str) -> bool:
@@ -82,142 +90,134 @@ def _asset_exists(path: str) -> bool:
         return False
 
 
-def _resolve_asset(case_id: str, name: str, amap: dict) -> str | None:
-    """assets.json entry wins; else <root>/<case>/<name> when it exists."""
-    if name in amap:
-        return amap[name]
-    path = f"{_asset_root()}/{case_id}/{name}"
-    return path if _asset_exists(path) else None
+def _is_table_row(row: dict) -> bool:
+    return row.get("kind") == "table" or row.get("type") in ("TABLE", "FEATURE_COLLECTION")
 
 
 def resolve_inputs(case_id: str, data_root: Path | None = None) -> dict:
-    """Paths for the two inputs + the OPERA source descriptor.
+    """Resolve the listed flood polygons first, otherwise the flood raster.
 
-    {nisar, opera, opera_source}; paths are None when nothing resolves.
-    opera_source is "asset:<path>" or "catalog:<collection id>".
+    {nisar, nisar_kind, opera, opera_source}; nisar is None when nothing
+    resolves. opera_source is always "catalog:<collection id>" (L10b).
     """
     amap = _assets_map(case_id, data_root)
-    nisar = _resolve_asset(case_id, "water_nisar", amap)
-    opera = _resolve_asset(case_id, "opera_wtr", amap)
-    src = f"asset:{opera}" if opera else None
-    if opera is None:
-        col = OPERA_CATALOG.get(case_id)
-        if col and _asset_exists(col):
-            opera, src = col, f"catalog:{col}"
-    return {"nisar": nisar, "opera": opera, "opera_source": src}
+    polygon = next((row["gee_id"] for name, row in amap.items()
+                    if "flood" in name and ("polygon" in name or _is_table_row(row))), None)
+    raster = next((row["gee_id"] for name, row in amap.items()
+                   if "flood" in name and row.get("kind") == "image"
+                   and row.get("status") != "local-only"), None)
+    if raster is not None and not _asset_exists(raster):
+        raster = None
+    if polygon is None and raster is None:
+        path = f"{_asset_root()}/{case_id}/flood_nisar"
+        raster = path if _asset_exists(path) else None
+    col = OPERA_CATALOG.get(case_id, HLS_COLLECTION)
+    return {"nisar": polygon or raster, "nisar_kind": "polygons" if polygon else "raster",
+            "opera": col, "opera_source": f"catalog:{col}"}
 
 
-def _opera_image(case_id: str, opera_path: str, source: str, aoi):
-    """ee.Image WTR mosaic: uploaded asset, or catalog collection mosaic."""
-    if source.startswith("catalog:"):
-        cfg = case_cfg(case_id)
-        day = cfg["event_date"]
-        if isinstance(day, str):
-            day = date.fromisoformat(day)
-        elif hasattr(day, "date"):
-            day = day.date()
-        start, end = str(day), str(day + timedelta(days=SEARCH_DAYS))
-        return ee.ImageCollection(opera_path).filterBounds(aoi).filterDate(
-            start, end).select(WTR_BAND).mosaic()
-    return ee.Image(opera_path).select(0)
+def _opera_collection(case_id: str, collection: str, aoi):
+    cfg = case_cfg(case_id)
+    day = cfg["event_date"]
+    if isinstance(day, str):
+        day = date.fromisoformat(day)
+    elif hasattr(day, "date"):
+        day = day.date()
+    return ee.ImageCollection(collection).filterBounds(aoi).filterDate(
+        str(day), str(day + timedelta(days=SEARCH_DAYS)))
+
+
+def confirm_catalog_schema() -> dict:
+    """Fail clearly if a real catalog band changes; invoked only after EE init."""
+    schemas = {}
+    for collection in (HLS_COLLECTION, S1_COLLECTION):
+        bands = ee.ImageCollection(collection).first().bandNames().getInfo()
+        if WTR_BAND not in bands:
+            raise RuntimeError(f"{collection} lacks {WTR_BAND}: {bands}")
+        schemas[collection] = bands
+    return schemas
 
 
 def compute(case_id: str, data_root: Path | None = None) -> dict:
-    """Server-side stats image reduce (no getInfo in here).
-
-    Returns {"stats", "nisar", "opera_source", "collections"} — stats is a
-    one-shot reduceRegion dict {tp, fp, fn, cloud, valid} (empty when no
-    OPERA source resolves).
-    """
+    """Build server-side counts, including collection coverage counts."""
     aoi = aoi_geom(case_id)
     res = resolve_inputs(case_id, data_root)
-    collections = {"opera_dswx": opera_product(case_id)}
-    bands = []
-    if res["opera"] is not None:
-        wtr = _opera_image(case_id, res["opera"], res["opera_source"], aoi)
-        collections["cloud_pct_source"] = res["opera_source"]
-        cloud = wtr.eq(253).selfMask().rename("cloud")
-        valid = wtr.neq(255).selfMask().rename("valid")
-        bands += [cloud, valid]
-        if res["nisar"] is not None:
-            nisar = ee.Image(res["nisar"]).select(0).gt(0)
-            obs = wtr.neq(253).And(wtr.neq(255))
-            ref = wtr.eq(1).Or(wtr.eq(2)).And(obs)
-            pred = nisar.And(obs)
-            bands += [
-                ref.And(pred).selfMask().rename("tp"),
-                ref.Not().And(pred).selfMask().rename("fp"),
-                ref.And(pred.Not()).selfMask().rename("fn"),
-            ]
-    stats = (
-        ee.Image.cat(bands).reduceRegion(
-            reducer=ee.Reducer.sum(), geometry=aoi,
-            scale=SCALE, maxPixels=MAX_PIXELS,
-        )
-        if bands else ee.Dictionary({})
-    )
-    return {**res, "stats": stats, "collections": collections}
+    collection = _opera_collection(case_id, res["opera"], aoi)
+    hls = collection if res["opera"] == HLS_COLLECTION else _opera_collection(case_id, HLS_COLLECTION, aoi)
+    empty = ee.Image.constant(NODATA_CLASS).rename(WTR_BAND).updateMask(ee.Image.constant(0))
+    wtr = ee.Image(ee.Algorithms.If(collection.size(), collection.select(WTR_BAND).mosaic(), empty))
+    optical = ee.Image(ee.Algorithms.If(hls.size(), hls.select(WTR_BAND).mosaic(), empty))
+    bands = [optical.eq(CLOUD_CLASS).rename("cloud"), optical.neq(NODATA_CLASS).rename("valid")]
+    if res["nisar"] is not None:
+        nisar = (ee.Image.constant(0).byte().paint(ee.FeatureCollection(res["nisar"]), 1)
+                 if res["nisar_kind"] == "polygons" else ee.Image(res["nisar"]).select(0).unmask(0).gt(0))
+        first, second = WATER_CLASSES[res["opera"]]
+        ref = wtr.eq(first).Or(wtr.eq(second))
+        obs = wtr.eq(0).Or(ref)
+        pred = nisar.And(obs)
+        bands += [
+            ref.And(pred).rename("tp"),
+            ref.Not().And(pred).updateMask(obs).rename("fp"),
+            ref.And(pred.Not()).rename("fn"),
+            obs.rename("observed"),
+        ]
+    stats = ee.Image.cat(bands).reduceRegion(
+        reducer=ee.Reducer.sum(), geometry=aoi, scale=SCALE, maxPixels=MAX_PIXELS)
+    stats = stats.set("opera_scenes", collection.size()).set("hls_scenes", hls.size())
+    return {**res, "stats": stats, "collections": {
+        "opera_dswx": opera_product(case_id), "opera_dswx_source": res["opera_source"],
+        "cloud_pct_source": f"catalog:{HLS_COLLECTION}",
+    }}
 
 
 def _metrics(case_id: str, res: dict, counts: dict) -> tuple[dict, dict]:
-    """flat metrics + null reasons from reduceRegion counts (client-side)."""
-    flat: dict = {}
-    reasons: dict = {}
-    if res["opera"] is None:
-        flat = {"iou": None, "f1": None, "cloud_pct": None}
-        reason = "no OPERA DSWx WTR source — upload <case>/opera_wtr or check the catalog"
-        reasons = {"iou": reason, "f1": reason, "cloud_pct": reason}
-        return flat, reasons
+    """Flat metrics + null reasons from reduceRegion counts (client-side)."""
+    flat = {"iou": None, "f1": None, "cloud_pct": None}
+    reasons = {}
     valid = counts.get("valid", 0) or 0
-    flat["cloud_pct"] = 100.0 * (counts.get("cloud", 0) or 0) / valid if valid else 0.0
-    if res["nisar"] is None:
-        flat["iou"] = flat["f1"] = None
-        why = (
-            "no NISAR coverage — event predates launch (Jul 2025)"
-            if case_id == "rs_2024"
-            else "NISAR water mask asset not found — run 02_flood_mask.py and upload"
-        )
-        reasons = {"iou": why, "f1": why}
+    if valid:
+        flat["cloud_pct"] = 100.0 * (counts.get("cloud", 0) or 0) / valid
     else:
-        tp = counts.get("tp", 0) or 0
-        fp = counts.get("fp", 0) or 0
-        fn = counts.get("fn", 0) or 0
-        flat["iou"] = tp / (tp + fp + fn) if (tp + fp + fn) else 0.0
-        flat["f1"] = 2 * tp / (2 * tp + fp + fn) if (2 * tp + fp + fn) else 0.0
+        reasons["cloud_pct"] = "no valid DSWx-HLS coverage in the window/AOI"
+    why = None
+    if res["nisar"] is None:
+        why = ("no NISAR coverage — event predates launch (Jul 2025)" if case_id == "rs_2024"
+               else "NISAR flood polygons asset not found — run 06_polygonize.py and ingest")
+    elif not counts.get("opera_scenes") or not counts.get("observed"):
+        why = "no observed OPERA DSWx coverage in the window/AOI"
+    if why:
+        reasons.update(iou=why, f1=why)
+    else:
+        tp, fp, fn = (counts.get(k, 0) or 0 for k in ("tp", "fp", "fn"))
+        flat["iou"] = tp / (tp + fp + fn) if tp + fp + fn else 0.0
+        flat["f1"] = 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else 0.0
     return flat, reasons
 
 
-def run(
-    case_id: str,
-    metrics_path: Path | None = None,
-    merge: bool = True,
-    data_root: Path | None = None,
-) -> dict:
-    """getInfo the stats once; merge metrics unless opted out."""
+def run(case_id: str, metrics_path: Path | None = None, merge: bool = True,
+        data_root: Path | None = None) -> dict:
+    """Confirm catalog schema, fetch counts once, and merge flat metrics."""
     _common_ready()
     init()
+    confirm_catalog_schema()
     res = compute(case_id, data_root=data_root)
     counts = res["stats"].getInfo()
-    counts = counts if isinstance(counts, dict) else {}
-    flat, reasons = _metrics(case_id, res, counts)
-    merged = (
-        merge_metrics(
-            case_id, flat=flat, reasons=reasons,
-            collections=res["collections"], path=metrics_path,
-        )
-        if merge else None
-    )
+    flat, reasons = _metrics(case_id, res, counts if isinstance(counts, dict) else {})
+    merged = merge_metrics(case_id, flat=flat, reasons=reasons,
+                           collections=res["collections"], path=metrics_path) if merge else None
     return {"metrics": flat, "merged": merged, "resolved": res}
 
 
 def plan(case_id: str) -> str:
     cfg = config_case(case_id)
-    root = "projects/<GEE_PROJECT>/assets/tipping-point"
-    col = OPERA_CATALOG.get(case_id, "OPERA_L3_DSWX-HLS_V1")
+    col = OPERA_CATALOG.get(case_id, HLS_COLLECTION)
     return "\n".join([
         f"[opera] case={case_id} event_date={cfg['event_date']} (+{SEARCH_DAYS}d)",
-        f"  nisar:  data/{case_id}/assets.json['water_nisar'] or {root}/{case_id}/water_nisar",
-        f"  opera:  assets.json['opera_wtr'] or {root}/{case_id}/opera_wtr or catalog {col}",
+        (f"  nisar: data/{case_id}/assets.json flood polygons FeatureCollection"
+         f" (fallback {_asset_root()}/{case_id}/flood_nisar)"),
+        f"  opera: catalog {col}, band={WTR_BAND}, water={WATER_CLASSES[col]}",
+        f"  cloud: catalog {HLS_COLLECTION}, class={CLOUD_CLASS}, nodata={NODATA_CLASS}",
+        "  live schema: ImageCollection(id).first().bandNames() for both catalogs",
         f"  compute: tp/fp/fn + cloud/valid reduceRegion sum (scale={SCALE}) -> iou/f1/cloud_pct",
         f"  merge -> data/metrics.json[{case_id}]: iou f1 cloud_pct (+collections opera_dswx)",
     ])
@@ -227,12 +227,9 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gee.opera", description=__doc__.splitlines()[0])
     ap.add_argument("--case", required=True, choices=sorted(load_config()["cases"]))
     g = ap.add_mutually_exclusive_group()
-    g.add_argument("--dry-run", action="store_true",
-                   help="print planned computes; no EE init")
-    g.add_argument("--tasks", action="store_true",
-                   help="run the computes; skip the metrics merge")
-    ap.add_argument("--metrics-path", type=Path, default=None,
-                    help="metrics.json override (testing)")
+    g.add_argument("--dry-run", action="store_true", help="print planned computes; no EE init")
+    g.add_argument("--tasks", action="store_true", help="run the computes; skip the metrics merge")
+    ap.add_argument("--metrics-path", type=Path, default=None, help="metrics.json override (testing)")
     args = ap.parse_args(argv)
     if args.dry_run:
         print(plan(args.case))

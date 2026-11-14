@@ -11,9 +11,12 @@ this reads). Per case:
                        (critical ∪ flood)
   gpw_year             GPWv4 epoch closest to the event date
 
-people_flooded/flooded_km2 are wa_2025-only and gated on the NISAR flood asset
-existing (projects/<GEE_PROJECT>/assets/tipping-point/wa_2025/flood_nisar, or
-the path listed in data/<case>/assets.json);
+people_flooded/flooded_km2 are wa_2025-only and gated on the NISAR flood
+polygon FeatureCollection existing (the flood_nisar* table asset listed in
+data/<case>/assets.json, else the convention path under
+projects/<GEE_PROJECT>/assets/tipping-point/wa_2025/); L10: vectors are
+ingested as table assets and rasterized here in GEE — raster assets cannot
+exist, so this is never ee.Image() on an uploaded COG;
 when the gate fails they merge as null + reason. Numbers merge into
 data/metrics.json (keyed by case) via tp.metrics.merge_metrics; the pre/post
 night-light means are pulled locally as COGs (<caso>_night_lights_{pre,post}_
@@ -74,19 +77,49 @@ def _asset_root() -> str:
     return ASSET_ROOT
 
 
+def _assets_map(case_id: str) -> dict:
+    """data/<case>/assets.json name->gee_id map; supports the ingest manifest
+    ({"assets": [{name, gee_id, ...}]}) and the legacy flat name->path map."""
+    assets_json = DATA_DIR / case_id / "assets.json"
+    try:
+        doc = json.loads(assets_json.read_text())
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(doc, dict):
+        return {}
+    out = {k: v for k, v in doc.items() if isinstance(v, str) and v}
+    for row in doc.get("assets", []):
+        if isinstance(row, dict) and row.get("name") and row.get("gee_id"):
+            out[row["name"]] = row["gee_id"]
+    return out
+
+
 def _asset(case_id: str, name: str) -> str:
     """EE asset path (L7): data/<case>/assets.json name->path when present,
     else the convention projects/<GEE_PROJECT>/assets/tipping-point/<case>/<name>."""
-    assets_json = DATA_DIR / case_id / "assets.json"
-    if assets_json.exists():
-        mapped = json.loads(assets_json.read_text()).get(name)
-        if mapped:
-            return mapped
+    mapped = _assets_map(case_id).get(name)
+    if mapped:
+        return mapped
     return f"{_asset_root()}/{case_id}/{name}"
 
 
 def _flood_asset(case_id: str) -> str:
-    return _asset(case_id, "flood_nisar")
+    """NISAR flood polygon FeatureCollection id (L10): the flood_nisar* table
+    asset recorded by ingest_assets.py, else the convention path."""
+    assets_json = DATA_DIR / case_id / "assets.json"
+    try:
+        doc = json.loads(assets_json.read_text())
+    except (OSError, json.JSONDecodeError):
+        doc = {}
+    rows = doc.get("assets", []) if isinstance(doc, dict) else []
+    for row in rows:  # manifest rows: table rows first (L10 flood polygons)
+        if (isinstance(row, dict) and "flood" in str(row.get("name", ""))
+                and row.get("gee_id") and row.get("kind") == "table"):
+            return row["gee_id"]
+    for name, gee_id in _assets_map(case_id).items():
+        if "flood" in name:
+            return gee_id
+    return f"{_asset_root()}/{case_id}/flood_nisar"
 
 
 def _event_band_index(case_id: str, cfg: dict) -> int:
@@ -140,14 +173,16 @@ def flood_source(asset_id: str | None) -> str | None:
 
 
 def _flood_mask(case_id: str):
-    """NISAR flood mask for wa_2025 when the asset exists; else None."""
+    """NISAR flood mask for wa_2025 when the polygon table asset exists;
+    rasterized in GEE by painting the FeatureCollection (L10); else None."""
     if case_id != "wa_2025":
         return None
+    asset = _flood_asset(case_id)
     try:
-        ee.data.getAsset(_flood_asset(case_id))
+        ee.data.getAsset(asset)
     except Exception:  # noqa: BLE001 — any lookup failure closes the gate
         return None
-    return ee.Image(_flood_asset(case_id)).select(0).gt(0)
+    return ee.Image.constant(0).byte().paint(ee.FeatureCollection(asset), 1).gt(0)
 
 
 def _null_reasons(case_id: str) -> dict:
@@ -159,8 +194,8 @@ def _null_reasons(case_id: str) -> dict:
         )
     else:
         reason = (
-            f"NISAR flood asset {_flood_asset(case_id)} not found — "
-            "run 02_flood_mask.py and `earthengine upload` the COG first"
+            f"NISAR flood polygons asset {_flood_asset(case_id)} not found — "
+            "run 06_polygonize.py and tools/ingest_assets.py first"
         )
     return {"people_flooded": reason, "flooded_km2": reason, "flood_source": reason}
 
