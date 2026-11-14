@@ -181,7 +181,11 @@ def _is_not_found(exc: Exception) -> bool:
     text = str(exc).lower()
     if any(marker in text for marker in _AUTH_ERROR_MARKERS):
         return False
-    return "not_found" in text or "not found" in text
+    return (
+        "not_found" in text
+        or "not found" in text
+        or "does not exist" in text
+    )
 
 
 def asset_id(case: str, name: str, project: str | None = None) -> str:

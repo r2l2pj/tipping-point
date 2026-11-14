@@ -292,6 +292,20 @@ def test_getAsset_grpc_not_found_code_means_absent(monkeypatch, tmp_path):
     assert calls[-1][0] == "task_start"
 
 
+def test_getAsset_eeexception_does_not_exist_means_absent(
+        monkeypatch, tmp_path):
+    # real earthengine-api getAsset 404 text carries no status code
+    err = RuntimeError(
+        "Asset 'projects/p/assets/a/b/c' does not exist or doesn't "
+        "allow this operation.")
+    calls = _install_fakes(monkeypatch, get_error=err)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    entry = ingest.ingest_table(_geojson(tmp_path / "x.geojson"),
+                                asset_id="projects/p/assets/a/b/c")
+    assert entry["status"] == "ingesting"
+    assert calls[-1][0] == "task_start"
+
+
 def test_invalid_case_and_name_rejected(tmp_path):
     # real filenames keep their dots; separators/traversal are rejected
     assert (ingest.asset_id("wa_2025", "wa_2025_nisar_gcov_20251228.tif")
