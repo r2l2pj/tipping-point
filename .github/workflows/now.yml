@@ -1,7 +1,8 @@
 name: modo-agora
 
-# Modo Agora — updates now/ every 3 h so the app shows "atualizado há Xh".
-# On failure the previous commit of now/ stays live (app shows last good run).
+# Modo Agora — keeps the GEE now/ assets current every 3 h (L8: GEE assets are
+# the source of truth; the job also exports the last-good static fallback).
+# On failure the previous commit of data/ stays live.
 
 on:
   schedule:
@@ -12,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: modo-agora
+  group: now
   cancel-in-progress: false
 
 jobs:
@@ -22,22 +23,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.13.8"
+          enable-cache: true
 
       - name: Install dependencies
         run: uv sync --frozen
 
-      - name: Fetch precomputed static layers
+      - name: GCP credentials
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         run: |
           set -euo pipefail
-          if [ ! -f static/sul_static.npz ]; then
+          if [ -n "${GCP_SA_KEY:-}" ]; then
             echo "$GCP_SA_KEY" > /tmp/sa.json
             gcloud auth activate-service-account --key-file=/tmp/sa.json
-            gcloud storage cp gs://tipping-point-data/static/sul_static.npz \
-              static/sul_static.npz
-            rm -f /tmp/sa.json
+            echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json" >> "$GITHUB_ENV"
+          else
+            echo "::warning::GCP_SA_KEY secret is not set"
           fi
 
       - name: Validate Earthdata token
@@ -45,16 +53,23 @@ jobs:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
         run: uv run python -c "from live.fetch import check_earthdata_token; check_earthdata_token()"
 
-      - name: Run live pipeline (IMERG Early + SMAP L4 + GEOS-FP -> now/)
+      - name: Run now job (IMERG Early + SMAP L4 + GEOS-FP -> GEE now/ assets)
         env:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GEE_PROJECT: ${{ vars.GEE_PROJECT }}
           NOW_GCS_BUCKET: tipping-point-data
-        run: uv run python live/run_now.py
+        run: uv run python live/jobs.py now
 
-      - name: Commit now/ back to the repo
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "now: modo agora update"
-          file_pattern: "data/now/**"
+      - name: Commit data back to the repo
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/now data/assets.json 2>/dev/null || git add data/now
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "now: GEE assets update"
+          git push origin "HEAD:${{ github.ref_name }}"

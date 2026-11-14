@@ -1,0 +1,75 @@
+name: nisar-gcov
+
+# NISAR — daily: asf_search for new NISAR GCOV over each case AOI and current
+# alert areas, ingests new scenes as GEE assets (idempotent, L8a).
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nisar
+  cancel-in-progress: false
+
+jobs:
+  nisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.13.8"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: GCP credentials
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -n "${GCP_SA_KEY:-}" ]; then
+            echo "$GCP_SA_KEY" > /tmp/sa.json
+            gcloud auth activate-service-account --key-file=/tmp/sa.json
+            echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json" >> "$GITHUB_ENV"
+          else
+            echo "::warning::GCP_SA_KEY secret is not set"
+          fi
+
+      - name: Validate Earthdata token
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+        run: uv run python -c "from live.fetch import check_earthdata_token; check_earthdata_token()"
+
+      - name: Run nisar job (NISAR GCOV search + ingest)
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GEE_PROJECT: ${{ vars.GEE_PROJECT }}
+          NOW_GCS_BUCKET: tipping-point-data
+        run: uv run python live/jobs.py nisar
+
+      - name: Commit data back to the repo
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 'data/*/assets.json' data/assets.json 2>/dev/null \
+            || git add data/assets.json || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "nisar: GEE assets update"
+          git push origin "HEAD:${{ github.ref_name }}"
