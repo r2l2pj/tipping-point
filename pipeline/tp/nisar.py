@@ -302,7 +302,7 @@ def gdal_subset_cmd(h5_url: str, h5_path: str, bbox: tuple, out_path: Path) -> s
         else "GDAL_HTTP_NETRC=YES "
     )
     return (
-        f"{auth}"
+        f"CPL_VSIL_CURL_USE_HEAD=NO {auth}"
         f"gdalwarp -te_srs EPSG:4326 -te {w} {s} {e} {n} "
         f"-srcnodata nan -dstnodata nan -of COG '{src}' {out_path}"
     )
@@ -400,9 +400,13 @@ def _subset_h5_variable(
 
     dsn = _netcdf_dsn(h5url, h5_path)
     w, s, e, n = bbox
+    # ASF TEA serves a 303 to a signed URL on HEAD too — GDAL reads the empty
+    # redirect body as the file and reports "not a supported format". Skip
+    # HEAD so the first request is a byte-range GET that follows the redirect.
+    env = {**gdal_env, "CPL_VSIL_CURL_USE_HEAD": "NO"}
     try:
         with (
-            rasterio.Env(**gdal_env),
+            rasterio.Env(**env),
             rasterio.open(dsn) as src,
             WarpedVRT(src, crs="EPSG:4326") as vrt,
         ):
