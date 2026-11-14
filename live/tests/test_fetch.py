@@ -1,5 +1,6 @@
 """GEOS-FP GrADS-OPeNDAP .ascii fetch — every request monkeypatched, no HTTP."""
 import datetime as dt
+import os
 import re
 
 import numpy as np
@@ -206,3 +207,86 @@ def test_subset_is_padded_one_point(monkeypatch):
         LATS[np.searchsorted(LATS, s) - 1])
     assert float(daily.lon.max()) == pytest.approx(
         LONS[min(len(LONS) - 1, np.searchsorted(LONS, e, "right"))])
+
+
+# ---- Earthdata bearer-token auth (ruling L6) ------------------------------
+
+def test_edl_login_uses_earthdata_token(monkeypatch):
+    """EARTHDATA_TOKEN -> offline login, bearer session, GDAL header."""
+    import earthaccess
+
+    for var in ("EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME",
+                "EARTHDATA_PASSWORD", "GDAL_HTTP_HEADERS"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("EARTHDATA_TOKEN", "fake")
+    earthaccess.__auth__.authenticated = False
+    earthaccess.__auth__.token = None
+
+    fetch._edl_login()
+
+    auth = earthaccess.__auth__
+    assert auth.token["access_token"] == "fake"
+    assert auth.get_session().headers["Authorization"] == "Bearer fake"
+    assert os.environ["GDAL_HTTP_HEADERS"] == "Authorization: Bearer fake"
+
+
+def test_edl_login_falls_back_to_edl_user_pass(monkeypatch):
+    """No token -> EDL_USER/EDL_PASS mapped onto earthaccess env names."""
+    import earthaccess
+
+    for var in ("EARTHDATA_TOKEN", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+                "GDAL_HTTP_HEADERS"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("EDL_USER", "u1")
+    monkeypatch.setenv("EDL_PASS", "p1")
+    calls = []
+    monkeypatch.setattr(earthaccess, "login",
+                        lambda **kw: calls.append(kw) or object())
+
+    fetch._edl_login()
+
+    assert os.environ["EARTHDATA_USERNAME"] == "u1"
+    assert os.environ["EARTHDATA_PASSWORD"] == "p1"
+    assert calls == [{"strategy": "environment"}]
+    assert "GDAL_HTTP_HEADERS" not in os.environ
+
+
+def test_nisar_recent_passes_uses_bearer_session(monkeypatch):
+    import asf_search as asf
+
+    monkeypatch.setenv("EARTHDATA_TOKEN", "fake")
+
+    class _Resp:
+        status_code = 200
+
+    monkeypatch.setattr(asf.ASFSession, "post", lambda self, **kw: _Resp())
+    captured = {}
+    monkeypatch.setattr(asf, "geo_search",
+                        lambda **kw: captured.update(kw) or [])
+
+    assert fetch.nisar_recent_passes(BOUNDS) == []
+    session = captured["session"]
+    assert session.headers["Authorization"] == "Bearer fake"
+
+
+def test_check_earthdata_token_exits_loudly_on_rejection(monkeypatch):
+    import earthaccess
+
+    monkeypatch.setattr(earthaccess, "login", lambda **kw: object())
+
+    def _raise(**kw):
+        raise RuntimeError("401 Unauthorized")
+
+    monkeypatch.setattr(earthaccess, "search_data", _raise)
+    with pytest.raises(SystemExit) as ei:
+        fetch.check_earthdata_token()
+    msg = str(ei.value)
+    assert "EARTHDATA_TOKEN" in msg and "user_tokens" in msg
+
+
+def test_check_earthdata_token_returns_on_success(monkeypatch):
+    import earthaccess
+
+    monkeypatch.setattr(earthaccess, "login", lambda **kw: object())
+    monkeypatch.setattr(earthaccess, "search_data", lambda **kw: [object()])
+    fetch.check_earthdata_token()  # returns quietly, no SystemExit

@@ -12,16 +12,43 @@ from __future__ import annotations
 import datetime as dt
 import os
 import re
+import sys
 
 import numpy as np
 
 
+def _ensure_gdal_headers():
+    """Hand GDAL /vsicurl the same bearer token earthaccess is using."""
+    token = os.environ.get("EARTHDATA_TOKEN")
+    if token:
+        os.environ.setdefault("GDAL_HTTP_HEADERS",
+                              f"Authorization: Bearer {token}")
+
+
 def _edl_login():
-    os.environ.setdefault("EARTHDATA_USERNAME", os.environ.get("EDL_USER", ""))
-    os.environ.setdefault("EARTHDATA_PASSWORD", os.environ.get("EDL_PASS", ""))
+    if not os.environ.get("EARTHDATA_TOKEN"):
+        os.environ.setdefault("EARTHDATA_USERNAME", os.environ.get("EDL_USER", ""))
+        os.environ.setdefault("EARTHDATA_PASSWORD", os.environ.get("EDL_PASS", ""))
     import earthaccess
 
-    return earthaccess.login(strategy="environment")
+    auth = earthaccess.login(strategy="environment")
+    _ensure_gdal_headers()
+    return auth
+
+
+def check_earthdata_token():
+    """Workflow pre-step: exit loudly if EARTHDATA_TOKEN is expired/rejected."""
+    try:
+        import earthaccess
+
+        earthaccess.login(strategy="environment")
+        earthaccess.search_data(
+            short_name="GPM_3IMERGHHE", version="07", count=1)
+    except Exception:  # noqa: BLE001 — workflow gate must fail on any error
+        sys.exit(
+            "EARTHDATA_TOKEN expired or rejected — regenerate at "
+            "https://urs.earthdata.nasa.gov/user_tokens and update the "
+            "GitHub secret EARTHDATA_TOKEN")
 
 
 def _subset(da, bounds):
@@ -250,11 +277,14 @@ def nisar_recent_passes(bounds, days: int = 14) -> list[dict]:
     import asf_search as asf
     from shapely.geometry import box
 
+    token = os.environ.get("EARTHDATA_TOKEN")
+    session = asf.ASFSession().auth_with_token(token) if token else None
     wkt = box(*bounds).wkt
     end = dt.datetime.now(dt.UTC)
     results = asf.geo_search(
         intersectsWith=wkt, platform=asf.PLATFORM.NISAR,
         start=end - dt.timedelta(days=days), end=end,
+        session=session,
     )
     return [
         {

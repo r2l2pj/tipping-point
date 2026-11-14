@@ -40,10 +40,14 @@ jobs:
             rm -f /tmp/sa.json
           fi
 
+      - name: Validate Earthdata token
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+        run: uv run python -c "from live.fetch import check_earthdata_token; check_earthdata_token()"
+
       - name: Run live pipeline (IMERG Early + SMAP L4 + GEOS-FP -> now/)
         env:
-          EDL_USER: ${{ secrets.EDL_USER }}
-          EDL_PASS: ${{ secrets.EDL_PASS }}
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GEE_PROJECT: ${{ vars.GEE_PROJECT }}
           NOW_GCS_BUCKET: tipping-point-data
