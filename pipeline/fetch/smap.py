@@ -170,14 +170,14 @@ def open_rootzone(path, bounds):
     """
     import xarray as xr
 
+    # Real SPL4SMGP v008: sm_rootzone_wetness under Geophysical_Data,
+    # cell_lat/cell_lon at file root (no dimension labels, so h5netcdf
+    # needs phony_dims). Same layout live/fetch.py reads.
     ds = xr.open_dataset(str(path), group="Geophysical_Data",
-                         engine="h5netcdf")
+                         engine="h5netcdf", phony_dims="sort")
     sm = ds["sm_rootzone_wetness"].load()
-    try:
-        lats, lons = ds["cell_lat"].values, ds["cell_lon"].values
-    except KeyError:
-        geo = xr.open_dataset(str(path), group="Metadata", engine="h5netcdf")
-        lats, lons = geo["cell_lat"].values, geo["cell_lon"].values
+    geo = xr.open_dataset(str(path), engine="h5netcdf", phony_dims="sort")
+    lats, lons = geo["cell_lat"].values, geo["cell_lon"].values
     w, s, e, n = bounds
     m = ((lats >= s - CLIP_PAD_DEG) & (lats <= n + CLIP_PAD_DEG)
          & (lons >= w - CLIP_PAD_DEG) & (lons <= e + CLIP_PAD_DEG))

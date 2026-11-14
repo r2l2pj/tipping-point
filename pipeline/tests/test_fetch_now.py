@@ -434,6 +434,27 @@ def test_imerg_run_end_to_end(tmp_path, monkeypatch):
     assert len(calls["manifest"]) == 4
 
 
+def test_smap_open_rootzone_real_layout(tmp_path):
+    """SPL4SMGP v008 layout: sm under Geophysical_Data, cell_lat/lon at
+    root (the KeyError hit on a real granule, u15/live/fetch.py fix)."""
+    h5py = pytest.importorskip("h5py")
+    f = tmp_path / "SMAP_L4_SM_gph_fake.h5"
+    with h5py.File(f, "w") as h:
+        g = h.create_group("Geophysical_Data")
+        g.create_dataset("sm_rootzone_wetness",
+                         data=np.array([[0.4, 0.5], [0.6, np.nan]],
+                                       dtype=np.float32))
+        h.create_dataset("cell_lat", data=np.array(
+            [[-30.0, -30.0], [-31.0, -31.0]], dtype=np.float64))
+        h.create_dataset("cell_lon", data=np.array(
+            [[-52.0, -51.0], [-52.0, -51.0]], dtype=np.float64))
+    lats, _lons, vals = smap.open_rootzone(f, BOUNDS)
+    assert lats.size == 4 and np.isfinite(vals).sum() == 3
+    # outside the bbox -> nothing
+    far = smap.open_rootzone(f, (10.0, 10.0, 20.0, 20.0))
+    assert far[0].size == 0
+
+
 def test_smap_run_end_to_end(tmp_path, monkeypatch):
     _fake_rasterio(monkeypatch)
     manifest = tmp_path / "assets.json"
