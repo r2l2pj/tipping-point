@@ -16,6 +16,12 @@ manifest last. `--local` runs the local numpy pipeline below instead
 The --local path requires static/sul_static.npz — build once with
 live/build_static.py. Credentials come from env (EARTHDATA_TOKEN canonical,
 EDL_USER/EDL_PASS local fallback, GCP_SA_KEY); nothing is stored.
+
+`--imer-source gee` stands in for IMERG Early with the GEE collection
+NASA/GPM_L3/IMERG_V07 (honestly labeled: 'gee:' product_id and
+summary.json imerg_source="gee-imer-v07-standin"). It exists only until
+the GES DISC EULA is accepted on the token account — 'gesdisc' stays the
+default so the daily workflow is unaffected.
 """
 from __future__ import annotations
 
@@ -55,6 +61,11 @@ def parse_args(argv=None):
     p.add_argument("--out-dir", type=Path, default=NOW_DIR)
     p.add_argument("--static-dir", type=Path, default=STATIC_DIR)
     p.add_argument("--imerg-days", type=int, default=IMERG_LOOKBACK_DAYS)
+    p.add_argument("--imer-source", choices=("gesdisc", "gee"), default="gesdisc",
+                   help="--local IMERG source: 'gesdisc' = IMERG Early via GES "
+                        "DISC (default; requires the accepted EULA), 'gee' = "
+                        "temporary NASA/GPM_L3/IMERG_V07 stand-in via Earth "
+                        "Engine until the GES DISC EULA is accepted")
     p.add_argument("--no-nisar", action="store_true", help="skip the NISAR pass listing")
     p.add_argument("--no-upload", action="store_true",
                    help="skip GCS upload even if NOW_GCS_BUCKET is set")
@@ -106,7 +117,22 @@ def run(args) -> dict:
     today = args.date
 
     # ---- fetch ------------------------------------------------------------
-    imerg_daily, imerg_date = fetch.fetch_imerg_daily(tuple(args.bounds), today, args.imerg_days)
+    if args.imer_source == "gee":
+        imerg_daily, imerg_date = fetch.fetch_imerg_gee_standin(
+            tuple(args.bounds), days=args.imerg_days)
+        imerg_source = "gee-imer-v07-standin"
+    else:
+        try:
+            imerg_daily, imerg_date = fetch.fetch_imerg_daily(
+                tuple(args.bounds), today, args.imerg_days)
+        except Exception as exc:
+            if "403" in str(exc) or "eula" in str(exc).lower():
+                print("hint: GES DISC IMERG Early was rejected (403/EULA?) — "
+                      "rerun with `--imer-source gee` to stand in with GEE "
+                      "NASA/GPM_L3/IMERG_V07 until the EULA is accepted",
+                      file=sys.stderr)
+            raise
+        imerg_source = "gesdisc-early"
     sm_lats, sm_lons, sm_vals, smap_date = fetch.fetch_smap_l4(tuple(args.bounds))
     fc_daily_da, geos_issued = fetch.fetch_geosfp_daily(tuple(args.bounds), today)
     nisar = [] if args.no_nisar else fetch.nisar_recent_passes(
@@ -188,6 +214,7 @@ def run(args) -> dict:
         "people_exposed": people_critical,
         "people_critical": people_critical,   # v4 metrics key (same value)
         "forecast_source": "geos-fp",         # v4 metrics key (D+1..D+3)
+        "imerg_source": imerg_source,         # honest stand-in labeling
         "classes_km2": {
             LABELS[c]: float((area_km2 * ((slides[0] == c) & valid_s0)).sum())
             for c in range(4)},

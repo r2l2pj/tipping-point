@@ -364,3 +364,135 @@ def test_gds_get_gives_up_after_three_connection_errors(monkeypatch):
     with pytest.raises(requests.exceptions.ConnectionError):
         fetch._gds_get("http://x")
     assert len(calls) == 3
+
+
+# ---- GEE IMERG_V07 stand-in (stub ee + stub requests.get, no network) ----
+
+def _stub_gee(monkeypatch, latest_ms):
+    """Fake `ee` module + `gee.common.ee_init` in sys.modules.
+
+    The chain mirrors fetch_imerg_gee_standin: ImageCollection().select()
+    .aggregate_max().getInfo() -> latest_ms, and per-day
+    .filterDate(a, b).sum().multiply(f).getDownloadURL(params) ->
+    'fake://day/<a>' (the stubbed requests.get maps that to a GeoTIFF).
+    """
+    import sys
+    import types
+
+    state = {"factors": [], "filter_dates": [], "urls": []}
+
+    class _Val:
+        def __init__(self, v):
+            self._v = v
+
+        def getInfo(self):
+            return self._v
+
+    class _Img:
+        def __init__(self, start):
+            self.start = start
+
+        def multiply(self, f):
+            state["factors"].append(f)
+            return self
+
+        def getDownloadURL(self, params):
+            url = f"fake://day/{self.start}"
+            state["urls"].append((url, params))
+            return url
+
+    class _DayColl:
+        def __init__(self, start):
+            self.start = start
+
+        def sum(self):
+            return _Img(self.start)
+
+    class _Coll:
+        def select(self, band):
+            assert band == "precipitation"
+            return self
+
+        def aggregate_max(self, prop):
+            assert prop == "system:time_start"
+            return _Val(latest_ms)
+
+        def filterDate(self, a, b):
+            state["filter_dates"].append((a, b))
+            return _DayColl(a)
+
+    ee = types.ModuleType("ee")
+    ee.ImageCollection = lambda path: _Coll()
+    ee.Geometry = types.SimpleNamespace(Rectangle=lambda c: list(c))
+    monkeypatch.setitem(sys.modules, "ee", ee)
+
+    gee_common = types.ModuleType("gee.common")
+    gee_common.ee_init = lambda: "proj"
+    monkeypatch.setitem(sys.modules, "gee.common", gee_common)
+    return state
+
+
+def _tiff_bytes(arr, west, north, res=0.1):
+    """One-band float32 GeoTIFF in memory, EPSG:4326, NaN nodata."""
+    import rasterio
+    from rasterio.transform import from_origin
+
+    h, w = arr.shape
+    with rasterio.MemoryFile() as mf:
+        with mf.open(driver="GTiff", height=h, width=w, count=1,
+                     dtype="float32", crs="EPSG:4326",
+                     transform=from_origin(west, north, res, res),
+                     nodata=float("nan")) as dst:
+            dst.write(arr.astype(np.float32), 1)
+        return mf.read()
+
+
+def test_fetch_imerg_gee_standin(monkeypatch):
+    import requests
+
+    latest = dt.datetime(2026, 11, 13, 5, 30, tzinfo=dt.UTC)
+    state = _stub_gee(monkeypatch, latest.timestamp() * 1000)
+
+    # canned per-day grids 4x5 px at 0.1 deg; day i filled with (i+1)*4 mm/h
+    # so the recorded 0.5 multiply is what would make it mm/day server-side
+    day_vals = {}
+    days = [dt.date(2026, 11, 11) + dt.timedelta(days=i) for i in range(3)]
+    for i, d in enumerate(days):
+        arr = np.full((4, 5), (i + 1) * 4.0, dtype=np.float32)
+        day_vals[f"fake://day/{d.isoformat()}"] = arr
+    day_vals[f"fake://day/{days[1].isoformat()}"][1, 2] = np.nan  # masked cell
+
+    class _Resp:
+        def __init__(self, content):
+            self.content = content
+
+    def _get(url, timeout):
+        return _Resp(_tiff_bytes(day_vals[url], west=BOUNDS[0], north=BOUNDS[3]))
+
+    monkeypatch.setattr(requests, "get", _get)
+
+    daily, pid = fetch.fetch_imerg_gee_standin(BOUNDS, days=3)
+
+    assert daily.dims == ("time", "lat", "lon")
+    assert daily.shape == (3, 4, 5)
+    got = [str(t)[:10] for t in np.datetime_as_string(daily.time.values)]
+    assert got == [d.isoformat() for d in days]
+    np.testing.assert_allclose(daily.isel(time=0).values,
+                               np.full((4, 5), 4.0))
+    np.testing.assert_allclose(np.nan_to_num(daily.isel(time=2).values),
+                               np.full((4, 5), 12.0))
+    assert np.isnan(daily.isel(time=1).values[1, 2])  # masked -> NaN
+    assert state["factors"] == [0.5, 0.5, 0.5]        # mm/h * 0.5h -> mm/day
+    assert state["filter_dates"] == [
+        (d.isoformat(), (d + dt.timedelta(days=1)).isoformat()) for d in days]
+    for _, params in state["urls"]:
+        assert params["scale"] == 10_000 and params["crs"] == "EPSG:4326"
+    assert pid == ("gee:NASA/GPM_L3/IMERG_V07 latest=2026-11-13T05:30:00Z")
+    assert pid.startswith("gee:")
+
+
+def test_run_now_imer_source_flag():
+    from live.run_now import parse_args
+
+    assert parse_args([]).imer_source == "gesdisc"
+    assert parse_args(["--imer-source", "gee"]).imer_source == "gee"

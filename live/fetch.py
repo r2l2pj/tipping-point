@@ -88,6 +88,79 @@ def fetch_imerg_daily(bounds, end: dt.date, days: int = 7):
     return daily.compute(), f"{last_iso}Z"
 
 
+def _download_grid_geotiff(url: str):
+    """Fetch one EE getDownloadURL GeoTIFF -> (arr2d, lats, lons).
+
+    Masked cells become NaN; lat/lon are cell-centre coords read off the
+    GeoTIFF transform so the result feeds regrid_da like the other grids.
+    """
+    import io
+    import zipfile
+
+    import rasterio
+    import requests
+
+    data = requests.get(url, timeout=600).content
+    if data[:4] == b"PK\x03\x04":
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            data = z.read(next(n for n in z.namelist() if n.endswith(".tif")))
+    with rasterio.open(io.BytesIO(data)) as src:
+        arr = np.asarray(src.read(1, masked=True).filled(np.nan), dtype=np.float64)
+        t = src.transform
+        lons = t.c + (np.arange(arr.shape[1]) + 0.5) * t.a
+        lats = t.f + (np.arange(arr.shape[0]) + 0.5) * t.e
+    return arr, lats, lons
+
+
+def fetch_imerg_gee_standin(bounds, days: int = 7):
+    """GEE NASA/GPM_L3/IMERG_V07 stand-in for fetch_imerg_daily.
+
+    Exists ONLY while the GES DISC token account has not accepted the
+    GPM_3IMERGHHE EULA (fetch_imerg_daily gets 403). IMERG_V07 is the
+    ~1.5-day-latency half-hourly collection — 'precipitation' is mm/h per
+    30-min step, so the daily .sum() is multiplied by 0.5 (same factor as
+    build_static._climatology.accum) to get mm/day.
+
+    The 0.1 deg (~10 km) single-region getDownloadURL keeps each request
+    far below the EE 'user memory limit' — the local TPI grid regrids it
+    anyway. Returns (daily_xarray(time,lat,lon), product_id); product_id
+    carries a 'gee:' prefix so the stand-in is visible in every artifact.
+    """
+    import xarray as xr
+
+    from gee.common import ee_init
+    ee_init()  # returns the project string; the ee module itself is used below
+    import ee
+
+    col = ee.ImageCollection("NASA/GPM_L3/IMERG_V07").select("precipitation")
+    latest_ms = col.aggregate_max("system:time_start").getInfo()
+    latest_dt = dt.datetime.fromtimestamp(latest_ms / 1000, dt.UTC)
+    last_day = latest_dt.date()
+    region = ee.Geometry.Rectangle(list(bounds))
+
+    slabs, lats, lons, dates = [], None, None, []
+    for i in range(days):
+        day = last_day - dt.timedelta(days=days - 1 - i)
+        img = (col.filterDate(day.isoformat(),
+                              (day + dt.timedelta(days=1)).isoformat())
+               .sum().multiply(0.5))
+        url = img.getDownloadURL({
+            "scale": 10_000, "format": "GEO_TIFF", "crs": "EPSG:4326",
+            "region": region})
+        arr, lats, lons = _download_grid_geotiff(url)
+        slabs.append(arr)
+        dates.append(np.datetime64(day.isoformat()))
+
+    daily = xr.DataArray(
+        np.stack(slabs), dims=("time", "lat", "lon"),
+        coords={"time": np.array(dates), "lat": lats, "lon": lons},
+        name="precip",
+    )
+    pid = (f"gee:NASA/GPM_L3/IMERG_V07 "
+           f"latest={latest_dt.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+    return daily, pid
+
+
 def fetch_smap_l4(bounds, days_back: int = 10):
     """Most recent SMAP L4 sm_rootzone_wetness as scattered lat/lon points.
 
