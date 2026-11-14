@@ -211,7 +211,7 @@ def test_subset_is_padded_one_point(monkeypatch):
 
 # ---- Earthdata bearer-token auth (ruling L6) ------------------------------
 
-def test_edl_login_uses_earthdata_token(monkeypatch):
+def test_edl_login_uses_earthdata_token(monkeypatch, request):
     """EARTHDATA_TOKEN -> offline login, bearer session, GDAL header."""
     import earthaccess
 
@@ -219,8 +219,17 @@ def test_edl_login_uses_earthdata_token(monkeypatch):
                 "EARTHDATA_PASSWORD", "GDAL_HTTP_HEADERS"):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("EARTHDATA_TOKEN", "fake")
-    earthaccess.__auth__.authenticated = False
-    earthaccess.__auth__.token = None
+    # monkeypatch restores the pre-test singleton state at teardown; the
+    # direct assignments it replaces would leave a logged-in auth behind
+    # (earthaccess.__auth__ is module-global and login() early-returns on it)
+    monkeypatch.setattr(earthaccess.__auth__, "authenticated", False)
+    monkeypatch.setattr(earthaccess.__auth__, "token", None)
+    # _edl_login leaks env vars via os.environ.setdefault — untracked by
+    # monkeypatch — so drop them at teardown
+    request.addfinalizer(
+        lambda: [os.environ.pop(v, None) for v in
+                 ("GDAL_HTTP_HEADERS", "EARTHDATA_USERNAME",
+                  "EARTHDATA_PASSWORD")])
 
     fetch._edl_login()
 
@@ -230,7 +239,7 @@ def test_edl_login_uses_earthdata_token(monkeypatch):
     assert os.environ["GDAL_HTTP_HEADERS"] == "Authorization: Bearer fake"
 
 
-def test_edl_login_falls_back_to_edl_user_pass(monkeypatch):
+def test_edl_login_falls_back_to_edl_user_pass(monkeypatch, request):
     """No token -> EDL_USER/EDL_PASS mapped onto earthaccess env names."""
     import earthaccess
 
@@ -239,6 +248,12 @@ def test_edl_login_falls_back_to_edl_user_pass(monkeypatch):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("EDL_USER", "u1")
     monkeypatch.setenv("EDL_PASS", "p1")
+    # _edl_login leaks the mapped env vars via os.environ.setdefault —
+    # untracked by monkeypatch — so drop them at teardown
+    request.addfinalizer(
+        lambda: [os.environ.pop(v, None) for v in
+                 ("EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+                  "GDAL_HTTP_HEADERS")])
     calls = []
     monkeypatch.setattr(earthaccess, "login",
                         lambda **kw: calls.append(kw) or object())
