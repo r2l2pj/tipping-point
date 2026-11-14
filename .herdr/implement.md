@@ -644,3 +644,27 @@ GCP_SA_KEY/GEE_SERVICE_ACCOUNT_KEY or ADC via
 GOOGLE_APPLICATION_CREDENTIALS); `data/<case>/assets.json` upserts keyed
 by name; `_is_not_found` = status/code first, text fallback with auth
 veto.
+
+## Addendum — ruling L9 (bounds default source)
+
+- `--bounds` default is no longer the constant: each module resolves the AOI
+  lazily via `now_bounds()` → `tp.config.now_bounds()` (config.yaml
+  `domains.now`), falling back to the bundled `NOW_BOUNDS` while the helper
+  doesn't exist here. `parse_args` uses `default=None`; `main`, `run` and
+  `plan` all resolve `None` → `now_bounds()`, so programmatic callers get the
+  same default. `--bounds` still overrides. New test
+  `test_now_bounds_resolution` covers fallback, config-wins and CLI override.
+- Branch was already rebased onto current main (my commit is `f52fe7c`,
+  followed by report commit `cddea0b`), so the L9 change went in as a NEW
+  commit — amending would have folded the shared implement.md report commit
+  into mine.
+- **Pre-existing failure, not mine:**
+  `pipeline/tests/test_fetch_nisar.py::test_execute_requires_creds` —
+  `fetch/nisar.py:365` calls `tp_nisar._edl_credentials`, removed by edlauth's
+  `d2ccd35` (`fetch/edl.py` now owns EDL auth). unit/nisar-update drift,
+  fails without my change. Owner: lead-gathering to route a fix.
+- Since the rebase, `fetch/ingest.py` + `fetch/edl.py` exist:
+  `_INGEST_CANDIDATES` resolves the real contract (`fetch.ingest` /
+  `pipeline.fetch.ingest`) and my `_edl_login` duplicates `edl.earthaccess_login`
+  semantics — a future cleanup could swap to `fetch.edl` (left as-is: out of
+  the L9 scope).
