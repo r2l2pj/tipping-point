@@ -126,6 +126,17 @@ def _write_fc(data_dir, case, filename, features):
     return path
 
 
+@pytest.mark.parametrize("kind", ["glc", "inventory"])
+def test_prepared_catalog_preserves_timestamp_precision(tmp_path, kind):
+    props = {"t_utc": "2024-05-02T15:00:00Z", "t_precision": "date",
+             "event_date": "2024-05-02", "source": "fixture"}
+    features = [_point(props), _point({"t_precision": "none", "event_date": None})]
+    src = _write_fc(tmp_path, "rs_2024", "landslide_catalog.geojson", features)
+    prepared = ref.prepare_geojson(src, kind, tmp_path / "staging")
+    assert json.loads(prepared.read_text())["features"] == features
+    assert prepared == src
+
+
 def _point(props):
     return {"type": "Feature",
             "geometry": {"type": "Point", "coordinates": [-51.8, -29.7]},

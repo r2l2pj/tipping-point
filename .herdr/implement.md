@@ -1,4 +1,29 @@
 # implement: unit/imerg-range — IMERG Early case-window hindcast
+# implement — landslide timestamps (unit/lsltime, t120)
+
+## Changed
+
+- `pipeline/fetch/glc.py`: emits `t_utc` and `t_precision` (`hour`/`date`/`none`), preserving existing catalog properties. ArcGIS epoch dates retain day precision; date-only anchors use local noon (America/Los_Angeles for WA; America/Sao_Paulo for RS). Explicit offsets are converted to UTC; naive datetime values use the case zone.
+- `pipeline/fetch/inventory.py`: emits the same properties, using local noon America/Sao_Paulo for date-only rows; omits `t_utc` for undated rows. Handles sparse date columns across concatenated inventories and retains all of the final event-window day. Native midnight values without explicit textual time are conservatively date precision.
+- `pipeline/fetch/reference.py`: inspected; no code/API change needed. Existing staging preserves the new properties.
+- Tests in `test_fetch_glc.py`, `test_fetch_inventory.py`, `test_fetch_reference.py`: 12 added cases covering epoch dates, strings/native dates, offset/naive/UTC datetimes, null/invalid dates, sparse mixed-inventory dates, empty AOI, local-noon DST conversion, and reference passthrough.
+- No GeoJSON products regenerated. Code/test diff: 5 files, 141 insertions, 25 deletions.
+
+## Commands and results
+
+Base SHA: `c7e5322`; commands ran on the unit/lsltime working tree containing the changes above. UV below is `$HOME/.local/share/mise/installs/uv/0.13.8/uv-x86_64-unknown-linux-gnu/uv`.
+
+- `$UV sync`: exit 0; Python 3.15.2 environment, 119 packages installed.
+- `$UV run pytest pipeline/tests -q`: final result `300 passed, 9 warnings in 9.35s` (warnings are Rasterio NotGeoreferencedWarning from existing bundle fixtures).
+- `$UV run pytest pipeline/tests/test_fetch_glc.py pipeline/tests/test_fetch_inventory.py pipeline/tests/test_fetch_reference.py -q`: `38 passed in 0.69s`.
+- `$UV run ruff check .`: `All checks passed!`.
+- `git diff --check`: exit 0.
+
+Contract update from lead-gathering applied before final verification: property is `t_precision`, and date-only GLC anchors also use local noon. Shared Herdr to-do item 1 was accidentally reworded, then restored verbatim with its done state preserved after lead supplied its original text.
+
+---
+
+# implement — ingest (GEE asset ingest unit, t9r) — round 3 fixes
 
 ## Changed files
 

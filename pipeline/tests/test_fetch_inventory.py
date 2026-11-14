@@ -1,6 +1,7 @@
 """Offline tests for fetch.inventory — temp shapefiles + fake Zenodo payload."""
 import json
 import sys
+from datetime import date, datetime
 from pathlib import Path
 
 import geopandas as gpd
@@ -49,6 +50,8 @@ def test_catalog_filter_no_date_column(tmp_path):
     out = inventory.catalog_filter(gpd.read_file(tmp_path / "nodate.shp"), RS_EVENT)
     assert len(out) == 3                      # aoi only, no date column
     assert set(out["event_date"]) == {None}
+    assert set(out["t_precision"]) == {"none"}
+    assert set(out["t_utc"]) == {None}
 
 
 class _FakeResponse:
@@ -108,6 +111,47 @@ def test_download_inventories_unreachable_returns_empty(tmp_path, monkeypatch):
     assert inventory.download_inventories(tmp_path / "raw") == {"fake": []}
 
 
+def test_catalog_filter_native_dates():
+    rows = gpd.GeoDataFrame({
+        "DATA": [date(2024, 5, 2), datetime(2024, 5, 3, 8, 30), None],
+        "geometry": [Point(-51.5, -29.7)] * 3,
+    }, crs=4326)
+    out = inventory.catalog_filter(rows, RS_EVENT)
+    assert list(out["t_precision"]) == ["date", "hour", "none"]
+    assert list(out["t_utc"]) == ["2024-05-02T15:00:00Z", "2024-05-03T11:30:00Z", None]
+
+
+def test_catalog_filter_empty_aoi():
+    rows = _points_gdf()
+    event = {**RS_EVENT, "aoi": {"bbox": [0, 0, 1, 1]}}
+    out = inventory.catalog_filter(rows, event)
+    assert out.empty
+    assert {"geometry", "event_date", "t_utc", "t_precision"} <= set(out.columns)
+
+
+def test_inventory_catalog_mixed_dates(tmp_path, monkeypatch):
+    rows = gpd.GeoDataFrame({
+        "DATA": ["2024-05-02", None, None, None, None],
+        "date_time": [None, "2024-05-03 08:30:00", "2024-05-31T23:30:00-03:00",
+                      None, "2024-05-04T00:00:00-03:00"],
+        "source": ["UFRGS", "Cemaden", "Cemaden", "UFRGS", "Cemaden"],
+        "doi": ["10/test"] * 5,
+        "geometry": [Point(-51.5, -29.7)] * 5,
+    }, crs=4326)
+    monkeypatch.setattr(inventory, "download_inventories", lambda raw: {})
+    monkeypatch.setattr(inventory, "_load_point_shapefiles", lambda raw: rows)
+    monkeypatch.setattr(inventory, "event_data_dir", lambda case: tmp_path / case)
+    out = inventory.inventory_catalog(RS_EVENT)
+    props = [f["properties"] for f in json.loads(out.read_text())["features"]]
+    assert [p["t_precision"] for p in props] == ["date", "hour", "hour", "none", "hour"]
+    assert [p.get("t_utc") for p in props] == [
+        "2024-05-02T15:00:00Z", "2024-05-03T11:30:00Z", "2024-06-01T02:30:00Z",
+        None, "2024-05-04T03:00:00Z",
+    ]
+    assert "t_utc" not in props[3]
+    assert props[3]["event_date"] is None
+
+
 def test_inventory_catalog_end_to_end(tmp_path, monkeypatch):
     monkeypatch.setattr(inventory, "event_data_dir", lambda eid: tmp_path / "data" / eid)
     monkeypatch.setattr(inventory, "DATA_DIR", tmp_path / "data")
@@ -123,5 +167,6 @@ def test_inventory_catalog_end_to_end(tmp_path, monkeypatch):
     props = fc["features"][0]["properties"]
     assert props == {"source": "UFRGS", "license": "CC-BY-4.0",
                      "doi": "10.5281/zenodo.15618462",
-                     "event_date": props["event_date"]}
+                     "event_date": props["event_date"],
+                     "t_utc": "2024-05-02T15:00:00Z", "t_precision": "date"}
     assert fc["features"][0]["geometry"]["type"] == "Point"

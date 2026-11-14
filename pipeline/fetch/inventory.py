@@ -97,12 +97,12 @@ def download_inventories(raw_dir: Path) -> dict:
 
 
 def _date_column(gdf: gpd.GeoDataFrame) -> str | None:
-    """First column whose name looks like a date AND mostly parses as one."""
+    """First date-named column with a parseable value, including sparse dates."""
     for col in gdf.columns:
         if col == "geometry" or not _DATE_COL_RE.search(str(col)):
             continue
-        parsed = pd.to_datetime(gdf[col], errors="coerce")
-        if len(gdf) == 0 or parsed.notna().mean() > 0.5:
+        parsed = pd.to_datetime(gdf[col], errors="coerce", format="mixed", utc=True)
+        if len(gdf) == 0 or parsed.notna().any():
             return col
     return None
 
@@ -114,19 +114,36 @@ def catalog_filter(gdf: gpd.GeoDataFrame, event: dict) -> gpd.GeoDataFrame:
     """
     west, south, east, north = event["aoi"]["bbox"]
     gdf = gdf.cx[west:east, south:north].copy()
-    gdf["event_date"] = None
-    col = _date_column(gdf)
-    if col is not None:
-        dates = pd.to_datetime(gdf[col], errors="coerce")
-        start = pd.Timestamp(event["window"]["start"])
-        end = pd.Timestamp(event["window"]["end"])
-        in_window = dates.isna() | ((dates >= start) & (dates <= end))
-        gdf = gdf[in_window]
-        dates = dates[in_window]
-        gdf.loc[dates.notna(), "event_date"] = (
-            dates[dates.notna()].dt.strftime("%Y-%m-%d")
-        )
-    return gdf
+    candidates = gdf.drop(columns="geometry")
+    dates = pd.Series([None] * len(gdf), index=gdf.index, dtype=object)
+    precision = pd.Series("none", index=gdf.index)
+    while (col := _date_column(candidates)) is not None:
+        for idx, raw in candidates[col].items():
+            if dates[idx] is not None or pd.isna(raw):
+                continue
+            stamp = pd.to_datetime(raw, errors="coerce")
+            if pd.isna(stamp):
+                continue
+            has_time = ":" in raw if isinstance(raw, str) else bool(
+                stamp.hour or stamp.minute or stamp.second or stamp.microsecond)
+            if not has_time:
+                stamp = stamp.normalize() + pd.Timedelta(hours=12)
+            if stamp.tzinfo is None:
+                stamp = stamp.tz_localize("America/Sao_Paulo")
+            dates[idx] = stamp
+            precision[idx] = "hour" if has_time else "date"
+        candidates = candidates.drop(columns=col)
+    gdf["event_date"] = pd.Series(
+        [t.strftime("%Y-%m-%d") if t is not None else None for t in dates],
+        index=gdf.index, dtype=object)
+    gdf["t_precision"] = precision
+    gdf["t_utc"] = pd.Series(
+        [t.tz_convert("UTC").strftime("%Y-%m-%dT%H:%M:%SZ") if t is not None else None for t in dates],
+        index=gdf.index, dtype=object)
+    start = event["window"]["start"]
+    end = event["window"]["end"]
+    in_window = gdf["event_date"].map(lambda d: d is None or start <= d <= end).astype(bool)
+    return gdf[in_window]
 
 
 def _load_point_shapefiles(raw_dir: Path) -> gpd.GeoDataFrame:
@@ -184,10 +201,13 @@ def inventory_catalog(event: dict) -> Path:
                 "license": LICENSE,
                 "doi": doi,
                 "event_date": event_date,
+                "t_precision": precision,
+                **({"t_utc": t_utc} if t_utc is not None else {}),
             },
         }
-        for geom, src, doi, event_date in zip(
-            gdf.geometry, gdf["source"], gdf["doi"], gdf["event_date"]
+        for geom, src, doi, event_date, t_utc, precision in zip(
+            gdf.geometry, gdf["source"], gdf["doi"], gdf["event_date"],
+            gdf["t_utc"], gdf["t_precision"],
         )
     ]
     _write_feature_collection(features, out)

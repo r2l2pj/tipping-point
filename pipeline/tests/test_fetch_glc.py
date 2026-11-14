@@ -4,6 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from fetch import glc
 from tp.events import load_event
 
@@ -104,6 +105,26 @@ def test_glc_catalog_parses_fixture(monkeypatch, tmp_path):
     assert props["latitude"] == 48.27 and props["longitude"] == -121.93
     assert props["source"] == glc.SOURCE_NAME and props["url"] == glc.SOURCE_URL
     assert fc["features"][0]["geometry"]["type"] == "Point"
+
+
+@pytest.mark.parametrize(("raw", "expected", "precision"), [
+    (1395446400000, "2014-03-22T19:00:00Z", "date"),
+    ("2025-12-10", "2025-12-10T20:00:00Z", "date"),
+    ("2025-12-10T08:30:00-08:00", "2025-12-10T16:30:00Z", "hour"),
+    ("2025-12-10T08:30:00", "2025-12-10T16:30:00Z", "hour"),
+    ("2025-12-10T08:30:00Z", "2025-12-10T08:30:00Z", "hour"),
+    (None, None, "none"),
+    ("invalid", None, "none"),
+])
+def test_glc_timestamp_properties(monkeypatch, tmp_path, raw, expected, precision):
+    _patch(monkeypatch, tmp_path, {"features": [_feature({"event_date": raw})]})
+    out = glc.glc_catalog(load_event("wa-2025-12"))
+    props = json.loads(out.read_text())["features"][0]["properties"]
+    assert props["t_precision"] == precision
+    if expected is None:
+        assert "t_utc" not in props
+    else:
+        assert props["t_utc"] == expected
 
 
 def test_glc_catalog_empty_result(monkeypatch, tmp_path):

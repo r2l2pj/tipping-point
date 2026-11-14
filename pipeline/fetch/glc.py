@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import requests
 from tp.events import DATA_DIR
@@ -66,12 +67,28 @@ def _query_params(event: dict, window: dict | None = None) -> dict:
     }
 
 
-def _clean_properties(props: dict) -> dict:
+def _clean_properties(props: dict, timezone: str = "America/Los_Angeles") -> dict:
     out = {k: props[k] for k in KEEP_PROPS if props.get(k) is not None}
-    if isinstance(out.get("event_date"), (int, float)):
-        out["event_date"] = datetime.fromtimestamp(
-            out["event_date"] / 1000, tz=UTC
-        ).strftime("%Y-%m-%d")
+    raw = out.get("event_date")
+    out["t_precision"] = "none"
+    if raw not in (None, ""):
+        try:
+            if isinstance(raw, (int, float)):
+                stamp = datetime.fromtimestamp(raw / 1000, tz=UTC)
+                out["event_date"] = stamp.strftime("%Y-%m-%d")
+                precision = "date"
+            else:
+                stamp = datetime.fromisoformat(str(raw).strip())
+                precision = "hour" if ":" in str(raw) else "date"
+            if precision == "date":
+                stamp = stamp.replace(hour=12, minute=0, second=0, microsecond=0,
+                                      tzinfo=ZoneInfo(timezone))
+            elif stamp.tzinfo is None:
+                stamp = stamp.replace(tzinfo=ZoneInfo(timezone))
+            out["t_utc"] = stamp.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+            out["t_precision"] = precision
+        except (ValueError, OverflowError, OSError):
+            pass
     out["source"] = SOURCE_NAME
     out["url"] = SOURCE_URL
     return out
@@ -95,7 +112,9 @@ def glc_catalog(event: dict, window: dict | None = None) -> Path:
         {
             "type": "Feature",
             "geometry": f["geometry"],
-            "properties": _clean_properties(f.get("properties") or {}),
+            "properties": _clean_properties(
+                f.get("properties") or {},
+                "America/Sao_Paulo" if event["id"].startswith("rs-") else "America/Los_Angeles"),
         }
         for f in payload.get("features") or []
         if f.get("geometry")
