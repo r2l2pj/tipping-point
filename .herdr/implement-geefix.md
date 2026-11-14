@@ -51,3 +51,21 @@ Commands (same UV executable as above):
 7. `git diff --check`: exit 0. Reviewed git diff/status/log. Only scoped tests and this report changed; no production modules changed in this follow-up.
 
 No helpers, no model switch, no push.
+
+## Review follow-up: fall back after configured file credentials fail
+
+Verified working diff based on `577730c` on unit/geefix.
+
+- ee_init now tries GOOGLE_APPLICATION_CREDENTIALS first, then GCP_SA_KEY on any file, JSON/key validation, credential construction, or initialization error. It returns after the first successful initialization. Only after all configured sources fail does it raise, naming every attempted source and GEE_PROJECT; permission-stage errors mention Earth Engine roles.
+- Added fake regressions for missing/stale file, invalid JSON file, credential-construction error, and EE initialization error, each followed by a successful JSON-env initialization; also checks both source names when all fail. Existing missing-file-only test now explicitly clears GCP_SA_KEY so host env cannot provide an unintended fallback.
+- Key fields are validated for both sources. No credentials or raw environment values are included in the aggregated error message.
+
+Commands use the exact UV executable recorded above:
+
+1. Before fix: `uv run pytest gee/tests/test_common.py -k 'falls_back_to_json or reports_all_failed_sources' -q`: **5 failed, 26 deselected in 0.20s**. Four cases stopped at the failed file source; the fifth error omitted GCP_SA_KEY.
+2. Final `uv run pytest pipeline/tests/test_ingest.py gee/tests -q`: **85 passed in 0.47s**.
+3. Final `uv run pytest gee/tests pipeline/tests -q --tb=short`: **1 failed, 351 passed, 9 warnings in 12.99s**. Same pre-existing test_fetch_nisar.py::test_execute_requires_creds / missing tp.nisar._edl_credentials; no GEE or OPERA failures. An earlier full run also had 351 passed and the same sole failure.
+4. `uv run ruff check gee/common.py gee/tests/test_common.py`: final **All checks passed!** Initial Ruff runs flagged BLE001 on the deferred broad catch; resolved by raising the combined error inside the final-source exception handler.
+5. `git diff --check`: exit 0. Reviewed git status/log; only common.py, test_common.py, and this report changed.
+
+No push, helper, model switch, or out-of-scope fixes.

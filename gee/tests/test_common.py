@@ -150,6 +150,46 @@ def test_ee_init_credentials(fake_ee, monkeypatch, tmp_path, file_env, json_env)
     assert init_call[2]["credentials"].name == "ee.ServiceAccountCredentials()"
 
 
+@pytest.mark.parametrize("failure", ["missing", "invalid", "credentials", "initialize"])
+def test_ee_init_falls_back_to_json(fake_ee, monkeypatch, tmp_path, failure):
+    key_data = json.dumps({"client_email": "fake@example.invalid", "private_key": "fake-key"})
+    key_file = tmp_path / "stale.json"
+    if failure != "missing":
+        key_file.write_text("invalid-json" if failure == "invalid" else key_data)
+    monkeypatch.setenv("GEE_PROJECT", "env-project")
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(key_file))
+    monkeypatch.setenv("GCP_SA_KEY", key_data)
+    attempts = []
+    initialized = []
+
+    def credentials(email, **kwargs):
+        attempts.append(kwargs)
+        if failure == "credentials" and "key_file" in kwargs:
+            raise ValueError("invalid file key")
+        return kwargs
+
+    def initialize(**kwargs):
+        initialized.append(kwargs)
+        if failure == "initialize" and "key_file" in kwargs["credentials"]:
+            raise RuntimeError("permission denied")
+
+    monkeypatch.setattr(fake_ee, "ServiceAccountCredentials", credentials)
+    monkeypatch.setattr(fake_ee, "Initialize", initialize)
+    assert common.ee_init() == "env-project"
+    assert attempts[-1] == {"key_data": key_data}
+    assert initialized[-1] == {"credentials": {"key_data": key_data}, "project": "env-project"}
+    assert len(attempts) == (2 if failure in ("credentials", "initialize") else 1)
+
+
+def test_ee_init_reports_all_failed_sources(fake_ee, monkeypatch, tmp_path):
+    monkeypatch.setenv("GEE_PROJECT", "env-project")
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(tmp_path / "missing.json"))
+    monkeypatch.setenv("GCP_SA_KEY", "invalid-json")
+    with pytest.raises(RuntimeError, match="GOOGLE_APPLICATION_CREDENTIALS.*GCP_SA_KEY"):
+        common.ee_init()
+    assert not fake_ee.log
+
+
 @pytest.mark.parametrize("project", ["", "env-project"])
 def test_ee_init_missing_env(fake_ee, monkeypatch, project):
     monkeypatch.setenv("GEE_PROJECT", project)
@@ -172,6 +212,7 @@ def test_ee_init_invalid_json_env(fake_ee, monkeypatch, key_data):
 
 
 def test_ee_init_missing_file(fake_ee, monkeypatch, tmp_path):
+    monkeypatch.delenv("GCP_SA_KEY", raising=False)
     monkeypatch.setenv("GEE_PROJECT", "env-project")
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", str(tmp_path / "missing.json"))
     with pytest.raises(RuntimeError, match="Invalid GOOGLE_APPLICATION_CREDENTIALS"):

@@ -66,36 +66,34 @@ def ee_init() -> str:
         raise RuntimeError("GEE_PROJECT is required for Earth Engine initialization.")
     key_file = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
     key_data = os.environ.get("GCP_SA_KEY", "").strip()
-    source = "GOOGLE_APPLICATION_CREDENTIALS" if key_file else "GCP_SA_KEY"
     if not key_file and not key_data:
         raise RuntimeError(
             "Set GOOGLE_APPLICATION_CREDENTIALS to a service-account JSON key file "
             "or GCP_SA_KEY to the whole service-account JSON key."
         )
-    try:
-        key = json.loads(Path(key_file).read_text() if key_file else key_data)
-        email = key["client_email"]
-        if not email:
-            raise ValueError("empty client_email")
-        if key_file:
-            creds = ee.ServiceAccountCredentials(email, key_file=key_file)
-        else:
-            if not key["private_key"]:
-                raise ValueError("empty private_key")
-            creds = ee.ServiceAccountCredentials(email, key_data=key_data)
-    except Exception as exc:
-        raise RuntimeError(
-            f"Invalid {source}: provide a service-account JSON key with client_email "
-            "and private_key."
-        ) from exc
-    try:
-        ee.Initialize(credentials=creds, project=project)
-    except Exception as exc:
-        raise RuntimeError(
-            f"Earth Engine initialization failed: verify GEE_PROJECT and {source}; "
-            "grant this service account the required Earth Engine roles on GEE_PROJECT."
-        ) from exc
-    return project
+    failures = []
+    for source, value in (("GOOGLE_APPLICATION_CREDENTIALS", key_file), ("GCP_SA_KEY", key_data)):
+        if not value:
+            continue
+        is_file = source == "GOOGLE_APPLICATION_CREDENTIALS"
+        failure = f"Invalid {source}: provide a service-account JSON key with client_email and private_key"
+        try:
+            key = json.loads(Path(value).read_text() if is_file else value)
+            email = key["client_email"]
+            if not email or not key["private_key"]:
+                raise ValueError("empty service-account fields")
+            creds = ee.ServiceAccountCredentials(
+                email, **({"key_file": value} if is_file else {"key_data": value})
+            )
+            failure = f"{source}: initialization failed; verify the service account's Earth Engine roles"
+            ee.Initialize(credentials=creds, project=project)
+            return project
+        except Exception as exc:
+            failures.append(failure)
+            if not is_file or not key_data:
+                raise RuntimeError(
+                    "Earth Engine initialization failed: verify GEE_PROJECT; tried " + "; ".join(failures)
+                ) from exc
 
 
 def init(project: str | None = None) -> str:
