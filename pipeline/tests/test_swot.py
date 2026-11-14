@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from tp import swot
-from tp.events import artifact_stem, load_event
+from tp.events import artifact_stem
 
 CSV_A = """reach_id,time_str,wse
 71224100223,2025-12-01T00:11:00Z,3.21
@@ -72,9 +72,8 @@ def test_series_path_uses_artifact_stem():
 
 
 def test_resolve_reach_ids_missing():
-    event = load_event("wa-2025-12")  # has no 'swot' block yet
     with pytest.raises(ValueError, match="reach"):
-        swot.resolve_reach_ids(None, event)
+        swot.resolve_reach_ids(None, {"id": "fake-1"})
     with pytest.raises(ValueError):
         swot.resolve_reach_ids(None, {"swot": {"reach_ids": []}})
     with pytest.raises(ValueError):
