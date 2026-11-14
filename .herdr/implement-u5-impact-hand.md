@@ -83,3 +83,12 @@
   (brief-mandated); `hand_validation` nests {radius:{r,iou}}.
 - The JS `Export.table` CSV side-artifact was dropped — Python merges
   metrics.json directly.
+
+## Post-rebase fix (cases[<cid>] metrics shape)
+
+- `merge_metrics` now returns `{"cases": {<cid>: {...}}}`. Test reads moved to
+  `cases[<cid>]`, including `_null_reasons`, `collections` and `hand_validation`.
+- `impact` resolves `common.ASSET_ROOT` (a `{GEE_PROJECT}` template) via
+  `_asset_root()`, and uses `tp.config.event_id` for the event id.
+- Proof: `$UV run python -m pytest gee/tests pipeline/tests -q` → 199 passed;
+  `$UV run ruff check .` → clean; both `--dry-run` plans print.
