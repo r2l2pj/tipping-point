@@ -18,10 +18,13 @@
     keys) when the file exists — convention path otherwise.
   - L8: `collections` also records the concrete GEE asset ids actually read
     (`tpi_slide_series` always; `flood_nisar` only when the gate opened).
-  - Exports the pre/post NTL means as Drive GeoTIFF COGs
-    (`formatOptions.cloudOptimized`), `fileNamePrefix` =
-    `<caso>_night_lights_{pre,post}_<AAAAMMDD>` via `tp.events.artifact_stem`
-    (→ `data/<case>/cog/` per L4).
+  - Pulls the pre/post NTL means locally as COGs — `img.getDownloadURL(
+    {region, scale:500, format:"GEO_TIFF"})` → `requests.get` → unzip →
+    `rasterio.shutil.copy(driver="COG")` (same mechanism as
+    `live/build_static.py::_download_band`); files land at
+    `data/<case>/cog/<caso>_night_lights_{pre,post}_<AAAAMMDD>.tif` via
+    `tp.events.artifact_stem`. Replaced `Export.image.toDrive` (staged files
+    in Drive, nothing fetched them — review blocker).
   - Merges via `tp.metrics.merge_metrics(case_id, ...)` — per L4 the helper
     resolves the arg; collections record GPW id+epoch and the VNP46A2 id.
 - `gee/hand.py` (new) — `python -m gee.hand --case <id> [--dry-run|--tasks]`.
@@ -42,7 +45,9 @@
     calls, `MQF==0`, scales 500/1000, the two COG export stems, focalMin radii
     {1000,1500,3000}, best-radius pick, null+reason merge when the flood gate
     fails (and opens when `getAsset` succeeds), assets.json preference +
-    convention fallback, dry-run prints with no `init`.
+    convention fallback, the getDownloadURL pull writing real COGs
+    (LAYOUT=COG tag; the COG driver is write-only so rasterio reports
+    GTiff on read), dry-run prints with no `init`.
 - L4 applied: all `data/<event-id>/` literals → `data/<case>/`; merge target
   printed as `data/metrics.json[<case>]`, arg passed as the case key.
 
@@ -71,11 +76,9 @@
   flag if producers instead keep the `<case>_` prefix inside the subpath —
   `assets.json` resolves either way, the convention fallback assumes short
   names.
-- `--tasks` = execute all GEE-side work (computes + export task start) and
-  print, skipping the metrics merge; default = execute + merge + exports.
-  hand.py has no exports, so `--tasks` = computes only.
-- COG export via `Export.image.toDrive(..., cloudOptimized)` — no GCS bucket
-  needed; output lands in `data/<case>/cog/` after download.
+- `--tasks` = execute all GEE-side work (computes + the COG pull) and print,
+  skipping the metrics merge; default = execute + merge + pull. hand.py has
+  no pull step, so `--tasks` = computes only.
 - `hand_best_radius_m` is an extra flat key beyond the pinned SCHEMA list
   (brief-mandated); `hand_validation` nests {radius:{r,iou}}.
 - The JS `Export.table` CSV side-artifact was dropped — Python merges

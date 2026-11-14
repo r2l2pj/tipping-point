@@ -16,8 +16,9 @@ existing (projects/<GEE_PROJECT>/assets/tipping-point/wa_2025/flood_nisar, or
 the path listed in data/<case>/assets.json);
 when the gate fails they merge as null + reason. Numbers merge into
 data/metrics.json (keyed by case) via tp.metrics.merge_metrics; the pre/post
-night-light means also export as COGs (<caso>_night_lights_{pre,post}_
-<AAAAMMDD>.tif → data/<case>/cog/) — the publisher renders their PNGs.
+night-light means are pulled locally as COGs (<caso>_night_lights_{pre,post}_
+<AAAAMMDD>.tif → data/<case>/cog/ via getDownloadURL — same mechanism as
+live/build_static.py) — the publisher renders their PNGs.
 
 Usage: python -m gee.impact --case <id> [--dry-run|--tasks]
 """
@@ -180,30 +181,57 @@ def compute(case_id: str) -> dict:
     return out
 
 
-def export_tasks(case_id: str) -> list:
-    """The two night-light COG export tasks (created, not started)."""
+def _fetch(url) -> bytes:
+    import requests
+
+    return requests.get(url, timeout=600).content
+
+
+def _write_cog(zip_bytes: bytes, path: Path) -> None:
+    """getDownloadURL payload (zipped GeoTIFF) -> COG at `path` (plain tif if
+    the GDAL COG driver is unavailable)."""
+    import io
+    import zipfile
+
+    import rasterio
+    import rasterio.shutil
+
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+        name = next(n for n in z.namelist() if n.endswith(".tif"))
+        raw = z.read(name)
+    try:
+        with rasterio.io.MemoryFile(raw) as mem, mem.open() as src:
+            rasterio.shutil.copy(src, path, driver="COG")
+    except rasterio.errors.DriverRegistrationError:
+        path.write_bytes(raw)
+
+
+def pull_night_lights(case_id: str, out_dir: Path | None = None) -> list:
+    """Direct local write of the pre/post NTL means as COGs in data/<case>/cog/."""
     cfg = case_cfg(case_id)
     aoi = aoi_geom(case_id)
     ref = ee.Date(str(cfg["event_date"]))
     eid = _event_id(case_id)
+    out_dir = Path(out_dir or DATA_DIR / case_id / "cog")
+    out_dir.mkdir(parents=True, exist_ok=True)
     imgs = {"pre": _ntl_mean(ref, NTL_PRE_NIGHTS, 0), "post": _ntl_mean(ref, 0, NTL_POST_NIGHTS)}
-    return [
-        ee.batch.Export.image.toDrive(
-            image=imgs[name].clip(aoi),
-            description=f"{case_id}_night_lights_{name}",
-            fileNamePrefix=artifact_stem(eid, f"night_lights_{name}"),
-            scale=NTL_SCALE,
-            region=aoi,
-            fileFormat="GeoTIFF",
-            formatOptions={"cloudOptimized": True},
-            maxPixels=MAX_PIXELS,
-        )
-        for name in ("pre", "post")
-    ]
+    written = []
+    for name, img in imgs.items():
+        url = img.clip(aoi).getDownloadURL({"region": aoi, "scale": NTL_SCALE, "format": "GEO_TIFF"})
+        path = out_dir / f"{artifact_stem(eid, f'night_lights_{name}')}.tif"
+        _write_cog(_fetch(url), path)
+        written.append(path)
+    return written
 
 
-def run(case_id: str, metrics_path: Path | None = None, merge: bool = True, exports: bool = True) -> dict:
-    """getInfo all computes; merge metrics + start COG exports unless opted out."""
+def run(
+    case_id: str,
+    metrics_path: Path | None = None,
+    merge: bool = True,
+    pull: bool = True,
+    out_dir: Path | None = None,
+) -> dict:
+    """getInfo all computes; merge metrics + pull COGs locally unless opted out."""
     _common_ready()
     init()
     res = compute(case_id)
@@ -226,10 +254,8 @@ def run(case_id: str, metrics_path: Path | None = None, merge: bool = True, expo
         if merge
         else None
     )
-    tasks = export_tasks(case_id) if exports else []
-    for task in tasks:
-        task.start()
-    return {"metrics": flat, "merged": merged, "tasks": tasks}
+    files = pull_night_lights(case_id, out_dir=out_dir) if pull else []
+    return {"metrics": flat, "merged": merged, "files": files}
 
 
 def plan(case_id: str) -> str:
@@ -251,7 +277,7 @@ def plan(case_id: str) -> str:
         )
     else:
         lines.append(f"  compute: people_flooded/flooded_km2 = null — {_null_reasons(case_id)['people_flooded']}")
-    lines.append(f"  exports (COG → data/{case_id}/cog/):")
+    lines.append(f"  pull (getDownloadURL GeoTIFF → COG → data/{case_id}/cog/):")
     for name, nights in (("pre", NTL_PRE_NIGHTS), ("post", NTL_POST_NIGHTS)):
         lines.append(f"    {artifact_stem(eid, f'night_lights_{name}')}.tif  ({nights}-night mean)")
     lines.append(
@@ -266,7 +292,7 @@ def main(argv=None) -> int:
     ap.add_argument("--case", required=True, choices=sorted(load_config()["cases"]))
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--dry-run", action="store_true", help="print planned computes+exports; no EE init")
-    g.add_argument("--tasks", action="store_true", help="run + start export tasks; skip metrics merge")
+    g.add_argument("--tasks", action="store_true", help="run + pull COGs; skip metrics merge")
     ap.add_argument("--metrics-path", type=Path, default=None, help="metrics.json override (testing)")
     args = ap.parse_args(argv)
     if args.dry_run:
@@ -275,7 +301,7 @@ def main(argv=None) -> int:
     out = run(args.case, metrics_path=args.metrics_path, merge=not args.tasks)
     for k, v in out["metrics"].items():
         print(f"  {k}: {v}")
-    print(f"started {len(out['tasks'])} export task(s)" + ("; metrics not merged (--tasks)" if args.tasks else ""))
+    print(f"wrote {len(out['files'])} cog file(s)" + ("; metrics not merged (--tasks)" if args.tasks else ""))
     return 0
 
 

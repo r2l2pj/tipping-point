@@ -138,7 +138,7 @@ def _called(path_suffix, args=None, **kw):
 
 
 def test_gpw_nearest_epoch_pick(tmp_path, commons):
-    impact.run("rs_2024", metrics_path=tmp_path / "m.json", exports=False)
+    impact.run("rs_2024", metrics_path=tmp_path / "m.json", pull=False)
     assert _called("ee.ImageCollection", [impact.COL_GPW])
     assert _called("ee.Image", [f"{impact.ASSET_ROOT}/rs_2024/tpi_slide_series"])
     # epoch closest to the event year: sort by abs(date difference in years)
@@ -150,7 +150,7 @@ def test_gpw_nearest_epoch_pick(tmp_path, commons):
 
 
 def test_ntl_reducer_params(tmp_path, commons):
-    impact.run("rs_2024", metrics_path=tmp_path / "m.json", exports=False)
+    impact.run("rs_2024", metrics_path=tmp_path / "m.json", pull=False)
     assert _called(".advance", [-30, "day"])  # 30 nights before
     assert _called(".advance", [7, "day"])  # 7 nights after
     assert sum(1 for p, a, k in LOG if p.endswith(".filterDate")) >= 2
@@ -165,16 +165,40 @@ def test_ntl_reducer_params(tmp_path, commons):
     assert _called(".gt", [0.6])  # TPI_slide > 0.6 critical cut
 
 
-def test_night_light_exports(tmp_path, commons):
-    impact.run("rs_2024", metrics_path=tmp_path / "m.json")
-    exports = [(p, a, k) for p, a, k in LOG if p.endswith("Export.image.toDrive")]
-    assert len(exports) == 2
-    assert {k["fileNamePrefix"] for _, _, k in exports} == {
-        "rs_2024_night_lights_pre_20240502",
-        "rs_2024_night_lights_post_20240502",
+def _zip_tif() -> bytes:
+    import io
+    import zipfile
+
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+
+    with rasterio.io.MemoryFile() as mem:
+        with mem.open(
+            driver="GTiff", height=4, width=6, count=1, dtype="float32",
+            crs="EPSG:4326", transform=from_origin(-51, -29, 0.01, 0.01),
+        ) as dst:
+            dst.write(np.arange(24, dtype="float32").reshape(4, 6), 1)
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as z:
+            z.writestr("download.tif", mem.read())
+    return buf.getvalue()
+
+
+def test_night_light_pull(tmp_path, commons, monkeypatch):
+    monkeypatch.setattr(impact, "_fetch", lambda url: _zip_tif())
+    out = impact.run("rs_2024", metrics_path=tmp_path / "m.json", out_dir=tmp_path / "cog")
+    downloads = [(p, a, k) for p, a, k in LOG if p.endswith(".getDownloadURL")]
+    assert len(downloads) == 2
+    assert all(a[0]["format"] == "GEO_TIFF" and a[0]["scale"] == 500 for _, a, _ in downloads)
+    assert {p.name for p in out["files"]} == {
+        "rs_2024_night_lights_pre_20240502.tif",
+        "rs_2024_night_lights_post_20240502.tif",
     }
-    assert all(k["formatOptions"] == {"cloudOptimized": True} for _, _, k in exports)
-    assert sum(1 for p, a, k in LOG if p.endswith(".start")) == 2
+    import rasterio
+
+    with rasterio.open(out["files"][0]) as src:  # COG driver is write-only: reads back as GTiff
+        assert src.tags(ns="IMAGE_STRUCTURE")["LAYOUT"] == "COG" and src.shape == (4, 6)
 
 
 # ---------- impact: flood-asset gate ----------
@@ -189,7 +213,7 @@ def test_flood_gate_failure_writes_null_reasons(tmp_path, commons, monkeypatch):
 
     monkeypatch.setattr(impact.ee, "data", SimpleNamespace(getAsset=_missing))
     path = tmp_path / "metrics.json"
-    impact.run("wa_2025", metrics_path=path, exports=False)
+    impact.run("wa_2025", metrics_path=path, pull=False)
     m = json.loads(path.read_text())
     assert seen == [f"{impact.ASSET_ROOT}/wa_2025/flood_nisar"]
     assert m["people_flooded"] is None and m["flooded_km2"] is None
@@ -201,7 +225,7 @@ def test_flood_gate_failure_writes_null_reasons(tmp_path, commons, monkeypatch):
 
 def test_flood_gate_pass_wa(tmp_path, commons):
     # default fake ee.data.getAsset returns a truthy object -> gate opens
-    out = impact.run("wa_2025", metrics_path=tmp_path / "m.json", exports=False)
+    out = impact.run("wa_2025", metrics_path=tmp_path / "m.json", pull=False)
     assert out["metrics"]["people_flooded"] == 0
     assert out["metrics"]["flooded_km2"] == 0
     assert _called("ee.data.getAsset")
@@ -224,7 +248,7 @@ def test_asset_prefers_assets_json(tmp_path, commons, monkeypatch):
 
 
 def test_flood_keys_null_for_rs(tmp_path, commons):
-    out = impact.run("rs_2024", metrics_path=tmp_path / "m.json", exports=False)
+    out = impact.run("rs_2024", metrics_path=tmp_path / "m.json", pull=False)
     m = out["merged"]
     assert m["people_flooded"] is None
     assert "predates launch" in m["_null_reasons"]["people_flooded"]
