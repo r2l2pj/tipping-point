@@ -1,0 +1,29 @@
+# Tipping Point — shared thresholds (project doc v3, "Exemplo de config.yaml")
+# GEE scripts keep a pasted copy (JS cannot read files); Python reads this file.
+
+cases:
+  rs_2024:
+    aoi: [-52.5, -30.5, -50.5, -29.0]   # oeste, sul, leste, norte
+    event_date: 2024-05-02
+    window_before_days: 10
+    window_after_days: 5
+  wa_2025:
+    aoi: [-122.6, 47.0, -121.5, 48.5]
+    event_date: 2025-12-10
+    window_before_days: 10
+    window_after_days: 10
+
+thresholds:
+  rain_percentiles: [90, 95, 99]
+  soil_wetness_range: [0.5, 0.9]
+  slope_range_deg: [15, 30]
+  hand_range_m: [5, 15]
+  hand_proxy_radius_m: 1500
+  tpi_classes: [0.2, 0.4, 0.6]
+  flood_db_drop: -3
+  water_db_max: -15          # fallback only — prefer per-scene Otsu/KI (ml-sar report)
+  coherence_drop: 0.3
+  coherence_ref_min: 0.4
+  min_blob_pixels: 10
+
+seed: 42

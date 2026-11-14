@@ -17,6 +17,11 @@
     ],
     "wkt": "POLYGON((-122.6 47.0, -121.5 47.0, -121.5 48.5, -122.6 48.5, -122.6 47.0))"
   },
+  "gee": {
+    "aoi_bbox": [-122.6, 47.0, -121.5, 48.5],
+    "reference_date": "2025-12-12",
+    "note": "JS can't read files — the gee/0*.js pasted bboxes/dates must mirror these values by hand."
+  },
   "nisar": {
     "maturity": "BETA",
     "note": "Pre-calibration products from the Feb 2026 release (subset of acquisitions 2025-10-17 to 2026-01-20). Use relative before/after change on the same frame.",

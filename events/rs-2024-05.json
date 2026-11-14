@@ -9,6 +9,12 @@
     "bbox": [-52.5, -30.5, -50.5, -29.0],
     "wkt": "POLYGON((-52.5 -30.5, -50.5 -30.5, -50.5 -29.0, -52.5 -29.0, -52.5 -30.5))"
   },
+  "gee": {
+    "aoi_bbox": [-52.5, -30.5, -50.5, -29.0],
+    "reference_date": "2024-05-02",
+    "window": { "start": "2024-04-20", "end": "2024-05-31" },
+    "note": "JS can't read files — the gee/0*.js pasted bboxes/dates must mirror these values by hand."
+  },
   "nisar": {
     "maturity": null,
     "note": "No NISAR coverage — event predates launch (Jul 2025). Validation via OPERA DSWx-HLS and MODIS NRT Flood on cloud-free days; HLS cloud fraction quantifies what optical missed.",

@@ -65,3 +65,13 @@ Export.image.toDrive({
   description: 'tpi_slide_series_rs', region: aoi, scale: 1000,
   fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
 });
+
+// E TAMBÉM como asset — o gee/08_simular_table.js (Telegram /simular) lê ESTE
+// asset, não o COG. As bandas viram 0_TPI_slide, 1_TPI_slide... (0 = 1º dia da
+// janela, 10 dias antes do evento).
+Export.image.toAsset({
+  image: series.select('TPI_slide').toBands().toFloat().clip(aoi),
+  description: 'tpi_slide_series_rs_asset',
+  assetId: 'projects/<GEE_PROJECT>/assets/tipping-point/rs_2024_tpi_slide_series',
+  region: aoi, scale: 1000
+});
