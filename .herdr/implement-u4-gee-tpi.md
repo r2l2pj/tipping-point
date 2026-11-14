@@ -1,7 +1,9 @@
 # U4 — Mode-1 GEE completion, replay TPI (lead-analysis)
 
-Includes spec delta L4 (outputs under `data/<case-id>/`) + L5 (R/S/T score
-COGs for geotiff.js popup reads), applied mid-unit.
+Includes spec deltas applied mid-unit: L4 (outputs under `data/<case-id>/`,
+root `data/metrics.json` keyed by case via `tp.config.case_id`/`event_id`),
+L5 (R/S/T score COGs for geotiff.js popup reads), L8 (derived series saved
+as GEE assets — single source of truth — COGs stay as fallback output).
 
 ## Public API (pinned, implemented exactly)
 
@@ -22,9 +24,9 @@ COGs for geotiff.js popup reads), applied mid-unit.
 - `aoi_geom(case_id)` — `ee.Geometry.Rectangle(aoi)`.
 - `event_dates(case_id)->list[str]` — YYYY-MM-DD, event ± window days
   (wa_2025: 21, rs_2024: 16).
-- Helpers added for the unit (not pinned): `event_id`, `case_dir`/`data_dir`
-  (L4; defers to `tp.config.case_id()` when that helper lands — absent in
-  this tree), `asset_path`.
+- Helpers added for the unit (not pinned): `event_id` (delegates to
+  `tp.config.event_id`), `case_dir`/`data_dir` (L4, via
+  `tp.config.case_id`), `asset_path`.
 - `import ee` at module level; all ee objects built inside functions —
   `--dry-run` never initializes.
 
@@ -45,17 +47,25 @@ COGs for geotiff.js popup reads), applied mid-unit.
   `<caso>_{r,s}_series_<Ymd>.tif`, `<caso>_t_{slide,flood}_<Ymd>.tif`
   (float32, EPSG:4326) → `data/<case>/cog/`; rain3/rain7/soil per-day
   area-mean JSON → `data/<case>/series/<caso>_rain_soil_<Ymd>.json`;
-  `<caso>_tpi_{slide,flood}_series` assets for gee/08 + gee/09.
-  `--dry-run` lists dates + planned exports with no `ee.Initialize`;
-  `--tasks` prints the export parameter JSON (also offline).
+  L8: all six derived products exported as assets under
+  `projects/<GEE_PROJECT>/assets/tipping-point/<case>/` (`tpi_slide_series`,
+  `tpi_flood_series`, `r_series`, `s_series`, `t_slide`, `t_flood`) — the
+  source of truth; COGs remain the `data/<case>/cog/` fallback; flat
+  `<caso>_tpi_{slide,flood}_series` assets stay for gee/08 + gee/09.
+  `--dry-run` lists dates + planned exports (incl. asset writes) with no
+  `ee.Initialize`; `--tasks` prints the export parameter JSON (also
+  offline). `derived_asset_ids(case_id, project)` returns the L8 ids
+  (`<GEE_PROJECT>` placeholder when no project known).
 - `gee/check_series.py` (new) —
   `python -m gee.check_series <cog> --case <id>`: rasterio checks — values
   in [0,1], series band count == window days, band names are YYYYMMDD
   dates, TPI peak on/before event day (r_series/s_series skip the peak
   check; `t_{slide,flood}` static COGs check single-band + range). On
-  success records collections `{imerg, smap_l4, nasadem}` via
-  `tp.metrics.merge_metrics` → `data/<case>/metrics.json` (`--metrics-path`
-  override); exits 1 listing every failure.
+  success merges collections `{imerg, smap_l4, nasadem}` + the six
+  `gee_<name>` derived asset ids (L8) into the case blob of the root
+  `data/metrics.json` via `tp.metrics.merge_metrics`
+  (`--metrics-path` override, default `REPO_ROOT/data/metrics.json`);
+  exits 1 listing every failure.
 - `gee/tests/` (new) — `conftest.py` recording Fake `ee` (monkeypatched per
   test, real `ee` untouched for other suites), `test_common.py` (12),
   `test_tpi.py` (8), `test_check_series.py` (8): event_dates counts (21/16),
@@ -70,30 +80,35 @@ COGs for geotiff.js popup reads), applied mid-unit.
   climatology exported once as `<caso>_clim_rain3_2001_2023` behind
   `CLIM_ASSET_EXISTS` guard (set true after the one-time export); L5
   exports for `r_series`, `s_series`, `t_slide`, `t_flood` (float32,
-  unclassified); `tpiAt` carries R/S bands. Drive descriptions renamed to
-  contract stems `<caso>_tpi_{slide,flood}_<Ymd>` (dropped `_series` from
-  the COG names; asset ids unchanged — `*_tpi_{slide,flood}_series` still
-  feed 08/09). Pasted constants/weights still match config.yaml.
+  unclassified); L8: six derived assets under `tipping-point/<case>/` plus
+  the flat slide/flood series kept for 08/09; `tpiAt` carries R/S bands.
+  Drive descriptions renamed to contract stems
+  `<caso>_tpi_{slide,flood}_<Ymd>` (dropped `_series` from the COG names;
+  flat asset ids unchanged). Pasted constants/weights still match
+  config.yaml.
 
 ## Commands + results
 
 - `$UV sync` → OK.
 - `$UV run python -m pytest gee/tests pipeline/tests live/tests ml/tests -q`
-  → **88 passed** (59 baseline-after-U3 + 29 gee), 9 warnings (pre-existing).
+  → **167 passed** (rebased onto u3-metrics-root + other units; 31 gee),
+  18 warnings (pre-existing).
 - `$UV run ruff check .` → All checks passed.
 - `node --check gee/01_tpi_index.js gee/07_tpi_wa.js gee/03_rf_susceptibility.js`
   → OK.
 - `env -u GCP_SA_KEY -u GEE_SERVICE_ACCOUNT_KEY -u GEE_PROJECT $UV run
   python -m gee.tpi --case wa_2025 --dry-run` → prints 21 dates
-  (2025-11-30..2025-12-20) + 10 exports, no creds, exit 0.
+  (2025-11-30..2025-12-20) + 16 exports (6 COGs, 1 JSON, 6 L8 derived
+  assets, 2 compat assets, 1 clim), no creds, exit 0.
 - `python -m gee.tpi --case rs_2024 --tasks` → JSON plan, 16 dates,
   `"bands": 16` series + `"bands": 1` statics.
 
 ## Flags for the lead
 
-- `tp.config.case_id()` (delta L4) does not exist in this tree —
-  `gee.common.case_dir()` validates via `case_cfg` and uses the case key,
-  deferring to `tp.config.case_id` once it lands.
+- Rebased onto `u3-metrics-root` mid-unit: `tp.config.case_id()`/
+  `event_id()` now exist and are used; `merge_metrics` writes the root
+  `data/metrics.json` keyed by case — `check_series` merges into the
+  `cases.<case>` blob (test asserts the nested shape).
 - Band names changed to YYYYMMDD: `gee/09_impact.js` still works (selects
   event band by index 10), but `tools/build_simular.py` parses
   `*_TPI_slide` CSV columns from gee/08 — it will need a small update to

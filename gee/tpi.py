@@ -30,6 +30,24 @@ CLIM_SCALE_M = 10_000     # climatology asset scale (~IMERG native 0.1 deg)
 SLOPE_FLOOD_MAX_DEG = 5.0  # T_flood = 0 above this slope (gee/01: slope.gt(5))
 MAX_PIXELS = 1e9
 
+# Delta L8: derived products live as GEE assets (single source of truth)
+# under projects/<GEE_PROJECT>/assets/tipping-point/<case>/.
+DERIVED_ASSETS = (
+    "tpi_slide_series", "tpi_flood_series", "r_series", "s_series",
+    "t_slide", "t_flood",
+)
+
+
+def derived_asset_ids(case_id: str, project: str | None = None) -> dict:
+    """{name: assetId} for the L8 derived assets under <case>/.
+
+    Records the literal `<GEE_PROJECT>` placeholder when no project is
+    known (metrics collection entries stay honest without creds).
+    """
+    proj = project or common.GEE_PROJECT or "<GEE_PROJECT>"
+    root = f"{common.ASSET_ROOT.format(GEE_PROJECT=proj)}/{case_id}"
+    return {name: f"{root}/{name}" for name in DERIVED_ASSETS}
+
 
 def _imerg():
     return ee.ImageCollection(common.COL_IMERG).select(common.BAND_IMERG)
@@ -188,9 +206,17 @@ def export_plan(case_id: str) -> dict:
                 "path": str(out / "cog" / f"{stem}.tif"),
                 "scale": SCALE_M}
 
-    def asset(image, name):
-        return {"kind": "asset", "image": image,
-                "description": name, "asset": name}
+    def asset(image, rel, note=None):
+        spec = {"kind": "asset", "image": image,
+                "description": rel.replace("/", "_"), "asset": rel}
+        if note:
+            spec["note"] = note
+        return spec
+
+    image_of = {"tpi_slide_series": "TPI_slide",
+                "tpi_flood_series": "TPI_flood",
+                "r_series": "R", "s_series": "S",
+                "t_slide": "T_slide", "t_flood": "T_flood"}
 
     exports = [
         cog("TPI_slide", f"{case_id}_tpi_slide_{ymd}", len(dates)),
@@ -203,13 +229,21 @@ def export_plan(case_id: str) -> dict:
          "description": f"{case_id}_rain_soil_{ymd}",
          "path": str(out / "series" / f"{case_id}_rain_soil_{ymd}.json"),
          "scale": SCALE_M},
-        asset("TPI_slide", f"{case_id}_tpi_slide_series"),
-        asset("TPI_flood", f"{case_id}_tpi_flood_series"),
-        {"kind": "asset",
-         "description": clim_asset_name(case_id),
-         "asset": clim_asset_name(case_id),
-         "note": "skipped when the asset already exists"},
     ]
+    # L8: the derived assets are the source of truth; the COGs above are
+    # the data/<case>/ fallback path. Asset ids live under <case>/.
+    for name in DERIVED_ASSETS:
+        exports.append(asset(image_of[name], f"{case_id}/{name}"))
+    # Flat-named slide/flood series stay for gee/08 + gee/09 (pinned ids).
+    for band, name in (("TPI_slide", f"{case_id}_tpi_slide_series"),
+                       ("TPI_flood", f"{case_id}_tpi_flood_series")):
+        spec = asset(band, name, "compat: gee/08 + gee/09 read this id")
+        spec["description"] += "_compat"
+        exports.append(spec)
+    exports.append({"kind": "asset",
+                    "description": clim_asset_name(case_id),
+                    "asset": clim_asset_name(case_id),
+                    "note": "skipped when the asset already exists"})
     return {"case": case_id, "event_id": common.event_id(case_id),
             "event_date": cfg["event_date"].isoformat(),
             "dates": dates, "band_names": band_names(case_id),

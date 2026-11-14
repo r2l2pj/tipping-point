@@ -7,8 +7,9 @@ Daily series COGs (tpi_slide, tpi_flood, r_series, s_series): band count ==
 window days, band names are the window dates (YYYYMMDD), values in [0,1];
 TPI series also require the peak on or before the event date. Static score
 COGs (t_slide, t_flood — delta L5): single band, values in [0,1]. On success
-the input collection ids are recorded in data/<case>/metrics.json via
-tp.metrics.merge_metrics. Exits nonzero on any failure.
+the input collection ids + derived asset ids (L8) are recorded in the case
+blob of data/metrics.json via tp.metrics.merge_metrics. Exits nonzero on
+any failure.
 """
 from __future__ import annotations
 
@@ -18,9 +19,10 @@ from pathlib import Path
 
 import numpy as np
 import rasterio
+from tp.config import REPO_ROOT
 from tp.metrics import merge_metrics
 
-from . import common
+from . import common, tpi
 
 COLLECTIONS = {
     "imerg": common.COL_IMERG,
@@ -29,6 +31,13 @@ COLLECTIONS = {
 }
 
 _STATIC_RE = re.compile(r"_t_(slide|flood)_\d{8}$")
+
+
+def collections_for(case_id: str) -> dict:
+    """Input collection ids + the L8 derived asset ids for metrics."""
+    return {**COLLECTIONS,
+            **{f"gee_{n}": aid
+               for n, aid in tpi.derived_asset_ids(case_id).items()}}
 
 
 def check(path: Path, case_id: str) -> list[str]:
@@ -77,8 +86,9 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("series_cog", type=Path)
     ap.add_argument("--case", required=True, choices=("rs_2024", "wa_2025"))
-    ap.add_argument("--metrics-path", type=Path, default=None,
-                    help="metrics.json path (default data/<case>/metrics.json)")
+    ap.add_argument("--metrics-path", type=Path,
+                    default=REPO_ROOT / "data" / "metrics.json",
+                    help="metrics.json path (default data/metrics.json root)")
     args = ap.parse_args(argv)
 
     failures = check(args.series_cog, args.case)
@@ -86,9 +96,8 @@ def main(argv=None) -> int:
         for f in failures:
             print(f"FAIL {f}")
         return 1
-    merge_metrics(common.event_id(args.case), collections=dict(COLLECTIONS),
-                  path=args.metrics_path
-                  or common.data_dir(args.case) / "metrics.json")
+    merge_metrics(args.case, collections=collections_for(args.case),
+                  path=args.metrics_path)
     print(f"OK {args.series_cog}: values in [0,1], bands checked")
     return 0
 

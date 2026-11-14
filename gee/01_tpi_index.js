@@ -125,10 +125,28 @@ Export.image.toDrive({
   fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
 });
 
-// E TAMBÉM como assets — o gee/08_simular_table.js (Telegram /simular) e o
-// gee/09_impact.js leem ESTES assets, não os COGs. As bandas viram YYYYMMDD
-// ('20240422' = 1º dia da janela, 10 dias antes do evento; '20240502' = dia
-// do evento) — scripts que selecionam por índice seguem funcionando.
+// Assets derivados = fonte da verdade (L8): tudo sob
+// projects/<GEE_PROJECT>/assets/tipping-point/rs_2024/. Bandas = YYYYMMDD
+// ('20240422' = 1º dia da janela, '20240502' = dia do evento).
+var CASE_ASSETS = 'projects/<GEE_PROJECT>/assets/tipping-point/rs_2024';
+var derived = {
+  tpi_slide_series: 'TPI_slide', tpi_flood_series: 'TPI_flood',
+  r_series: 'R', s_series: 'S'};
+Object.keys(derived).forEach(function (name) {
+  Export.image.toAsset({
+    image: series.select(derived[name]).toBands().rename(bandNames).toFloat().clip(aoi),
+    description: 'rs_2024_' + name,
+    assetId: CASE_ASSETS + '/' + name, region: aoi, scale: 1000});
+});
+Export.image.toAsset({
+  image: T_slide.toFloat().clip(aoi), description: 'rs_2024_t_slide',
+  assetId: CASE_ASSETS + '/t_slide', region: aoi, scale: 1000});
+Export.image.toAsset({
+  image: T_flood.toFloat().clip(aoi), description: 'rs_2024_t_flood',
+  assetId: CASE_ASSETS + '/t_flood', region: aoi, scale: 1000});
+
+// E TAMBÉM com os nomes antigos — o gee/08_simular_table.js (Telegram
+// /simular) e o gee/09_impact.js leem ESTES assets planos, não os COGs.
 Export.image.toAsset({
   image: series.select('TPI_slide').toBands().rename(bandNames).toFloat().clip(aoi),
   description: 'tpi_slide_series_rs_asset',

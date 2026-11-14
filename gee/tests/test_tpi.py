@@ -69,9 +69,29 @@ def test_export_plan_targets():
         "TPI_slide", "TPI_flood", "R", "S", "T_slide", "T_flood"}
     assert {e["bands"] for e in cogs} == {21, 1}
     assets = {e.get("asset") for e in plan["exports"]}
+    # delta L8: derived assets under tipping-point/<case>/ are the SoT
+    for name in tpi.DERIVED_ASSETS:
+        assert f"wa_2025/{name}" in assets
+    # flat slide/flood ids stay for gee/08 + gee/09
     assert "wa_2025_tpi_slide_series" in assets
     assert "wa_2025_tpi_flood_series" in assets
     assert tpi.clim_asset_name("wa_2025") in assets
+
+
+def test_derived_asset_ids():
+    ids = tpi.derived_asset_ids("wa_2025", project="proj")
+    assert set(ids) == set(tpi.DERIVED_ASSETS)
+    assert (ids["tpi_slide_series"]
+            == "projects/proj/assets/tipping-point/wa_2025/tpi_slide_series")
+    assert (ids["t_flood"]
+            == "projects/proj/assets/tipping-point/wa_2025/t_flood")
+
+
+def test_derived_asset_ids_placeholder_without_project(monkeypatch):
+    monkeypatch.setattr(tpi.common, "GEE_PROJECT", "")
+    ids = tpi.derived_asset_ids("rs_2024")
+    assert (ids["r_series"]
+            == "projects/<GEE_PROJECT>/assets/tipping-point/rs_2024/r_series")
 
 
 def test_tpi_at_carries_score_bands(fake_ee):

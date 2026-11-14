@@ -20,6 +20,8 @@ from pathlib import Path
 import ee
 from tp.config import REPO_ROOT
 from tp.config import case as _tp_case
+from tp.config import case_id as _tp_case_id
+from tp.config import event_id as _tp_event_id
 
 GEE_PROJECT = os.environ.get("GEE_PROJECT", "")
 COL_IMERG = "NASA/GPM_L3/IMERG_V07"
@@ -108,23 +110,14 @@ def event_dates(case_id: str) -> list[str]:
 
 def event_id(case_id: str) -> str:
     """config.yaml case key -> hyphen event id ('wa_2025' -> 'wa-2025-12')."""
-    return f"{case_id.split('_')[0]}-{case_cfg(case_id)['event_date']:%Y-%m}"
+    return _tp_event_id(case_id)
 
 
 def case_dir(case_id: str) -> Path:
     """Repo-relative output dir data/<case-id>/ (delta L4: outputs keyed by
-    case, not event id).
-
-    Resolves through tp.config.case_id() once that helper exists; until
-    then the validated case key itself is the directory name.
+    canonical case id, resolved via tp.config.case_id — event ids accepted).
     """
-    try:
-        from tp.config import case_id as _resolve
-        resolved = _resolve(case_id)
-    except ImportError:
-        case_cfg(case_id)  # raises on unknown ids
-        resolved = case_id
-    return Path("data") / resolved
+    return Path("data") / _tp_case_id(case_id)
 
 
 def data_dir(case_id: str) -> Path:

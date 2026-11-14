@@ -94,10 +94,14 @@ def test_main_records_collections_on_success(tmp_path):
         [str(cog), "--case", "wa_2025", "--metrics-path", str(metrics)])
     assert rc == 0
     m = json.loads(metrics.read_text())
-    assert m["event"] == "wa-2025-12"
-    assert m["collections"]["imerg"] == common.COL_IMERG
-    assert m["collections"]["smap_l4"] == common.COL_SMAP
-    assert m["collections"]["nasadem"] == common.IMG_NASADEM
+    blob = m["cases"]["wa_2025"]
+    assert blob["event"] == "wa-2025-12"
+    assert blob["collections"]["imerg"] == common.COL_IMERG
+    assert blob["collections"]["smap_l4"] == common.COL_SMAP
+    assert blob["collections"]["nasadem"] == common.IMG_NASADEM
+    # delta L8: derived asset ids recorded alongside the input collections
+    assert (blob["collections"]["gee_tpi_slide_series"].endswith(
+        "/tipping-point/wa_2025/tpi_slide_series"))
 
 
 def test_main_exits_nonzero_and_writes_nothing(tmp_path):

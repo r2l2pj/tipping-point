@@ -126,8 +126,28 @@ Export.image.toDrive({
   fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
 });
 
-// E TAMBÉM como assets, no mesmo padrão do RS (bandas YYYYMMDD;
-// '20251130' = 1º dia da janela, '20251210' = dia do evento)
+// Assets derivados = fonte da verdade (L8): tudo sob
+// projects/<GEE_PROJECT>/assets/tipping-point/wa_2025/. Bandas = YYYYMMDD
+// ('20251130' = 1º dia da janela, '20251210' = dia do evento).
+var CASE_ASSETS = 'projects/<GEE_PROJECT>/assets/tipping-point/wa_2025';
+var derived = {
+  tpi_slide_series: 'TPI_slide', tpi_flood_series: 'TPI_flood',
+  r_series: 'R', s_series: 'S'};
+Object.keys(derived).forEach(function (name) {
+  Export.image.toAsset({
+    image: series.select(derived[name]).toBands().rename(bandNames).toFloat().clip(aoi),
+    description: 'wa_2025_' + name,
+    assetId: CASE_ASSETS + '/' + name, region: aoi, scale: 1000});
+});
+Export.image.toAsset({
+  image: T_slide.toFloat().clip(aoi), description: 'wa_2025_t_slide',
+  assetId: CASE_ASSETS + '/t_slide', region: aoi, scale: 1000});
+Export.image.toAsset({
+  image: T_flood.toFloat().clip(aoi), description: 'wa_2025_t_flood',
+  assetId: CASE_ASSETS + '/t_flood', region: aoi, scale: 1000});
+
+// E TAMBÉM com os nomes antigos, no mesmo padrão do RS (gee/08 e gee/09
+// leem os assets planos).
 Export.image.toAsset({
   image: series.select('TPI_slide').toBands().rename(bandNames).toFloat().clip(aoi),
   description: 'tpi_slide_series_wa_asset',
