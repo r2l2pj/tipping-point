@@ -1,8 +1,20 @@
+import json
+import os
+import subprocess
+import sys
+import types
 from pathlib import Path
+from typing import ClassVar
 
+import numpy as np
+import pytest
+import tp.nisar as nisar_mod
+from tp import events as events_mod
+from tp.events import load_event
 from tp.nisar import (
     _granule_meta,
     download_plan,
+    execute_plan,
     gdal_subset_cmd,
     pick_pairs,
 )
@@ -71,3 +83,238 @@ def test_download_plan_wa():
     assert len(wm) == 1
     assert all("wrappedInterferogram" in s["h5_path"] for s in gunw)
     assert {s["which"] for s in gcov} == {"pre", "post"}
+
+
+# --- execute_plan -----------------------------------------------------------
+
+GCOV_PRE = "NISAR_L2_PR_GCOV_001_172_D_064_4005_DHDH_A_20251204T031815_D0"
+GCOV_POST = "NISAR_L2_PR_GCOV_002_172_D_064_4005_DHDH_A_20251216T031815_D0"
+GCOV_WRONG_TRACK = "NISAR_L2_PR_GCOV_003_005_A_026_4005_DHDH_A_20251204T000000_D0"
+GUNW_REF = "NISAR_L2_PR_GUNW_001_172_D_064_4005_DHDH_A_20251204T000000_D0"
+GUNW_EVT = "NISAR_L2_PR_GUNW_002_172_D_064_4005_DHDH_A_20251216T000000_D0"
+
+
+class _FakeGranule:
+    def __init__(self, native_id):
+        self.meta = {"native-id": native_id}
+
+    def data_links(self, access=None):
+        return [f"https://daac.example/{self.meta['native-id']}.h5"]
+
+
+class _FakeEarthaccess:
+    def __init__(self):
+        self.logged_in = False
+        self.calls = []
+
+    def login(self, **kw):
+        self.logged_in = True
+
+    def search_data(self, short_name, bounding_box, temporal):
+        self.calls.append((short_name, temporal))
+        if "GCOV" in short_name:
+            return [
+                _FakeGranule(GCOV_PRE),
+                _FakeGranule(GCOV_POST),
+                _FakeGranule(GCOV_WRONG_TRACK),
+            ]
+        if "GUNW" in short_name:
+            return [_FakeGranule(GUNW_REF), _FakeGranule(GUNW_EVT)]
+        return [_FakeGranule("WM_TILE")]
+
+
+def _fake_rasterio():
+    """A stand-in 'rasterio' package for sys.modules: Env/open/WarpedVRT/
+    windows.from_bounds, writing empty files instead of real GeoTIFFs."""
+    mod = types.ModuleType("rasterio")
+
+    class _Env:
+        def __init__(self, **kw):
+            self.kw = kw
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    class _Window:
+        height = width = 4
+
+        def round_offsets(self):
+            return self
+
+        def round_lengths(self):
+            return self
+
+    class _Src:
+        crs = "EPSG:32610"
+        count = 1
+        nodata = float("nan")
+        transform = "src-transform"
+        profile: ClassVar[dict] = {
+            "driver": "HDF5", "dtype": "float32", "crs": "EPSG:32610",
+            "width": 100, "height": 100, "count": 1, "nodata": float("nan"),
+        }
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    class _VRT:
+        def __init__(self, src, crs=None):
+            self.crs = crs or src.crs
+            self.count = src.count
+            self.nodata = src.nodata
+            self.transform = "vrt-transform"
+            self.profile = dict(src.profile)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def read(self, window=None):
+            return np.zeros(
+                (self.count, int(window.height), int(window.width)),
+                dtype="float32",
+            )
+
+        def window_transform(self, win):
+            return self.transform
+
+    class _Writer:
+        def __init__(self, path, **profile):
+            self.path, self.profile = Path(path), profile
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            self.path.write_bytes(b"COG")
+            return False
+
+        def write(self, data):
+            self.data = data
+
+    def _open(path, mode="r", **profile):
+        if mode == "w":
+            return _Writer(path, **profile)
+        assert str(path).startswith('NETCDF:"/vsicurl/')
+        return _Src()
+
+    vrt_mod = types.ModuleType("rasterio.vrt")
+    vrt_mod.WarpedVRT = _VRT
+    win_mod = types.ModuleType("rasterio.windows")
+    win_mod.from_bounds = lambda w, s, e, n, transform: _Window()
+    mod.Env = _Env
+    mod.open = _open
+    return mod, vrt_mod, win_mod
+
+
+def test_execute_plan_writes_tifs_and_manifest(monkeypatch, tmp_path):
+    mod, vrt_mod, win_mod = _fake_rasterio()
+    monkeypatch.setitem(sys.modules, "rasterio", mod)
+    monkeypatch.setitem(sys.modules, "rasterio.vrt", vrt_mod)
+    monkeypatch.setitem(sys.modules, "rasterio.windows", win_mod)
+    fake_ea = _FakeEarthaccess()
+    monkeypatch.setattr(nisar_mod, "earthaccess", fake_ea)
+    monkeypatch.setenv("EDL_USER", "u")
+    monkeypatch.setenv("EDL_PASS", "p")
+    # execute_plan maps EDL_* onto these for earthaccess; setting them via
+    # monkeypatch keeps the leak contained at teardown.
+    monkeypatch.setenv("EARTHDATA_USERNAME", "")
+    monkeypatch.setenv("EARTHDATA_PASSWORD", "")
+    monkeypatch.setattr(events_mod, "DATA_DIR", tmp_path)
+
+    written = execute_plan(load_event("wa-2025-12"))
+
+    raw = tmp_path / "raw" / "nisar"
+    names = {p.name for p in written}
+    assert names == {
+        "gcov_hhhh_pre.tif", "gcov_hvhv_pre.tif", "gcov_mask_pre.tif",
+        "gcov_hhhh_post.tif", "gcov_hvhv_post.tif", "gcov_mask_post.tif",
+        "gunw_coh_ref.tif", "gunw_coh_evt.tif",
+    }
+    assert all(p.exists() and raw in p.parents for p in written)
+    assert fake_ea.logged_in
+    assert len(fake_ea.calls) == 4  # pre/post GCOV + ref/evt GUNW granules
+
+    manifest = json.loads(
+        (tmp_path / "wa_2025" / "nisar_products.json").read_text()
+    )
+    assert manifest["GCOV"]["collection"] == "NISAR_L2_GCOV_BETA_V1"
+    assert manifest["GCOV"]["pre"] == GCOV_PRE
+    assert manifest["GCOV"]["post"] == GCOV_POST
+    assert manifest["GUNW"]["ref"] == GUNW_REF
+    assert manifest["GUNW"]["evt"] == GUNW_EVT
+    assert manifest["WATERMASK"]["collection"] == "NISAR_WATERMASK"
+
+
+def test_event_data_dir_uses_case_key(monkeypatch, tmp_path):
+    monkeypatch.setattr(events_mod, "DATA_DIR", tmp_path)
+    d = events_mod.event_data_dir("wa-2025-12")
+    assert d == tmp_path / "wa_2025"
+    assert (d / "cog").is_dir()
+    assert events_mod.case_key("rs-2024-05") == "rs_2024"
+
+
+def test_execute_plan_requires_creds(monkeypatch, tmp_path):
+    for var in (
+        "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+        "NETRC",
+    ):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))  # no ~/.netrc
+    with pytest.raises(RuntimeError, match="Earthdata credentials"):
+        execute_plan(load_event("wa-2025-12"))
+
+
+def test_execute_plan_dry_run_needs_nothing(monkeypatch, tmp_path):
+    for var in ("EDL_USER", "EDL_PASS"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setattr(events_mod, "DATA_DIR", tmp_path)
+    event = load_event("wa-2025-12")
+    paths = execute_plan(event, dry_run=True)
+    expected = [s["out"] for s in download_plan(event) if s["h5_path"]]
+    assert [p.name for p in paths] == expected
+    assert all(tmp_path in p.parents for p in paths)
+    assert not any(p.exists() for p in paths)
+
+
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "01_get_nisar.py"
+REPO = Path(__file__).resolve().parents[2]
+
+
+def _no_cred_env(home: Path) -> dict:
+    drop = {
+        "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+        "NETRC",
+    }
+    env = {k: v for k, v in os.environ.items() if k not in drop}
+    env["HOME"] = str(home)
+    return env
+
+
+def test_plan_flag_runs_offline(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SCRIPT), "--event", "wa-2025-12", "--plan"],
+        check=False, capture_output=True, text=True, cwd=REPO,
+        env=_no_cred_env(tmp_path),
+    )
+    assert r.returncode == 0, r.stderr
+    assert "gdalwarp" in r.stdout
+    assert "gcov_hhhh_pre.tif" in r.stdout
+
+
+def test_execute_flag_refuses_without_creds(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SCRIPT), "--event", "wa-2025-12", "--execute"],
+        check=False, capture_output=True, text=True, cwd=REPO,
+        env=_no_cred_env(tmp_path),
+    )
+    assert r.returncode != 0
+    assert "Earthdata credentials" in r.stderr
