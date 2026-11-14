@@ -1,3 +1,30 @@
+# implement: unit/wainv — WGS validation reference (A1/B5)
+
+Base SHA: e1d8f18. Seven scoped files including this report; no push/merge.
+
+Changes:
+- `pipeline/fetch/featureserver.py`: shared bbox query and paginated GeoJSON FeatureServer HTTP transport, service-error checks.
+- `pipeline/fetch/glc.py`: reuse shared transport/bbox builder; existing GLC tests unchanged.
+- `pipeline/fetch/wgs.py`: WA-only WGS mapping, attribution/license/source URL, source date retention, date-only local-noon America/Los_Angeles anchors, explicit times, no invented dates; no event-window filtering. Excludes personal/contact source fields.
+- `pipeline/fetch/reference.py`: `--kind wgs --case wa_2025` fetches WGS then uses ingest_table; dry-run lists without network/writes; rejects other cases. Existing manifest skip/--force semantics retained. `--kind all` routing unchanged (explicit WGS kind is required).
+- `pipeline/tests/test_fetch_wgs.py`: 14 offline cases covering timestamp rules, missing/invalid dates/times, DST, bbox-only pagination, source replacement, schema/attribution, ingest wiring, dry-run/case guard and service errors.
+- `data/wa_2025/geojson/landslide_catalog.geojson`: actual public-service bbox fetch, 15 WGS points replacing GLC, all 15 date-less (`t_precision=none`), no GLC merge. This mutable service snapshot is validation-only, not independently certified as a Dec-2025-only inventory.
+
+Commands/results (UV=/home/lucascoelho/.local/share/mise/installs/uv/0.13.8/uv-x86_64-unknown-linux-gnu/uv):
+- `curl -fsSL 'https://services.arcgis.com/4x406oNViizbGo13/ArcGIS/rest/services/service_d63bc45f07fc4e859f0bdde6c847ec40/FeatureServer/0?f=json'`: verified Point layer, event_date alias Date of Landslide (esriFieldTypeDate), event_time alias Time of Landslide (string), pagination supported, maxRecordCount=1000; no declared copyright/license. License property truthfully says not specified, not an invented grant.
+- `$UV sync`: exit 0, installed 119 packages.
+- Initial `$UV run pytest pipeline/tests -q`: 359 passed, 1 failed (unknown time discarded valid date); fixed the parser to preserve the known date.
+- Initial scoped Ruff: one redundant-import-alias finding; removed alias and injected the existing GLC HTTP getter into shared transport.
+- Final `$UV run pytest pipeline/tests -q`: exit 0, **360 passed, 9 warnings in 8.33s** (Rasterio fixture warnings; Python 3.15 emitted sys.excepthook shutdown noise after success).
+- `$UV run ruff check pipeline`: exit 0, All checks passed!
+- `PYTHONPATH=pipeline $UV run python -c '...wgs_catalog(load_event("wa-2025-12"))...'`: exit 0, features=15, precision={none:15}, sources={WA DNR WGS Clearinghouse (public):15}.
+- `$UV run python -m pipeline.fetch.reference --kind wgs --case wa_2025 --dry-run`: exit 0, wa_2025/landslide_catalog: dry-run -> projects/hermes-fesolucoes/assets/tipping-point/wa_2025/landslide_catalog (would re-fetch wa-2025-12).
+- `git diff --check`: exit 0. Reviewed status/diff/log before scoped commit.
+
+No live GEE ingestion was run. The offline ingest_table fixture proves the wiring; replacing an already-manifested remote asset requires the existing explicit `--force` flag.
+
+---
+
 # implement: unit/imerg-range — IMERG Early case-window hindcast
 # implement — review follow-up: preserve inventory source dates (t120)
 

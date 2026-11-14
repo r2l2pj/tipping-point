@@ -57,6 +57,8 @@ KINDS = {
             "asset": "landslide_catalog"},
     "inventory": {"filename": "landslide_catalog.geojson",
                   "asset": "landslide_catalog"},
+    "wgs": {"filename": "landslide_catalog.geojson",
+            "asset": "landslide_catalog"},
 }
 CATALOG_KINDS = ("glc", "inventory")
 
@@ -138,6 +140,7 @@ def _fetcher(kind: str):
     mod_name, func_name = {
         "boundaries": ("fetch.boundaries", "municipal_boundaries"),
         "glc": ("fetch.glc", "glc_catalog"),
+        "wgs": ("fetch.wgs", "wgs_catalog"),
         "inventory": ("fetch.inventory", "inventory_catalog"),
     }[kind]
     try:
@@ -186,6 +189,10 @@ def ingest_product(case: str, kind: str, *, project: str,
                    dry_run: bool, force: bool, refresh: bool,
                    window: dict | None) -> dict:
     """Ingest one reference product for a case; return a status dict."""
+    if kind == "wgs" and case != "wa_2025":
+        raise ValueError("WGS validation inventory is only supported for wa_2025")
+    if kind == "wgs":
+        refresh = True
     spec = KINDS[kind]
     name = spec["asset"]
     src = DATA_DIR / case / "geojson" / spec["filename"]
@@ -199,6 +206,8 @@ def ingest_product(case: str, kind: str, *, project: str,
         if dry_run:
             result["detail"] = "would re-fetch " + ", ".join(
                 e["id"] for e in events)
+            if kind == "wgs":
+                return {**result, "src": str(src), "status": "dry-run"}
         else:
             fetch = _fetcher(kind)
             for event in events:

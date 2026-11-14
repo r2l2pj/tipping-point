@@ -19,6 +19,8 @@ from zoneinfo import ZoneInfo
 import requests
 from tp.events import DATA_DIR
 
+from .featureserver import bbox_params, query_features
+
 SERVICE_URL = (
     "https://gis.earthdata.nasa.gov/portal/rest/services/"
     "Landslides/COOLR_Reports_Points/FeatureServer/0/query"
@@ -47,7 +49,6 @@ def _query_params(event: dict, window: dict | None = None) -> dict:
     event_date filter. A window ({start, end} ISO dates) applies only when
     passed explicitly or set as event['glc_window'].
     """
-    w, s, e, n = event["aoi"]["bbox"]
     win = window if window is not None else event.get("glc_window")
     where = "1=1"
     if win:
@@ -55,16 +56,7 @@ def _query_params(event: dict, window: dict | None = None) -> dict:
             f"event_date >= DATE '{win['start']}' "
             f"AND event_date <= DATE '{win['end']}'"
         )
-    return {
-        "where": where,
-        "geometry": f"{w},{s},{e},{n}",
-        "geometryType": "esriGeometryEnvelope",
-        "inSR": "4326",
-        "spatialRel": "esriSpatialRelIntersects",
-        "outFields": "*",
-        "outSR": "4326",
-        "f": "geojson",
-    }
+    return {**bbox_params(event), "where": where}
 
 
 def _clean_properties(props: dict, timezone: str = "America/Los_Angeles") -> dict:
@@ -101,12 +93,7 @@ def glc_catalog(event: dict, window: dict | None = None) -> Path:
     ('wa-2025-12' -> 'wa_2025') — data/ dirs are per case, not event.
     An empty query result still writes a valid FeatureCollection.
     """
-    resp = requests.get(
-        SERVICE_URL, params=_query_params(event, window=window), timeout=60)
-    resp.raise_for_status()
-    payload = resp.json()
-    if "error" in payload:
-        raise RuntimeError(f"COOLR query failed: {payload['error']}")
+    records = query_features(SERVICE_URL, _query_params(event, window=window), get=requests.get)
 
     features = [
         {
@@ -116,7 +103,7 @@ def glc_catalog(event: dict, window: dict | None = None) -> Path:
                 f.get("properties") or {},
                 "America/Sao_Paulo" if event["id"].startswith("rs-") else "America/Los_Angeles"),
         }
-        for f in payload.get("features") or []
+        for f in records
         if f.get("geometry")
     ]
     fc = {
