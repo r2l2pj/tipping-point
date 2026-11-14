@@ -1,5 +1,6 @@
 # implement — ingest (GEE asset ingest unit, t9r)
 # L8a — SWOT series -> GEE table asset — implementation report
+# implement — edlauth (L6: Earthdata bearer-token auth)
 
 Ruling: validation.yml L8a (data-plan). Interface per conductor update:
 module IS the CLI (`python -m pipeline.fetch.swot`), no tools/ file,
@@ -181,6 +182,62 @@ no tools/ file.
 - `--event rs-2024-05 --dry-run` → resolves case + loads event OK.
 - Real run without unit/ingest merged → exits 1 with the
   "ingest contract unavailable" message (as designed).
+- `pipeline/fetch/edl.py` (NEW): shared EDL helper, tiny API as requested —
+  `edl_token()`, `edl_auth_headers()` (Bearer dict for plain HTTPS fetches),
+  `ensure_earthdata()` ({"token"} | {"user","password"} | {"netrc"} or the
+  existing-style clean "Earthdata credentials required" RuntimeError), plus
+  the per-mechanism appliers `earthaccess_login()` (strategy='environment'
+  for token AND user/pass — earthaccess 0.19 reads EARTHDATA_TOKEN itself;
+  EDL_USER/PASS map onto EARTHDATA_USERNAME/PASSWORD; strategy='netrc' for
+  netrc), `asf_session()` (`ASFSession().auth_with_token(token)`, None when
+  no token), and `gdal_auth_env()` (token -> GDAL_HTTP_HEADERS Bearer only —
+  NO cross-host forwarding flag; user/pass -> GDAL_HTTP_USERPWD; netrc ->
+  GDAL_HTTP_NETRC=YES).
+- `pipeline/tp/nisar.py`: deleted `_edl_credentials`/`_earthdata_login`/
+  `_gdal_auth_env` — `execute_plan()` and `search()` now go through
+  `fetch.edl`. `gdal_subset_cmd()` prints
+  `GDAL_HTTP_HEADERS="Authorization: Bearer $EARTHDATA_TOKEN"` when a token
+  is set (env-var reference — token value never printed), else keeps
+  GDAL_HTTP_NETRC=YES. Docstrings updated.
+- `pipeline/tp/hls_fetch.py`: `_edl_login()` delegates to
+  `fetch.edl.earthaccess_login()` wrapped in the module's _EDL_MSG (now
+  mentions EARTHDATA_TOKEN); lazy import kept; `import os` dropped.
+  `fetch_scenes()` also pins `edl.edl_auth_headers()` onto
+  `earthaccess.get_requests_https_session()` — the shared session granule
+  downloads run on — so EARTHDATA_TOKEN rides as Authorization: Bearer
+  (no-op {} when user/pass or netrc auth is in use).
+- `pipeline/tp/modis_nrt.py`: `search()` calls `edl.earthaccess_login()`
+  inside the existing never-raises try (no creds -> [] as before);
+  `fetch_nrt()` pins `edl.edl_auth_headers()` onto the earthaccess
+  HTTPS session the same way before `earthaccess.download`.
+- `pipeline/scripts/01_get_nisar.py`: --execute help text mentions
+  EARTHDATA_TOKEN.
+- `pipeline/fetch/{__init__,boundaries,glc,inventory}.py`: NOT changed —
+  all are public no-auth fetchers (IBGE, US Census TIGERweb, COOLR public
+  FeatureServer, Zenodo public API); per plan, nothing to do. Note:
+  `zenodo_inventory.py` does not exist; the Zenodo inventory fetcher is
+  `pipeline/fetch/inventory.py`.
+- asf_search: no in-scope call site uses it (only `live/fetch.py`, out of
+  scope, and that one is metadata-only/no-auth). `edl.asf_session()` covers
+  the mechanism for the parallel fetch units.
+- `tp/validation.py` also calls `earthaccess.login()` but is NOT in my file
+  scope — left untouched.
+- Tests: new `pipeline/tests/test_edl.py` (14 tests, no network);
+  `test_nisar.py` fakes now capture earthaccess.login kwargs + rasterio.Env
+  kwargs; new tests assert Bearer header in GDAL_HTTP_HEADERS, USERPWD
+  fallback, token-only env-var reference in printed gdalwarp cmd, and clean
+  error drops EARTHDATA_TOKEN too; `test_hls_fetch.py` + `test_modis_nrt.py`
+  gained token/no-creds/fallback login-wiring tests plus one test each
+  asserting `Authorization: Bearer faketoken` lands on the earthaccess
+  download session (review NEEDS-FIX: edl_auth_headers wired at both
+  download call sites).
+
+## Commands run
+
+- `$UV sync` — OK ("Resolved 141 packages", 119 installed).
+- `$UV run ruff check .` — "All checks passed!".
+- `$UV run pytest pipeline/tests -q` — **114 passed in 2.80s** (after the
+  review NEEDS-FIX wiring; 112 before).
 
 ## Review round 1 (NEEDS-FIX)
 
@@ -459,3 +516,7 @@ Commands/results:
 
 The original OPERA commit is already on main behind two other-unit commits;
 this fix is a separate commit rather than amending unrelated HEAD history.
+EARTHDATA_TOKEN-first auth wired everywhere in scope; EDL_USER/EDL_PASS and
+~/.netrc fallbacks preserved; clean RuntimeError when nothing set. Committed
+on branch `unit/edlauth` as `e83bab6` (amended once for the review
+NEEDS-FIX; no push, no merge).
