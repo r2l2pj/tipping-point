@@ -22,14 +22,36 @@
   - `test_download_band_accepts_zip_payload`: zipped .tif returns the array.
   - `test_download_band_accepts_raw_tiff_payload`: raw TIFF bytes return the
     array. Both assert float64 dtype and exact array equality.
+  - `test_build_assets_clim_windows_are_per_doy`: spies on
+    `ee.Date.fromYMD`, asserts all 366 leap-year (month, day) pairs are
+    sampled across every year in YEARS (once per offset: 366*23*21 calls).
+
+## Scope addition (t6g): per-doy clim_rain windows
+
+Read `gee/01_tpi_index.js` lines 31-39: for a reference (month, day) the
+climatology samples `ee.Date.fromYMD(y, month, day).advance(o, 'day')`,
+y in 2001-2023, o in -30..30 step 3, each a 3-day IMERG sum ending there
+— same month/day-of-month per year.
+
+`live/build_static.py` changes:
+- Split `_climatology_for_month` into shared `_climatology(ee, month, day)`;
+  `_climatology_for_month` now calls it with day=15 (npz path UNCHANGED,
+  same output as before — mid-month windows).
+- New `_climatology_for_doy(ee, doy)`: maps doy -> (month, day) of the
+  leap-year 2000 calendar, then `_climatology`.
+- `build_assets`: dropped the `month_imgs` reuse; each of the 366 doy
+  exports now computes its own +-30d-window percentile image. Still 366
+  images, `doy` property, bands p90/p95/p99, same scale/assetIds.
 
 ## Commands run
 
-- `$UV run pytest live/tests/ -q` -> 73 passed (21 warnings, pre-existing
+- `$UV run pytest live/tests/ -q` -> 74 passed (21 warnings, pre-existing
   NotGeoreferenced/PendingDeprecation warnings)
 - `$UV run ruff check live/` -> All checks passed!
-- `git commit` on `unit/u17`: `8e7ac0c U17: build_static raw-TIFF
-  getDownloadURL + ee_init adoption` (2 files, +67/-4)
+- Commits on `unit/u17`:
+  - `8e7ac0c` U17: build_static raw-TIFF getDownloadURL + ee_init adoption
+  - `cdf7190` U17: unit report
+  - `2339d60` U17: per-doy climatology windows in build_assets
 
 ## Notes
 
