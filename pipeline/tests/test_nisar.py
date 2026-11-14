@@ -76,12 +76,14 @@ def test_download_plan_wa():
     gcov = [s for s in plan if s["product"] == "GCOV"]
     gunw = [s for s in plan if s["product"] == "GUNW"]
     wm = [s for s in plan if s["product"] == "WATERMASK"]
-    assert len(gcov) == 6      # HHHH, HVHV, mask x pre/post
+    assert len(gcov) == 9      # HHHH, HVHV, mask x ref/pre/post
     assert len(gunw) == 0      # wa is GCOV-only — no pair crosses the event
     assert len(wm) == 1
-    assert {s["which"] for s in gcov} == {"pre", "post"}
+    assert {s["which"] for s in gcov} == {"ref", "pre", "post"}
     # scenes-list shape: declared granule_ids ride along on the plan
-    assert {s["granule_id"] for s in gcov} == {WA_GCOV_PRE, WA_GCOV_POST}
+    assert {s["granule_id"] for s in gcov} == {
+        WA_GCOV_REF, WA_GCOV_PRE, WA_GCOV_POST
+    }
 
 
 GUNW_EVENT = {
@@ -112,6 +114,10 @@ def test_download_plan_gunw_synthetic():
 
 # --- execute_plan -----------------------------------------------------------
 
+WA_GCOV_REF = (
+    "NISAR_L2_PR_GCOV_004_172_D_064_4005_DHDH_A_20251110T031814_"
+    "20251110T031849_X05009_N_F_J_001"
+)
 WA_GCOV_PRE = (
     "NISAR_L2_PR_GCOV_006_172_D_064_4005_DHDH_A_20251204T031815_"
     "20251204T031850_X05009_N_F_J_001"
@@ -147,6 +153,7 @@ class _FakeEarthaccess:
         self.calls.append((short_name, temporal))
         if "GCOV" in short_name:
             return [
+                _FakeGranule(WA_GCOV_REF),
                 _FakeGranule(WA_GCOV_PRE),
                 _FakeGranule(WA_GCOV_POST),
                 _FakeGranule(GCOV_WRONG_TRACK),
@@ -238,7 +245,7 @@ def _fake_rasterio():
     def _open(path, mode="r", **profile):
         if mode == "w":
             return _Writer(path, **profile)
-        assert str(path).startswith('NETCDF:"/vsicurl/')
+        assert str(path).startswith('NETCDF:"')
         return _Src()
 
     vrt_mod = types.ModuleType("rasterio.vrt")
@@ -268,6 +275,14 @@ def _stub_execute(monkeypatch, tmp_path):
     monkeypatch.setenv("EARTHDATA_USERNAME", "")
     monkeypatch.setenv("EARTHDATA_PASSWORD", "")
     monkeypatch.setattr(events_mod, "DATA_DIR", tmp_path)
+
+    def _fake_download(url, dest, creds):
+        dest = Path(dest)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(b"h5")
+        return dest
+
+    monkeypatch.setattr(nisar_mod, "_download_h5", _fake_download)
     return fake_ea
 
 
@@ -278,17 +293,19 @@ def test_execute_plan_writes_tifs_and_manifest(monkeypatch, tmp_path):
     raw = tmp_path / "raw" / "nisar"
     names = {p.name for p in written}
     assert names == {
+        "gcov_hhhh_ref.tif", "gcov_hvhv_ref.tif", "gcov_mask_ref.tif",
         "gcov_hhhh_pre.tif", "gcov_hvhv_pre.tif", "gcov_mask_pre.tif",
         "gcov_hhhh_post.tif", "gcov_hvhv_post.tif", "gcov_mask_post.tif",
     }
     assert all(p.exists() and raw in p.parents for p in written)
     assert fake_ea.logged_in
-    assert len(fake_ea.calls) == 2  # one CMR hit per GCOV scene
+    assert len(fake_ea.calls) == 3  # one CMR hit per GCOV scene
 
     manifest = json.loads(
         (tmp_path / "wa_2025" / "nisar_products.json").read_text()
     )
     assert manifest["GCOV"]["collection"] == "NISAR_L2_GCOV_BETA_V1"
+    assert manifest["GCOV"]["ref"] == WA_GCOV_REF
     assert manifest["GCOV"]["pre"] == WA_GCOV_PRE
     assert manifest["GCOV"]["post"] == WA_GCOV_POST
     assert "GUNW" not in manifest
@@ -329,6 +346,14 @@ def test_execute_plan_token_uses_bearer(monkeypatch, tmp_path):
     monkeypatch.setenv("HOME", str(tmp_path))  # no ~/.netrc
     monkeypatch.setenv("EARTHDATA_TOKEN", "faketoken")
     monkeypatch.setattr(events_mod, "DATA_DIR", tmp_path)
+
+    def _fake_download(url, dest, creds):
+        dest = Path(dest)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(b"h5")
+        return dest
+
+    monkeypatch.setattr(nisar_mod, "_download_h5", _fake_download)
     execute_plan(load_event("wa-2025-12"))
     assert fake_ea.logins == [{"strategy": "environment"}]
     assert mod.envs

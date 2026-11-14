@@ -23,8 +23,11 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 import earthaccess
 from fetch import edl
@@ -50,6 +53,14 @@ HDF5_PATHS = {
             "wrappedInterferogram/HH/coherenceMagnitude"
         ),
     },
+}
+
+# Scene-role spellings seen in event files -> plan "which" keys.
+_ROLE_ALIAS = {
+    "no-event reference": "ref",
+    "no-event": "ref",
+    "no_event": "ref",
+    "reference": "ref",
 }
 
 # NISAR_L2_PR_<PROD>_<cycle>_<track>_<D|A>_<frame>_<mode>_<pols>_A_<YYYYMMDD>T...
@@ -203,13 +214,22 @@ def download_plan(event: dict) -> list[dict]:
         elif isinstance(scenes, list):
             for s in scenes:
                 if isinstance(s, dict) and s.get("role"):
-                    scene_map[s["role"]] = s.get("date")
-                    if s.get("granule_id"):
-                        granule_ids[s["role"]] = s["granule_id"]
+                    roles = [s["role"], _ROLE_ALIAS.get(s["role"])]
+                    for role in filter(None, roles):
+                        scene_map.setdefault(role, s.get("date"))
+                        if s.get("granule_id"):
+                            granule_ids.setdefault(role, s["granule_id"])
         collections = frame.get("collections", {})
         track, frame_no = frame.get("track"), frame.get("frame")
         if product == "GCOV":
             for which, date in (
+                (
+                    "ref",
+                    scene_map.get("no-event reference")
+                    or scene_map.get("no_event")
+                    or scene_map.get("ref")
+                    or frame.get("ref"),
+                ),
                 ("pre", scene_map.get("pre") or frame.get("pre")),
                 ("post", scene_map.get("post") or frame.get("post")),
             ):
@@ -390,25 +410,66 @@ def _find_granule(step: dict, bbox: tuple):
     return best
 
 
+class _StripAuthOnCrossHost(urllib.request.HTTPRedirectHandler):
+    """ASF TEA 303s to a signed CloudFront URL — the bearer header must not
+    leak to (or break) the signed request."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        new = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if new is not None and (
+            urlparse(newurl).netloc != urlparse(req.full_url).netloc
+        ):
+            new.remove_header("Authorization")
+        return new
+
+
+def _download_h5(url: str, dest: Path, creds: dict) -> Path:
+    """Linear-download one granule HDF5 to `dest` (Bearer on TEA only).
+
+    /vsicurl/ range requests through the TEA 303 redirect starve on NISAR's
+    ~7 GB frames; a straight GET is far faster end to end.
+    """
+    headers = edl.edl_auth_headers()
+    if "user" in creds:
+        import base64
+
+        raw = f"{creds['user']}:{creds['password']}".encode()
+        headers = {"Authorization": f"Basic {base64.b64encode(raw).decode()}"}
+    req = urllib.request.Request(url, headers=headers)
+    opener = urllib.request.build_opener(_StripAuthOnCrossHost)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_name(dest.name + ".part")
+    with opener.open(req) as r, tmp.open("wb") as f:
+        shutil.copyfileobj(r, f, 1024 * 1024)
+    tmp.rename(dest)
+    return dest
+
+
 def _subset_h5_variable(
-    h5url: str, h5_path: str, bbox: tuple, out_path: Path, gdal_env: dict
+    src: str, h5_path: str, bbox: tuple, out_path: Path, gdal_env: dict
 ) -> Path:
-    """Stream one HDF5 variable via /vsicurl/, clip to `bbox`, write a COG."""
+    """Read one HDF5 variable from a local file or /vsicurl/ URL, clip to
+    `bbox`, write a COG."""
     import rasterio
     from rasterio.vrt import WarpedVRT
     from rasterio.windows import from_bounds
 
-    dsn = _netcdf_dsn(h5url, h5_path)
+    if src.startswith(("http://", "https://")):
+        dsn = _netcdf_dsn(src, h5_path)
+        # ASF TEA serves a 303 to a signed URL on HEAD too — GDAL reads the
+        # empty redirect body as the file and reports "not a supported
+        # format". Skip HEAD so the first request is a byte-range GET that
+        # follows the redirect.
+        env = {**gdal_env, "CPL_VSIL_CURL_USE_HEAD": "NO"}
+    else:
+        dsn = f'NETCDF:"{src}":{h5_path}'
+        env = gdal_env
     w, s, e, n = bbox
-    # ASF TEA serves a 303 to a signed URL on HEAD too — GDAL reads the empty
-    # redirect body as the file and reports "not a supported format". Skip
-    # HEAD so the first request is a byte-range GET that follows the redirect.
-    env = {**gdal_env, "CPL_VSIL_CURL_USE_HEAD": "NO"}
     try:
         with (
             rasterio.Env(**env),
-            rasterio.open(dsn) as src,
-            WarpedVRT(src, crs="EPSG:4326") as vrt,
+            rasterio.open(dsn) as h5src,
+            WarpedVRT(h5src, crs="EPSG:4326") as vrt,
         ):
             win = from_bounds(
                 w, s, e, n, transform=vrt.transform
@@ -429,7 +490,7 @@ def _subset_h5_variable(
                 dst.write(data)
     except Exception as exc:
         raise RuntimeError(
-            f"GDAL /vsicurl/ subset failed for {h5_path} in {h5url}: {exc}"
+            f"GDAL subset failed for {h5_path} in {src}: {exc}"
         ) from exc
     return out_path
 
@@ -479,6 +540,7 @@ def execute_plan(event: dict, dry_run: bool = False) -> list[Path]:
     bbox = tuple(event["aoi"]["bbox"])
 
     granules: dict = {}
+    h5_local: dict = {}
     written = []
     for step, out_path in zip(steps, paths):
         key = (
@@ -495,7 +557,13 @@ def execute_plan(event: dict, dry_run: bool = False) -> list[Path]:
             raise RuntimeError(
                 f"granule {_native_id(g)} exposes no .h5 data link"
             )
-        _subset_h5_variable(url, step["h5_path"], bbox, out_path, gdal_env)
+        if url not in h5_local:
+            h5_local[url] = _download_h5(
+                url, raw_dir / "h5" / Path(urlparse(url).path).name, creds
+            )
+        _subset_h5_variable(
+            str(h5_local[url]), step["h5_path"], bbox, out_path, gdal_env
+        )
         written.append(out_path)
         role = step["which"]
         entry = manifest.setdefault(
