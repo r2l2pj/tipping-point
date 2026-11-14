@@ -1,3 +1,5 @@
+// Reference mirror only — the canonical implementation is the Python gee/*.py
+// modules, which read config.yaml. This script is not used by any pipeline.
 // ===== Tipping Point Index, Modo 1 =====
 // Draft from project doc. Event: ../events/rs-2024-05.json (keep bbox in sync by hand)
 var aoi = ee.Geometry.Rectangle([-52.5, -30.5, -50.5, -29.0]);

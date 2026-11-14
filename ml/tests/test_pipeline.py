@@ -224,3 +224,31 @@ def test_lead_time_tpi_series_label_points(tmp_path):
     assert blob["lead_time_mean_h"] == pytest.approx(48.0)
     assert blob["warned_before_pct"] == pytest.approx(75.0)
     assert blob["landslide_ml"]["lead_hours"]["mode"] == "label_points"
+
+
+def test_config_reads_config_yaml():
+    """ml.config AOI/window/frames/seed come from config.yaml (S5/S6)."""
+    from tp.config import case, event_id, seed
+
+    c = case("rs_2024")
+    assert cfg.AOI_BBOX == tuple(c["aoi"])
+    assert cfg.EVENT_ID == event_id("rs_2024")
+    assert cfg.EVENT_WINDOW == ("2024-04-27", "2024-05-06")
+    assert cfg.FRAME_TIMES_UTC[0] == "2024-04-27T00:00:00Z"
+    assert cfg.FRAME_TIMES_UTC[-1] == "2024-05-06T00:00:00Z"
+    assert len(cfg.FRAME_TIMES_UTC) == 10
+    assert cfg.SEED == seed() == 42
+    assert cfg.CLASS_BREAKS == (0.2, 0.4, 0.6)
+
+
+def test_train_defaults_to_config_seed():
+    import inspect
+
+    from ml import train
+
+    assert inspect.signature(train.fit_fold).parameters["seed"].default == cfg.SEED
+    assert inspect.signature(train.cross_validate).parameters["seed"].default == cfg.SEED
+    assert inspect.signature(train.train_final).parameters["seed"].default == cfg.SEED
+    from ml.dataset import inner_block_split
+
+    assert inspect.signature(inner_block_split).parameters["seed"].default == cfg.SEED

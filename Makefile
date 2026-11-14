@@ -25,17 +25,12 @@ PY := $(UV) run --python 3.12 python
 
 CASE ?= rs_2024
 
-EVENT_rs_2024 := rs-2024-05
-EVENT_wa_2025 := wa-2025-12
-EVENT := $(EVENT_$(CASE))
-
-YMD_rs_2024 := 20240502
-YMD_wa_2025 := 20251210
-YMD := $(YMD_$(CASE))
-
-REFDATE_rs_2024 := 2024-05-02
-REFDATE_wa_2025 := 2025-12-10
-REFDATE := $(REFDATE_$(CASE))
+# Event id / YMD / REFDATE defaults come from config.yaml (single source):
+# REFDATE is the case's event_date, EVENT resolves via events/<stem>-*.json.
+# All three remain overridable: `make EVENT=... YMD=... REFDATE=...`.
+EVENT ?= $(firstword $(basename $(notdir $(wildcard events/$(subst _,-,$(CASE))-*.json))))
+REFDATE ?= $(shell sed -n '/^  $(CASE):/,/^  [a-z]/s/.*event_date: *\([0-9-]*\).*/\1/p' config.yaml | head -1)
+YMD ?= $(subst -,,$(REFDATE))
 
 RAW_NISAR := data/raw/nisar
 RAW_AUX := data/raw/aux
@@ -224,7 +219,7 @@ test:
 	@if $(NO_UV); then \
 		echo "SKIP $@: missing uv"; \
 	else \
-		$(PY) -m pytest pipeline/tests gee/tests live/tests; rc=$$?; \
+		$(PY) -m pytest pipeline/tests gee/tests live/tests ml/tests; rc=$$?; \
 		$(UV) run --python 3.12 ruff check .; \
 		exit $$rc; \
 	fi

@@ -1,3 +1,5 @@
+// Reference mirror only — the canonical implementation is the Python gee/*.py
+// modules, which read config.yaml. This script is not used by any pipeline.
 // ===== Feature table do modelo de gatilho, nível 3b =====
 // ml-predict §5.1 (colunas) e §2.3 (amostragem pos/N1/N2), replay do RS 2024.
 // Dependências de asset (rode antes):

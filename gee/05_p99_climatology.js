@@ -1,3 +1,5 @@
+// Reference mirror only — the canonical implementation is the Python gee/*.py
+// modules, which read config.yaml. This script is not used by any pipeline.
 // ===== P99 de chuva diária, ativo único =====
 // Denominador do feature rain_rel = rain_24h / P99 (ml-predict §5.1, correção
 // climática do LHASA). Pesado (~8400 imagens diárias): rode UMA vez, exporte

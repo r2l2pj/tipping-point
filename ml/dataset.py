@@ -90,7 +90,7 @@ def iter_block_folds(
 
 
 def inner_block_split(
-    df: pd.DataFrame, val_frac: float = 0.2, seed: int = 0
+    df: pd.DataFrame, val_frac: float = 0.2, seed: int = cfg.SEED
 ) -> tuple[np.ndarray, np.ndarray]:
     """Split rows into (fit, val) positional indices by whole blocks.
 

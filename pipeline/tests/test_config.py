@@ -46,6 +46,28 @@ def test_event_id_resolution():
     assert config.event_id("rs-2024-05") == "rs-2024-05"
 
 
+def test_seed_accessor(monkeypatch):
+    assert config.seed() == 42
+    monkeypatch.setattr(config, "load_config", lambda *a, **k: {})
+    assert config.seed() == 42
+
+
+def test_climatology_accessor():
+    clim = config.climatology()
+    assert clim["years"] == [2001, 2023]
+    assert clim["window_days"] == 3
+    assert clim["doy_offset_days"] == 30
+    assert clim["doy_offset_step"] == 3
+
+
+def test_migrated_threshold_keys():
+    assert config.threshold("slope_flood_max_deg") == 5
+    assert config.threshold("bright_rise_db") == 3
+    assert config.threshold("mmu_ha") == 3
+    assert config.threshold("coh_max_elev_m") == 600
+    assert config.threshold("hv_drop_db") == 2
+
+
 def test_load_config_custom_path(tmp_path):
     p = tmp_path / "other.yaml"
     p.write_text("thresholds:\n  flood_db_drop: -7\ncases: {}\n")

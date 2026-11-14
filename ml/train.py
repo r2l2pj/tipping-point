@@ -46,7 +46,7 @@ def _fit_es(
 
 
 def fit_fold(
-    train_df: pd.DataFrame, cols: list[str], seed: int = 0
+    train_df: pd.DataFrame, cols: list[str], seed: int = cfg.SEED
 ) -> tuple[XGBClassifier, int]:
     """Fit one fold: inner block split for early stopping."""
     fit_idx, val_idx = inner_block_split(train_df, seed=seed)
@@ -59,7 +59,7 @@ def fit_fold(
 
 
 def cross_validate(
-    df: pd.DataFrame, n_splits: int = cfg.N_FOLDS, seed: int = 0
+    df: pd.DataFrame, n_splits: int = cfg.N_FOLDS, seed: int = cfg.SEED
 ) -> tuple[pd.Series, list[dict]]:
     """Out-of-fold predictions + per-fold fitted models.
 
@@ -78,7 +78,7 @@ def cross_validate(
 
 
 def train_final(
-    df: pd.DataFrame, out_path: str | Path, seed: int = 0
+    df: pd.DataFrame, out_path: str | Path, seed: int = cfg.SEED
 ) -> tuple[XGBClassifier, dict]:
     """Final fit on all rows (inner block holdout for early stopping) → JSON."""
     cols = feature_cols(df)
@@ -111,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--features", required=True, help="feature table (csv/parquet)")
     ap.add_argument("--out", default=str(cfg.MODEL_DIR / "slide_xgb.json"))
     ap.add_argument("--folds", type=int, default=cfg.N_FOLDS)
-    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--seed", type=int, default=cfg.SEED)
     args = ap.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")

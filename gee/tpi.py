@@ -21,13 +21,15 @@ from datetime import date
 from pathlib import Path
 
 import ee
-from tp.config import REPO_ROOT, thresholds
+from tp.config import REPO_ROOT, threshold, thresholds
+from tp.config import climatology as _clim_cfg
 
 from . import common
 
 SCALE_M = 1000            # series export scale, same as the JS scripts
 CLIM_SCALE_M = 10_000     # climatology asset scale (~IMERG native 0.1 deg)
-SLOPE_FLOOD_MAX_DEG = 5.0  # T_flood = 0 above this slope (gee/01: slope.gt(5))
+SLOPE_FLOOD_MAX_DEG = float(threshold("slope_flood_max_deg", 5.0))  # T_flood = 0 above (gee/01)
+RAIN_PERCENTILES = [int(p) for p in threshold("rain_percentiles", [90, 95, 99])]
 MAX_PIXELS = 1e9
 
 # Delta L8: derived products live as GEE assets (single source of truth)
@@ -65,20 +67,24 @@ def _smap_mean(end):
 
 
 def climatology_image(ref: date):
-    """p90/p95/p99 of 3-day rain at the ref DOY, CLIM_YEARS, 3-day windows."""
+    """rain_percentiles of N-day rain at the ref DOY, CLIM_YEARS, stepped windows."""
+    clim_cfg = _clim_cfg()
+    window = int(clim_cfg.get("window_days", 3))
+    off = int(clim_cfg.get("doy_offset_days", 30))
+    step = int(clim_cfg.get("doy_offset_step", 3))
     ref = ee.Date(ref.isoformat())
     years = ee.List.sequence(*common.CLIM_YEARS)
-    offsets = ee.List.sequence(-30, 30, 3)
+    offsets = ee.List.sequence(-off, off, step)
     imerg = _imerg()
 
     def per_year(y):
         return offsets.map(lambda o: _accum(
             imerg,
             ee.Date.fromYMD(y, ref.get("month"), ref.get("day")).advance(o, "day"),
-            3))
+            window))
 
     clim = ee.ImageCollection.fromImages(years.map(per_year).flatten())
-    return clim.reduce(ee.Reducer.percentile([90, 95, 99]))
+    return clim.reduce(ee.Reducer.percentile(RAIN_PERCENTILES))
 
 
 def clim_asset_name(case_id: str) -> str:
@@ -147,10 +153,9 @@ def tpi_at(t, clim, t_slide, t_flood):
     """
     t = ee.Date(t)
     thr = thresholds()
-    rain3 = _accum(_imerg(), t, 3)
-    r = rain_score(rain3, clim.select("precipitation_p90"),
-                   clim.select("precipitation_p95"),
-                   clim.select("precipitation_p99"))
+    rain3 = _accum(_imerg(), t, int(_clim_cfg().get("window_days", 3)))
+    p90, p95, p99 = (clim.select(f"precipitation_p{p}") for p in RAIN_PERCENTILES)
+    r = rain_score(rain3, p90, p95, p99)
     s = _smap_mean(t).unitScale(*thr["soil_wetness_range"]).clamp(0, 1)
     w = thr.get("tpi_weights")
     return (r.rename("R").addBands(s.rename("S"))
@@ -178,7 +183,7 @@ def rain_soil_fc(case_id: str):
     feats = []
     for d in common.event_dates(case_id):
         t = ee.Date(d)
-        img = (_accum(imerg, t, 3).rename("rain3_mm")
+        img = (_accum(imerg, t, int(_clim_cfg().get("window_days", 3))).rename("rain3_mm")
                .addBands(_accum(imerg, t, 7).rename("rain7_mm"))
                .addBands(_smap_mean(t).rename("smap")))
         stats = img.reduceRegion(

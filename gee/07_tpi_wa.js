@@ -1,3 +1,5 @@
+// Reference mirror only — the canonical implementation is the Python gee/*.py
+// modules, which read config.yaml. This script is not used by any pipeline.
 // ===== Tipping Point Index, Modo 1 — variante WA 2025 =====
 // Mesma lógica de 01_tpi_index.js, caso Washington.
 // Event: ../events/wa-2025-12.json (keep bbox in sync by hand)
