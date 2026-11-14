@@ -40,7 +40,11 @@ manifest (always last — `data/SCHEMA.md` explains why).
 
 Local fallback: `EDL_USER`/`EDL_PASS` or a `~/.netrc` entry for
 `urs.earthdata.nasa.gov` (see `.env.example`). CI sets `EARTHDATA_TOKEN`,
-`GCP_SA_KEY`, `GEE_PROJECT`, `NOW_GCS_BUCKET` (`.github/workflows/now.yml`).
+`GCP_SA_KEY` and `GEE_PROJECT` (`.github/workflows/now.yml`). There is no
+Cloud Storage bucket (ruling L10): `tools/export_fallback.py` renders
+fallback files locally into `data/`, and the live workflow pushes `data/`
+to the orphan branch `fallback`, which the app reads via
+`DATA_BASE_URL=https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`.
 
 ## Layout
 
