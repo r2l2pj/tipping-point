@@ -171,18 +171,19 @@ def critical_areas_from_assets(ee_module=None) -> list[dict]:
 
     geometry = ee_module.Geometry.Rectangle(list(NOW_BOUNDS))
     regions = []
-    cls = _class_index("Alto")
     for kind in ("slide", "flood"):
         image = ee_module.Image(f"{ASSET_ROOT}/now/tpi_{kind}_d0")
-        features = image.gte(0.4).selfMask().reduceToVectors(
-            scale=1000, geometry=geometry, maxPixels=1e9).getInfo()["features"]
-        for feature in features:
-            region = dict(feature.get("properties") or {})
-            region["class"] = cls
-            region["label"] = LABELS[cls]
-            region["kind"] = kind
-            region["geometry"] = feature["geometry"]
-            regions.append(region)
+        for threshold, label_name in ((0.6, "Crítico"), (0.4, "Alto")):
+            cls = _class_index(label_name)
+            features = image.gte(threshold).selfMask().reduceToVectors(
+                scale=1000, geometry=geometry, maxPixels=1e9).getInfo()["features"]
+            for feature in features:
+                region = dict(feature.get("properties") or {})
+                region["class"] = cls
+                region["label"] = LABELS[cls]
+                region["kind"] = kind
+                region["geometry"] = feature["geometry"]
+                regions.append(region)
     return regions
 
 
