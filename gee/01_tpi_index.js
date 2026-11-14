@@ -4,6 +4,7 @@ var aoi = ee.Geometry.Rectangle([-52.5, -30.5, -50.5, -29.0]);
 var ref = ee.Date('2024-05-02'); // data de referência do evento
 
 var imerg = ee.ImageCollection('NASA/GPM_L3/IMERG_V07').select('precipitation');
+var smap = ee.ImageCollection('NASA/SMAP/SPL4SMGP/008').select('sm_rootzone_wetness');
 var dem = ee.Image('NASA/NASADEM_HGT/001').select('elevation');
 var slope = ee.Terrain.slope(dem);
 
@@ -11,18 +12,35 @@ var slope = ee.Terrain.slope(dem);
 function accum(end, days) {
   return imerg.filterDate(end.advance(-days, 'day'), end).sum().multiply(0.5);
 }
+// Umidade do solo: média das 24 h anteriores
+function smapMean(end) {
+  return smap.filterDate(end.advance(-1, 'day'), end).mean();
+}
 
-// Climatologia: janelas de 3 dias na mesma época do ano, 2001 a 2023
-// Pesado: rode uma vez e exporte como asset
-var years = ee.List.sequence(2001, 2023);
-var offsets = ee.List.sequence(-30, 30, 3);
-var clim = ee.ImageCollection.fromImages(years.map(function (y) {
-  return offsets.map(function (o) {
-    var end = ee.Date.fromYMD(y, ref.get('month'), ref.get('day')).advance(o, 'day');
-    return accum(end, 3);
+// Climatologia: janelas de 3 dias na mesma época do ano, 2001 a 2023.
+// Pesado: exporta UMA vez como asset (rode com CLIM_ASSET_EXISTS=false) e
+// depois marque true — o asset é reutilizado em todas as próximas corridas.
+var CLIM_ASSET = 'projects/<GEE_PROJECT>/assets/tipping-point/rs_2024_clim_rain3_2001_2023';
+var CLIM_ASSET_EXISTS = false;
+var pct;
+if (CLIM_ASSET_EXISTS) {
+  pct = ee.Image(CLIM_ASSET);
+} else {
+  var years = ee.List.sequence(2001, 2023);
+  var offsets = ee.List.sequence(-30, 30, 3);
+  var clim = ee.ImageCollection.fromImages(years.map(function (y) {
+    return offsets.map(function (o) {
+      var end = ee.Date.fromYMD(y, ref.get('month'), ref.get('day')).advance(o, 'day');
+      return accum(end, 3);
+    });
+  }).flatten());
+  pct = clim.reduce(ee.Reducer.percentile([90, 95, 99]));
+  Export.image.toAsset({
+    image: pct.toFloat().clip(aoi),
+    description: 'rs_2024_clim_rain3_2001_2023',
+    assetId: CLIM_ASSET, region: aoi, scale: 10000
   });
-}).flatten());
-var pct = clim.reduce(ee.Reducer.percentile([90, 95, 99]));
+}
 var p90 = pct.select('precipitation_p90');
 var p95 = pct.select('precipitation_p95');
 var p99 = pct.select('precipitation_p99');
@@ -47,15 +65,19 @@ function tpiAt(t) {
     .where(rain3.gte(p90), rain3.subtract(p90).divide(p95.subtract(p90)).multiply(0.5))
     .where(rain3.gte(p95), rain3.subtract(p95).divide(p99.subtract(p95)).multiply(0.5).add(0.5))
     .where(rain3.gte(p99), 1).clamp(0, 1);
-  var S = ee.ImageCollection('NASA/SMAP/SPL4SMGP/008').select('sm_rootzone_wetness')
-    .filterDate(t.advance(-1, 'day'), t).mean().unitScale(0.5, 0.9).clamp(0, 1);
-  return tpi(R, S, T_slide).rename('TPI_slide')
+  var S = smapMean(t).unitScale(0.5, 0.9).clamp(0, 1);
+  // R/S vêm junto sem classificar — os COGs r_series/s_series (leitura de
+  // pixel do app, geotiff.js) selecionam essas bandas direto.
+  return R.rename('R').addBands(S.rename('S'))
+    .addBands(tpi(R, S, T_slide).rename('TPI_slide'))
     .addBands(tpi(R, S, T_flood).rename('TPI_flood'))
     .set('system:time_start', t.millis());
 }
 
 // Série diária: 10 dias antes até 5 depois do evento
 var dates = ee.List.sequence(-10, 5).map(function (d) { return ref.advance(d, 'day'); });
+// Nome da banda = data do dia (YYYYMMDD); 1ª banda = 1º dia da janela
+var bandNames = dates.map(function (d) { return ee.Date(d).format('YYYYMMdd'); });
 var series = ee.ImageCollection(dates.map(tpiAt));
 
 // Classes: 0 Baixo, 1 Moderado, 2 Alto, 3 Crítico
@@ -66,19 +88,71 @@ Map.centerObject(aoi, 8);
 Map.addLayer(classes(peak.select('TPI_slide')).clip(aoi), {min: 0, max: 3, palette: pal}, 'TPI deslizamento');
 Map.addLayer(classes(peak.select('TPI_flood')).clip(aoi), {min: 0, max: 3, palette: pal}, 'TPI enchente');
 
-// Exporta a série como um GeoTIFF multibanda (uma banda por dia) para o app
+// Exporta as séries como GeoTIFFs multibanda (uma banda por dia, nome = data)
+// para o app: data/rs_2024/cog/rs_2024_tpi_{slide,flood}_20240502.tif
 Export.image.toDrive({
-  image: series.select('TPI_slide').toBands().toFloat().clip(aoi),
-  description: 'rs_2024_tpi_slide_series_20240502', region: aoi, scale: 1000,
+  image: series.select('TPI_slide').toBands().rename(bandNames).toFloat().clip(aoi),
+  description: 'rs_2024_tpi_slide_20240502', region: aoi, scale: 1000,
+  fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
+});
+Export.image.toDrive({
+  image: series.select('TPI_flood').toBands().rename(bandNames).toFloat().clip(aoi),
+  description: 'rs_2024_tpi_flood_20240502', region: aoi, scale: 1000,
   fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
 });
 
-// E TAMBÉM como asset — o gee/08_simular_table.js (Telegram /simular) lê ESTE
-// asset, não o COG. As bandas viram 0_TPI_slide, 1_TPI_slide... (0 = 1º dia da
-// janela, 10 dias antes do evento).
+// Notas R e S por dia + terreno estático — float32 SEM classificar, lidos
+// pelo popup do app (geotiff.js): data/rs_2024/cog/rs_2024_{r,s}_series_*.tif
+// e rs_2024_t_{slide,flood}_*.tif
+Export.image.toDrive({
+  image: series.select('R').toBands().rename(bandNames).toFloat().clip(aoi),
+  description: 'rs_2024_r_series_20240502', region: aoi, scale: 1000,
+  fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
+});
+Export.image.toDrive({
+  image: series.select('S').toBands().rename(bandNames).toFloat().clip(aoi),
+  description: 'rs_2024_s_series_20240502', region: aoi, scale: 1000,
+  fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
+});
+Export.image.toDrive({
+  image: T_slide.toFloat().clip(aoi),
+  description: 'rs_2024_t_slide_20240502', region: aoi, scale: 1000,
+  fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
+});
+Export.image.toDrive({
+  image: T_flood.toFloat().clip(aoi),
+  description: 'rs_2024_t_flood_20240502', region: aoi, scale: 1000,
+  fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
+});
+
+// E TAMBÉM como assets — o gee/08_simular_table.js (Telegram /simular) e o
+// gee/09_impact.js leem ESTES assets, não os COGs. As bandas viram YYYYMMDD
+// ('20240422' = 1º dia da janela, 10 dias antes do evento; '20240502' = dia
+// do evento) — scripts que selecionam por índice seguem funcionando.
 Export.image.toAsset({
-  image: series.select('TPI_slide').toBands().toFloat().clip(aoi),
+  image: series.select('TPI_slide').toBands().rename(bandNames).toFloat().clip(aoi),
   description: 'tpi_slide_series_rs_asset',
   assetId: 'projects/<GEE_PROJECT>/assets/tipping-point/rs_2024_tpi_slide_series',
   region: aoi, scale: 1000
 });
+Export.image.toAsset({
+  image: series.select('TPI_flood').toBands().rename(bandNames).toFloat().clip(aoi),
+  description: 'tpi_flood_series_rs_asset',
+  assetId: 'projects/<GEE_PROJECT>/assets/tipping-point/rs_2024_tpi_flood_series',
+  region: aoi, scale: 1000
+});
+
+// Média de área por dia (rain3, rain7 e solo) → CSV que vira
+// data/rs_2024/series/rs_2024_rain_soil_20240502.json
+var rainSoil = ee.FeatureCollection(dates.map(function (d) {
+  d = ee.Date(d);
+  var img = accum(d, 3).rename('rain3_mm')
+    .addBands(accum(d, 7).rename('rain7_mm'))
+    .addBands(smapMean(d).rename('smap'));
+  var stats = img.reduceRegion({
+    reducer: ee.Reducer.mean(), geometry: aoi, scale: 1000, maxPixels: 1e9});
+  return ee.Feature(null, stats.set('date', d.format('YYYY-MM-dd')));
+}));
+Export.table.toDrive({
+  collection: rainSoil, description: 'rs_2024_rain_soil_20240502',
+  fileFormat: 'CSV'});
