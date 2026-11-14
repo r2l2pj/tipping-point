@@ -16,6 +16,8 @@
     <case>/<name>` (`tpi_slide_series`, `flood_nisar`), and `_asset()` prefers
     `data/<case>/assets.json` (name→path map, e.g. `water_nisar`/`flood_nisar`
     keys) when the file exists — convention path otherwise.
+  - L8: `collections` also records the concrete GEE asset ids actually read
+    (`tpi_slide_series` always; `flood_nisar` only when the gate opened).
   - Exports the pre/post NTL means as Drive GeoTIFF COGs
     (`formatOptions.cloudOptimized`), `fileNamePrefix` =
     `<caso>_night_lights_{pre,post}_<AAAAMMDD>` via `tp.events.artifact_stem`

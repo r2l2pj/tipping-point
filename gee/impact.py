@@ -208,15 +208,19 @@ def run(case_id: str, metrics_path: Path | None = None, merge: bool = True, expo
     init()
     res = compute(case_id)
     flat = {k: (v.getInfo() if v is not None else None) for k, v in res.items()}
+    collections = {
+        "GPWv4": f"{COL_GPW} (epoch {flat['gpw_year']})",
+        "VIIRS": f"{COL_VNP46A2} ({BAND_NTL}, {BAND_MQF}==0)",
+        "tpi_slide_series": _asset(case_id, "tpi_slide_series"),
+    }
+    if flat["people_flooded"] is not None:  # L8: record the concrete asset ids used
+        collections["flood_nisar"] = _flood_asset(case_id)
     merged = (
         merge_metrics(
             case_id,
             flat=flat,
             reasons=_null_reasons(case_id),
-            collections={
-                "GPWv4": f"{COL_GPW} (epoch {flat['gpw_year']})",
-                "VIIRS": f"{COL_VNP46A2} ({BAND_NTL}, {BAND_MQF}==0)",
-            },
+            collections=collections,
             path=metrics_path,
         )
         if merge

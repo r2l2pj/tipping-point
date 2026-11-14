@@ -205,6 +205,10 @@ def test_flood_gate_pass_wa(tmp_path, commons):
     assert out["metrics"]["people_flooded"] == 0
     assert out["metrics"]["flooded_km2"] == 0
     assert _called("ee.data.getAsset")
+    # L8: concrete asset ids recorded in collections
+    cols = out["merged"]["collections"]
+    assert cols["tpi_slide_series"] == f"{impact.ASSET_ROOT}/wa_2025/tpi_slide_series"
+    assert cols["flood_nisar"] == f"{impact.ASSET_ROOT}/wa_2025/flood_nisar"
 
 
 def test_asset_prefers_assets_json(tmp_path, commons, monkeypatch):
@@ -225,6 +229,8 @@ def test_flood_keys_null_for_rs(tmp_path, commons):
     assert m["people_flooded"] is None
     assert "predates launch" in m["_null_reasons"]["people_flooded"]
     assert not _called("ee.data.getAsset")  # rs never checks the gate
+    assert "flood_nisar" not in m["collections"]  # gate closed: no asset id recorded
+    assert m["collections"]["tpi_slide_series"].endswith("/rs_2024/tpi_slide_series")
 
 
 # ---------- hand: radii + best pick ----------
