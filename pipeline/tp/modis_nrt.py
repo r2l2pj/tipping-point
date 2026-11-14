@@ -13,8 +13,9 @@ water), 2 recurring flood, 3 flood; >= 250 is fill/flag and is excluded
 from the denominator. Tiles are 10x10 deg in EPSG:4326 (linear lat/lon).
 
 Auth: NASA Earthdata Login. earthaccess is imported lazily inside the
-functions that need it; earthaccess.login() reads EDL env vars or ~/.netrc
-at call time. Never hardcode credentials.
+functions that need it; creds are resolved at call time via fetch.edl —
+EARTHDATA_TOKEN (bearer), then EDL_USER/EDL_PASS env, then ~/.netrc.
+Never hardcode credentials.
 """
 from __future__ import annotations
 
@@ -70,10 +71,11 @@ def search(
     p = search_params(event, short_name, start, end)
     try:
         import earthaccess
+        from fetch import edl
     except ImportError:
         return []
     try:
-        earthaccess.login()
+        edl.earthaccess_login()
     except Exception:  # noqa: BLE001 — no EDL creds configured -> no scenes
         return []
     for name in p["short_names"]:
@@ -122,10 +124,16 @@ def fetch_nrt(
     if not granules:
         return []
     import earthaccess
+    from fetch import edl
 
     dest_dir = Path(dest_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
     bbox = tuple(event["aoi"]["bbox"])
+    # Pin the Bearer token onto earthaccess's shared HTTPS session so
+    # EARTHDATA_TOKEN rides granule downloads as Authorization: Bearer.
+    session = getattr(earthaccess, "get_requests_https_session", lambda: None)()
+    if session is not None:
+        session.headers.update(edl.edl_auth_headers())
     out = []
     for f in earthaccess.download(granules, str(dest_dir)) or []:
         p = Path(f)

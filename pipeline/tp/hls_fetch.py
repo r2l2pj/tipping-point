@@ -10,8 +10,8 @@ _collection_ref() splits it. Both are verified against CMR at run time.
 Auth: NASA Earthdata Login is needed for downloads only — CMR metadata
 search is unauthenticated, so search-only paths (granule list, --dry-run,
 --no-download) work without creds. When downloading, creds are resolved at
-call time: EDL_USER/EDL_PASS env (mapped to EARTHDATA_USERNAME/PASSWORD,
-same convention as live/fetch.py) or a ~/.netrc entry for
+call time via fetch.edl: EARTHDATA_TOKEN (bearer), then EDL_USER/EDL_PASS
+env (mapped to EARTHDATA_USERNAME/PASSWORD), or a ~/.netrc entry for
 urs.earthdata.nasa.gov. earthaccess is imported lazily so `--help` and the
 test suite need neither creds nor network.
 
@@ -30,7 +30,6 @@ the least-cloudy post-event scenes come first.
 from __future__ import annotations
 
 import datetime as dt
-import os
 import re
 from pathlib import Path
 
@@ -41,8 +40,9 @@ RAW_HLS_DIR = DATA_DIR / "raw" / "hls"
 
 _EDL_MSG = (
     "NASA Earthdata Login credentials are required for HLS search/download. "
-    "Set EDL_USER/EDL_PASS (or EARTHDATA_USERNAME/EARTHDATA_PASSWORD), or add "
-    "a ~/.netrc entry for urs.earthdata.nasa.gov. See .env.example."
+    "Set EARTHDATA_TOKEN, or EDL_USER/EDL_PASS (or EARTHDATA_USERNAME/"
+    "EARTHDATA_PASSWORD), or add a ~/.netrc entry for "
+    "urs.earthdata.nasa.gov. See .env.example."
 )
 
 # HLS native-id: HLS.<S30|L30>.T<tile>.<YYYYDDD>T<HHMMSS>.v2.0
@@ -65,21 +65,13 @@ def resolve_window(
 
 
 def _edl_login():
-    """earthaccess.login() from env or ~/.netrc, with a clean error if neither."""
-    os.environ.setdefault("EARTHDATA_USERNAME", os.environ.get("EDL_USER", ""))
-    os.environ.setdefault("EARTHDATA_PASSWORD", os.environ.get("EDL_PASS", ""))
-    import earthaccess
+    """earthaccess.login() via fetch.edl (token, env, or ~/.netrc)."""
+    from fetch import edl
 
     try:
-        if os.environ.get("EARTHDATA_USERNAME") and os.environ.get(
-            "EARTHDATA_PASSWORD"
-        ):
-            return earthaccess.login(strategy="environment")
-        if (Path.home() / ".netrc").exists():
-            return earthaccess.login(strategy="netrc")
-    except Exception as e:
+        return edl.earthaccess_login()
+    except RuntimeError as e:
         raise RuntimeError(_EDL_MSG) from e
-    raise RuntimeError(_EDL_MSG)
 
 
 def _verify_collections(short_names: tuple[str, ...]) -> None:
@@ -220,8 +212,14 @@ def fetch_scenes(
         return [granule_record(g) for g in granules]
 
     import earthaccess
+    from fetch import edl
 
     _edl_login()
+    # Pin the Bearer token onto earthaccess's shared HTTPS session so
+    # EARTHDATA_TOKEN rides granule downloads as Authorization: Bearer.
+    session = getattr(earthaccess, "get_requests_https_session", lambda: None)()
+    if session is not None:
+        session.headers.update(edl.edl_auth_headers())
     base = (out_dir or RAW_HLS_DIR) / event["id"]
     records = []
     for g in granules:

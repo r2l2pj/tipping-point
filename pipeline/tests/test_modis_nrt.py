@@ -1,11 +1,13 @@
 import json
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 import numpy as np
 import pytest
 from conftest import write_tif
+from tp import modis_nrt
 from tp.events import load_event
 from tp.modis_nrt import (
     classify,
@@ -124,6 +126,75 @@ def test_compare_water_no_valid_overlap(tmp_path):
     m = compare_water(nrt_p, ref_p)
     assert m["modis_nrt_agreement_pct"] is None
     assert "no overlapping" in m["modis_nrt_reason"]
+
+
+FAKE_EVENT = {
+    "id": "wa-2025-12",
+    "window": {"start": "2025-11-01", "end": "2026-01-31"},
+    "aoi": {"bbox": [-122.6, 47.0, -121.5, 48.5]},
+}
+
+
+def _clear_edl_env(monkeypatch, tmp_path):
+    for var in (
+        "EARTHDATA_TOKEN", "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME",
+        "EARTHDATA_PASSWORD", "NETRC",
+    ):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))  # no ~/.netrc
+
+
+def _fake_earthaccess(calls, granules=None):
+    ns = types.SimpleNamespace(
+        session=types.SimpleNamespace(headers={}),
+        login=lambda **kw: calls.append(kw),
+        search_data=lambda **kw: list(granules or []),
+        download=lambda gs, dest: [],
+    )
+    ns.get_requests_https_session = lambda: ns.session
+    return ns
+
+
+def test_search_uses_token_login(monkeypatch, tmp_path):
+    """EARTHDATA_TOKEN -> environment login; empty CMR hits -> []."""
+    calls = []
+    monkeypatch.setitem(sys.modules, "earthaccess", _fake_earthaccess(calls))
+    _clear_edl_env(monkeypatch, tmp_path)
+    monkeypatch.setenv("EARTHDATA_TOKEN", "faketoken")
+    assert modis_nrt.search(FAKE_EVENT) == []
+    assert calls == [{"strategy": "environment"}]
+
+
+def test_search_no_creds_no_login(monkeypatch, tmp_path):
+    """No creds anywhere -> [] without ever calling earthaccess.login."""
+    calls = []
+    monkeypatch.setitem(sys.modules, "earthaccess", _fake_earthaccess(calls))
+    _clear_edl_env(monkeypatch, tmp_path)
+    assert modis_nrt.search(FAKE_EVENT) == []
+    assert calls == []
+
+
+def test_search_edl_user_fallback(monkeypatch, tmp_path):
+    """EDL_USER/EDL_PASS still resolves to the environment login strategy."""
+    calls = []
+    monkeypatch.setitem(sys.modules, "earthaccess", _fake_earthaccess(calls))
+    _clear_edl_env(monkeypatch, tmp_path)
+    monkeypatch.setenv("EDL_USER", "u")
+    monkeypatch.setenv("EDL_PASS", "p")
+    assert modis_nrt.search(FAKE_EVENT) == []
+    assert calls == [{"strategy": "environment"}]
+
+
+def test_fetch_nrt_attaches_bearer_header(monkeypatch, tmp_path):
+    """EARTHDATA_TOKEN -> Bearer pinned on the earthaccess download session."""
+    calls = []
+    fake = _fake_earthaccess(calls, granules=[object()])
+    monkeypatch.setitem(sys.modules, "earthaccess", fake)
+    _clear_edl_env(monkeypatch, tmp_path)
+    monkeypatch.setenv("EARTHDATA_TOKEN", "faketoken")
+    assert modis_nrt.fetch_nrt(FAKE_EVENT, tmp_path) == []
+    assert calls == [{"strategy": "environment"}]
+    assert fake.session.headers["Authorization"] == "Bearer faketoken"
 
 
 def test_dry_run_offline():

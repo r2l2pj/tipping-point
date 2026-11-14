@@ -15,18 +15,19 @@ HDF5 paths (spec D-102274/D-102272):
   GUNW  /science/LSAR/GUNW/grids/frequencyA/wrappedInterferogram/HH/coherenceMagnitude  (20 m)
         /science/LSAR/GUNW/grids/frequencyA/unwrappedInterferogram/HH/coherenceMagnitude (80 m)
 
-Auth: NASA Earthdata Login. Prefer ~/.netrc (machine urs.earthdata.nasa.gov);
-earthaccess.login() handles auth. Never hardcode credentials.
+Auth: NASA Earthdata Login, resolved via fetch.edl — prefer EARTHDATA_TOKEN
+(OAuth bearer), then EDL_USER/EDL_PASS env, then ~/.netrc (machine
+urs.earthdata.nasa.gov). Never hardcode credentials.
 """
 from __future__ import annotations
 
 import json
-import os
 import re
 from datetime import date, timedelta
 from pathlib import Path
 
 import earthaccess
+from fetch import edl
 
 COLLECTIONS = {
     "GCOV": "NISAR_L2_GCOV_BETA_V1",
@@ -66,7 +67,7 @@ def search(event: dict, product: str = "GCOV", collection: str | None = None) ->
     """
     w = event["window"]
     short_name = collection or COLLECTIONS[product]
-    earthaccess.login()
+    edl.earthaccess_login()
     return earthaccess.search_data(
         short_name=short_name,
         bounding_box=tuple(event["aoi"]["bbox"]),
@@ -134,7 +135,8 @@ def harmony_subset(
     """Submit a Harmony job: extract `variables` clipped to bbox as COG.
 
     Requires `harmony-py` (optional runtime dep — `pip install harmony-py` or
-    `uv pip install harmony-py`) and Earthdata credentials in env/netrc.
+    `uv pip install harmony-py`) and Earthdata credentials (EARTHDATA_TOKEN,
+    EDL_USER/EDL_PASS env, or netrc).
     Always select variables explicitly; no selection means every grid is
     extracted (slow). If harmony-py is unavailable or the job fails, use
     gdal_subset_cmd() for the /vsicurl/ fallback.
@@ -273,76 +275,23 @@ def _netcdf_dsn(h5_url: str, h5_path: str) -> str:
 def gdal_subset_cmd(h5_url: str, h5_path: str, bbox: tuple, out_path: Path) -> str:
     """Return the GDAL /vsicurl/ fallback command for one HDF5 variable.
 
-    Requires ~/.netrc and GDAL_HTTP_NETRC=YES. GDAL < 3.13 needs the NETCDF:
-    prefix (HDF5 driver can't read NISAR's CF georeferencing).
+    With EARTHDATA_TOKEN set the Bearer token rides in GDAL_HTTP_HEADERS via
+    an env-var reference (the token value is never printed); otherwise the
+    command expects ~/.netrc and GDAL_HTTP_NETRC=YES. GDAL < 3.13 needs the
+    NETCDF: prefix (HDF5 driver can't read NISAR's CF georeferencing).
     """
     w, s, e, n = bbox
     src = _netcdf_dsn(h5_url, h5_path)
+    auth = (
+        'GDAL_HTTP_HEADERS="Authorization: Bearer $EARTHDATA_TOKEN" '
+        if edl.edl_token()
+        else "GDAL_HTTP_NETRC=YES "
+    )
     return (
-        "GDAL_HTTP_NETRC=YES "
+        f"{auth}"
         f"gdalwarp -te_srs EPSG:4326 -te {w} {s} {e} {n} "
         f"-srcnodata nan -dstnodata nan -of COG '{src}' {out_path}"
     )
-
-
-def _edl_credentials() -> dict:
-    """Resolve Earthdata creds at call time: EDL_USER/EDL_PASS env or ~/.netrc.
-
-    Raises a clear RuntimeError listing what is missing instead of letting a
-    network or auth layer fail obscurely.
-    """
-    user = os.environ.get("EDL_USER") or os.environ.get("EARTHDATA_USERNAME")
-    pw = os.environ.get("EDL_PASS") or os.environ.get("EARTHDATA_PASSWORD")
-    if user and pw:
-        return {"user": user, "password": pw}
-    netrc_path = Path(os.environ.get("NETRC") or Path.home() / ".netrc")
-    if netrc_path.is_file():
-        import netrc
-
-        try:
-            auths = netrc.netrc(str(netrc_path)).authenticators(
-                "urs.earthdata.nasa.gov"
-            )
-        except (netrc.NetrcParseError, OSError):
-            auths = None
-        if auths:
-            return {"netrc": netrc_path}
-    missing = (
-        "EDL_USER/EDL_PASS"
-        if not (user or pw)
-        else ("EDL_PASS" if user else "EDL_USER")
-    )
-    raise RuntimeError(
-        f"Earthdata credentials required: set {missing} env vars "
-        f"(or EARTHDATA_USERNAME/EARTHDATA_PASSWORD), or add "
-        f"'machine urs.earthdata.nasa.gov' to {netrc_path} "
-        "(see README: cp .env.example .env)."
-    )
-
-
-def _earthdata_login(creds: dict) -> None:
-    try:
-        if "user" in creds:
-            os.environ["EARTHDATA_USERNAME"] = creds["user"]
-            os.environ["EARTHDATA_PASSWORD"] = creds["password"]
-            earthaccess.login(strategy="environment")
-        else:
-            earthaccess.login(strategy="netrc")
-    except Exception as e:
-        raise RuntimeError(f"Earthdata login failed: {e}") from e
-
-
-def _gdal_auth_env(creds: dict) -> dict:
-    """GDAL config options carrying the same creds to the /vsicurl/ layer."""
-    if "user" in creds:
-        return {
-            "GDAL_HTTP_USERPWD": f"{creds['user']}:{creds['password']}",
-            "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
-        }
-    return {
-        "GDAL_HTTP_NETRC": "YES",
-        "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
-    }
 
 
 def _step_dates(step: dict) -> list[str]:
@@ -474,9 +423,9 @@ def execute_plan(event: dict, dry_run: bool = False) -> list[Path]:
     data/raw/nisar/ (gitignored). Granule native-ids + collection ids are
     recorded in data/<case_key>/nisar_products.json (README product-ID list).
 
-    EDL creds via EDL_USER/EDL_PASS env or ~/.netrc, checked at call time —
-    raises RuntimeError naming what is missing. dry_run returns the planned
-    output paths with no creds and no network.
+    EDL creds via EARTHDATA_TOKEN, EDL_USER/EDL_PASS env, or ~/.netrc,
+    checked at call time — raises RuntimeError naming what is missing.
+    dry_run returns the planned output paths with no creds and no network.
     """
     from tp import events as _events
 
@@ -505,9 +454,9 @@ def execute_plan(event: dict, dry_run: bool = False) -> list[Path]:
         _write_manifest()
         return []
 
-    creds = _edl_credentials()
-    _earthdata_login(creds)
-    gdal_env = _gdal_auth_env(creds)
+    creds = edl.ensure_earthdata()
+    edl.earthaccess_login(creds)
+    gdal_env = edl.gdal_auth_env(creds)
     bbox = tuple(event["aoi"]["bbox"])
 
     granules: dict = {}

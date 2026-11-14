@@ -29,7 +29,7 @@ def main() -> None:
                     help="print the variable-extraction plan (Harmony/GDAL cmds)")
     ap.add_argument("--execute", action="store_true",
                     help="run the extraction plan via GDAL /vsicurl/ "
-                         "(needs EDL_USER/EDL_PASS or ~/.netrc)")
+                         "(needs EARTHDATA_TOKEN, EDL_USER/EDL_PASS, or ~/.netrc)")
     ap.add_argument("--dry-run", action="store_true",
                     help="with --execute: list output paths only, no download")
     args = ap.parse_args()

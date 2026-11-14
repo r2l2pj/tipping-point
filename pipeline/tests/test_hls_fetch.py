@@ -5,6 +5,7 @@ import sys
 import types
 from pathlib import Path
 
+import pytest
 from tp import hls_fetch
 from tp.hls_fetch import (
     _cloud_cover,
@@ -110,11 +111,15 @@ def _poison_login(monkeypatch):
 
 
 def _fake_earthaccess(granules, calls):
-    return types.SimpleNamespace(
+    ns = types.SimpleNamespace(
+        session=types.SimpleNamespace(headers={}),
+        login=lambda **kw: "AUTH",
         search_datasets=lambda **kw: [object()],
         search_data=lambda short_name, **kw: granules.get(short_name, []),
         download=lambda gs, path: calls.append(path) or [Path(path)],
     )
+    ns.get_requests_https_session = lambda: ns.session
+    return ns
 
 
 def test_search_granules_no_creds(monkeypatch):
@@ -149,6 +154,55 @@ def test_fetch_scenes_download_logs_in(monkeypatch, tmp_path):
     assert recs[0]["local_path"] == str(
         tmp_path / "wa-2025-12" / "HLS.L30.T10TFJ.2025350T182251.v2.0"
     )
+
+
+def test_edl_login_uses_token(monkeypatch, tmp_path):
+    """EARTHDATA_TOKEN -> earthaccess.login(strategy='environment')."""
+    for var in (
+        "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+        "NETRC",
+    ):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))  # no ~/.netrc
+    monkeypatch.setenv("EARTHDATA_TOKEN", "faketoken")
+    calls = []
+    fake = types.SimpleNamespace(
+        login=lambda **kw: calls.append(kw) or "AUTH"
+    )
+    monkeypatch.setitem(sys.modules, "earthaccess", fake)
+    assert hls_fetch._edl_login() == "AUTH"
+    assert calls == [{"strategy": "environment"}]
+
+
+def test_edl_login_no_creds_clean_error(monkeypatch, tmp_path):
+    for var in (
+        "EARTHDATA_TOKEN", "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME",
+        "EARTHDATA_PASSWORD", "NETRC",
+    ):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(RuntimeError, match="EARTHDATA_TOKEN"):
+        hls_fetch._edl_login()
+
+
+def test_fetch_scenes_attaches_bearer_header(monkeypatch, tmp_path):
+    """EARTHDATA_TOKEN -> Bearer pinned on the earthaccess download session."""
+    calls = []
+    granules = {
+        "HLSL30": [_fake("HLS.L30.T10TFJ.2025350T182251.v2.0", "2025-12-16", 5.0)],
+        "HLSS30": [],
+    }
+    fake = _fake_earthaccess(granules, calls)
+    monkeypatch.setitem(sys.modules, "earthaccess", fake)
+    for var in (
+        "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+        "NETRC",
+    ):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))  # no ~/.netrc
+    monkeypatch.setenv("EARTHDATA_TOKEN", "faketoken")
+    hls_fetch.fetch_scenes(FAKE_EVENT, limit=1, out_dir=tmp_path)
+    assert fake.session.headers["Authorization"] == "Bearer faketoken"
 
 
 def test_fetch_scenes_no_download_no_creds(monkeypatch):

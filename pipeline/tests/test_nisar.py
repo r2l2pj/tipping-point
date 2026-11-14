@@ -136,10 +136,12 @@ class _FakeGranule:
 class _FakeEarthaccess:
     def __init__(self):
         self.logged_in = False
+        self.logins = []
         self.calls = []
 
     def login(self, **kw):
         self.logged_in = True
+        self.logins.append(kw)
 
     def search_data(self, short_name, bounding_box, temporal):
         self.calls.append((short_name, temporal))
@@ -158,9 +160,11 @@ def _fake_rasterio():
     """A stand-in 'rasterio' package for sys.modules: Env/open/WarpedVRT/
     windows.from_bounds, writing empty files instead of real GeoTIFFs."""
     mod = types.ModuleType("rasterio")
+    mod.envs = []
 
     class _Env:
         def __init__(self, **kw):
+            mod.envs.append(kw)
             self.kw = kw
 
         def __enter__(self):
@@ -254,6 +258,9 @@ def _stub_execute(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "rasterio.windows", win_mod)
     fake_ea = _FakeEarthaccess()
     monkeypatch.setattr(nisar_mod, "earthaccess", fake_ea)
+    # fetch.edl.earthaccess_login() resolves earthaccess lazily via sys.modules
+    monkeypatch.setitem(sys.modules, "earthaccess", fake_ea)
+    monkeypatch.delenv("EARTHDATA_TOKEN", raising=False)
     monkeypatch.setenv("EDL_USER", "u")
     monkeypatch.setenv("EDL_PASS", "p")
     # execute_plan maps EDL_* onto these for earthaccess; setting them via
@@ -305,6 +312,60 @@ def test_execute_plan_gunw_synthetic(monkeypatch, tmp_path):
     assert manifest["GUNW"]["evt"] == GUNW_EVT
 
 
+def test_execute_plan_token_uses_bearer(monkeypatch, tmp_path):
+    """EARTHDATA_TOKEN -> environment login + Bearer in GDAL_HTTP_HEADERS."""
+    mod, vrt_mod, win_mod = _fake_rasterio()
+    monkeypatch.setitem(sys.modules, "rasterio", mod)
+    monkeypatch.setitem(sys.modules, "rasterio.vrt", vrt_mod)
+    monkeypatch.setitem(sys.modules, "rasterio.windows", win_mod)
+    fake_ea = _FakeEarthaccess()
+    monkeypatch.setattr(nisar_mod, "earthaccess", fake_ea)
+    monkeypatch.setitem(sys.modules, "earthaccess", fake_ea)
+    for var in (
+        "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
+        "NETRC",
+    ):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))  # no ~/.netrc
+    monkeypatch.setenv("EARTHDATA_TOKEN", "faketoken")
+    monkeypatch.setattr(events_mod, "DATA_DIR", tmp_path)
+    execute_plan(load_event("wa-2025-12"))
+    assert fake_ea.logins == [{"strategy": "environment"}]
+    assert mod.envs
+    assert all(
+        e["GDAL_HTTP_HEADERS"] == "Authorization: Bearer faketoken"
+        for e in mod.envs
+    )
+    assert all("GDAL_HTTP_USERPWD" not in e for e in mod.envs)
+
+
+def test_execute_plan_user_fallback_gdal(monkeypatch, tmp_path):
+    """EDL_USER/EDL_PASS -> environment login + GDAL_HTTP_USERPWD, no Bearer."""
+    fake_ea = _stub_execute(monkeypatch, tmp_path)
+    execute_plan(load_event("wa-2025-12"))
+    envs = sys.modules["rasterio"].envs
+    assert envs
+    assert all(e["GDAL_HTTP_USERPWD"] == "u:p" for e in envs)
+    assert all("GDAL_HTTP_HEADERS" not in e for e in envs)
+    assert fake_ea.logins == [{"strategy": "environment"}]
+
+
+def test_gdal_subset_cmd_token(monkeypatch):
+    """With EARTHDATA_TOKEN the printed cmd references the env var, not the value."""
+    monkeypatch.setenv("EARTHDATA_TOKEN", "faketoken")
+    cmd = gdal_subset_cmd(
+        "https://example.com/x.h5", "/p", (-1.0, -1.0, 1.0, 1.0), Path("o.tif")
+    )
+    assert "Authorization: Bearer $EARTHDATA_TOKEN" in cmd
+    assert "faketoken" not in cmd
+    assert "NETRC" not in cmd
+    monkeypatch.delenv("EARTHDATA_TOKEN")
+    cmd = gdal_subset_cmd(
+        "https://example.com/x.h5", "/p", (-1.0, -1.0, 1.0, 1.0), Path("o.tif")
+    )
+    assert "GDAL_HTTP_NETRC=YES" in cmd
+
+
 def test_event_data_dir_uses_case_key(monkeypatch, tmp_path):
     monkeypatch.setattr(events_mod, "DATA_DIR", tmp_path)
     d = events_mod.event_data_dir("wa-2025-12")
@@ -315,8 +376,8 @@ def test_event_data_dir_uses_case_key(monkeypatch, tmp_path):
 
 def test_execute_plan_requires_creds(monkeypatch, tmp_path):
     for var in (
-        "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
-        "NETRC",
+        "EARTHDATA_TOKEN", "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME",
+        "EARTHDATA_PASSWORD", "NETRC",
     ):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("HOME", str(tmp_path))  # no ~/.netrc
@@ -342,8 +403,8 @@ REPO = Path(__file__).resolve().parents[2]
 
 def _no_cred_env(home: Path) -> dict:
     drop = {
-        "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME", "EARTHDATA_PASSWORD",
-        "NETRC",
+        "EARTHDATA_TOKEN", "EDL_USER", "EDL_PASS", "EARTHDATA_USERNAME",
+        "EARTHDATA_PASSWORD", "NETRC",
     }
     env = {k: v for k, v in os.environ.items() if k not in drop}
     env["HOME"] = str(home)
