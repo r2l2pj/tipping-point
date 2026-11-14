@@ -4,6 +4,9 @@
 #      NEON_S3_REGION NEON_S3_BUCKET (bucket default tipping-point-data)
 # Order: dated frames first (long cache), then metrics/summary/alerts
 # (short cache), data/manifest.json always LAST.
+# JSON/geojson go up pre-compressed: Content-Encoding gzip +
+# Content-Type application/json, verified served correctly by Neon
+# (wire = gz bytes, browsers decode transparently).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -36,28 +39,45 @@ for f in "${BIG[@]}"; do
   echo "[publish_s3] skipping oversized $f"
   EXCLUDES+=(--exclude "$f")
 done
-
-# short-cache control files: upload after frames, manifest.json last
-SHORT=(metrics.json now/manifest.json now/summary.json now/alerts.json)
-for f in "${SHORT[@]}"; do
-  EXCLUDES+=(--exclude "$f")
-done
-EXCLUDES+=(--exclude "manifest.json")
+# JSON/geojson are uploaded individually below (gzipped)
+EXCLUDES+=(--exclude "*.json" --exclude "*.geojson")
 
 echo "[publish_s3] frames -> $DEST"
 aws s3 sync "${EXCLUDES[@]}" --cache-control "public,max-age=86400" \
   "$DATA/" "$DEST" "${ENDPOINT[@]}"
 
-for f in "${SHORT[@]}"; do
-  if [ -f "$DATA/$f" ]; then
-    aws s3 cp --cache-control "public,max-age=60" \
-      "$DATA/$f" "$DEST$f" "${ENDPOINT[@]}"
-  fi
+# short-cache control files: manifest.json always last
+is_short() {
+  case "/$1" in
+    */manifest.json|*/metrics.json|*/summary.json|*/alerts.json) return 0 ;;
+  esac
+  return 1
+}
+
+upload_json() {  # $1 = path relative to data/, $2 = cache-control
+  local gz
+  [ -f "$DATA/$1" ] || { echo "[publish_s3] vanished mid-run: $1"; return 0; }
+  gz="$(mktemp --suffix=.gz)"
+  gzip -9 -c "$DATA/$1" > "$gz"
+  aws s3 cp "$gz" "$DEST$1" "${ENDPOINT[@]}" \
+    --content-type application/json --content-encoding gzip \
+    --cache-control "$2"
+  rm -f "$gz"
+}
+
+echo "[publish_s3] json/geojson (gzipped) -> $DEST"
+mapfile -t JSONS < <(find "$DATA" -type f \( -name '*.json' -o -name '*.geojson' \) -printf '%P\n')
+for f in "${JSONS[@]}"; do
+  case "$f" in raw/*|*/raw/*|manifest.json) continue ;; esac
+  skip=0
+  for b in "${BIG[@]}"; do [ "$f" = "$b" ] && { skip=1; break; }; done
+  [ "$skip" = 1 ] && { echo "[publish_s3] skipping oversized $f"; continue; }
+  if is_short "$f"; then CC="public,max-age=60"; else CC="public,max-age=86400"; fi
+  upload_json "$f" "$CC"
 done
 
 if [ -f "$DATA/manifest.json" ]; then
-  aws s3 cp --cache-control "public,max-age=60" \
-    "$DATA/manifest.json" "${DEST}manifest.json" "${ENDPOINT[@]}"
+  upload_json "manifest.json" "public,max-age=60"
   echo "[publish_s3] manifest.json uploaded last"
 fi
 echo "[publish_s3] done"
