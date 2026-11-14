@@ -3,9 +3,9 @@
 Each subcommand sequences the CLIs owned by the other leads
 (pipeline/fetch/*, tools/*) via subprocess, in the locked order. The local
 numpy path survives only as `run_now.py --local`. Manifests/updated_at are
-written by the LAST step of every job (build_manifest is always last in
-`now`); on any step's nonzero exit the job aborts loudly and never touches
-the last-good data/ tree.
+refreshed before the final fallback export in `now`. The export renders
+last-good GEE assets without waiting for asynchronous asset tasks. Any
+step's nonzero exit aborts the remaining steps loudly.
 
 Usage:
     uv run python live/jobs.py now [--dry-run]
@@ -89,15 +89,15 @@ def _run_step(name: str, cmd: list[str], env: dict, dry_run: bool = False):
 
 
 def _refresh_alerts(now_dir: Path = NOW_DIR) -> Path:
-    """Rewrite data/now/alerts.json from the exported bundle's regions."""
+    """Rewrite data/now/alerts.json from the current GEE TPI asset regions."""
     from live import alerts
 
-    regions = alerts.load_now_regions(now_dir)
+    regions = alerts.critical_areas_from_assets()
     now = dt.datetime.now(dt.UTC)
     payload = {
         "generated_at": now.isoformat().replace("+00:00", "Z"),
         "quiet_hours": now.hour in QUIET_HOURS,
-        "source": "gee-export",
+        "source": "gee-assets",
         "candidates": regions,
     }
     path = Path(now_dir) / "alerts.json"
@@ -112,7 +112,7 @@ def _refresh_alerts(now_dir: Path = NOW_DIR) -> Path:
 
 
 def now(dry_run: bool = False) -> None:
-    """fetch IMERG/SMAP/GEOS-FP -> derived TPI -> fallback export -> alerts -> manifest."""
+    """fetch IMERG/SMAP/GEOS-FP -> derived TPI -> alerts -> manifest -> fallback export."""
     w, s, e, n = (str(v) for v in NOW_BOUNDS)
     steps = [
         ("now.fetch.imerg",
@@ -126,8 +126,6 @@ def now(dry_run: bool = False) -> None:
           "--days", str(FORECAST_DAYS)]),
         ("now.tpi",
          [sys.executable, "tools/now_tpi.py"]),
-        ("now.export_fallback",
-         [sys.executable, "tools/export_fallback.py", "--now"]),
     ]
     env = _job_env()
     for name, cmd in steps:
@@ -138,6 +136,8 @@ def now(dry_run: bool = False) -> None:
         _refresh_alerts()
     _run_step("now.build_manifest",
               [sys.executable, "tools/build_manifest.py"], env, dry_run)
+    _run_step("now.export_fallback",
+              [sys.executable, "tools/export_fallback.py", "--now"], env, dry_run)
 
 
 def _case_ids() -> list[str]:

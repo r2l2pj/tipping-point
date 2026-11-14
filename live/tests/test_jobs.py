@@ -1,6 +1,8 @@
 """Offline tests for live/jobs.py — subprocess.run is monkeypatched."""
 import datetime as dt
+import json
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -40,8 +42,8 @@ def test_now_runs_steps_in_locked_order(calls):
         "pipeline.fetch.smap",
         "pipeline.fetch.geosfp",
         "tools/now_tpi.py",
-        "tools/export_fallback.py",
         "tools/build_manifest.py",
+        "tools/export_fallback.py",
     ]
     w, s, e, n = (str(v) for v in jobs.NOW_BOUNDS)
     imerg = calls[0]
@@ -51,7 +53,7 @@ def test_now_runs_steps_in_locked_order(calls):
     assert calls[2][calls[2].index("--days") + 1] == "3"
 
 
-def test_now_manifest_is_last_after_alerts_refresh(monkeypatch):
+def test_now_export_fallback_is_last_after_alerts_and_manifest(monkeypatch):
     order = []
     monkeypatch.setattr(jobs, "_refresh_alerts", lambda *a, **k: order.append("alerts"))
 
@@ -65,9 +67,9 @@ def test_now_manifest_is_last_after_alerts_refresh(monkeypatch):
         "pipeline.fetch.smap",
         "pipeline.fetch.geosfp",
         "tools/now_tpi.py",
-        "tools/export_fallback.py",
         "alerts",
         "tools/build_manifest.py",
+        "tools/export_fallback.py",
     ]
 
 
@@ -77,11 +79,12 @@ def test_now_failure_before_alerts_skips_alerts_and_manifest(monkeypatch):
 
     def fake_run(cmd, **kwargs):
         order.append(_tokens(cmd))
-        return _Proc(returncode=1 if _tokens(cmd) == "tools/export_fallback.py" else 0)
+        return _Proc(returncode=1 if _tokens(cmd) == "tools/now_tpi.py" else 0)
     monkeypatch.setattr(jobs.subprocess, "run", fake_run)
     with pytest.raises(SystemExit):
         jobs.now()
-    assert order[-1] == "tools/export_fallback.py"
+    assert order[-1] == "tools/now_tpi.py"
+    assert "tools/export_fallback.py" not in order
     assert "alerts" not in order and "tools/build_manifest.py" not in order
 
 
@@ -182,3 +185,102 @@ def test_main_dispatches_subcommand(monkeypatch):
     monkeypatch.setattr(jobs, "validation", fake_validation)
     jobs.main(["validation", "--dry-run"])
     assert seen == [True]
+
+
+@pytest.mark.parametrize("inject_module", [False, True])
+def test_critical_areas_from_assets(monkeypatch, inject_module):
+    from live import alerts
+
+    calls = []
+    geometry = {"type": "Polygon", "coordinates": []}
+
+    class Image:
+        def __init__(self, asset):
+            calls.append(("image", asset))
+
+        def gte(self, threshold):
+            calls.append(("gte", threshold))
+            return self
+
+        def selfMask(self):
+            return self
+
+        def reduceToVectors(self, **kwargs):
+            calls.append(("vectors", kwargs))
+            return self
+
+        def getInfo(self):
+            return {"features": [{"type": "Feature", "geometry": geometry,
+                                  "properties": {"label": 1, "count": 12}}]}
+
+    ee = SimpleNamespace(Image=Image, Geometry=SimpleNamespace(Rectangle=list))
+    monkeypatch.setitem(sys.modules, "ee", ee)
+    monkeypatch.setitem(sys.modules, "gee.common", SimpleNamespace(
+        ee_init=lambda: calls.append(("init", None))))
+    regions = alerts.critical_areas_from_assets(ee if inject_module else None)
+    assert [region["kind"] for region in regions] == ["slide", "flood"]
+    assert all(region["geometry"] == geometry for region in regions)
+    assert all(region["class"] == 2 and region["label"] == "Alto"
+               for region in regions)
+    assert [value for op, value in calls if op == "image"] == [
+        f"{alerts.ASSET_ROOT}/now/tpi_slide_d0",
+        f"{alerts.ASSET_ROOT}/now/tpi_flood_d0",
+    ]
+    assert [value for op, value in calls if op == "gte"] == [0.4, 0.4]
+    assert [value for op, value in calls if op == "vectors"] == [
+        {"scale": 1000, "geometry": list(alerts.NOW_BOUNDS), "maxPixels": 1e9},
+    ] * 2
+
+
+def test_refresh_alerts_reads_assets_not_stale_bundle(tmp_path, monkeypatch):
+    from live import alerts
+
+    regions = [{"class": 2, "label": "Alto", "kind": "flood",
+                "geometry": {"type": "Polygon", "coordinates": []}}]
+    monkeypatch.setattr(alerts, "critical_areas_from_assets", lambda: regions)
+    monkeypatch.setattr(alerts, "load_now_regions", lambda *_: pytest.fail("stale bundle"))
+    payload = json.loads(jobs._refresh_alerts(tmp_path).read_text())
+    assert payload["candidates"] == regions
+    assert payload["source"] == "gee-assets"
+
+
+def test_critical_areas_fallback_initializes_with_temporary_key(monkeypatch):
+    from pathlib import Path
+
+    from live import alerts
+
+    seen = {}
+    key = {"client_email": "test@example.invalid", "private_key": "test-only"}
+
+    def credentials(email, path):
+        seen["email"] = email
+        seen["path"] = Path(path)
+        assert json.loads(Path(path).read_text()) == key
+        return "credentials"
+
+    def initialize(creds, project):
+        seen["init"] = (creds, project)
+
+    class EmptyImage:
+        def gte(self, _):
+            return self
+
+        def selfMask(self):
+            return self
+
+        def reduceToVectors(self, **kwargs):
+            return self
+
+        def getInfo(self):
+            return {"features": []}
+
+    monkeypatch.setitem(sys.modules, "gee.common", SimpleNamespace())
+    monkeypatch.setitem(sys.modules, "ee", SimpleNamespace(
+        ServiceAccountCredentials=credentials, Initialize=initialize,
+        Image=lambda _: EmptyImage(), Geometry=SimpleNamespace(Rectangle=list)))
+    monkeypatch.setenv("GCP_SA_KEY", json.dumps(key))
+    monkeypatch.setenv("GEE_PROJECT", "test-project")
+    assert alerts.critical_areas_from_assets() == []
+    assert seen["email"] == key["client_email"]
+    assert seen["init"] == ("credentials", "test-project")
+    assert not seen["path"].exists()

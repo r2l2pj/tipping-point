@@ -12,12 +12,14 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
+import tempfile
 from pathlib import Path
 
 import numpy as np
 from scipy.ndimage import label
 
-from .config import ALERT_MIN_CLASS, LABELS, NOW_DIR, QUIET_HOURS
+from .config import ALERT_MIN_CLASS, ASSET_ROOT, LABELS, NOW_BOUNDS, NOW_DIR, QUIET_HOURS
 
 
 def _regions(arr: np.ndarray, transform) -> list[dict]:
@@ -142,6 +144,45 @@ def _regions_from_summary(path: Path) -> list[dict]:
             region = _max_class_region(layer, counts)
             if region:
                 regions.append(region)
+    return regions
+
+
+def critical_areas_from_assets(ee_module=None) -> list[dict]:
+    """Vectorize Alto-or-higher d0 TPI regions directly from each GEE hazard asset."""
+    if ee_module is None:
+        import ee as ee_module
+
+        try:
+            from gee.common import ee_init
+        except ImportError:
+            key_value = os.environ["GCP_SA_KEY"]
+            if key_value.lstrip().startswith("{"):
+                key = json.loads(key_value)
+                with tempfile.NamedTemporaryFile("w", suffix=".json") as key_file:
+                    json.dump(key, key_file)
+                    key_file.flush()
+                    creds = ee_module.ServiceAccountCredentials(
+                        key["client_email"], key_file.name)
+            else:
+                creds = ee_module.ServiceAccountCredentials(None, key_value)
+            ee_module.Initialize(creds, project=os.environ.get("GEE_PROJECT"))
+        else:
+            ee_init()
+
+    geometry = ee_module.Geometry.Rectangle(list(NOW_BOUNDS))
+    regions = []
+    cls = _class_index("Alto")
+    for kind in ("slide", "flood"):
+        image = ee_module.Image(f"{ASSET_ROOT}/now/tpi_{kind}_d0")
+        features = image.gte(0.4).selfMask().reduceToVectors(
+            scale=1000, geometry=geometry, maxPixels=1e9).getInfo()["features"]
+        for feature in features:
+            region = dict(feature.get("properties") or {})
+            region["class"] = cls
+            region["label"] = LABELS[cls]
+            region["kind"] = kind
+            region["geometry"] = feature["geometry"]
+            regions.append(region)
     return regions
 
 
