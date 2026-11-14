@@ -106,6 +106,13 @@ def run(args) -> dict:
         [regrid_da(imerg_daily.isel(time=i), lats, lons)
          for i in range(imerg_daily.sizes["time"])])
     sm = regrid_points(sm_lats, sm_lons, sm_vals, lats, lons)
+    # regrid_points nearest-fills what linear leaves NaN, so a source hole
+    # would silently become data — mark dst pixels whose nearest SMAP source
+    # is a gap as real nodata (interior gaps still interpolate).
+    sm_cover = regrid_points(
+        sm_lats, sm_lons, np.isfinite(sm_vals).astype(float), lats, lons,
+        method="nearest")
+    sm[sm_cover < 0.5] = np.nan
     fc_stack = np.stack(
         [regrid_da(fc_daily_da.isel(time=i), lats, lons)
          for i in range(fc_daily_da.sizes["time"])])[:FORECAST_DAYS]

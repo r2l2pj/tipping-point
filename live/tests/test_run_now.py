@@ -12,8 +12,7 @@ import xarray as xr
 
 import live.fetch
 import live.publish
-import live.run_now
-from live.grid import dst_lats_lons, pixel_area_km2, regrid_points
+from live.grid import dst_lats_lons, pixel_area_km2
 from live.run_now import parse_args, run
 
 BOUNDS = (-52.5, -30.0, -52.0, -29.5)   # ~0.5 deg box inside Rio Grande do Sul
@@ -77,16 +76,8 @@ def fake_now(tmp_path, monkeypatch):
         lambda bounds, issued=None: (
             _fake_da(fc_times, 50.0), "2026-11-14T00:00:00Z"))
 
-    # grid.regrid_points nearest-fills source NaN; the production gap path is
-    # exercised by keeping dst pixels whose nearest SMAP source is a gap.
-    def regrid_keep_nan(src_lats, src_lons, values, dlats, dlons, method="linear"):
-        out = regrid_points(src_lats, src_lons, values, dlats, dlons, method=method)
-        gap = regrid_points(src_lats, src_lons,
-                            np.isfinite(values).astype(float),
-                            dlats, dlons, method="nearest")
-        out[gap < 0.5] = np.nan
-        return out
-    monkeypatch.setattr(live.run_now, "regrid_points", regrid_keep_nan)
+    # No regrid patch needed: run() builds a nearest-source coverage mask, so
+    # the NaN hole in the fake SMAP grid becomes real nodata on the dst grid.
 
     written = []
     real_write = live.publish.write_outputs
