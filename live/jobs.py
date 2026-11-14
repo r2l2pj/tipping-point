@@ -68,8 +68,17 @@ def _run_step(name: str, cmd: list[str], env: dict, dry_run: bool = False):
     print(f"[{name}] {' '.join(cmd)}", flush=True)
     if dry_run:
         return None
-    proc = subprocess.run(cmd, check=False, env=env, text=True,
-                          capture_output=True)
+    timeout = int(os.environ.get("STEP_TIMEOUT", "1200"))
+    started = dt.datetime.now(dt.UTC)
+    try:
+        proc = subprocess.run(cmd, check=False, env=env, text=True,
+                              capture_output=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise SystemExit(
+            f"[{name}] step timed out after {timeout}s — aborting; "
+            "last-good data/ is preserved")
+    elapsed = (dt.datetime.now(dt.UTC) - started).total_seconds()
+    print(f"[{name}] finished in {elapsed:.0f}s", flush=True)
     reported = False
     for line in (proc.stdout or "").splitlines():
         m = _DATE_LINE.match(line)
@@ -120,7 +129,22 @@ def _refresh_alerts(now_dir: Path = NOW_DIR) -> Path:
 
 
 def now(dry_run: bool = False) -> None:
-    """fetch IMERG/SMAP/GEOS-FP -> derived TPI -> alerts -> manifest -> fallback export."""
+    """fetch IMERG/SMAP/GEOS-FP -> derived TPI -> alerts -> manifest -> fallback export.
+
+    NOW_LOCAL=1 skips the GEE asset path entirely (no asset writes — use
+    while the project asset root is unprovisioned): run_now --local writes
+    data/now directly, then alerts -> manifest; export_fallback is skipped
+    since there are no derived assets to render from.
+    """
+    if os.environ.get("NOW_LOCAL") == "1":
+        env = _job_env()
+        _run_step("now.local",
+                  [sys.executable, "live/run_now.py", "--local",
+                   "--out-dir", str(NOW_DIR)], env, dry_run)
+        # run_now --local already wrote alerts.json; no GEE assets to re-read
+        _run_step("now.build_manifest",
+                  [sys.executable, "tools/build_manifest.py"], env, dry_run)
+        return
     w, s, e, n = (str(v) for v in NOW_BOUNDS)
     steps = [
         ("now.fetch.imerg",
