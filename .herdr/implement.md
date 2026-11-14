@@ -155,6 +155,22 @@ validation, rejects bad input); without it `glc_catalog` falls back to
 Daily NISAR new-pass search + ingest. Module IS the CLI per interface update —
 no tools/ file.
 
+**Main-RED fix (2814643, rebased onto main e52403d):** `_load_ingest` now
+resolves via `importlib.import_module(f"{__package__}.ingest")` at call
+time + `import ingest` fallback (opera e52403d pattern) — `from fetch
+import ingest` reused the cached package attribute once real ingest.py was
+imported, bypassing sys.modules fakes. ingest/bucket/GEE_PROJECT checks
+moved before Earthdata creds; autouse `isolated_environment` fixture added;
+fakes injected at both `fetch.ingest` and `pipeline.fetch.ingest`;
+missing-module test blocks all three import names. Full suite: 227 passed.
+
+**Main-RED fix 2 (f2be704, rebased onto main cddea0b):** edlauth removed
+`tp.nisar._edl_credentials`/`_gdal_auth_env` — now
+`from .edl import ensure_earthdata, gdal_auth_env` (canonical helper, same
+dict shape + 'Earthdata credentials required' RuntimeError; token travels
+via GDAL_HTTP_HEADERS). No asf session needed — metadata search is
+anonymous. Full suite: 278 passed.
+
 ## Files (2 created, 942 lines, amended commit 1013642 on unit/nisar-update)
 
 - `pipeline/fetch/nisar.py` (~460 lines) — search/plan/execute + CLI
