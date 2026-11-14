@@ -1,0 +1,206 @@
+"""tp.bundle.publish_case: synthetic COGs -> stable app bundle, no creds.
+
+Layout per decision L4: all case outputs live under data/<case-id>/
+(rs_2024, wa_2025); publish_case still takes the event id.
+"""
+import json
+
+import numpy as np
+import pytest
+import rasterio
+from rasterio.transform import from_origin
+from tp.bundle import publish_case
+
+RES = 0.01
+ORIGIN = (-52.0, -29.0)          # top-left corner, EPSG:4326 (RS AOI)
+
+
+def _data_dir(tmp_path, case="rs_2024"):
+    d = tmp_path / "data" / case
+    for sub in ("cog", "geojson", "series", "png"):
+        (d / sub).mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _write_cog(path, bands, names=None, res=RES, origin=ORIGIN, nodata=np.nan):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    h, w = bands[0].shape
+    with rasterio.open(
+        path, "w", driver="GTiff", height=h, width=w, count=len(bands),
+        dtype=bands[0].dtype, crs="EPSG:4326",
+        transform=from_origin(*origin, res, res), nodata=nodata,
+    ) as dst:
+        for i, a in enumerate(bands, 1):
+            dst.write(a, i)
+            if names:
+                dst.set_band_description(i, names[i - 1])
+    return path
+
+
+def _write_places(gj_dir, places):
+    fc = {"type": "FeatureCollection", "features": [
+        {"type": "Feature",
+         "geometry": {"type": "Point", "coordinates": [x, y]},
+         "properties": {"name": n, "kind": "town"}}
+        for x, y, n in places]}
+    (gj_dir / "places.geojson").write_text(json.dumps(fc))
+
+
+def _tpi(fill=0.0, shape=(20, 20)):
+    return np.full(shape, fill, np.float32)
+
+
+def test_series_cog_to_png_and_index(tmp_path):
+    d = _data_dir(tmp_path)
+    tpi = _tpi()
+    tpi[:5, :5] = 0.7
+    tpi[5:, 5:] = np.nan                       # nodata -> transparent
+    _write_cog(d / "cog" / "rs_2024_tpi_slide_20240502.tif", [tpi], ["20240502"])
+    (tmp_path / "data" / "events.json").write_text(json.dumps(
+        {"schema": "tipping-point/events-index@1",
+         "events": [{"id": "rs-2024-05", "layers": []}]}))
+
+    s = publish_case("rs-2024-05", data_dir=tmp_path / "data")
+
+    png = d / "png" / "tpi_slide_20240502.png"
+    assert png.exists()
+    with rasterio.open(png) as src:
+        assert src.count == 4
+        assert src.dtypes[0] == "uint8"
+        alpha = src.read(4)
+        assert alpha.max() == 255 and alpha.min() == 0   # opaque + transparent px
+
+    idx = json.loads((d / "png" / "_index.json").read_text())
+    assert set(idx) == {"layers"}                        # pinned shape
+    entry = idx["layers"][0]
+    assert entry == {"id": "tpi_slide", "date": "2024-05-02",
+                     "png": "rs_2024/png/tpi_slide_20240502.png",
+                     "cog": "rs_2024/cog/rs_2024_tpi_slide_20240502.tif",
+                     "bounds": entry["bounds"], "forecast": False}
+    w, s_, e, n = entry["bounds"]
+    assert w < e and s_ < n and w == pytest.approx(-52.0, abs=0.05)
+
+    ev = json.loads((tmp_path / "data" / "events.json").read_text())
+    assert ev["events"][0]["layers"] == [
+        {"id": "tpi_slide", "date": "2024-05-02",
+         "png": "rs_2024/png/tpi_slide_20240502.png"}]
+    assert s["written"] and not s["dry_run"]
+
+
+def test_forecast_cog_layers(tmp_path):
+    d = _data_dir(tmp_path, "wa_2025")
+    tpi = _tpi(0.5)
+    _write_cog(d / "cog" / "wa_2025_tpi_forecast_d1_20251210.tif",
+               [tpi, tpi + 0.1], ["tpi_slide", "tpi_flood"])
+    s = publish_case("wa-2025-12", data_dir=tmp_path / "data")
+    # d1 issued 2025-12-10 depicts 2025-12-11
+    for layer in ("tpi_slide_d1", "tpi_flood_d1"):
+        assert (d / "png" / f"{layer}_20251211.png").exists()
+        ent = next(e for e in s["layers"] if e["id"] == layer)
+        assert ent["date"] == "2025-12-11" and ent["forecast"] is True
+
+
+def test_priority_zones(tmp_path):
+    d = _data_dir(tmp_path)
+    tpi = _tpi()
+    tpi[2:6, 2:6] = 0.9                        # 16 px >= min_blob, class Critical
+    tpi[10:20, 10:20] = 0.3                    # Moderate — below the Alto cut
+    _write_cog(d / "cog" / "rs_2024_tpi_slide_20240502.tif", [tpi], ["20240502"])
+    # blob centroid ~(-51.965, -29.035); near/far places to check naming
+    _write_places(d / "geojson", [(-51.96, -29.03, "Near Town"),
+                                  (-50.60, -29.50, "Far Town")])
+
+    publish_case("rs-2024-05", data_dir=tmp_path / "data")
+
+    fc = json.loads((d / "geojson" / "priority_zones.geojson").read_text())
+    assert len(fc["features"]) == 1
+    p = fc["features"][0]["properties"]
+    assert p["rank"] == 1
+    assert p["name"] == "Near Town"            # nearest place, not the far one
+    assert p["class"] == "Critical"            # EN label by class index
+    assert p["hazard"] == "landslide"
+    assert p["tpi"] == pytest.approx(0.9, abs=1e-4)
+    assert p["area_km2"] > 0
+    assert p["people"] is None                 # no pop COG -> null
+
+
+def test_imerg_smap_daily(tmp_path):
+    d = _data_dir(tmp_path)
+    bands = [_tpi(0.5), _tpi(0.65), _tpi(0.3)]
+    _write_cog(d / "cog" / "rs_2024_tpi_slide_20240502.tif",
+               bands, ["20240501", "20240502", "20240503"])
+    for day, imerg, smap in (("20240501", 12.4, 0.71),
+                             ("20240502", 45.0, 0.80),
+                             ("20240503", 8.0, 0.73)):
+        (d / "series" / f"rs_2024_rain_soil_{day}.json").write_text(json.dumps(
+            {"imerg_mm": imerg, "smap": smap, "rain_p95_mm": 45.0}))
+    (d / "series" / "rs_2024_swot_20240502.json").write_text(json.dumps(
+        [{"reach_id": "1", "time_str": "2024-05-02T12:00:00Z", "wse": 4.1}]))
+
+    publish_case("rs-2024-05", data_dir=tmp_path / "data")
+
+    doc = json.loads((d / "series" / "imerg_smap_daily.json").read_text())
+    assert doc["event"] == "rs-2024-05"
+    assert doc["reference_date"] == "2024-05-02"
+    assert doc["rain_p95_mm"] == 45.0
+    assert doc["tpi_threshold"] == 0.6
+    assert [r["offset"] for r in doc["days"]] == [-1, 0, 1]
+    assert [r["kind"] for r in doc["days"]] == ["observed", "observed", "forecast"]
+    d0 = doc["days"][1]
+    assert d0["imerg_mm"] == 45.0 and d0["smap"] == 0.80
+    assert d0["tpi"] == pytest.approx(0.65, abs=1e-4)      # area-max of band
+    assert d0["river_m"] == 4.1
+    assert doc["days"][0]["river_m"] is None               # no SWOT that day
+
+
+def test_mask_products_and_candidate_status(tmp_path):
+    d = _data_dir(tmp_path, "wa_2025")
+    mask = np.zeros((10, 10), np.uint8)
+    mask[1:4, 1:4] = 1                                  # candidate
+    mask[5:8, 5:8] = 2                                  # high-confidence
+    _write_cog(d / "cog" / "wa_2025_landslide_candidates_20251210.tif",
+               [mask.astype(np.float32)], nodata=None)
+    _write_cog(d / "cog" / "wa_2025_water_nisar_20251210.tif",
+               [mask.astype(np.float32)], nodata=None)
+
+    s = publish_case("wa-2025-12", data_dir=tmp_path / "data")
+
+    cand = json.loads(
+        (d / "geojson" / "landslide_candidates.geojson").read_text())
+    assert cand["features"]
+    assert {f["properties"]["status"] for f in cand["features"]} == {"candidate"}
+    assert (d / "geojson" / "permanent_water.geojson").exists()
+    # flood_confirmed only when the NISAR flood mask exists
+    assert not (d / "geojson" / "flood_confirmed.geojson").exists()
+    assert any(x["target"] == "flood_confirmed" for x in s["skipped"])
+
+
+def test_missing_sources_skip_not_crash(tmp_path):
+    _data_dir(tmp_path, "wa_2025")               # all dirs empty
+    s = publish_case("wa-2025-12", data_dir=tmp_path / "data")
+    targets = {x["target"] for x in s["skipped"]}
+    assert {"tpi_slide", "tpi_flood", "hillshade", "permanent_water",
+            "flood_confirmed", "landslide_candidates"} <= targets
+    assert s["written"] == ["wa_2025/png/_index.json"]
+    assert json.loads(
+        (tmp_path / "data" / "wa_2025" / "png" / "_index.json").read_text()
+    ) == {"layers": []}
+
+
+def test_dry_run_writes_nothing(tmp_path):
+    d = _data_dir(tmp_path)
+    _write_cog(d / "cog" / "rs_2024_tpi_slide_20240502.tif",
+               [_tpi(0.7)], ["20240502"])
+    (d / "series" / "rs_2024_rain_soil_20240502.json").write_text(
+        json.dumps({"imerg_mm": 1.0, "smap": 0.5}))
+    events = tmp_path / "data" / "events.json"
+    events.write_text('{"events": [{"id": "rs-2024-05", "layers": []}]}')
+
+    s = publish_case("rs-2024-05", dry_run=True, data_dir=tmp_path / "data")
+
+    assert s["dry_run"] and s["planned"]
+    assert s["written"] == []
+    assert not (d / "png" / "tpi_slide_20240502.png").exists()
+    assert not (d / "png" / "_index.json").exists()
+    assert not (d / "series" / "imerg_smap_daily.json").exists()
+    assert json.loads(events.read_text())["events"][0]["layers"] == []
