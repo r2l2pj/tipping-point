@@ -112,7 +112,7 @@ def _refresh_alerts(now_dir: Path = NOW_DIR) -> Path:
 
 
 def now(dry_run: bool = False) -> None:
-    """fetch IMERG/SMAP/GEOS-FP -> derived TPI -> fallback export -> manifest."""
+    """fetch IMERG/SMAP/GEOS-FP -> derived TPI -> fallback export -> alerts -> manifest."""
     w, s, e, n = (str(v) for v in NOW_BOUNDS)
     steps = [
         ("now.fetch.imerg",
@@ -128,16 +128,16 @@ def now(dry_run: bool = False) -> None:
          [sys.executable, "tools/now_tpi.py"]),
         ("now.export_fallback",
          [sys.executable, "tools/export_fallback.py", "--now"]),
-        ("now.build_manifest",
-         [sys.executable, "tools/build_manifest.py"]),
     ]
     env = _job_env()
     for name, cmd in steps:
         _run_step(name, cmd, env, dry_run)
     if dry_run:
         print("[alerts] (skipped in dry-run)", flush=True)
-        return
-    _refresh_alerts()
+    else:
+        _refresh_alerts()
+    _run_step("now.build_manifest",
+              [sys.executable, "tools/build_manifest.py"], env, dry_run)
 
 
 def _case_ids() -> list[str]:

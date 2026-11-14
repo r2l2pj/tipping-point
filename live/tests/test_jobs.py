@@ -51,6 +51,40 @@ def test_now_runs_steps_in_locked_order(calls):
     assert calls[2][calls[2].index("--days") + 1] == "3"
 
 
+def test_now_manifest_is_last_after_alerts_refresh(monkeypatch):
+    order = []
+    monkeypatch.setattr(jobs, "_refresh_alerts", lambda *a, **k: order.append("alerts"))
+
+    def fake_run(cmd, **kwargs):
+        order.append(_tokens(cmd))
+        return _Proc()
+    monkeypatch.setattr(jobs.subprocess, "run", fake_run)
+    jobs.now()
+    assert order == [
+        "pipeline.fetch.imerg",
+        "pipeline.fetch.smap",
+        "pipeline.fetch.geosfp",
+        "tools/now_tpi.py",
+        "tools/export_fallback.py",
+        "alerts",
+        "tools/build_manifest.py",
+    ]
+
+
+def test_now_failure_before_alerts_skips_alerts_and_manifest(monkeypatch):
+    order = []
+    monkeypatch.setattr(jobs, "_refresh_alerts", lambda *a, **k: order.append("alerts"))
+
+    def fake_run(cmd, **kwargs):
+        order.append(_tokens(cmd))
+        return _Proc(returncode=1 if _tokens(cmd) == "tools/export_fallback.py" else 0)
+    monkeypatch.setattr(jobs.subprocess, "run", fake_run)
+    with pytest.raises(SystemExit):
+        jobs.now()
+    assert order[-1] == "tools/export_fallback.py"
+    assert "alerts" not in order and "tools/build_manifest.py" not in order
+
+
 def test_now_abort_on_nonzero_skips_later_steps(monkeypatch):
     seen = []
 
