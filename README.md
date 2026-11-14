@@ -1,50 +1,85 @@
 # tipping-point-data
 
 Data & analysis pipeline for **Tipping Point** — NASA Space Apps Challenge 2026,
-"Dancing with the SARs". Rain warns. Radar confirms.
+"Dancing with the SARs". **GPM + SMAP predict; NISAR confirms.** IMERG rain and
+SMAP soil wetness feed a daily Tipping Point Index (TPI) that warns of
+flood/landslide risk; NISAR radar acquisitions after the event confirm what
+actually flooded or slid.
 
 Produces the artifacts in `data/` consumed by
 [`r2l2pj/tipping-point-app`](https://github.com/r2l2pj/tipping-point-app).
-The contract between this repo and the app is [`data/SCHEMA.md`](data/SCHEMA.md).
+The contract between this repo and the app is
+[`data/SCHEMA.md`](data/SCHEMA.md) — read it first; the app never computes and
+never globs.
+
+## Quickstart
+
+```bash
+uv sync                    # creates .venv (Python 3.12 via the Makefile)
+make test                  # pytest pipeline/ gee/ live/ + ruff — no creds needed
+make all CASE=rs_2024      # replay chain for one case (rs_2024 | wa_2025)
+make now                   # live "modo agora" chain (live/jobs.py now)
+```
+
+Every Python step runs through `uv run`. Steps that need credentials print
+`SKIP <step>: missing <var>` and the chain still exits 0 — a bare
+`env -i make all CASE=rs_2024` exercises the whole wiring with no secrets.
+
+Replay chain order (`make all`): GEE TPI series → HAND → impact → NISAR fetch
+→ terrain → flood mask → polygonize → OPERA+HLS validation → perfect-forecast
+layers → landslide hit-rate → HLS scar → lead time → case publish → root
+manifest (always last — `data/SCHEMA.md` explains why).
+
+## Credentials
+
+| Variable | Needed for |
+| --- | --- |
+| `EARTHDATA_TOKEN` | NASA Earthdata downloads: NISAR GCOV, OPERA DSWx, HLS, SWOT, IMERG/SMAP/GEOS-FP live fetches |
+| `GEE_PROJECT` | Google Earth Engine cloud project (shared, team) — all `gee/` and GEE-backed steps |
+| `GOOGLE_APPLICATION_CREDENTIALS` **or** `GCP_SA_KEY` | Earth Engine service-account JSON key (path, or raw JSON for `GCP_SA_KEY`). Keep the key out of the repo |
+
+Local fallback: `EDL_USER`/`EDL_PASS` or a `~/.netrc` entry for
+`urs.earthdata.nasa.gov` (see `.env.example`). CI sets `EARTHDATA_TOKEN`,
+`GCP_SA_KEY`, `GEE_PROJECT`, `NOW_GCS_BUCKET` (`.github/workflows/now.yml`).
 
 ## Layout
 
 | Dir | Contents |
 | --- | --- |
-| `events/` | One JSON per case: AOI, dates, NISAR frames |
-| `gee/` | Earth Engine (JavaScript) scripts — TPI, lead time, RF susceptibility, HAND validation |
-| `pipeline/tp/` | Python package: `nisar`, `flood_mask`, `landslide_coh`, `validation`, `swot`, `events` |
-| `pipeline/scripts/` | Thin CLIs (`--event <id>`) numbered in run order |
-| `pipeline/notebooks/` | Exploration only — never the source of a published artifact |
-| `ml/` | Predictive model (susceptibility + trigger probability) |
-| `data/` | Published artifacts (COG/GeoJSON/JSON). `data/raw/` is gitignored |
+| `pipeline/` | `tp/` package (processing logic), `scripts/` thin CLIs numbered in run order, `fetch/` downloaders, `tests/` |
+| `gee/` | Earth Engine scripts — JS (Code Editor) plus Python ports (`python -m gee.tpi --case …`). See `gee/README.md` for the asset namespace |
+| `live/` | "Modo agora" live pipeline — `run_now.py`, `jobs.py` (scheduled job orchestrator), fetch/render/publish/alerts |
+| `ml/` | XGBoost susceptibility model + `lead_time.py` (warning lead vs an anchor report) |
+| `tools/` | `publish_case.py` (per-case app bundle), `build_manifest.py` (root manifest, always last), `ingest_assets.py`, `now_tpi.py`, `build_simular.py` |
+| `data/` | Published artifacts (COG/GeoJSON/JSON per case + `now/`). `data/raw/` is gitignored. Contract: `data/SCHEMA.md` |
+| `events/` | One JSON per event: AOI, dates, NISAR frames |
+| `static/` | Local fallback arrays for `run_now.py --local` |
 
-## Setup
+## Domains and the rain climatology
 
-```bash
-uv sync
-cp .env.example .env   # fill EDL_USER/EDL_PASS or use ~/.netrc
-```
+`config.yaml` carries a `domains` block alongside `cases`: `domains.now`
+(name `sul_brasil`, bbox `[-58.0, -34.0, -48.0, -22.5]` W/S/E/N) is the live
+coverage area, read via `tp.config.now_bounds()` (same bbox as
+`live.config.NOW_BOUNDS`).
 
-Accounts needed: NASA Earthdata Login (ASF/PO.DAAC/LANCE), Google Earth Engine
-Cloud project (shared, for `gee/` scripts and the Python API).
+The 3-day-rain climatology backing the R-score percentiles lives in GEE as an
+ImageCollection per coverage area, **int16 mm×10** storage (~0.9 GB total —
+divide by 10 on read):
 
-## Run order (per event)
+- `tipping-point/<case>/clim_rain` — per case: ~25 images, the doys of the
+  case event window, clipped to that case AOI.
+- `tipping-point/static/sul_brasil/clim_rain` — for the live job: a rolling
+  ~75-doy window over the `domains.now` bbox.
 
-```bash
-uv run python pipeline/scripts/01_get_nisar.py --event wa-2025-12   # coverage check FIRST
-uv run python pipeline/scripts/02_flood_mask.py --event ... --pre ... --post ...
-uv run python pipeline/scripts/03_landslide_coh.py --event ... --coh-ref ... --coh-evt ... --slope ...
-uv run python pipeline/scripts/04_validation.py --event ... --opera-wtr ...
-uv run python pipeline/scripts/05_swot.py --event ... --reach-id ...
-```
-
-In parallel, run `gee/01_tpi_index.js` → `04_hand_vs_merit.js` in the Code Editor
-and drop the exported COGs into `data/<event>/cog/`.
+Interface is unchanged in both: one image per doy with a `doy` property and
+bands `p90|p95|p99` (3-day-sum mm percentiles, ~10 km). Readers filter on
+`doy` and scale by 0.1.
 
 ## Rules
 
-- Inputs are NASA (or challenge-partner) data only. MERIT Hydro is a validation
-  reference, never an index input.
-- Secrets live in `.env` / `~/.netrc` — never committed.
+- Inputs are NASA (or challenge-partner) data only. MERIT Hydro is a
+  validation reference, never an index input.
+- Secrets live in `.env` / `~/.netrc` / CI secrets — never committed.
 - NISAR products are HDF5 — subset to the AOI before writing COGs.
+- Manifests are written LAST (`data/now/manifest.json` per run,
+  `data/manifest.json` for the repo); readers key on a non-null `updated_at`.
