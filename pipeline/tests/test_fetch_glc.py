@@ -64,12 +64,23 @@ def _patch(monkeypatch, tmp_path, payload):
 
 
 def test_query_params_wa():
+    """Default query is bbox-only — no event_date filter for a reference
+    catalog (community reports lag; a window would empty recent events)."""
     params = glc._query_params(load_event("wa-2025-12"))
+    assert params["where"] == "1=1"
+    assert "event_date" not in params["where"]
+    assert params["geometry"] == "-122.6,47.0,-121.5,48.5"
+    assert params["f"] == "geojson" and params["outFields"] == "*"
+
+
+def test_query_params_window_opt_in():
+    event = load_event("wa-2025-12")
+    params = glc._query_params(event, window=event["window"])
     assert params["where"] == (
         "event_date >= DATE '2025-11-01' AND event_date <= DATE '2026-01-31'"
     )
-    assert params["geometry"] == "-122.6,47.0,-121.5,48.5"
-    assert params["f"] == "geojson" and params["outFields"] == "*"
+    params = glc._query_params(event | {"glc_window": event["window"]})
+    assert "event_date >= DATE '2025-11-01'" in params["where"]
 
 
 def test_glc_catalog_parses_fixture(monkeypatch, tmp_path):
@@ -77,7 +88,7 @@ def test_glc_catalog_parses_fixture(monkeypatch, tmp_path):
     out = glc.glc_catalog(load_event("wa-2025-12"))
 
     assert captured["url"] == glc.SERVICE_URL
-    assert "DATE '2025-11-01'" in captured["params"]["where"]
+    assert captured["params"]["where"] == "1=1"
 
     fc = json.loads(out.read_text())
     assert out == tmp_path / "wa_2025" / "geojson" / "landslide_catalog.geojson"

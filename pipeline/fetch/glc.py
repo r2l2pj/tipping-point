@@ -1,8 +1,13 @@
-"""NASA COOLR Global Landslide Catalog points for an event's AOI + window.
+"""NASA COOLR Global Landslide Catalog points for an event's AOI.
 
 REFERENCE-ONLY layer (map footer credit) — never a TPI input. The legacy
 data.nasa.gov GLC CSV ends in 2016; this queries the live COOLR/NASA Global
 Landslide Catalog ArcGIS FeatureServer instead.
+
+The default query is bbox-only (all-time catalog — community reports lag
+weeks to months, so a window filter empties recent events). Set
+event['glc_window'] or pass window= to glc_catalog to filter by event_date.
+Each output feature's event_date is normalized to an ISO date for t_utc.
 """
 from __future__ import annotations
 
@@ -33,14 +38,24 @@ KEEP_PROPS = (
 )
 
 
-def _query_params(event: dict) -> dict:
+def _query_params(event: dict, window: dict | None = None) -> dict:
+    """ArcGIS query params: AOI bbox, all-time catalog by default.
+
+    The GLC is a REFERENCE layer and community reports lag (259 all-time
+    features in the wa bbox, zero in Dec-2025), so the default query has no
+    event_date filter. A window ({start, end} ISO dates) applies only when
+    passed explicitly or set as event['glc_window'].
+    """
     w, s, e, n = event["aoi"]["bbox"]
-    win = event["window"]
-    return {
-        "where": (
+    win = window if window is not None else event.get("glc_window")
+    where = "1=1"
+    if win:
+        where = (
             f"event_date >= DATE '{win['start']}' "
             f"AND event_date <= DATE '{win['end']}'"
-        ),
+        )
+    return {
+        "where": where,
         "geometry": f"{w},{s},{e},{n}",
         "geometryType": "esriGeometryEnvelope",
         "inSR": "4326",
@@ -62,14 +77,15 @@ def _clean_properties(props: dict) -> dict:
     return out
 
 
-def glc_catalog(event: dict) -> Path:
+def glc_catalog(event: dict, window: dict | None = None) -> Path:
     """Write data/<case>/geojson/landslide_catalog.geojson; return its path.
 
     <case> is the event id with - -> _ and without the month part
     ('wa-2025-12' -> 'wa_2025') — data/ dirs are per case, not event.
     An empty query result still writes a valid FeatureCollection.
     """
-    resp = requests.get(SERVICE_URL, params=_query_params(event), timeout=60)
+    resp = requests.get(
+        SERVICE_URL, params=_query_params(event, window=window), timeout=60)
     resp.raise_for_status()
     payload = resp.json()
     if "error" in payload:
