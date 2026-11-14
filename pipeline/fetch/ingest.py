@@ -203,14 +203,22 @@ def asset_id(case: str, name: str, project: str | None = None) -> str:
 
 def _ensure_parent(ee, path: str) -> None:
     """Create `path` as a FOLDER asset if absent (holds table partNN
-    children — ImageCollection only accepts images). Same getAsset +
-    strict not-found semantics as the part idempotency check."""
-    try:
-        ee.data.getAsset(path)
-    except Exception as exc:
-        if not _is_not_found(exc):
-            raise
-        ee.data.createAsset({"type": "FOLDER"}, path)
+    children — ImageCollection only accepts images), creating any missing
+    ancestor folders first: createAsset refuses to nest under a
+    nonexistent parent. Same getAsset + strict not-found semantics as the
+    part idempotency check."""
+    ancestors = path.rsplit("/", 1)[0]
+    parents = []
+    while "/assets/" in ancestors:
+        parents.append(ancestors)
+        ancestors = ancestors.rsplit("/", 1)[0]
+    for folder in [*reversed(parents), path]:
+        try:
+            ee.data.getAsset(folder)
+        except Exception as exc:
+            if not _is_not_found(exc):
+                raise
+            ee.data.createAsset({"type": "FOLDER"}, folder)
 
 
 def _export_table_chunk(ee, features: list, target_id: str,

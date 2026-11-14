@@ -158,9 +158,15 @@ def test_ingest_table_chunks_large_collections(monkeypatch, tmp_path):
     # 3 client-side collections, each bounded at 5000 features
     assert [c[1] for c in calls if c[0] == "fc"] == [5000, 5000, 2345]
     assert ("flatten",) not in calls
-    # FOLDER parent created at asset_id; parts are assets INSIDE it
+    # FOLDER parents created top-down (missing ancestors first); parts
+    # are assets INSIDE the leaf folder at asset_id
     created = [c for c in calls if c[0] == "create"]
-    assert created == [("create", {"type": "FOLDER"}, aid)]
+    assert created == [
+        ("create", {"type": "FOLDER"},
+         "projects/p/assets/tipping-point"),
+        ("create", {"type": "FOLDER"},
+         "projects/p/assets/tipping-point/rs_2024"),
+        ("create", {"type": "FOLDER"}, aid)]
     exports = [c[1] for c in calls if c[0] == "export_table"]
     assert [e["assetId"] for e in exports] == [
         f"{aid}/part00", f"{aid}/part01", f"{aid}/part02"]
@@ -181,7 +187,9 @@ def test_ingest_table_skips_existing_parts(monkeypatch, tmp_path):
     aid = "projects/p/assets/tipping-point/rs_2024/landslide_catalog"
     calls = _install_fakes(
         monkeypatch,
-        assets={aid: {"type": "FOLDER"},
+        assets={"projects/p/assets/tipping-point": {"type": "FOLDER"},
+                "projects/p/assets/tipping-point/rs_2024": {"type": "FOLDER"},
+                aid: {"type": "FOLDER"},
                 f"{aid}/part00": {"type": "TABLE"}})
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
     geo = _geojson(tmp_path / "x.geojson", n=7)
