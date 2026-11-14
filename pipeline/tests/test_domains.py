@@ -29,6 +29,7 @@ KNOWN_MIRRORS = {
     "docs/PLAN.md",
     "data/SCHEMA.md",
     "data/now/manifest.json",
+    "data/manifest.json",
 }
 
 
