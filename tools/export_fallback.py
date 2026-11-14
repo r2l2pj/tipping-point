@@ -1,4 +1,4 @@
-"""Publish static fallback files, rendering missing live outputs from GEE assets."""
+"""Render missing static fallback files into data/ from GEE assets (no upload)."""
 from __future__ import annotations
 
 import argparse
@@ -17,27 +17,23 @@ def main(argv=None) -> None:
     group.add_argument("--now", action="store_true")
     group.add_argument("--case", choices=fallback.CASES)
     parser.add_argument("--root", type=Path, default=Path("data"))
-    parser.add_argument("--prefix", default="fallback/")
-    parser.add_argument("--bucket")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
     try:
-        entries = (fallback.now_plan(args.root, prefix=args.prefix) if args.now else
-                   fallback.plan(args.root, case=args.case, prefix=args.prefix))
-        if not args.dry_run:
-            if args.now:
-                try:
-                    fallback.render_now(args.root, bucket=args.bucket, prefix=args.prefix)
-                except Exception as exc:
-                    raise RuntimeError(
-                        "GEE fallback rendering failed; check required assets, GOOGLE_APPLICATION_CREDENTIALS, "
-                        "GCP_SA_KEY, bucket permissions and connectivity") from exc
-                entries = fallback.plan(args.root, now=True, prefix=args.prefix)
-            fallback.upload(entries, bucket=args.bucket)
+        if args.now and not args.dry_run:
+            try:
+                entries = fallback.render_now(args.root)
+            except Exception as exc:
+                raise RuntimeError(
+                    "GEE fallback rendering failed; check required assets, "
+                    "GOOGLE_APPLICATION_CREDENTIALS, GCP_SA_KEY and connectivity") from exc
+        else:
+            entries = (fallback.now_plan(args.root) if args.now else
+                       fallback.plan(args.root, case=args.case))
     except (OSError, ValueError, KeyError, RuntimeError) as exc:
         parser.exit(1, f"fallback export failed: {exc}\n")
-    for _, key in entries:
-        print(key)
+    for rel in entries:
+        print(rel)
 
 
 if __name__ == "__main__":

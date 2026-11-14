@@ -1,6 +1,8 @@
+import io
 import json
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -40,48 +42,46 @@ def data(tmp_path):
     return tmp_path
 
 
-def test_now_keys_and_order_copy_bytes(data):
+def test_now_plan_lists_local_files_manifest_last(data):
     entries = fallback.plan(data, now=True)
-    expected = {"fallback/now/" + p.relative_to(data / "now").as_posix()
+    expected = {"now/" + p.relative_to(data / "now").as_posix()
                 for p in (data / "now").rglob("*") if p.is_file()}
-    assert {key for _, key in entries} == expected | {"fallback/manifest.json"}
-    assert [key for _, key in entries][-2:] == ["fallback/now/manifest.json", "fallback/manifest.json"]
-    uploads = []
-
-    class Client:
-        def bucket(self, name):
-            assert name == "bucket"
-            return SimpleNamespace(blob=lambda key: SimpleNamespace(
-                upload_from_filename=lambda path: uploads.append((key, Path(path).read_bytes()))))
-
-    fallback.upload(entries, bucket="gs://bucket", client=Client())
-    assert uploads == [(key, path.read_bytes()) for path, key in entries]
-    fallback.upload(entries, bucket="gs://bucket", client=Client())
-    assert uploads[:len(entries)] == uploads[len(entries):]
+    assert set(entries) == expected | {"manifest.json"}
+    assert entries[-2:] == ["now/manifest.json", "manifest.json"]
+    assert all((data / rel).is_file() for rel in entries)
 
 
 @pytest.mark.parametrize("case", fallback.CASES)
-def test_case_keys(data, case):
-    entries = fallback.plan(data, case=case, prefix="static/")
-    assert {key for _, key in entries} == {
-        f"static/{case}/png/day.png", f"static/{case}/cog/day.tif",
-        f"static/{case}/geojson/places.geojson", f"static/{case}/series/daily.json",
-        "static/metrics.json", "static/manifest.json"}
-    assert entries[-1][1] == "static/manifest.json"
+def test_case_plan(data, case):
+    entries = fallback.plan(data, case=case)
+    assert set(entries) == {
+        f"{case}/png/day.png", f"{case}/cog/day.tif",
+        f"{case}/geojson/places.geojson", f"{case}/series/daily.json",
+        "metrics.json", "manifest.json"}
+    assert entries[-1] == "manifest.json"
+    assert all((data / rel).is_file() for rel in entries)
 
 
-def test_dry_run_no_storage_import(data, monkeypatch, capsys):
+def test_plan_rejects_bad_selection(data):
+    with pytest.raises(ValueError, match="either now or a canonical case"):
+        fallback.plan(data)
+    with pytest.raises(ValueError, match="either now or a canonical case"):
+        fallback.plan(data, now=True, case="rs_2024")
+
+
+def test_dry_run_offline_no_ee_or_storage_imports(data, monkeypatch, capsys):
     import builtins
 
     original = builtins.__import__
 
     def guarded(name, *args, **kwargs):
-        assert name not in ("fetch", "google.cloud.storage")
+        assert not (name == "ee" or name.startswith("ee.") or "storage" in name
+                    or name in ("fetch", "gee"))
         return original(name, *args, **kwargs)
 
     monkeypatch.setattr(builtins, "__import__", guarded)
     export_fallback.main(["--now", "--root", str(data), "--dry-run"])
-    assert capsys.readouterr().out.splitlines() == [key for _, key in fallback.plan(data, now=True)]
+    assert capsys.readouterr().out.splitlines() == fallback.plan(data, now=True)
 
 
 @pytest.mark.parametrize("rel", ["manifest.json", "now/manifest.json", "now/summary.json",
@@ -100,56 +100,19 @@ def test_missing_case_input(data, rel):
         fallback.plan(data, case="rs_2024")
 
 
-def test_missing_credentials_cli_nonzero(data, monkeypatch, capsys):
-    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
-    with pytest.raises(SystemExit) as exc:
-        export_fallback.main(["--now", "--root", str(data), "--bucket", "gs://bucket"])
-    assert exc.value.code == 1
-    assert "GOOGLE_APPLICATION_CREDENTIALS" in capsys.readouterr().err
-
-
-def test_reuses_ingest_storage_loader(data, monkeypatch):
-    from fetch import ingest
-
-    seen = []
-    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/unused/fake.json")
-    monkeypatch.setenv("NOW_GCS_BUCKET", "gs://bucket")
-    client = SimpleNamespace(bucket=lambda bucket: SimpleNamespace(
-        blob=lambda key: SimpleNamespace(upload_from_filename=lambda path: seen.append(key))))
-
-    def load(name):
-        assert name == "google.cloud.storage"
-        return SimpleNamespace(Client=lambda: client)
-
-    monkeypatch.setattr(ingest, "_import", load)
-    entries = fallback.plan(data, now=True)
-    fallback.upload(entries)
-    assert seen == [key for _, key in entries]
-
-
-def test_upload_failure_aborts_before_manifests_and_redacts(data):
-    seen = []
-
-    def fail(path):
-        raise RuntimeError("secret-credential-value")
-
-    def blob(key):
-        seen.append(key)
-        return SimpleNamespace(upload_from_filename=fail)
-
-    client = SimpleNamespace(bucket=lambda name: SimpleNamespace(blob=blob))
-    with pytest.raises(RuntimeError, match="GCS upload failed") as exc:
-        fallback.upload(fallback.plan(data, now=True), bucket="bucket", client=client)
-    assert "secret-credential-value" not in str(exc.value)
-    assert len(seen) == 1 and not seen[0].endswith("manifest.json")
-
-
 def test_cli_subprocess_dry_run(data):
     result = subprocess.run([sys.executable, str(REPO / "tools/export_fallback.py"),
                              "--case", "wa_2025", "--root", str(data), "--dry-run"],
                             check=False, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    assert result.stdout.splitlines() == [key for _, key in fallback.plan(data, case="wa_2025")]
+    assert result.stdout.splitlines() == fallback.plan(data, case="wa_2025")
+
+
+def test_cli_rejects_bucket_arg(data):
+    result = subprocess.run([sys.executable, str(REPO / "tools/export_fallback.py"),
+                             "--now", "--root", str(data), "--bucket", "x", "--dry-run"],
+                            check=False, capture_output=True, text=True)
+    assert result.returncode != 0
 
 
 @pytest.fixture
@@ -171,7 +134,7 @@ def production(tmp_path):
     return tmp_path
 
 
-def fake_render_clients(state="COMPLETED"):
+def fake_render_clients(cog_bytes=b"COG"):
     calls = []
 
     class Image:
@@ -192,44 +155,40 @@ def fake_render_clients(state="COMPLETED"):
                         "properties": {"class": 2}}]})
                 if method == "getThumbURL":
                     return "fake-png-url"
+                if method == "getDownloadURL":
+                    return "fake-cog-url"
                 return self
             return operation
 
     Image.pixelArea = lambda: Image()
-
-    def export(**kwargs):
-        calls.append(("export", (), kwargs))
-        return SimpleNamespace(start=lambda: calls.append(("start", (), {})),
-                               status=lambda: {"state": state})
-
     ee = SimpleNamespace(Image=Image, Geometry=SimpleNamespace(Rectangle=lambda bounds: bounds),
-                         Reducer=SimpleNamespace(sum=lambda: "sum"),
-                         batch=SimpleNamespace(Export=SimpleNamespace(image=SimpleNamespace(toCloudStorage=export))))
+                         Reducer=SimpleNamespace(sum=lambda: "sum"))
 
-    def blob(key):
-        return SimpleNamespace(download_to_filename=lambda path: write(Path(path).parent, Path(path).name, b"COG"),
-                               upload_from_filename=lambda path: calls.append(("upload", (), {"key": key})))
+    def fetch(url, limit=None):
+        calls.append(("fetch", (url,), {"limit": limit}))
+        if limit is not None and len(cog_bytes) > limit:
+            return None
+        return cog_bytes
 
-    client = SimpleNamespace(bucket=lambda name: SimpleNamespace(blob=blob))
-    return ee, client, calls
+    return ee, calls, fetch
 
 
-def test_render_now_missing_outputs_and_manifest_last(production):
-    ee, client, calls = fake_render_clients()
+def test_render_now_writes_local_files(production):
+    ee, calls, fetch = fake_render_clients()
     originals = {rel: (production / rel).read_bytes()
                  for rel in ("manifest.json", "now/manifest.json", "now/alerts.json")}
-    entries = fallback.render_now(production, bucket="bucket", ee_client=ee, client=client,
+    entries = fallback.render_now(production, ee_client=ee, fetch=fetch,
                                   fetch_png=lambda url: b"PNG")
     assert [args for method, args, _ in calls if method == "select"] == [
         ("TPI_slide",)] * 4 + [("TPI_flood",)] * 4
-    assert sum(1 for call in calls if call[0] == "getThumbURL") == 8
-    exports = [kw for method, _, kw in calls if method == "export"]
-    assert len(exports) == 4
-    assert all(e["formatOptions"] == {"cloudOptimized": True} and e["crs"] == "EPSG:4326" for e in exports)
-    thumbs = [kw for method, args, kw in calls if method == "getThumbURL"]
+    thumbs = [args[0] for method, args, _ in calls if method == "getThumbURL"]
     assert len(thumbs) == 8
-    params = [args[0] for method, args, _ in calls if method == "getThumbURL"]
-    assert all(p["crs"] == "EPSG:3857" for p in params)
+    assert all(p["crs"] == "EPSG:3857" for p in thumbs)
+    downloads = [args[0] for method, args, _ in calls if method == "getDownloadURL"]
+    assert len(downloads) == 4
+    assert all(d["crs"] == "EPSG:4326" and d["format"] == "GEO_TIFF" for d in downloads)
+    assert all((production / f"now/cog/tpi_{h}_d{d}.tif").read_bytes() == b"COG"
+               for h in ("slide", "flood") for d in range(2))
     assert any(method == "gte" and args == (0.4,) for method, args, _ in calls)
     assert len([1 for method, _, _ in calls if method == "reduceToVectors"]) == 4
     summary = json.loads((production / "now/summary.json").read_text())
@@ -239,33 +198,42 @@ def test_render_now_missing_outputs_and_manifest_last(production):
     assert {f["properties"]["hazard"] for f in critical["features"]} == {"slide", "flood"}
     assert all(f["properties"]["label"] == "Alto" for f in critical["features"])
     assert all((production / rel).read_bytes() == content for rel, content in originals.items())
-    fallback.upload(fallback.plan(production, now=True), bucket="bucket", client=client)
-    assert [kw["key"] for method, _, kw in calls if method == "upload"][-2:] == [
-        "fallback/now/manifest.json", "fallback/manifest.json"]
-    assert all(path.is_file() for path, _ in entries)
+    assert entries[-2:] == ["now/manifest.json", "manifest.json"]
+    assert all((production / rel).is_file() for rel in entries)
     calls.clear()
-    fallback.render_now(production, bucket="bucket", ee_client=ee, client=client, fetch_png=lambda url: b"PNG")
-    assert not any(method in ("export", "getThumbURL", "reduceRegion", "reduceToVectors")
+    fallback.render_now(production, ee_client=ee, fetch=fetch, fetch_png=lambda url: b"PNG")
+    assert not any(method in ("getDownloadURL", "getThumbURL", "reduceRegion", "reduceToVectors")
                    for method, _, _ in calls)
 
 
-@pytest.mark.parametrize("state", ["FAILED", "CANCELLED", "RUNNING"])
-def test_cog_failure_never_publishes_manifests(production, state):
-    ee, client, calls = fake_render_clients(state)
-    with pytest.raises(RuntimeError, match="GEE COG export"):
-        fallback.render_now(production, bucket="bucket", ee_client=ee, client=client,
-                            fetch_png=lambda url: b"PNG", sleep=lambda n: None, max_polls=1)
-    assert not any(method == "upload" for method, _, _ in calls)
+def test_render_skips_cog_over_10mb(production, capsys):
+    ee, _calls, fetch = fake_render_clients(cog_bytes=b"COG" * 5 * 1024 * 1024)
+    fallback.render_now(production, ee_client=ee, fetch=fetch, fetch_png=lambda url: b"PNG")
+    assert not list((production / "now/cog").glob("*.tif"))
+    assert (production / "now/summary.json").is_file()
+    assert "over" in capsys.readouterr().err
+
+
+def test_render_unzips_getdownloadurl_result(production):
+    ee, _calls, _ = fake_render_clients()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("layer.tif", b"INNER-TIF")
+    payload = buffer.getvalue()
+    fallback.render_now(production, ee_client=ee,
+                        fetch=lambda url, limit=None: payload,
+                        fetch_png=lambda url: b"PNG")
+    assert (production / "now/cog/tpi_slide_d0.tif").read_bytes() == b"INNER-TIF"
 
 
 def test_render_preserves_existing_local_products(production):
-    ee, client, calls = fake_render_clients()
+    ee, calls, fetch = fake_render_clients()
     local = {"now/summary.json": b'{"producer": true}',
              "now/geojson/critical_areas.geojson": b'{"features": []}',
              "now/png/tpi_slide_d0.png": b"producer PNG"}
     for rel, content in local.items():
         write(production, rel, content)
-    fallback.render_now(production, bucket="bucket", ee_client=ee, client=client, fetch_png=lambda url: b"PNG")
+    fallback.render_now(production, ee_client=ee, fetch=fetch, fetch_png=lambda url: b"PNG")
     assert all((production / rel).read_bytes() == content for rel, content in local.items())
     assert len([1 for method, _, _ in calls if method == "getThumbURL"]) == 7
     assert not any(method in ("reduceRegion", "reduceToVectors") for method, _, _ in calls)
@@ -277,11 +245,9 @@ def test_render_rs_cog_only_layers(production):
         node["layers"].append({"id": f"{prefix}_d0", "asset": f"projects/test/assets/now/{prefix}_d0",
                                "png": None, "cog": f"cog/{prefix}_d0.tif"})
     (production / "now/manifest.json").write_text(json.dumps(node))
-    ee, client, calls = fake_render_clients()
-    fallback.render_now(production, bucket="bucket", ee_client=ee, client=client, fetch_png=lambda url: b"PNG")
+    ee, calls, fetch = fake_render_clients()
+    fallback.render_now(production, ee_client=ee, fetch=fetch, fetch_png=lambda url: b"PNG")
     assert [args for method, args, _ in calls if method == "select"][-2:] == [("R",), ("S",)]
-    exports = [kw for method, _, kw in calls if method == "export"]
-    assert [e["fileNamePrefix"] for e in exports][-2:] == ["fallback/now/cog/r_d0", "fallback/now/cog/s_d0"]
     assert (production / "now/cog/r_d0.tif").read_bytes() == b"COG"
     assert (production / "now/cog/s_d0.tif").read_bytes() == b"COG"
     assert len([1 for method, _, _ in calls if method == "getThumbURL"]) == 8
@@ -294,14 +260,14 @@ def test_render_unknown_layer_prefix_errors(production):
     node["layers"].insert(0, {"id": "unknown_d0", "asset": "projects/test/assets/unknown_d0",
                                "png": None, "cog": "cog/unknown_d0.tif"})
     (production / "now/manifest.json").write_text(json.dumps(node))
-    ee, client, calls = fake_render_clients()
+    ee, calls, fetch = fake_render_clients()
     with pytest.raises(ValueError, match="unrecognized layer.*unknown_d0"):
-        fallback.render_now(production, bucket="bucket", ee_client=ee, client=client, fetch_png=lambda url: b"PNG")
-    assert not any(method in ("export", "getThumbURL") for method, _, _ in calls)
+        fallback.render_now(production, ee_client=ee, fetch=fetch, fetch_png=lambda url: b"PNG")
+    assert not any(method in ("getDownloadURL", "getThumbURL") for method, _, _ in calls)
 
 
 def test_render_missing_contracted_band_fails(production):
-    ee, client, calls = fake_render_clients()
+    ee, calls, fetch = fake_render_clients()
 
     def select(band):
         assert band == "TPI_slide"
@@ -309,19 +275,19 @@ def test_render_missing_contracted_band_fails(production):
 
     ee.Image = lambda asset: SimpleNamespace(select=select)
     with pytest.raises(RuntimeError, match="required TPI_slide band absent"):
-        fallback.render_now(production, bucket="bucket", ee_client=ee, client=client)
-    assert not any(method in ("export", "getThumbURL", "upload") for method, _, _ in calls)
+        fallback.render_now(production, ee_client=ee, fetch=fetch)
+    assert not any(method in ("getDownloadURL", "getThumbURL") for method, _, _ in calls)
 
 
 def test_render_missing_asset_metadata_errors(production):
-    ee, client, calls = fake_render_clients()
+    ee, calls, fetch = fake_render_clients()
     image = ee.Image()
     image.toDictionary = lambda fields: SimpleNamespace(getInfo=dict)
     image.select = lambda band: image
     ee.Image = lambda name: image
     with pytest.raises(ValueError, match="missing required asset timestamps"):
-        fallback.render_now(production, bucket="bucket", ee_client=ee, client=client)
-    assert not any(method == "export" for method, _, _ in calls)
+        fallback.render_now(production, ee_client=ee, fetch=fetch)
+    assert not any(method == "getDownloadURL" for method, _, _ in calls)
 
 
 def test_render_cli_error_hides_sdk_secrets(production, monkeypatch, capsys):
@@ -330,7 +296,7 @@ def test_render_cli_error_hides_sdk_secrets(production, monkeypatch, capsys):
 
     monkeypatch.setattr(fallback, "render_now", fail)
     with pytest.raises(SystemExit) as exc:
-        export_fallback.main(["--now", "--root", str(production), "--bucket", "gs://bucket"])
+        export_fallback.main(["--now", "--root", str(production)])
     assert exc.value.code == 1
     message = capsys.readouterr().err
     assert "secret-sdk-detail" not in message
@@ -341,8 +307,8 @@ def test_now_dry_run_missing_renders_is_offline(production, monkeypatch, capsys)
     monkeypatch.setattr(fallback, "render_now", lambda *a, **kw: pytest.fail("render in dry run"))
     export_fallback.main(["--now", "--root", str(production), "--dry-run"])
     keys = capsys.readouterr().out.splitlines()
-    assert "fallback/now/summary.json" in keys
-    assert keys[-2:] == ["fallback/now/manifest.json", "fallback/manifest.json"]
+    assert "now/summary.json" in keys
+    assert keys[-2:] == ["now/manifest.json", "manifest.json"]
     assert not (production / "now/summary.json").exists()
 
 

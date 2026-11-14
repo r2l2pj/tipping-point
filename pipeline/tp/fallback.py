@@ -1,11 +1,20 @@
-"""Static fallback copies and missing live renders from canonical GEE assets."""
+"""Static fallback copies and missing live renders from canonical GEE assets.
+
+Per ruling L10 there is no Cloud Storage bucket and no staging prefix:
+everything is written locally under the data root; lead-live's workflows
+publish ``data/`` itself to the orphan ``fallback`` branch.
+"""
 from __future__ import annotations
 
+import io
 import json
+import sys
+import zipfile
 from pathlib import Path, PurePosixPath
 
 CASES = ("rs_2024", "wa_2025")
 LAYER_BANDS = {"tpi_slide": "TPI_slide", "tpi_flood": "TPI_flood", "r": "R", "s": "S"}
+MAX_COG_BYTES = 10 * 1024 * 1024
 
 
 def _layer_band(name: str) -> str:
@@ -36,13 +45,9 @@ def _reference(base: Path, value: str) -> Path:
     return _file(base / rel)
 
 
-def plan(root: str | Path, *, now: bool = False, case: str | None = None,
-         prefix: str = "fallback/") -> list[tuple[Path, str]]:
+def plan(root: str | Path, *, now: bool = False, case: str | None = None) -> list[str]:
     if now == (case is not None) or (case is not None and case not in CASES):
         raise ValueError("select either now or a canonical case")
-    prefix = prefix.strip("/")
-    if prefix and ("\\" in prefix or any(p in (".", "..", "") for p in prefix.split("/"))):
-        raise ValueError("invalid fallback prefix")
     root = Path(root)
     group = root / ("now" if now else case)
     manifest = _file(root / "manifest.json")
@@ -73,11 +78,10 @@ def plan(root: str | Path, *, now: bool = False, case: str | None = None,
         files.append(root / "metrics.json")
     files.extend(manifests)
     files.append(manifest)
-    return [(p, "/".join(filter(None, (prefix, p.relative_to(root).as_posix()))))
-            for p in files]
+    return [p.relative_to(root).as_posix() for p in files]
 
 
-def now_plan(root: str | Path, *, prefix: str = "fallback/") -> list[tuple[Path, str]]:
+def now_plan(root: str | Path) -> list[str]:
     root = Path(root)
     _file(root / "manifest.json")
     _file(root / "now/alerts.json")
@@ -98,51 +102,63 @@ def now_plan(root: str | Path, *, prefix: str = "fallback/") -> list[tuple[Path,
         if path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
             raise ValueError("fallback inputs must stay within data root")
     names = sorted((expected | existing) - {"now/manifest.json"})
-    prefix = prefix.strip("/")
-    if prefix and ("\\" in prefix or any(p in (".", "..", "") for p in prefix.split("/"))):
-        raise ValueError("invalid fallback prefix")
-    return [(root / name, "/".join(filter(None, (prefix, name))))
-            for name in [*names, "now/manifest.json", "manifest.json"]]
+    return [*names, "now/manifest.json", "manifest.json"]
 
 
-def _storage(bucket=None, client=None):
-    from fetch import ingest
+def _download(url: str, limit: int | None = None) -> bytes | None:
+    import requests
 
-    bucket = (bucket or ingest.staging_bucket()).removeprefix("gs://").rstrip("/")
-    ingest._validate_path_safe(bucket, "bucket")
-    if client is None:
-        ingest._require_creds()
-        storage = ingest._import("google.cloud.storage")
-        client = storage.Client()
-    return bucket, client
+    with requests.get(url, stream=True, timeout=300) as response:
+        response.raise_for_status()
+        length = response.headers.get("Content-Length")
+        if limit is not None and length is not None and int(length) > limit:
+            return None
+        chunks, total = [], 0
+        for chunk in response.iter_content(chunk_size=1 << 20):
+            total += len(chunk)
+            if limit is not None and total > limit:
+                return None
+            chunks.append(chunk)
+    return b"".join(chunks)
 
 
-def render_now(root: str | Path, *, bucket=None, prefix="fallback/", client=None,
-               ee_client=None, fetch_png=None, sleep=None, max_polls=360):
-    import tempfile
-    import time
+def _write_cog(image, region, path: Path, *, fetch, max_bytes: int) -> bool:
+    url = image.getDownloadURL({
+        "name": path.stem, "region": region, "scale": 1000,
+        "crs": "EPSG:4326", "format": "GEO_TIFF"})
+    data = fetch(url, limit=max_bytes)
+    if data is None:
+        print(f"fallback: skip {path.name}: COG over {max_bytes}-byte cap", file=sys.stderr)
+        return False
+    if zipfile.is_zipfile(io.BytesIO(data)):
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            member = next((n for n in archive.namelist() if n.endswith(".tif")), None)
+            if member is None:
+                print(f"fallback: skip {path.name}: download had no GeoTIFF member", file=sys.stderr)
+                return False
+            data = archive.read(member)
+    path.write_bytes(data)
+    return True
 
+
+def render_now(root: str | Path, *, ee_client=None, fetch=None, fetch_png=None,
+               max_bytes: int = MAX_COG_BYTES) -> list[str]:
     from tp.config import thresholds
 
     cuts = thresholds()["tpi_classes"]
     root = Path(root)
-    entries = now_plan(root, prefix=prefix)
-    if all(path.is_file() for path, _ in entries):
+    entries = now_plan(root)
+    if all((root / rel).is_file() for rel in entries):
         return entries
-    bucket, client = _storage(bucket, client)
     if ee_client is None:
         from gee import common
 
         common.init()
         ee_client = common.ee
+    if fetch is None:
+        fetch = _download
     if fetch_png is None:
-        import requests
-
-        def fetch_png(url):
-            response = requests.get(url, timeout=120)
-            response.raise_for_status()
-            return response.content
-    sleep = sleep or time.sleep
+        fetch_png = lambda url: _download(url)
     ee = ee_client
     node = json.loads((root / "now/manifest.json").read_text())
     bounds = node["bounds"]
@@ -165,44 +181,24 @@ def render_now(root: str | Path, *, bucket=None, prefix="fallback/", client=None
     for name in ("tpi_slide_d0", "tpi_flood_d0", "tpi_slide_d1", "tpi_flood_d1"):
         if name not in images:
             raise ValueError(f"missing required manifest layer: {name}")
-    keys = {path: key for path, key in entries}
     for name, image in images.items():
         layer = layers[name]
-        for kind in ("png", "cog"):
-            if not layer.get(kind):
-                continue
-            path = root / "now" / layer[kind]
-            if path.is_file():
-                continue
-            path.parent.mkdir(parents=True, exist_ok=True)
-            if kind == "png":
+        if layer.get("png"):
+            path = root / "now" / layer["png"]
+            if not path.is_file():
+                path.parent.mkdir(parents=True, exist_ok=True)
                 url = classes.get(name, image).getThumbURL({
                     "region": region, "crs": "EPSG:3857", "dimensions": 2048,
                     "format": "png", "min": 0, "max": 3 if name in classes else 1,
                     "palette": ["ffffb2", "fecc5c", "fd8d3c", "bd0026"]})
                 path.write_bytes(fetch_png(url))
-            else:
-                key = keys[path]
-                if not key.endswith(".tif"):
+        if layer.get("cog"):
+            path = root / "now" / layer["cog"]
+            if not path.is_file():
+                if not str(layer["cog"]).endswith(".tif"):
                     raise ValueError("GEE COG output must use .tif suffix")
-                task = ee.batch.Export.image.toCloudStorage(
-                    image=image.toFloat(), description=f"fallback_{name}", bucket=bucket,
-                    fileNamePrefix=key[:-4], region=region, scale=1000, crs="EPSG:4326",
-                    maxPixels=1e9, fileFormat="GeoTIFF", formatOptions={"cloudOptimized": True})
-                task.start()
-                for _ in range(max_polls):
-                    state = task.status().get("state")
-                    if state == "COMPLETED":
-                        break
-                    if state in ("FAILED", "CANCELLED"):
-                        raise RuntimeError(f"GEE COG export failed for {name}")
-                    sleep(10)
-                else:
-                    raise RuntimeError(f"GEE COG export timed out for {name}")
-                with tempfile.TemporaryDirectory(dir=path.parent) as directory:
-                    temporary = Path(directory) / path.name
-                    client.bucket(bucket).blob(key).download_to_filename(str(temporary))
-                    temporary.replace(path)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                _write_cog(image.toFloat(), region, path, fetch=fetch, max_bytes=max_bytes)
     labels = ["Baixo", "Moderado", "Alto", "Crítico"]
     area = ee.Image.pixelArea().divide(1e6)
 
@@ -241,25 +237,3 @@ def render_now(root: str | Path, *, bucket=None, prefix="fallback/", client=None
         critical_path.parent.mkdir(parents=True, exist_ok=True)
         critical_path.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
     return entries
-
-
-def upload(entries: list[tuple[Path, str]], *, bucket: str | None = None, client=None) -> None:
-    from fetch import ingest
-
-    bucket = (bucket or ingest.staging_bucket()).removeprefix("gs://").rstrip("/")
-    ingest._validate_path_safe(bucket, "bucket")
-    for path, _ in entries:
-        _file(path)
-    if client is None:
-        ingest._require_creds()
-        storage = ingest._import("google.cloud.storage")
-        try:
-            client = storage.Client()
-        except Exception as exc:
-            raise RuntimeError("GCS client initialization failed; check credentials and permissions") from exc
-    try:
-        destination = client.bucket(bucket)
-        for path, key in entries:
-            destination.blob(key).upload_from_filename(str(path))
-    except Exception as exc:
-        raise RuntimeError("GCS upload failed; check credentials, permissions and connectivity") from exc
