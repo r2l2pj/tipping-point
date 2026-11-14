@@ -53,9 +53,12 @@ EVENTS_DIR = Path(__file__).resolve().parents[1] / "events"
 def _ee_init():
     try:
         from gee.common import ee_init
-        return ee_init()
     except ImportError:
         pass
+    else:
+        ee_init()
+        import ee
+        return ee
 
     import ee
 

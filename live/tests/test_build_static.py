@@ -1,6 +1,7 @@
 """Source-level checks for build_static (GEE needs creds, so no live runs)."""
 import datetime as dt
 import io
+import sys
 import types
 import zipfile
 from pathlib import Path
@@ -246,3 +247,26 @@ def test_download_band_accepts_raw_tiff_payload(monkeypatch):
     out = _run_download(monkeypatch, _tif_bytes(arr))
     np.testing.assert_array_equal(out, arr)
     assert out.dtype == np.float64
+
+
+def test_ee_init_returns_ee_module_not_project_string(monkeypatch):
+    calls = []
+    fake_common = types.ModuleType("gee.common")
+    fake_common.ee_init = lambda: calls.append("ee_init") or "fake-project"
+    fake_ee = types.ModuleType("ee")
+    monkeypatch.setitem(sys.modules, "gee", types.ModuleType("gee"))
+    monkeypatch.setitem(sys.modules, "gee.common", fake_common)
+    monkeypatch.setitem(sys.modules, "ee", fake_ee)
+
+    assert build_static._ee_init() is fake_ee
+    assert calls == ["ee_init"]
+
+    init_calls = []
+    fake_ee.ServiceAccountCredentials = lambda email, key_file: ("creds", email)
+    fake_ee.Initialize = lambda creds, project=None: init_calls.append((creds, project))
+    monkeypatch.setitem(sys.modules, "gee.common", None)
+    monkeypatch.setenv("GCP_SA_KEY", '{"client_email": "sa@example.com"}')
+    monkeypatch.setenv("GEE_PROJECT", "p")
+
+    assert build_static._ee_init() is fake_ee
+    assert init_calls == [(("creds", "sa@example.com"), "p")]
