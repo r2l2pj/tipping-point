@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Secrets — never commit
+.env
+*.netrc
+
+# Raw satellite data (large, re-downloadable)
+data/raw/
+*.h5
+*.hdf5
+*.nc
+*.zip
+
+# OS
+.DS_Store

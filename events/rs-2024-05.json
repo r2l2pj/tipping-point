@@ -1,0 +1,18 @@
+{
+  "id": "rs-2024-05",
+  "name": "Rio Grande do Sul historic flood",
+  "country": "BR",
+  "start_date": "2024-04-27",
+  "reference_date": "2024-05-02",
+  "window": { "start": "2024-04-20", "end": "2024-05-31" },
+  "aoi": {
+    "bbox": [-52.5, -30.5, -50.5, -29.0],
+    "wkt": "POLYGON((-52.5 -30.5, -50.5 -30.5, -50.5 -29.0, -52.5 -29.0, -52.5 -30.5))"
+  },
+  "nisar": {
+    "maturity": null,
+    "note": "No NISAR coverage — event predates launch (Jul 2025). Validation via OPERA DSWx-HLS and MODIS NRT Flood on cloud-free days; HLS cloud fraction quantifies what optical missed.",
+    "frames": []
+  },
+  "hazards": ["flood", "landslide"]
+}

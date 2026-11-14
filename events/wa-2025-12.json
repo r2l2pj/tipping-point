@@ -1,0 +1,18 @@
+{
+  "id": "wa-2025-12",
+  "name": "Western Washington atmospheric rivers",
+  "country": "US",
+  "start_date": "2025-12-08",
+  "reference_date": "2025-12-12",
+  "window": { "start": "2025-11-01", "end": "2026-01-31" },
+  "aoi": {
+    "bbox": [-122.6, 47.0, -121.5, 48.5],
+    "wkt": "POLYGON((-122.6 47.0, -121.5 47.0, -121.5 48.5, -122.6 48.5, -122.6 47.0))"
+  },
+  "nisar": {
+    "maturity": "BETA",
+    "note": "Pre-calibration products from the Feb 2026 release (subset of acquisitions 2025-10-17 to 2026-01-20). Use relative before/after change on the same frame.",
+    "frames": []
+  },
+  "hazards": ["flood", "landslide"]
+}
