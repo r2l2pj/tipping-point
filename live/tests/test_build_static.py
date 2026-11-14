@@ -187,7 +187,9 @@ def test_clim_cases_reads_window_doys(tmp_path):
         "window": {"start": "2024-06-10", "end": "2024-06-10"}}))
 
     cases = build_static._clim_cases(tmp_path)
-    assert [c["id"] for c in cases] == ["x-case", "y-wrap", "z-sameday"]
+    # _case_id normalizes event ids to canonical case ids: unknown ids fall
+    # back to dropping the last '-' segment ('x-case' -> 'x')
+    assert [c["id"] for c in cases] == ["x", "y", "z"]
     assert cases[0]["bbox"] == [1, 2, 3, 4]
     # Apr20..May31 = 42 doys, contiguous on the leap-year calendar
     assert cases[0]["doys"] == list(range(111, 153))

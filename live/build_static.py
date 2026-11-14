@@ -165,18 +165,26 @@ def _doys_between(start: dt.date, end: dt.date) -> list[int]:
     return list(range(a, 367)) + list(range(1, b + 1))
 
 
-def _case_id(event_id: str) -> str:
-    """Canonical case id ('rs_2024') from an events/*.json id ('rs-2024-05')."""
+def _case_id(raw_id: str) -> str:
+    """Canonical case id for the static/<case_id> asset layout.
+
+    events/*.json ids are event ids ('rs-2024-05') but the assets use
+    config.yaml case keys ('rs_2024'). Resolved via tp.config.case_id; if
+    tp.config/config.yaml is unavailable or the id is unknown there, fall
+    back to dropping the last '-' segment and joining on '_'
+    ('rs-2024-05' -> 'rs_2024').
+    """
     try:
-        from tp.config import case_id as resolve
-        return resolve(event_id)
-    except Exception:
-        return "_".join(event_id.split("-")[:2])
+        from tp.config import case_id
+        return case_id(raw_id)
+    except (ImportError, KeyError):
+        return "_".join(raw_id.split("-")[:-1])
 
 
 def _clim_cases(events_dir: Path = EVENTS_DIR) -> list[dict]:
-    """Per-case clim_rain specs from events/*.json: id, aoi.bbox and the
-    doy range of window.start..window.end inclusive (window used as-is)."""
+    """Per-case clim_rain specs from events/*.json: id (normalized to the
+    canonical case id via _case_id), aoi.bbox and the doy range of
+    window.start..window.end inclusive (window used as-is)."""
     cases = []
     for path in sorted(events_dir.glob("*.json")):
         case = json.loads(path.read_text())
