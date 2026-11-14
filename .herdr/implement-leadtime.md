@@ -33,6 +33,10 @@ All `uv` invocations below use `$HOME/.local/share/mise/installs/uv/0.13.8/uv-x8
 - `git diff --check`: clean.
 - Inspected `git status`, `git diff`, `git log`, current branch and base SHA before committing. Logged request with project `todo` and sent progress/evidence through `hc send t6f`.
 
+## Review follow-up: explicit SMAP cutoff
+
+On base `6914247`, clarified the recorded SMAP assumption to explicitly state `system:time_start <= t-75h` and its three-hour `interval end <= t-72h` interpretation. The conservative computation is unchanged. Added assertions that the offline plan records both cutoffs; the existing graph test independently checks the actual 75-hour timestamp filter. Verification: `UV run pytest ml/tests/test_lead_time_replay.py ml/tests/test_lead_time_precision.py gee/tests/test_lead_time_replay.py -q` -> **10 passed in 0.98s**; `UV run ruff check .` -> **All checks passed!**; `git diff --check` -> clean. No push.
+
 ## Remaining external prerequisites / limits
 
 No authenticated Earth Engine export or real-case measured lead-time number is claimed. Execution needs the ingested archived IMERG Early collection (lead-gathering owns it) and GEE export permissions. Expected asset convention: `projects/hermes-fesolucoes/assets/tipping-point/<case>/imerg_early`. Ingestion must include at least 72h+4h of rainfall before the first replay frame; missing history is deliberately masked. SMAP 72h is a conservative release-latency assumption, not an archived per-granule release audit. Real damage inventories and citable official-warning anchors remain upstream inputs. Public GEE `NASA/GPM_L3/IMERG_V07` is deliberately not treated as historical Early (catalog: https://developers.google.com/earth-engine/datasets/catalog/NASA_GPM_L3_IMERG_V07).

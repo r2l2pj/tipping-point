@@ -13,6 +13,8 @@ def test_offline_plan(monkeypatch, capsys):
     assert lead_time.main(["--case", "rs_2024", "--dry-run"]) == 0
     assert '"step_h": 3' in capsys.readouterr().out
     plan = lead_time.replay_plan("rs_2024")
+    assert "system:time_start <= t-75h" in plan["lead_time_assumptions"]["smap"]
+    assert "interval end <= t-72h" in plan["lead_time_assumptions"]["smap"]
     assert len(plan["frames"]) == 16 * 8
     first, second, last = plan["frames"][0], plan["frames"][1], plan["frames"][-1]
     assert first["band"] == "20240422T0000"

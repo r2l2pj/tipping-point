@@ -11,7 +11,7 @@ from . import common, tpi
 
 ASSUMPTIONS = {
     "imerg": "Archived IMERG Early half-hourly precipitationCal (mm/h); interval end <= t-4h; no Late/Final substitution",
-    "smap": "Latest SMAP L4 observation with interval end <= t-72h, held until next eligible observation; conservative 3-day release assumption",
+    "smap": "Latest SMAP L4 observation with system:time_start <= t-75h (3-hour interval end <= t-72h); held until next eligible observation; conservative release-latency assumption",
     "geos_fp": "Excluded: no forecast or perfect-forecast replay layer",
 }
 
