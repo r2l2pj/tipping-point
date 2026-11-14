@@ -1,0 +1,56 @@
+name: modo-agora
+
+# Modo Agora — updates now/ every 3 h so the app shows "atualizado há Xh".
+# On failure the previous commit of now/ stays live (app shows last good run).
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: modo-agora
+  cancel-in-progress: false
+
+jobs:
+  now:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Fetch precomputed static layers
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          set -euo pipefail
+          if [ ! -f static/sul_static.npz ]; then
+            echo "$GCP_SA_KEY" > /tmp/sa.json
+            gcloud auth activate-service-account --key-file=/tmp/sa.json
+            gcloud storage cp gs://tipping-point-data/static/sul_static.npz \
+              static/sul_static.npz
+            rm -f /tmp/sa.json
+          fi
+
+      - name: Run live pipeline (IMERG Early + SMAP L4 + GEOS-FP -> now/)
+        env:
+          EDL_USER: ${{ secrets.EDL_USER }}
+          EDL_PASS: ${{ secrets.EDL_PASS }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GEE_PROJECT: ${{ vars.GEE_PROJECT }}
+          NOW_GCS_BUCKET: tipping-point-data
+        run: uv run python live/run_now.py
+
+      - name: Commit now/ back to the repo
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "now: modo agora update"
+          file_pattern: "now/**"

@@ -1,0 +1,92 @@
+"""R/S/TPI scoring mirrors gee/01_tpi_index.js on synthetic arrays."""
+import numpy as np
+import pytest
+
+from live import config
+from live.tpi import (
+    accumulate3,
+    class_label,
+    classify,
+    projected_rain3,
+    rain_score,
+    soil_score,
+    terrain_flood,
+    terrain_slide,
+    tpi,
+    unit_scale,
+)
+
+
+def _pcts():
+    shape = (7,)
+    return (np.full(shape, 10.0), np.full(shape, 20.0), np.full(shape, 40.0))
+
+
+def test_config_loads_thresholds():
+    assert config.RAIN_PERCENTILES == (90, 95, 99)
+    assert config.SOIL_WETNESS_RANGE == (0.5, 0.9)
+    assert config.SLOPE_RANGE_DEG == (15, 30)
+    assert config.HAND_RANGE_M == (5, 15)
+    assert config.TPI_CLASSES == (0.2, 0.4, 0.6)
+
+
+def test_unit_scale_clamps():
+    out = unit_scale(np.array([-1.0, 0.0, 0.5, 1.0, 2.0]), 0.0, 1.0)
+    assert out.tolist() == [0.0, 0.0, 0.5, 1.0, 1.0]
+
+
+def test_rain_score_piecewise():
+    p90, p95, p99 = _pcts()
+    rain3 = np.array([0.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0])
+    r = rain_score(rain3, p90, p95, p99)
+    assert r == pytest.approx([0.0, 0.0, 0.25, 0.5, 0.75, 1.0, 1.0])
+
+
+def test_soil_score():
+    s = soil_score(np.array([0.4, 0.5, 0.7, 0.9, 0.95]))
+    assert s == pytest.approx([0.0, 0.0, 0.5, 1.0, 1.0])
+
+
+def test_terrain_slide():
+    t = terrain_slide(np.array([10.0, 15.0, 22.5, 30.0, 40.0]))
+    assert t == pytest.approx([0.0, 0.0, 0.5, 1.0, 1.0])
+
+
+def test_terrain_flood():
+    flat = np.zeros(4)
+    t = terrain_flood(np.array([0.0, 5.0, 10.0, 20.0]), flat)
+    assert t == pytest.approx([1.0, 1.0, 0.5, 0.0])
+    steep = np.full(4, 6.0)  # slope > 5 deg -> no flood risk
+    assert terrain_flood(np.array([0.0, 5.0, 10.0, 20.0]), steep).tolist() == [0.0] * 4
+
+
+def test_tpi_product():
+    shape = (3,)
+    clim = {"p90": np.zeros(shape), "p95": np.ones(shape), "p99": np.full(shape, 2.0)}
+    out = tpi(np.full(shape, 5.0), np.full(shape, 1.0), clim,
+              np.ones(shape), np.ones(shape))
+    assert out["r"] == pytest.approx([1.0] * 3)
+    assert out["tpi_slide"] == pytest.approx([1.0] * 3)
+    assert out["tpi_flood"] == pytest.approx([1.0] * 3)
+
+
+def test_classify_cuts():
+    cls = classify(np.array([0.0, 0.2, 0.21, 0.4, 0.41, 0.6, 0.61, np.nan]))
+    assert cls.tolist() == [0, 0, 1, 1, 2, 2, 3, 0]
+    assert class_label(3) == "Crítico"
+
+
+def test_accumulate3():
+    daily = np.arange(1.0, 5.0).reshape(4, 1, 1)
+    out = accumulate3(daily)
+    assert out[:, 0, 0].tolist() == [1.0, 3.0, 6.0, 9.0]
+
+
+def test_projected_rain3_blends_observed_and_forecast():
+    obs = np.ones((3, 2, 2))            # last 3 observed days, 1 mm each
+    fc = np.full((3, 2, 2), 10.0)       # D+1..D+3, 10 mm each
+    assert projected_rain3(obs, fc, 1)[0, 0] == pytest.approx(2.0 + 10.0)
+    assert projected_rain3(obs, fc, 2)[0, 0] == pytest.approx(1.0 + 20.0)
+    assert projected_rain3(obs, fc, 3)[0, 0] == pytest.approx(30.0)
+    with pytest.raises(ValueError):
+        projected_rain3(obs, fc, 4)
