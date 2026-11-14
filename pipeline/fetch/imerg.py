@@ -623,7 +623,9 @@ def run(date: dt.date, bounds=None, days: int = DEFAULT_DAYS, *,
             ymd = iso.replace("-", "")
             cog = Path(out_dir) / f"{LEAF}_{ymd}.tif"
             write_cog(cog, daily.isel(time=i).values, lats, lons)
-            meta = {"hh_steps": int(steps.values[i])}
+            steps_i = steps.values[i]
+            meta = {"hh_steps": int(steps_i) if np.isfinite(steps_i)
+                    else 0}
             assets.append({"tag": ymd, "date": iso, "cog": cog,
                            "product": "daily", "source": meta})
             if i >= 2:
