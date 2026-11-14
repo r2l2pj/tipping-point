@@ -5,10 +5,17 @@ copied verbatim. Written LAST of every data/ file, atomically (tmp +
 os.replace), so a reader keying on a non-null updated_at never sees a
 half-written tree.
 
+Data directories are data/<case-id>/ (rs_2024, wa_2025); the node's
+`event_id` keeps the hyphen id only as a field. `metrics` points into the
+single root data/metrics.json as "metrics.json#<case>".
+
 Layer discovery: the case publisher (tools/publish_case.py / tp/bundle.py)
-drops data/<event>/png/_index.json mapping layer id -> {"date", "bounds"}
-(plus optional "cog" override). When the index exists its bounds are real;
-without it the expected tpi_* layers are still listed with bounds null.
+drops data/<case>/png/_index.json = {"layers": [{id, date, png, cog,
+bounds, forecast}]} — consumed verbatim (png/bounds may be null), legend
+injected. Without the index the expected tpi_* layers are still listed with
+bounds null. COG-only score layers (r_series, s_series, t_slide, t_flood —
+geotiff.js range reads) are appended when their cog/<caso>_<id>_*.tif file
+exists; a missing one is recorded under the node's _null_reasons.
 """
 from __future__ import annotations
 
@@ -48,7 +55,11 @@ EXPECTED_LAYERS = [
     "tpi_flood_d3",
 ]
 
+# COG-only score layers for geotiff.js range reads (png: null, EPSG:4326).
+COG_ONLY_LAYERS = ["r_series", "s_series", "t_slide", "t_flood"]
+
 _FORECAST_RE = re.compile(r"_d([1-3])$")
+_YMD_RE = re.compile(r"^(\d{4})(\d{2})(\d{2})$")
 
 
 def _now_z() -> str:
@@ -59,6 +70,11 @@ def _ymd(iso_date: str) -> str:
     return iso_date.replace("-", "")
 
 
+def _iso_from_ymd(stamp: str) -> str | None:
+    m = _YMD_RE.match(stamp)
+    return f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else None
+
+
 def _reference_date(event_id: str):
     try:
         raw = load_event(event_id).get("reference_date")
@@ -67,12 +83,26 @@ def _reference_date(event_id: str):
         return None
 
 
-def _png_index(event_dir: Path) -> dict:
-    path = event_dir / "png" / "_index.json"
-    return json.loads(path.read_text()) if path.exists() else {}
+def _png_index(case_dir: Path) -> dict:
+    """data/<case>/png/_index.json -> {layer_id: {date,png,cog,bounds,forecast}}."""
+    path = case_dir / "png" / "_index.json"
+    if not path.exists():
+        return {}
+    try:
+        raw = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}
+    return {e["id"]: e for e in raw.get("layers", []) if isinstance(e, dict) and e.get("id")}
 
 
-def _cog_path(event_id: str, case_id: str, layer_id: str, date: str | None, ref_date) -> str:
+def _derived_date(layer_id: str, ref_date) -> str | None:
+    m = _FORECAST_RE.search(layer_id)
+    if m and ref_date:
+        return (ref_date + timedelta(days=int(m.group(1)))).isoformat()
+    return ref_date.isoformat() if ref_date else None
+
+
+def _cog_path(case_id: str, layer_id: str, date: str | None, ref_date) -> str:
     m = _FORECAST_RE.search(layer_id)
     if m and layer_id.startswith("tpi_") and ref_date:
         stem = f"{case_id}_tpi_forecast_d{m.group(1)}_{_ymd(ref_date.isoformat())}"
@@ -80,28 +110,71 @@ def _cog_path(event_id: str, case_id: str, layer_id: str, date: str | None, ref_
         stem = f"{case_id}_{layer_id}_{_ymd(date)}"
     else:
         stem = f"{case_id}_{layer_id}"
-    return f"{event_id}/cog/{stem}.tif"
+    return f"{case_id}/cog/{stem}.tif"
 
 
-def _layer_entry(event_id: str, case_id: str, layer_id: str, ref_date, index_entry: dict | None) -> dict:
+def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None) -> dict:
+    """{id,date,png,cog,legend,bounds,forecast?} — index keys verbatim when given."""
     index_entry = index_entry or {}
     m = _FORECAST_RE.search(layer_id)
-    if m and ref_date:
-        date = (ref_date + timedelta(days=int(m.group(1)))).isoformat()
+    date = index_entry["date"] if "date" in index_entry else _derived_date(layer_id, ref_date)
+    if "png" in index_entry:
+        png = index_entry["png"]
     else:
-        date = index_entry.get("date") or (ref_date.isoformat() if ref_date else None)
-    png_name = f"{layer_id}_{_ymd(date)}.png" if date else f"{layer_id}.png"
+        png = f"{case_id}/png/{layer_id}_{_ymd(date)}.png" if date else f"{case_id}/png/{layer_id}.png"
+    cog = index_entry["cog"] if "cog" in index_entry else _cog_path(case_id, layer_id, date, ref_date)
     entry = {
         "id": layer_id,
         "date": date,
-        "png": f"{event_id}/png/{png_name}",
-        "cog": index_entry.get("cog") or _cog_path(event_id, case_id, layer_id, date, ref_date),
+        "png": png,
+        "cog": cog,
         "legend": list(LEGEND),
         "bounds": index_entry.get("bounds"),
     }
-    if m:
-        entry["forecast"] = True
+    forecast = index_entry.get("forecast", True if m else None)
+    if forecast is not None:
+        entry["forecast"] = forecast
     return entry
+
+
+def _cog_only_entry(case_id: str, case_dir: Path, layer_id: str, ref_date) -> dict | None:
+    """Minimal {id,date,png:null,cog} entry (bounds/legend unused per SCHEMA)."""
+    cogs = sorted((case_dir / "cog").glob(f"{case_id}_{layer_id}_*.tif"))
+    if not cogs:
+        return None
+    cog = cogs[-1]
+    stamp = cog.stem.removeprefix(f"{case_id}_{layer_id}_")
+    date = _iso_from_ymd(stamp) or (ref_date.isoformat() if ref_date else None)
+    return {
+        "id": layer_id,
+        "date": date,
+        "png": None,
+        "cog": f"{case_id}/cog/{cog.name}",
+    }
+
+
+def _layers(case_id: str, case_dir: Path, ref_date) -> tuple[list, dict]:
+    """(layers, null_reasons) — expected tpi_* + cog-only score layers + index extras."""
+    index = _png_index(case_dir)
+    layers, missing, seen = [], {}, set()
+    for lid in EXPECTED_LAYERS:
+        seen.add(lid)
+        layers.append(_layer_entry(case_id, lid, ref_date, index.get(lid)))
+    for lid in COG_ONLY_LAYERS:
+        seen.add(lid)
+        if lid in index:
+            e = index[lid]
+            layers.append({"id": lid, "date": e.get("date"),
+                           "png": None, "cog": e.get("cog")})
+        else:
+            entry = _cog_only_entry(case_id, case_dir, lid, ref_date)
+            if entry:
+                layers.append(entry)
+            else:
+                missing[lid] = f"{case_id}_{lid} COG not yet produced"
+    for lid in sorted(set(index) - seen):
+        layers.append(_layer_entry(case_id, lid, ref_date, index[lid]))
+    return layers, missing
 
 
 def _missing_reason(event_id: str, product: str) -> str:
@@ -119,21 +192,21 @@ def _missing_reason(event_id: str, product: str) -> str:
     return "not yet produced"
 
 
-def _products(event_id: str, event_dir: Path) -> tuple[dict, dict]:
+def _products(event_id: str, case_id: str, case_dir: Path) -> tuple[dict, dict]:
     products, reasons = {}, {}
     for name in PRODUCTS:
-        if (event_dir / "geojson" / f"{name}.geojson").exists():
-            products[name] = f"{event_id}/geojson/{name}.geojson"
+        if (case_dir / "geojson" / f"{name}.geojson").exists():
+            products[name] = f"{case_id}/geojson/{name}.geojson"
         else:
             products[name] = None
             reasons[name] = _missing_reason(event_id, name)
     return products, reasons
 
 
-def _data_dates(event_id: str, event_dir: Path) -> dict:
+def _data_dates(event_id: str, case_dir: Path) -> dict:
     """Freshest date of each input actually used (best effort)."""
     dates: dict[str, str] = {}
-    series = event_dir / "series" / "imerg_smap_daily.json"
+    series = case_dir / "series" / "imerg_smap_daily.json"
     if series.exists():
         try:
             days = json.loads(series.read_text()).get("days", [])
@@ -157,20 +230,14 @@ def _data_dates(event_id: str, event_dir: Path) -> dict:
 def build_case_node(event_id: str, data_root: Path | str = DATA_DIR) -> dict:
     """The manifest case node for one replay event (SCHEMA 'per-case node')."""
     data_root = Path(data_root)
-    event_dir = data_root / event_id
     case_id = EVENT_TO_CASE.get(event_id, "_".join(event_id.split("-")[:2]))
+    case_dir = data_root / case_id
     ref_date = _reference_date(event_id)
-    index = _png_index(event_dir)
 
-    layer_ids = list(EXPECTED_LAYERS)
-    layer_ids += sorted(lid for lid in index if lid not in EXPECTED_LAYERS)
-    layers = [
-        _layer_entry(event_id, case_id, lid, ref_date, index.get(lid))
-        for lid in layer_ids
-    ]
-
-    metrics = f"{event_id}/metrics.json" if (event_dir / "metrics.json").exists() else None
-    products, reasons = _products(event_id, event_dir)
+    layers, reasons = _layers(case_id, case_dir, ref_date)
+    metrics = f"metrics.json#{case_id}" if (data_root / "metrics.json").exists() else None
+    products, prod_reasons = _products(event_id, case_id, case_dir)
+    reasons.update(prod_reasons)
     if metrics is None:
         reasons["metrics"] = "metrics.json not yet written"
 
@@ -181,7 +248,7 @@ def build_case_node(event_id: str, data_root: Path | str = DATA_DIR) -> dict:
         "forecast_source": "perfect-forecast",
         "layers": layers,
         "metrics": metrics,
-        "data_dates": _data_dates(event_id, event_dir),
+        "data_dates": _data_dates(event_id, case_dir),
         "products": products,
         "_null_reasons": reasons,
     }

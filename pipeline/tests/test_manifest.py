@@ -18,25 +18,26 @@ PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
                  "landslide_candidates"}
 
 
-def _data_root(tmp_path, *event_ids):
+def _data_root(tmp_path, *case_ids):
+    """Synthetic data/ tree: data/<case-id>/{png,geojson,series,cog}."""
     root = tmp_path / "data"
-    for eid in event_ids:
+    for cid in case_ids:
         for sub in ("png", "geojson", "series", "cog"):
-            (root / eid / sub).mkdir(parents=True, exist_ok=True)
+            (root / cid / sub).mkdir(parents=True, exist_ok=True)
     return root
 
 
 def test_case_node_shape_rs(tmp_path):
-    node = manifest.build_case_node("rs-2024-05", _data_root(tmp_path, "rs-2024-05"))
+    node = manifest.build_case_node("rs-2024-05", _data_root(tmp_path, "rs_2024"))
     assert set(node) == NODE_KEYS
-    assert node["event_id"] == "rs-2024-05"
+    assert node["event_id"] == "rs-2024-05"           # hyphen id only as a field
     assert node["mode"] == "replay"
     assert node["bounds"] == [-52.5, -30.5, -50.5, -29.0]   # config.yaml aoi
     assert node["forecast_source"] == "perfect-forecast"
 
 
 def test_case_node_shape_wa(tmp_path):
-    node = manifest.build_case_node("wa-2025-12", _data_root(tmp_path, "wa-2025-12"))
+    node = manifest.build_case_node("wa-2025-12", _data_root(tmp_path, "wa_2025"))
     assert set(node) == NODE_KEYS
     assert node["event_id"] == "wa-2025-12"
     assert node["bounds"] == [-122.6, 47.0, -121.5, 48.5]
@@ -46,7 +47,7 @@ def test_case_node_shape_wa(tmp_path):
 
 
 def test_expected_layers_without_index(tmp_path):
-    node = manifest.build_case_node("rs-2024-05", _data_root(tmp_path, "rs-2024-05"))
+    node = manifest.build_case_node("rs-2024-05", _data_root(tmp_path, "rs_2024"))
     assert [l["id"] for l in node["layers"]] == manifest.EXPECTED_LAYERS
     for layer in node["layers"]:
         assert set(layer) <= LAYER_KEYS
@@ -54,39 +55,69 @@ def test_expected_layers_without_index(tmp_path):
         assert layer["bounds"] is None          # no _index.json -> null bounds
     slide = next(l for l in node["layers"] if l["id"] == "tpi_slide")
     assert slide["date"] == "2024-05-02"
-    assert slide["png"] == "rs-2024-05/png/tpi_slide_20240502.png"
-    assert slide["cog"] == "rs-2024-05/cog/rs_2024_tpi_slide_20240502.tif"
+    assert slide["png"] == "rs_2024/png/tpi_slide_20240502.png"
+    assert slide["cog"] == "rs_2024/cog/rs_2024_tpi_slide_20240502.tif"
     assert "forecast" not in slide
 
 
 def test_forecast_layers_flag_and_paths(tmp_path):
-    node = manifest.build_case_node("rs-2024-05", _data_root(tmp_path, "rs-2024-05"))
+    node = manifest.build_case_node("rs-2024-05", _data_root(tmp_path, "rs_2024"))
     d1 = next(l for l in node["layers"] if l["id"] == "tpi_slide_d1")
     assert d1["forecast"] is True               # depicted day = event + 1
     assert d1["date"] == "2024-05-03"
-    assert d1["png"] == "rs-2024-05/png/tpi_slide_d1_20240503.png"
+    assert d1["png"] == "rs_2024/png/tpi_slide_d1_20240503.png"
     # forecast COG is stamped with the issue date (SCHEMA example)
-    assert d1["cog"] == "rs-2024-05/cog/rs_2024_tpi_forecast_d1_20240502.tif"
+    assert d1["cog"] == "rs_2024/cog/rs_2024_tpi_forecast_d1_20240502.tif"
     forecast_ids = [l["id"] for l in node["layers"] if l.get("forecast")]
     assert forecast_ids == ["tpi_slide_d1", "tpi_slide_d2", "tpi_slide_d3",
                             "tpi_flood_d1", "tpi_flood_d2", "tpi_flood_d3"]
 
 
-def test_index_supplies_real_bounds_and_extra_layers(tmp_path):
-    root = _data_root(tmp_path, "wa-2025-12")
-    index = {"tpi_slide": {"date": "2025-12-10", "bounds": [-123.0, 46.9, -121.0, 48.6]},
-             "hillshade": {"bounds": [-123.0, 46.9, -121.0, 48.6]}}
-    (root / "wa-2025-12" / "png" / "_index.json").write_text(json.dumps(index))
+def test_index_supplies_verbatim_layer_fields(tmp_path):
+    root = _data_root(tmp_path, "wa_2025")
+    index = {"layers": [
+        {"id": "tpi_slide", "date": "2025-12-10",
+         "png": "wa_2025/png/tpi_slide_20251210.png",
+         "cog": "wa_2025/cog/wa_2025_tpi_slide_20251210.tif",
+         "bounds": [-123.0, 46.9, -121.0, 48.6], "forecast": False},
+        {"id": "hillshade", "date": "2025-12-01", "png": None,
+         "cog": "wa_2025/cog/wa_2025_hillshade_20251201.tif",
+         "bounds": [-123.0, 46.9, -121.0, 48.6]},
+    ]}
+    (root / "wa_2025" / "png" / "_index.json").write_text(json.dumps(index))
     node = manifest.build_case_node("wa-2025-12", root)
     by_id = {l["id"]: l for l in node["layers"]}
-    assert by_id["tpi_slide"]["bounds"] == [-123.0, 46.9, -121.0, 48.6]
+    slide = by_id["tpi_slide"]
+    assert slide["bounds"] == [-123.0, 46.9, -121.0, 48.6]
+    assert slide["forecast"] is False           # index value verbatim
+    assert slide["legend"] == LEGEND            # legend injected by builder
     assert by_id["tpi_flood"]["bounds"] is None          # missing from index
-    assert by_id["hillshade"]["bounds"] == [-123.0, 46.9, -121.0, 48.6]
-    assert by_id["hillshade"]["cog"] == "wa-2025-12/cog/wa_2025_hillshade_20251210.tif"
+    hill = by_id["hillshade"]                   # extra id appended from index
+    assert hill["png"] is None
+    assert hill["cog"] == "wa_2025/cog/wa_2025_hillshade_20251201.tif"
+    assert "forecast" not in hill
+
+
+def test_cog_only_layers_listed_when_cog_exists(tmp_path):
+    root = _data_root(tmp_path, "rs_2024")
+    cog = root / "rs_2024" / "cog"
+    (cog / "rs_2024_r_series_20240502.tif").write_bytes(b"fake")
+    (cog / "rs_2024_t_slide_20240502.tif").write_bytes(b"fake")
+    node = manifest.build_case_node("rs-2024-05", root)
+    by_id = {l["id"]: l for l in node["layers"]}
+    r = by_id["r_series"]
+    assert r == {"id": "r_series", "date": "2024-05-02", "png": None,
+                 "cog": "rs_2024/cog/rs_2024_r_series_20240502.tif"}
+    assert by_id["t_slide"]["cog"] == "rs_2024/cog/rs_2024_t_slide_20240502.tif"
+    # missing ones: absent from layers[], reason at node level
+    assert "s_series" not in by_id
+    assert "t_flood" not in by_id
+    assert node["_null_reasons"]["s_series"]
+    assert node["_null_reasons"]["t_flood"]
 
 
 def test_products_null_carry_node_level_reasons(tmp_path):
-    node = manifest.build_case_node("rs-2024-05", _data_root(tmp_path, "rs-2024-05"))
+    node = manifest.build_case_node("rs-2024-05", _data_root(tmp_path, "rs_2024"))
     assert set(node["products"]) == PRODUCT_NAMES
     # values are strictly string | null; reasons live at the node level
     assert all(v is None or isinstance(v, str) for v in node["products"].values())
@@ -98,30 +129,32 @@ def test_products_null_carry_node_level_reasons(tmp_path):
 
 
 def test_products_paths_when_geojson_exists(tmp_path):
-    root = _data_root(tmp_path, "wa-2025-12")
-    g = root / "wa-2025-12" / "geojson"
+    root = _data_root(tmp_path, "wa_2025")
+    g = root / "wa_2025" / "geojson"
     (g / "places.geojson").write_text('{"type":"FeatureCollection","features":[]}')
     node = manifest.build_case_node("wa-2025-12", root)
-    assert node["products"]["places"] == "wa-2025-12/geojson/places.geojson"
+    assert node["products"]["places"] == "wa_2025/geojson/places.geojson"
     assert "places" not in node["_null_reasons"]
     assert node["products"]["flood_confirmed"] is None
 
 
-def test_metrics_path_when_file_exists(tmp_path):
-    root = _data_root(tmp_path, "rs-2024-05")
+def test_metrics_fragment_into_root_file(tmp_path):
+    root = _data_root(tmp_path, "rs_2024")
     assert manifest.build_case_node("rs-2024-05", root)["metrics"] is None
-    (root / "rs-2024-05" / "metrics.json").write_text('{"event":"rs-2024-05"}')
+    assert manifest.build_case_node("rs-2024-05", root)["_null_reasons"]["metrics"]
+    (root / "metrics.json").write_text('{"cases":{}}')
     node = manifest.build_case_node("rs-2024-05", root)
-    assert node["metrics"] == "rs-2024-05/metrics.json"
+    assert node["metrics"] == "metrics.json#rs_2024"
+    assert "metrics" not in node["_null_reasons"]
 
 
 def test_data_dates_from_series(tmp_path):
-    root = _data_root(tmp_path, "rs-2024-05")
+    root = _data_root(tmp_path, "rs_2024")
     series = {"event": "rs-2024-05", "days": [
         {"date": "2024-05-01", "imerg_mm": 12.0, "smap": 0.6, "river_m": None},
         {"date": "2024-05-03", "imerg_mm": 8.0, "smap": None, "river_m": 4.1},
     ]}
-    (root / "rs-2024-05" / "series" / "imerg_smap_daily.json").write_text(
+    (root / "rs_2024" / "series" / "imerg_smap_daily.json").write_text(
         json.dumps(series))
     dates = manifest.build_case_node("rs-2024-05", root)["data_dates"]
     assert dates["imerg"] == "2024-05-03"
@@ -130,7 +163,7 @@ def test_data_dates_from_series(tmp_path):
 
 
 def test_root_shape_and_now_verbatim(tmp_path):
-    root = _data_root(tmp_path, "rs-2024-05", "wa-2025-12")
+    root = _data_root(tmp_path, "rs_2024", "wa_2025")
     now_manifest = {"schema": "tipping-point/now@2", "mode": "live",
                     "updated_at": "2026-11-14T12:00:00Z", "layers": [{"id": "tpi_slide_d0"}],
                     "extra_field": "kept verbatim"}
@@ -151,7 +184,7 @@ def test_now_null_when_absent(tmp_path):
 
 
 def test_manifest_written_last(tmp_path, monkeypatch):
-    root = _data_root(tmp_path, "rs-2024-05", "wa-2025-12")
+    root = _data_root(tmp_path, "rs_2024", "wa_2025")
     writes = []
     real_write_text = Path.write_text
 
@@ -161,7 +194,7 @@ def test_manifest_written_last(tmp_path, monkeypatch):
 
     monkeypatch.setattr(Path, "write_text", spy)
     # other data files land first, then the manifest write
-    (root / "rs-2024-05" / "geojson" / "places.geojson").write_text("{}")
+    (root / "rs_2024" / "geojson" / "places.geojson").write_text("{}")
     manifest.write_root_manifest(root)
     assert writes[-1].name == "manifest.json.tmp"
     assert (root / "manifest.json").exists()
@@ -183,7 +216,7 @@ def test_write_is_atomic_via_os_replace(tmp_path, monkeypatch):
 
 
 def test_dry_run_prints_valid_json_and_writes_nothing(tmp_path):
-    root = _data_root(tmp_path, "rs-2024-05", "wa-2025-12")
+    root = _data_root(tmp_path, "rs_2024", "wa_2025")
     result = subprocess.run(
         [sys.executable, str(REPO_ROOT / "tools" / "build_manifest.py"),
          "--dry-run", "--data-root", str(root)],
