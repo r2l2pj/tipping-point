@@ -4,18 +4,22 @@ Usage: uv run python pipeline/scripts/09_hls_scar.py --event wa-2025-12 \
     --pre data/raw/hls/pre_nir_swir2.tif \
     --post data/raw/hls/post_nir_swir2_fmask.tif \
     [--slope data/raw/aux/slope.tif] [--dnbr-min 0.1]
+
+--event accepts a case id (wa_2025) or an event id (wa-2025-12); output
+lands under data/<case>/ (L4).
 """
 import argparse
 from pathlib import Path
 
-from tp.events import artifact_stem, event_data_dir
+from tp import config
 from tp.hls_scar import DNBR_MIN, detect
 from tp.metrics import merge_metrics
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--event", required=True, help="event id, e.g. wa-2025-12")
+    ap.add_argument("--event", required=True,
+                    help="case id (wa_2025) or event id (wa-2025-12)")
     ap.add_argument("--pre", type=Path, required=True,
                     help="pre-event HLS raster: [NIR, SWIR2] or 1-band NBR")
     ap.add_argument("--post", type=Path, required=True,
@@ -26,8 +30,11 @@ def main() -> None:
                     help="dNBR threshold for a candidate pixel")
     args = ap.parse_args()
 
-    out = event_data_dir(args.event) / "cog" / (
-        artifact_stem(args.event, "landslide_candidates") + ".tif")
+    # L4: data dirs are data/<case>/ (rs_2024|wa_2025)
+    cid = config.case_id(args.event)
+    ymd = str(config.case(cid)["event_date"]).replace("-", "")
+    out = (Path(config.REPO_ROOT) / "data" / cid / "cog"
+           / f"{cid}_landslide_candidates_{ymd}.tif")
     stats = detect(
         args.pre, args.post, out,
         slope_tif=args.slope, dnbr_min=args.dnbr_min,

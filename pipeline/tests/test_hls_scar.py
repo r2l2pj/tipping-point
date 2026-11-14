@@ -1,4 +1,5 @@
 import inspect
+from pathlib import Path
 
 import numpy as np
 import rasterio
@@ -114,3 +115,12 @@ def test_candidates_wording_and_limitation():
     assert "GUNW" in doc
     src = inspect.getsource(hls_scar)
     assert "confirmed" not in src          # never 'confirmed' for landslides
+
+
+def test_scripts_use_case_data_dirs_not_event_dirs():
+    """L4: outputs land under data/<case>/; no event_data_dir/event-id paths."""
+    scripts = Path(__file__).resolve().parents[1] / "scripts"
+    for name in ("08_landslide_hit.py", "09_hls_scar.py"):
+        src = (scripts / name).read_text()
+        assert "event_data_dir" not in src
+        assert "data/wa-" not in src and "data/rs-" not in src

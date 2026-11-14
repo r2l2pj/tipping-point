@@ -40,11 +40,30 @@ Branch `unit/u7b`, worktree `tipping-point-data-wt/u7b`.
   slope gate halves the scar, <min_px blob dropped, 1-band precomputed NBR
   accepted, "candidates"/limitation wording asserts.
 
+## L4 rework (spec delta — data dirs are data/<case>/)
+
+- `09_hls_scar.py`: dropped `tp.events.event_data_dir`/`artifact_stem`
+  (events.py is being changed by another lead). Output dir is now
+  `config.REPO_ROOT/data/<case>/cog/` via `config.case_id(args.event)`
+  (accepts `wa_2025` or `wa-2025-12`); the dated stem is built inline as
+  `<cid>_landslide_candidates_<event_date>` from
+  `config.case(cid)["event_date"]` — canonical config date (2025-12-10),
+  not the stale events/*.json reference_date.
+- `08_landslide_hit.py`: no data dirs of its own; docstring example
+  updated `data/wa-2025-12/cog/` -> `data/wa_2025/cog/`. `--event` help in
+  09 now documents both id forms.
+- `merge_metrics(args.event, ...)` calls unchanged — the auto-route to
+  root `data/metrics.json` keyed by case is internal (signature
+  unchanged).
+- New test `test_scripts_use_case_data_dirs_not_event_dirs` greps both
+  scripts for `event_data_dir` and `data/<event-id>` literals.
+
 ## Commands run + results
 
 - `uv sync` — ok (env synced, tipping-point-pipeline 0.1.0 editable).
-- `uv run pytest pipeline/tests -q` — 49 passed (16 new tests across the two
-  new test files, incl. the 4-way column-alias parametrization).
+- `uv run pytest pipeline/tests -q` — 50 passed (17 new tests across the two
+  new test files, incl. the 4-way column-alias parametrization and the L4
+  script-paths guard).
 - `uv run ruff check .` — clean after `ruff check --fix` (import sort +
   unnecessary `int()`).
 - `uv run python pipeline/scripts/08_landslide_hit.py --help` and

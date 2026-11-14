@@ -2,7 +2,7 @@
 
 Usage: uv run python pipeline/scripts/08_landslide_hit.py --event wa-2025-12 \
     --points data/raw/hls/landslide_catalog.csv \
-    --tpi-classes data/wa-2025-12/cog/wa_2025_tpi_slide_20251210.tif
+    --tpi-classes data/wa_2025/cog/wa_2025_tpi_slide_20251210.tif
 """
 import argparse
 from pathlib import Path
