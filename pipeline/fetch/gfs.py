@@ -7,9 +7,10 @@ daily forecast precipitation for days D+k (k = 1..3 by default).
 
 GEE's NOAA/GFS0P25 collection carries one image per (run, forecast hour);
 ``total_precipitation_surface`` is a *trailing* accumulation in kg/m^2 (= mm)
-over the 1-6 h interval ending at that forecast's valid time. Summing the
-band over every image valid in (day_start, day_end] therefore yields the
-day's total mm. Forecast hours extend 0-384, and 4 runs/day post to GEE
+over the 1-6 h interval ending at that forecast's valid time, RESETTING
+each 6-h boundary — so summing every hourly image double-counts (~3.3x
+measured); daily mm = sum over the forecast_hours % 6 == 0 images valid
+in (day_start, day_end]. Forecast hours extend 0-384, and 4 runs/day post to GEE
 (00/06/12/18Z) covering 2015 -> now.
 
 Output (lead-analysis layout): one COG per issue day at
@@ -129,12 +130,28 @@ def select_run(col, ee, issue: dt.date) -> int:
 
 def day_sum(col, ee, aoi, run_ms: int, day: dt.date):
     """Daily mm image for [day, day+1): sum of the trailing-accumulation
-    band over every forecast of run `run_ms` valid in (day, day+1]."""
+    band over 6-hourly bucket images valid in (day, day+1].
+
+    The band resets every 6 forecast hours — fh 6,12,18,… each carry the
+    accumulation since the last 6-h boundary, while intermediate hours
+    carry partial 1-6h amounts. Summing every hourly image double-counts
+    (~3.3x measured), so only forecast_hours % 6 == 0 are kept. That also
+    works past fh 120 where outputs go 3-hourly (multiples of 6 still land
+    on bucket ends). `lo` must sit on a bucket edge: the day bounds are
+    00Z..00Z and GFS cycles are 00/06/12/18Z, so (day_ms - run_ms) is
+    always a multiple of 6 for a valid run pick."""
     lo = (_ms(day) - run_ms) / HOUR_MS
     hi = lo + 24
+    if lo % 6:
+        raise ValueError(
+            f"day edge not on a 6h forecast bucket for run_ms={run_ms} "
+            f"(lo={lo}) — pick a 00/06/12/18Z run")
+    fhs = [f for f in range(int(lo) + 1, int(hi) + 1) if f % 6 == 0]
+    if not fhs:
+        raise ValueError(f"no 6h forecast bucket in ({lo}, {hi}]")
     return (col.filter(ee.Filter.eq("creation_time", run_ms))
-               .filter(ee.Filter.gt("forecast_hours", lo))
-               .filter(ee.Filter.lte("forecast_hours", hi))
+               .filter(ee.Filter.gt("forecast_hours", 0))
+               .filter(ee.Filter.inList("forecast_hours", fhs))
                .select(BAND).sum().clip(aoi))
 
 

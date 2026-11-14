@@ -66,7 +66,8 @@ class StubCollection:
         op, prop, val = pred
         fns = {"eq": lambda r: r[prop] == val,
                "gt": lambda r: r[prop] > val,
-               "lte": lambda r: r[prop] <= val}
+               "lte": lambda r: r[prop] <= val,
+               "inList": lambda r: r[prop] in val}
         return StubCollection(r for r in self.rows if fns[op](r))
 
     def select(self, band):
@@ -91,7 +92,8 @@ def make_ee(col):
         Filter=types.SimpleNamespace(
             eq=lambda p, v: ("eq", p, v),
             gt=lambda p, v: ("gt", p, v),
-            lte=lambda p, v: ("lte", p, v)),
+            lte=lambda p, v: ("lte", p, v),
+            inList=lambda p, v: ("inList", p, list(v))),
     )
 
 
@@ -124,18 +126,46 @@ def test_select_run_empty_day_raises():
 
 
 def test_day_bucket_boundaries_00z():
-    """00Z run: day k sums trailing accumulations valid in (24(k-1), 24k]."""
+    """00Z run: day k sums 6-h bucket images (%6==0) valid in (24(k-1), 24k]."""
     d = ms("2024-04-27T00:00:00Z")
-    hours = [0, 1, 6, 12, 18, 24, 25, 30, 48, 49, 72, 73]
+    hours = [0, 1, 6, 12, 18, 24, 25, 30, 42, 48, 49, 72, 73]
     col = StubCollection(rows_for_run(d, hours))
     ee = make_ee(col)
     img = gfs.day_sum(col, ee, ("rect", ()), d, dt.date(2024, 4, 27))
     assert sorted(r["forecast_hours"] for r in img.members) == \
-        [1, 6, 12, 18, 24]
+        [6, 12, 18, 24]
     img2 = gfs.day_sum(col, ee, ("rect", ()), d, dt.date(2024, 4, 28))
-    assert sorted(r["forecast_hours"] for r in img2.members) == [25, 30, 48]
+    assert sorted(r["forecast_hours"] for r in img2.members) == [30, 42, 48]
     img3 = gfs.day_sum(col, ee, ("rect", ()), d, dt.date(2024, 4, 29))
-    assert sorted(r["forecast_hours"] for r in img3.members) == [49, 72]
+    assert sorted(r["forecast_hours"] for r in img3.members) == [72]
+
+
+def test_day_sum_no_double_count():
+    """Conductor's measured reset pattern (2024-04-29 00Z run): hourly
+    accumulations reset at each 6h boundary — summing all hours gives
+    29.3 mm where the true day total is 8.9 mm. Only %6==0 images sum."""
+    d = ms("2024-04-29T00:00:00Z")
+    vals = {1: 0.004, 2: 0.04, 3: 0.08, 4: 0.10, 5: 0.22, 6: 0.71,
+            7: 0.9, 8: 1.1, 9: 1.3, 10: 1.5, 11: 1.7, 12: 2.9,
+            13: 0.6, 14: 0.8, 15: 1.0, 16: 1.2, 17: 1.4, 18: 3.1,
+            19: 0.4, 20: 0.5, 21: 0.6, 22: 0.7, 23: 0.8, 24: 2.2}
+    rows = [{"creation_time": d, "forecast_hours": h, "value": v}
+            for h, v in vals.items()]
+    col = StubCollection(rows)
+    ee = make_ee(col)
+    img = gfs.day_sum(col, ee, ("rect", ()), d, dt.date(2024, 4, 29))
+    assert img.bands == pytest.approx(vals[6] + vals[12] + vals[18]
+                                      + vals[24])
+    assert img.bands != pytest.approx(sum(vals.values()))
+
+
+def test_day_sum_rejects_unaligned_edge():
+    d = ms("2024-04-27T00:00:00Z")
+    col = StubCollection(rows_for_run(d, [6]))
+    ee = make_ee(col)
+    with pytest.raises(ValueError, match="6h forecast bucket"):
+        gfs.day_sum(col, ee, ("rect", ()), d + 2 * 60 * 60 * 1000,
+                    dt.date(2024, 4, 27))
 
 
 def test_day_bucket_boundaries_nonzero_cycle():
@@ -146,11 +176,12 @@ def test_day_bucket_boundaries_nonzero_cycle():
     col = StubCollection(rows_for_run(d, hours))
     ee = make_ee(col)
     day1 = gfs.day_sum(col, ee, ("rect", ()), d, dt.date(2024, 4, 27))
-    assert sorted(r["forecast_hours"] for r in day1.members) == [0, 6, 18]
+    # fh 0 has no precip band -> gt(0) drops it even though 0 % 6 == 0
+    assert sorted(r["forecast_hours"] for r in day1.members) == [6, 18]
     day2 = gfs.day_sum(col, ee, ("rect", ()), d, dt.date(2024, 4, 28))
-    assert sorted(r["forecast_hours"] for r in day2.members) == [19, 24, 42]
+    assert sorted(r["forecast_hours"] for r in day2.members) == [24, 42]
     day3 = gfs.day_sum(col, ee, ("rect", ()), d, dt.date(2024, 4, 29))
-    assert sorted(r["forecast_hours"] for r in day3.members) == [43, 66]
+    assert sorted(r["forecast_hours"] for r in day3.members) == [66]
 
 
 def test_forecast_image_bands():
