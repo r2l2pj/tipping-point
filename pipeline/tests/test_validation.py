@@ -108,15 +108,20 @@ def test_validate_flood_accepts_tile_list(tmp_path):
     assert mosaicked == pytest.approx(single)
 
 
-def test_hls_fmask_bit1_cloud(tmp_path):
+def test_hls_fmask_bit_choice(tmp_path):
+    # HLS v2.0 LSB0: bit1=cloud(2), bit2=adjacent(4), bit3=shadow(8),
+    # bit4=snow/ice(16), bit5=water(32); 255=fill (excluded).
     fmask = np.array([
-        [2, 6, 0, 0],    # 2 = cloud bit, 6 = cloud + adjacent, still cloud
-        [0, 0, 0, 0],
-        [4, 0, 0, 0],    # 4 = bit2 (shadow/adjacent) — not cloud
-        [0, 0, 0, 255],  # 255 = nodata
+        [2,  6,  4,  8],   # 2=cloud, 6=cloud|adjacent, 4=adjacent, 8=shadow
+        [16, 32, 0,  10],  # 16=snow, 32=water, 10=cloud|shadow
+        [0,  0,  0,  0],
+        [0,  0,  0,  255],
     ], np.uint8)
     p = write_tif(tmp_path / "fmask.tif", fmask, nodata=255)
-    assert hls_fmask_cloud_pct(p) == pytest.approx(200 / 15)
+    # strict bit1 only: values 2, 6, 10 -> 3 of 15 valid px
+    assert hls_fmask_cloud_pct(p) == pytest.approx(300 / 15)
+    # degraded adds bit2|bit3: + 4 and 8 -> 5 of 15 valid px
+    assert hls_fmask_cloud_pct(p, include_degraded=True) == pytest.approx(500 / 15)
 
 
 def test_cloud_only_merge_preserves_keys(tmp_path):

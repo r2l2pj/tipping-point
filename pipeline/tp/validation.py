@@ -29,6 +29,18 @@ CASE_PRODUCT = {"wa_2025": "OPERA_L3_DSWX-S1_V1"}
 
 CLOUDED_REASON = "optical fully clouded in the event window — cloud_pct is the 'why radar' number"
 
+# HLS v2.0 Fmask bit layout (LSB0): bit1=cloud, bit2=cloud adjacency,
+# bit3=cloud shadow, bit4=snow/ice, bit5=water; 255 = fill. cloud_pct counts
+# bit1 by default; bit2|bit3 count only as "degraded" when asked.
+FMASK_BIT_CLOUD = 1
+FMASK_BIT_ADJACENT = 2
+FMASK_BIT_SHADOW = 3
+FMASK_CLOUD_MASK = 1 << FMASK_BIT_CLOUD
+FMASK_DEGRADED_MASK = (
+    FMASK_CLOUD_MASK | (1 << FMASK_BIT_ADJACENT) | (1 << FMASK_BIT_SHADOW)
+)
+FMASK_FILL = 255
+
 
 def case_id(event_id: str) -> str:
     """'wa-2025-12' -> 'wa_2025': the config.yaml case key for an event id.
@@ -153,19 +165,22 @@ def validate_flood(water_nisar_path: Path, opera_wtr) -> dict:
     return compare_wtr(nisar, wtr)
 
 
-def hls_fmask_cloud_pct(fmask_path: Path) -> float:
-    """Cloud fraction (%) of an HLS Fmask raster.
+def hls_fmask_cloud_pct(fmask_path: Path, include_degraded: bool = False) -> float:
+    """Cloud fraction (%) of an HLS v2.0 Fmask raster.
 
-    Assumes the HLS Fmask bit layout: bit 1 (value 2) is the cloud bit —
-    cirrus (bit 0) and cloud shadow are not counted. Fraction is over px
-    != 255 (nodata), matching the WTR cloud_pct definition.
+    Explicit bit choice: bit1 (value 2, cloud) is always counted;
+    ``include_degraded=True`` also counts bit2 (cloud adjacency) and bit3
+    (cloud shadow) as degraded/unusable pixels. bit4 (snow/ice) and bit5
+    (water) are never counted. Fraction is over px != 255 fill, matching
+    the WTR cloud_pct definition.
     """
+    mask = FMASK_DEGRADED_MASK if include_degraded else FMASK_CLOUD_MASK
     f = np.asarray(
         rxr.open_rasterio(fmask_path).squeeze().values, dtype=np.float64
     )
-    valid = ~np.isnan(f) & (f != NODATA_VAL)
+    valid = ~np.isnan(f) & (f != FMASK_FILL)
     bits = np.nan_to_num(f, nan=0.0).astype(np.int64)
-    cloud = ((bits & 2) != 0) & valid
+    cloud = ((bits & mask) != 0) & valid
     return float(100 * cloud.sum() / max(valid.sum(), 1))
 
 

@@ -140,3 +140,18 @@ Third commit on unit/u7a.
 
 Re-verified: 43 tests pass, `ruff check .` clean, `--help` resolves with
 no earthaccess import.
+
+## Correction — Fmask bit layout (lead research, HLS v2.0)
+
+- `hls_fmask_cloud_pct` docstring corrected: HLS v2.0 Fmask is LSB0 with
+  bit1=cloud, bit2=cloud adjacency, bit3=cloud shadow, bit4=snow/ice,
+  bit5=water, 255=fill (the earlier draft wrongly named bit 0 "cirrus").
+- Bit choice is now explicit constants: `FMASK_BIT_*`, `FMASK_CLOUD_MASK`
+  (bit1 — the default), `FMASK_DEGRADED_MASK` (bit1|bit2|bit3), `FMASK_FILL`.
+  `hls_fmask_cloud_pct(path, include_degraded=True)` counts adjacency and
+  shadow as degraded/unusable; snow/ice and water are never counted.
+- `test_hls_fmask_bit_choice` exercises every bit: strict counts 2, 6, 10
+  (3/15 px); degraded adds 4 and 8 (5/15 px); 16 (snow), 32 (water), 255
+  (fill) never count.
+
+Re-verified: 43 tests pass, `ruff check .` clean.
