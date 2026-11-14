@@ -40,6 +40,33 @@ UV binary throughout:
 - Reviewed scoped workflow/jobs/test diff; staged only eight authorized code/test files.
 - `git commit -m ...`: exit 0; created code commit above, with required subject and Devin attribution.
 
+## L10b follow-up — GEE OPERA validation
+
+Code commit: `148b398` (on top of original U21 code/report).
+
+Per t6g's corrected instructions, replaced the obsolete OPERA Earthdata fetch with
+`opera-gee[cid]`: `sys.executable -m gee.opera --case cid`, followed by the unchanged
+SWOT command. Updated validation docstring and workflow header/name to distinguish
+GEE catalog validation from Earthdata fetching. Updated the active-case regression
+test to require exactly `gee.opera`, then `pipeline.fetch.swot` (excluding any other
+fetch step). The `gee.opera --case` CLI is supplied by the separately coordinated
+`unit/operacat`; no change to that unit's files was made here.
+
+Evidence and commands:
+- Updated regression test before changing the implementation. The initial
+  SWOT-only request failed against the old two-fetch sequence. After t6g corrected
+  the requirement, `$UV run pytest live/tests/test_jobs.py::test_validation_active_case_runs_gee_opera_and_swot -q`
+  failed against the intermediate SWOT-only implementation: expected
+  `[gee.opera, pipeline.fetch.swot]`, received `[pipeline.fetch.swot]`.
+- After adding the GEE step, `$UV run pytest live/tests/ -q && $UV run ruff check live/`:
+  `93 passed, 21 warnings in 12.40s`; `All checks passed!`. Ran on the exact source
+  subsequently committed as `148b398`, based on `a6bf0b1`.
+- Search tool pattern `pipeline\\.fetch\\.opera` across `live/` and `.github/workflows/`:
+  no matches in either directory.
+- `git diff --check`: exit 0; reviewed three-file diff.
+- `git add live/jobs.py live/tests/test_jobs.py .github/workflows/validation.yml && git commit -m ...`:
+  exit 0, created `148b398` with Devin attribution. No push.
+
 ## Limits
 
 Publisher Git behavior is exercised with offline subprocess mocks, as requested; no live GitHub/GEE operation was performed. Report is unit-specific per `/tmp/u21-task.md`, avoiding overwriting the pre-existing `.herdr/implement.md` report.
