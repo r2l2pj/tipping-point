@@ -122,9 +122,10 @@ def _download(url: str, limit: int | None = None) -> bytes | None:
     return b"".join(chunks)
 
 
-def _write_cog(image, region, path: Path, *, fetch, max_bytes: int) -> bool:
+def _write_cog(image, region, path: Path, *, fetch, max_bytes: int,
+               scale: int = 1000) -> bool:
     url = image.getDownloadURL({
-        "name": path.stem, "region": region, "scale": 1000,
+        "name": path.stem, "region": region, "scale": scale,
         "crs": "EPSG:4326", "format": "GEO_TIFF"})
     data = fetch(url, limit=max_bytes)
     if data is None:

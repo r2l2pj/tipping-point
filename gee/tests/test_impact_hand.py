@@ -212,6 +212,8 @@ def test_flood_gate_failure_writes_null_reasons(tmp_path, commons, monkeypatch):
         raise RuntimeError("asset not found")
 
     monkeypatch.setattr(impact.ee, "data", SimpleNamespace(getAsset=_missing))
+    # no real assets.json in scope -> convention path
+    monkeypatch.setattr(impact, "DATA_DIR", tmp_path, raising=False)
     path = tmp_path / "metrics.json"
     impact.run("wa_2025", metrics_path=path, pull=False)
     blob = json.loads(path.read_text())["cases"]["wa_2025"]
@@ -223,8 +225,9 @@ def test_flood_gate_failure_writes_null_reasons(tmp_path, commons, monkeypatch):
     assert blob["night_light_drop_pct"] == 0
 
 
-def test_flood_gate_pass_wa(tmp_path, commons):
+def test_flood_gate_pass_wa(tmp_path, commons, monkeypatch):
     # default fake ee.data.getAsset returns a truthy object -> gate opens
+    monkeypatch.setattr(impact, "DATA_DIR", tmp_path, raising=False)
     out = impact.run("wa_2025", metrics_path=tmp_path / "m.json", pull=False)
     assert out["metrics"]["people_flooded"] == 0
     assert out["metrics"]["flooded_km2"] == 0

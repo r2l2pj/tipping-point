@@ -308,12 +308,18 @@ def open_halfhourly(paths, bounds):
             secs = np.asarray(da["time"].values).astype("int64")
             da = da.assign_coords(
                 time=epoch + secs.astype("timedelta64[s]"))
-        return da
+        # Subset to the bbox and materialize BEFORE closing the file:
+        # concatenating lazy global grids (~336 x 26 MB) and resampling
+        # would materialize ~9 GB at once and OOM the runner.
+        small = _subset(da, bounds).load()
+        ds.close()
+        Path(path).unlink(missing_ok=True)
+        return small
 
     arrays = [_open_one(p) for p in paths]
     da = arrays[0] if len(arrays) == 1 else xr.concat(
         arrays, dim="time").sortby("time")
-    return _subset(da, bounds)
+    return da
 
 
 def daily_and_3day(halfhourly):

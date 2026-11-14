@@ -28,6 +28,8 @@ from . import common
 
 SCALE_M = 1000            # series export scale, same as the JS scripts
 CLIM_SCALE_M = 10_000     # climatology asset scale (~IMERG native 0.1 deg)
+CASE_SCALE_M = 90         # case TPI combination: NASADEM-native terrain
+                          # (doc rule 3 — coarse R/S resampled up, not T down)
 SLOPE_FLOOD_MAX_DEG = float(threshold("slope_flood_max_deg", 5.0))  # T_flood = 0 above (gee/01)
 RAIN_PERCENTILES = [int(p) for p in threshold("rain_percentiles", [90, 95, 99])]
 MAX_PIXELS = 1e9
@@ -92,8 +94,8 @@ def clim_asset_name(case_id: str) -> str:
     return f"{case_id}_clim_rain3_{common.CLIM_YEARS[0]}_{common.CLIM_YEARS[1]}"
 
 
-def climatology(case_id: str, project: str):
-    """Climatology image — the asset when it exists, else build + export once."""
+def climatology(case_id: str, project: str, *, assets: bool = True):
+    """Climatology image — the asset when it exists, else build (+ export once)."""
     name = clim_asset_name(case_id)
     asset = common.asset_path(name, project)
     try:
@@ -102,10 +104,11 @@ def climatology(case_id: str, project: str):
     except ee.EEException:
         aoi = common.aoi_geom(case_id)
         img = climatology_image(common.case_cfg(case_id)["event_date"])
-        ee.batch.Export.image.toAsset(
-            image=common.stamp(img.toFloat().clip(aoi), "static"),
-            description=name, assetId=asset,
-            region=aoi, scale=CLIM_SCALE_M).start()
+        if assets:
+            ee.batch.Export.image.toAsset(
+                image=common.stamp(img.toFloat().clip(aoi), "static"),
+                description=name, assetId=asset,
+                region=aoi, scale=CLIM_SCALE_M).start()
         return img
 
 
@@ -256,14 +259,89 @@ def export_plan(case_id: str) -> dict:
             "exports": exports}
 
 
-def run(case_id: str, project: str | None = None) -> dict:
+def _combine_case_tpi(paths: dict[str, Path], names: list[str],
+                      weights: list[float] | None) -> None:
+    """Build TPI_slide/TPI_flood multiband COGs on the 90 m terrain grid.
+
+    Doc rule 3: the coarse R/S series are resampled UP to the NASADEM grid
+    and combined there — terrain is never flattened. Interactive EE compute
+    at 90 m exceeds the memory limit, so the combination is local numpy:
+    TPI_i = R^wR · S^wS · T^wT per day band, with nodata propagation.
+    """
+    import numpy as np
+    import rasterio
+    from rasterio.warp import Resampling, reproject
+
+    w = weights or [1 / 3, 1 / 3, 1 / 3]
+    with rasterio.open(paths["T_slide"]) as t_src:
+        t_profile = dict(t_src.profile)
+        h, wpx = t_profile["height"], t_profile["width"]
+        t_slide = t_src.read(1).astype("float64")
+        t_nodata = t_src.nodata
+    with rasterio.open(paths["T_flood"]) as t_src:
+        t_flood = t_src.read(1).astype("float64")
+
+    def upsample(src_path: Path) -> np.ndarray:
+        with rasterio.open(src_path) as src:
+            out = np.full((src.count, h, wpx), np.nan, dtype="float64")
+            nodata = src.nodata
+            for b in range(1, src.count + 1):
+                raw = src.read(b).astype("float64")
+                arr = (np.where(raw == nodata, np.nan, raw)
+                       if nodata is not None else raw)
+                reproject(arr, out[b - 1],
+                          src_transform=src.transform, src_crs=src.crs,
+                          src_nodata=np.nan,
+                          dst_transform=t_profile["transform"],
+                          dst_crs=t_profile["crs"],
+                          dst_nodata=np.nan,
+                          resampling=Resampling.bilinear)
+            return out
+
+    r = upsample(paths["R"])
+    s = upsample(paths["S"])
+    t_mask = np.isfinite(t_slide) & np.isfinite(t_flood)
+    for image, t in (("TPI_slide", t_slide), ("TPI_flood", t_flood)):
+        tpi = np.where(
+            np.isfinite(r) & np.isfinite(s) & t_mask[None, :, :],
+            np.power(np.clip(r, 0, None), w[0])
+            * np.power(np.clip(s, 0, None), w[1])
+            * np.power(np.clip(t[None, :, :], 0, None), w[2]),
+            np.nan).astype("float32")
+        prof = dict(t_profile, count=r.shape[0], dtype="float32",
+                    nodata=np.nan, compress="deflate",
+                    predictor=3, tiled=True)
+        with rasterio.open(paths[image], "w", **prof) as dst:
+            for i in range(r.shape[0]):
+                dst.write_band(i + 1, tpi[i])
+                dst.set_band_description(i + 1, names[i])
+
+
+def _merge_band_files(parts: list[Path], names: list[str], path: Path) -> None:
+    """Stack single-band GeoTIFFs into one multiband COG + band names."""
+    import rasterio
+    with rasterio.open(parts[0]) as first:
+        profile = dict(first.profile)
+    profile.update(count=len(parts), compress="deflate",
+                   predictor=3, tiled=True)
+    with rasterio.open(path, "w", **profile) as dst:
+        for i, part in enumerate(parts, 1):
+            with rasterio.open(part) as src:
+                dst.write_band(i, src.read(1))
+            dst.set_band_description(i, names[i - 1])
+    for part in parts:
+        part.unlink()
+
+
+def run(case_id: str, project: str | None = None, *,
+        assets: bool = True) -> dict:
     """Build everything, start the exports, write the rain_soil JSON."""
     proj = common.init(project)
     plan = export_plan(case_id)
     aoi = common.aoi_geom(case_id)
     t_slide, t_flood = terrain_scores()
-    col = series(climatology(case_id, proj), case_id,
-                 terrain=(t_slide, t_flood))
+    clim = climatology(case_id, proj, assets=assets)
+    col = series(clim, case_id, terrain=(t_slide, t_flood))
     names = plan["band_names"]
     images = {
         band: col.select(band).toBands().rename(names).toFloat().clip(aoi)
@@ -271,14 +349,22 @@ def run(case_id: str, project: str | None = None) -> dict:
     # Static terrain scores — float32 single-band, unclassified (delta L5).
     images["T_slide"] = t_slide.toFloat().clip(aoi)
     images["T_flood"] = t_flood.toFloat().clip(aoi)
+    dates = common.event_dates(case_id)
     for spec in plan["exports"]:
         if spec["kind"] == "drive_cog":
             from tp.fallback import _download, _write_cog
 
             path = Path(REPO_ROOT) / spec["path"]
             path.parent.mkdir(parents=True, exist_ok=True)
+            if spec["image"] in ("TPI_slide", "TPI_flood"):
+                # Rule-3 combination happens locally on the 90 m terrain
+                # grid in _combine_case_tpi() below — a 90 m interactive
+                # download exceeds EE's compute memory limit.
+                continue
+            scale = (CASE_SCALE_M if spec["image"] in ("T_slide", "T_flood")
+                     else SCALE_M)
             if not _write_cog(images[spec["image"]], aoi, path, fetch=_download,
-                              max_bytes=32 * 1024 * 1024):
+                              max_bytes=32 * 1024 * 1024, scale=scale):
                 raise RuntimeError(f"direct GEE download exceeds size limit: {path}")
             band_desc = names if spec["bands"] > 1 else [spec["image"].lower()]
             import rasterio
@@ -286,6 +372,8 @@ def run(case_id: str, project: str | None = None) -> dict:
                 for i, n in enumerate(band_desc, 1):
                     src.set_band_description(i, n)
         elif spec["kind"] == "asset" and "image" in spec:
+            if not assets:
+                continue
             data_date = ("static" if spec["image"] in ("T_slide", "T_flood")
                          else plan["dates"][-1])
             ee.batch.Export.image.toAsset(
@@ -293,6 +381,9 @@ def run(case_id: str, project: str | None = None) -> dict:
                 description=spec["description"],
                 assetId=common.asset_path(spec["asset"], proj),
                 region=aoi, scale=SCALE_M).start()
+    cog_paths = {spec["image"]: Path(REPO_ROOT) / spec["path"]
+                 for spec in plan["exports"] if spec["kind"] == "drive_cog"}
+    _combine_case_tpi(cog_paths, names, thresholds().get("tpi_weights"))
     rows = [f["properties"]
             for f in rain_soil_fc(case_id).getInfo()["features"]]
     spec = next(s for s in plan["exports"] if s["kind"] == "series_json")
@@ -318,6 +409,8 @@ def main(argv=None) -> int:
                       help="print the export parameter dicts, no ee.Initialize")
     ap.add_argument("--project", default=None,
                     help="GEE project (default: env GEE_PROJECT)")
+    ap.add_argument("--no-assets", action="store_true",
+                    help="local outputs only — no toAsset/batch exports")
     args = ap.parse_args(argv)
 
     plan = export_plan(args.case)
@@ -333,7 +426,7 @@ def main(argv=None) -> int:
     if args.tasks:
         print(json.dumps(plan, indent=2))
         return 0
-    run(args.case, project=args.project)
+    run(args.case, project=args.project, assets=not args.no_assets)
     return 0
 
 
