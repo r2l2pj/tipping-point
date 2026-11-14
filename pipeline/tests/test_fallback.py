@@ -26,7 +26,7 @@ def data(tmp_path):
     for case in fallback.CASES:
         for rel in ("png/day.png", "cog/day.tif", "geojson/places.geojson", "series/daily.json"):
             write(tmp_path, f"{case}/{rel}")
-    node = {"layers": [{"png": "png/day.png", "cog": "cog/day.tif"}],
+    node = {"layers": [{"id": "tpi_slide_d0", "png": "png/day.png", "cog": "cog/day.tif"}],
             "products": {"critical_areas": "geojson/critical_areas.geojson"}}
     for rel in ("png/day.png", "cog/day.tif", "geojson/critical_areas.geojson",
                 "series/daily.json", "summary.json", "alerts.json", "prev_classes.npz"):
@@ -269,6 +269,35 @@ def test_render_preserves_existing_local_products(production):
     assert all((production / rel).read_bytes() == content for rel, content in local.items())
     assert len([1 for method, _, _ in calls if method == "getThumbURL"]) == 7
     assert not any(method in ("reduceRegion", "reduceToVectors") for method, _, _ in calls)
+
+
+def test_render_rs_cog_only_layers(production):
+    node = json.loads((production / "now/manifest.json").read_text())
+    for prefix in ("r", "s"):
+        node["layers"].append({"id": f"{prefix}_d0", "asset": f"projects/test/assets/now/{prefix}_d0",
+                               "png": None, "cog": f"cog/{prefix}_d0.tif"})
+    (production / "now/manifest.json").write_text(json.dumps(node))
+    ee, client, calls = fake_render_clients()
+    fallback.render_now(production, bucket="bucket", ee_client=ee, client=client, fetch_png=lambda url: b"PNG")
+    assert [args for method, args, _ in calls if method == "select"][-2:] == [("R",), ("S",)]
+    exports = [kw for method, _, kw in calls if method == "export"]
+    assert [e["fileNamePrefix"] for e in exports][-2:] == ["fallback/now/cog/r_d0", "fallback/now/cog/s_d0"]
+    assert (production / "now/cog/r_d0.tif").read_bytes() == b"COG"
+    assert (production / "now/cog/s_d0.tif").read_bytes() == b"COG"
+    assert len([1 for method, _, _ in calls if method == "getThumbURL"]) == 8
+    assert not (production / "now/png/r_d0.png").exists()
+    assert not (production / "now/png/s_d0.png").exists()
+
+
+def test_render_unknown_layer_prefix_errors(production):
+    node = json.loads((production / "now/manifest.json").read_text())
+    node["layers"].insert(0, {"id": "unknown_d0", "asset": "projects/test/assets/unknown_d0",
+                               "png": None, "cog": "cog/unknown_d0.tif"})
+    (production / "now/manifest.json").write_text(json.dumps(node))
+    ee, client, calls = fake_render_clients()
+    with pytest.raises(ValueError, match="unrecognized layer.*unknown_d0"):
+        fallback.render_now(production, bucket="bucket", ee_client=ee, client=client, fetch_png=lambda url: b"PNG")
+    assert not any(method in ("export", "getThumbURL") for method, _, _ in calls)
 
 
 def test_render_missing_contracted_band_fails(production):

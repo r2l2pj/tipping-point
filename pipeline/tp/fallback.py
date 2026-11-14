@@ -5,6 +5,14 @@ import json
 from pathlib import Path, PurePosixPath
 
 CASES = ("rs_2024", "wa_2025")
+LAYER_BANDS = {"tpi_slide": "TPI_slide", "tpi_flood": "TPI_flood", "r": "R", "s": "S"}
+
+
+def _layer_band(name: str) -> str:
+    band = LAYER_BANDS.get(name.rsplit("_d", 1)[0])
+    if band is None:
+        raise ValueError(f"unrecognized layer prefix for {name!r}")
+    return band
 
 
 def _file(path: Path) -> Path:
@@ -76,6 +84,8 @@ def now_plan(root: str | Path, *, prefix: str = "fallback/") -> list[tuple[Path,
     node = json.loads(_file(root / "now/manifest.json").read_text())
     if not node.get("layers"):
         raise ValueError("now manifest must list derived TPI layers")
+    for layer in node["layers"]:
+        _layer_band(layer["id"])
     expected = {"now/summary.json", "now/geojson/critical_areas.geojson"}
     for value in _references(node):
         rel = PurePosixPath(value.split("#", 1)[0])
@@ -140,18 +150,17 @@ def render_now(root: str | Path, *, bucket=None, prefix="fallback/", client=None
     images, classes, layers, stamps = {}, {}, {}, {}
     for layer in node["layers"]:
         name = layer["id"]
-        if not name.startswith(("tpi_slide_d", "tpi_flood_d")):
-            continue
+        band = _layer_band(name)
         if not layer.get("asset"):
             raise ValueError(f"missing required GEE asset reference for {name}")
-        band = {"tpi_slide": "TPI_slide", "tpi_flood": "TPI_flood"}[name.rsplit("_d", 1)[0]]
         image = ee.Image(layer["asset"]).select(band)
         metadata = image.toDictionary(["data_date", "updated_at"]).getInfo()
         if not metadata.get("data_date") or not metadata.get("updated_at"):
             raise ValueError(f"missing required asset timestamps for {name}")
         stamps[name] = metadata
         images[name] = image
-        classes[name] = image.gte(cuts[0]).add(image.gte(cuts[1])).add(image.gte(cuts[2])).rename("class").toInt()
+        if band in ("TPI_slide", "TPI_flood"):
+            classes[name] = image.gte(cuts[0]).add(image.gte(cuts[1])).add(image.gte(cuts[2])).rename("class").toInt()
         layers[name] = layer
     for name in ("tpi_slide_d0", "tpi_flood_d0", "tpi_slide_d1", "tpi_flood_d1"):
         if name not in images:
@@ -167,9 +176,9 @@ def render_now(root: str | Path, *, bucket=None, prefix="fallback/", client=None
                 continue
             path.parent.mkdir(parents=True, exist_ok=True)
             if kind == "png":
-                url = classes[name].getThumbURL({
+                url = classes.get(name, image).getThumbURL({
                     "region": region, "crs": "EPSG:3857", "dimensions": 2048,
-                    "format": "png", "min": 0, "max": 3,
+                    "format": "png", "min": 0, "max": 3 if name in classes else 1,
                     "palette": ["ffffb2", "fecc5c", "fd8d3c", "bd0026"]})
                 path.write_bytes(fetch_png(url))
             else:
