@@ -296,6 +296,144 @@ def test_imerg_open_halfhourly_subsets(monkeypatch):
 
 
 # --------------------------------------------------------------------------- #
+# streamed fetch: per-granule download -> open -> subset -> delete
+# --------------------------------------------------------------------------- #
+def _hh_granule(day, hh=0, mm=0, i=0):
+    return {"producer_granule_id":
+            f"3B-HHR-E.MS.MRG.3IMERG.{day}-S{hh:02d}{mm:02d}00-"
+            f"E{hh:02d}{mm + 29:02d}59.{i:04d}.V07B.HDF5"}
+
+
+def _de_granule(day, i=0):
+    return {"producer_granule_id":
+            f"3B-DAY-E.MS.MRG.3IMERG.{day}-S000000-E235959."
+            f"{i:04d}.V07B.HDF5"}
+
+
+def _fake_streaming_earthaccess(monkeypatch, by_short_name):
+    """earthaccess fake: search_data dispatches on short_name; download
+    writes a real file per requested granule into dest."""
+    mod = types.ModuleType("earthaccess")
+    calls = {"search": [], "download": []}
+
+    def search_data(short_name=None, **kw):
+        calls["search"].append({"short_name": short_name, **kw})
+        return list(by_short_name.get(short_name, []))
+
+    def download(gs, dest):
+        calls["download"].append(list(gs))
+        out = []
+        for g in gs:
+            p = Path(dest) / g["producer_granule_id"]
+            p.write_bytes(b"x")
+            out.append(str(p))
+        return out
+
+    mod.search_data = search_data
+    mod.login = lambda **kw: object()
+    mod.download = download
+    mod.calls = calls
+    monkeypatch.setitem(sys.modules, "earthaccess", mod)
+    return mod
+
+
+def test_imerg_stream_deletes_files(tmp_path, monkeypatch):
+    """Each raw HDF5 is deleted as soon as its subset is read."""
+    monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
+    granules = [_hh_granule("20261113", hh=h) for h in range(8)]
+    _fake_streaming_earthaccess(
+        monkeypatch, {imerg.SHORT_NAME: granules})
+    opened = []
+
+    def fake_open(path, bounds, daily=False):
+        opened.append(Path(path).name)
+        return _granule_da()
+
+    monkeypatch.setattr(imerg, "open_granule", fake_open)
+    incs = imerg.fetch_increments(BOUNDS, dt.date(2026, 11, 14), 2, tmp_path)
+    assert len(incs) == 8
+    assert len(opened) == 8
+    raw = tmp_path / "raw"
+    assert list(raw.iterdir()) == []            # every download cleaned up
+
+
+def test_imerg_stream_bounded_open_datasets(tmp_path, monkeypatch):
+    """Peak concurrently-open datasets stays <= MAX_WORKERS."""
+    monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
+    granules = [_hh_granule("20261113", hh=h) for h in range(8)]
+    _fake_streaming_earthaccess(
+        monkeypatch, {imerg.SHORT_NAME: granules})
+    state = {"open": 0, "peak": 0}
+
+    class _CountingDS:
+        def __init__(self):
+            state["open"] += 1
+            state["peak"] = max(state["peak"], state["open"])
+            self._ds = xr.Dataset({"precipitation": _granule_da()})
+
+        def __contains__(self, k):
+            return k in self._ds
+
+        def __getitem__(self, k):
+            return self._ds[k]
+
+        def close(self):
+            state["open"] -= 1
+
+    fake_xr = types.ModuleType("xarray")
+    fake_xr.open_dataset = lambda *a, **kw: _CountingDS()
+    fake_xr.concat = xr.concat
+    monkeypatch.setitem(sys.modules, "xarray", fake_xr)
+    daily, _, _ = imerg.fetch_daily(
+        BOUNDS, dt.date(2026, 11, 14), 2, tmp_path)
+    assert state["peak"] <= imerg.MAX_WORKERS
+    assert state["open"] == 0
+    assert daily.sizes["time"] == 1             # all fakes share one day
+
+
+def test_imerg_daily_product_for_older_days(tmp_path, monkeypatch):
+    """Days older than RECENT_HALFHOURS use GPM_3IMERGDE when posted; a day
+    the daily product missed falls back to half-hourly."""
+    monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
+    daily_gs = [_de_granule("20261109"), _de_granule("20261110")]
+    hh_gs = [_hh_granule("20261110"),              # covered by daily -> skip
+             _hh_granule("20261111"),              # daily gap -> fallback
+             _hh_granule("20261113"), _hh_granule("20261114")]
+    ea = _fake_streaming_earthaccess(
+        monkeypatch, {imerg.DAILY_SHORT_NAME: daily_gs,
+                      imerg.SHORT_NAME: hh_gs})
+    opened = []
+
+    def fake_open(path, bounds, daily=False):
+        opened.append((Path(path).name, daily))
+        return _granule_da()
+
+    monkeypatch.setattr(imerg, "open_granule", fake_open)
+    imerg.fetch_increments(BOUNDS, dt.date(2026, 11, 14), 5, tmp_path)
+    # daily product searched over 11-09..11-11 only; hh over the uncovered
+    # gap day (11-11) through the end of the window
+    de = next(c for c in ea.calls["search"]
+              if c["short_name"] == "GPM_3IMERGDE")
+    assert de["temporal"] == ("2026-11-09", "2026-11-12")
+    hhe = next(c for c in ea.calls["search"]
+               if c["short_name"] == "GPM_3IMERGHHE")
+    assert hhe["temporal"] == ("2026-11-11", "2026-11-15")
+    hh_names = sorted(n for n, d in opened if not d)
+    de_names = sorted(n for n, d in opened if d)
+    assert [n.split(".")[4][:8] for n in de_names] == [
+        "20261109", "20261110"]
+    assert [n.split(".")[4][:8] for n in hh_names] == [
+        "20261111", "20261113", "20261114"]     # no 20261110 hh download
+
+
+def test_imerg_no_granules_still_raises(tmp_path, monkeypatch):
+    monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
+    _fake_streaming_earthaccess(monkeypatch, {})
+    with pytest.raises(RuntimeError, match="no GPM_3IMERG"):
+        imerg.fetch_increments(BOUNDS, dt.date(2026, 11, 14), 5, tmp_path)
+
+
+# --------------------------------------------------------------------------- #
 # COG writer + asset plumbing
 # --------------------------------------------------------------------------- #
 def test_write_cog_north_up(tmp_path, monkeypatch):
@@ -585,8 +723,12 @@ def _case_setup(monkeypatch, tmp_path, n=3):
         for i, (hh, mm) in enumerate([(0, 0), (0, 30), (1, 0)][:n])]
     granules = [{"producer_granule_id": nm} for nm in names]
     files = [tmp_path / "raw" / f"g{i}.h5" for i in range(n)]
-    ea = _fake_earthaccess(monkeypatch, granules=granules,
-                           download_files=[str(f) for f in files])
+    ea = _fake_earthaccess(monkeypatch, granules=granules)
+    # streamed download: each call gets one granule, returns its own file
+    def download(gs, dest):
+        ea.calls["download"].append((list(gs), str(dest)))
+        return [str(files[granules.index(g)]) for g in gs]
+    ea.download = download
     monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
     monkeypatch.setenv("GEE_PROJECT", "proj")

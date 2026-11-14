@@ -1,10 +1,18 @@
-"""IMERG Early half-hourly -> daily + rolling-3-day precip COGs for Modo Agora.
+"""IMERG Early precip -> daily + rolling-3-day COGs for Modo Agora.
 
-Fetches GPM_3IMERGHHE v07 (the IMERG *Early* half-hourly run, ~4 h latency;
-same short name as live/fetch.py. Late and Final half-hourly are
-GPM_3IMERGHHL and GPM_3IMERGHH — not used here. CMR names not re-checked
-online), aggregates mm/h * 0.5 to daily mm/day over the
---days lookback, rolls a 3-day accumulation, clips to the now AOI and stages
+Days older than RECENT_HALFHOURS come from the IMERG *Early* daily product
+GPM_3IMERGDE v07 (CMR-verified: entry GPM_3IMERGDE_07, "GPM IMERG Early
+Precipitation L3 1 day 0.1 degree V07") — one granule per day instead of 48.
+The trailing RECENT_HALFHOURS window — plus any older day the daily product
+has not posted yet — uses half-hourly GPM_3IMERGHHE v07 (the IMERG *Early*
+half-hourly run, ~4 h latency; same short name as live/fetch.py. Late and
+Final half-hourly are GPM_3IMERGHHL and GPM_3IMERGHH — not used here).
+Granules are streamed — download, open, subset to --bounds, delete the HDF5
+— with at most MAX_WORKERS files in flight, so peak disk use and open
+datasets are bounded by concurrency, not the granule count. Increments
+(mm/h * 0.5 half-hourly, day totals for the daily product) aggregate to
+daily mm/day over the --days lookback, roll a 3-day accumulation, clip to
+the now AOI and stage
 each raster as an image asset in the GEE image collection
 projects/<GEE_PROJECT>/assets/tipping-point/now/imerg_early.
 
@@ -32,6 +40,7 @@ import json
 import os
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -49,7 +58,10 @@ def collection_path(case: str = "now") -> str:
 
 COLLECTION = collection_path()
 SHORT_NAME = "GPM_3IMERGHHE"
+DAILY_SHORT_NAME = "GPM_3IMERGDE"        # IMERG Early daily, CMR-verified V07
 VERSION = "07"
+MAX_WORKERS = 4          # download/open/delete concurrency bound
+RECENT_HALFHOURS = 48    # trailing hours served by half-hourly granules
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVENTS_DIR = REPO_ROOT / "events"
@@ -146,12 +158,13 @@ def search_granules(bounds, end: dt.date, days: int = DEFAULT_DAYS) -> list:
     )
 
 
-def search_granules_range(bounds, start: dt.date, end: dt.date) -> list:
+def search_granules_range(bounds, start: dt.date, end: dt.date,
+                          short_name: str = SHORT_NAME) -> list:
     """Anonymous CMR search for every IMERG Early granule in start..end."""
     import earthaccess
 
     return earthaccess.search_data(
-        short_name=SHORT_NAME, version=VERSION,
+        short_name=short_name, version=VERSION,
         temporal=(str(start), str(end + dt.timedelta(days=1))),
         bounding_box=tuple(bounds),
     )
@@ -279,47 +292,80 @@ def _subset(da, bounds):
     return da.sel({lat_name: lat_sl, lon_name: slice(w, e)})
 
 
-def open_halfhourly(paths, bounds):
-    """Open IMERG HDF5s as one (time, lat, lon) mm/h DataArray over `bounds`.
+def _decode_time(da):
+    """Decode IMERG's 'seconds since 1980-01-06' julian time by hand — xarray
+    cannot decode that calendar without cftime (decode_times=False)."""
+    if "time" in da.dims and not np.issubdtype(
+            da["time"].dtype, np.datetime64):
+        units = str(da["time"].attrs.get("units", ""))
+        m = re.search(r"seconds since (\d{4}-\d{2}-\d{2})", units)
+        epoch = np.datetime64(m.group(1) if m else "1980-01-06")
+        secs = np.asarray(da["time"].values).astype("int64")
+        da = da.assign_coords(
+            time=epoch + secs.astype("timedelta64[s]"))
+    return da
 
-    v07 keeps the half-hourly fields under the 'Grid' HDF5 group; Early run
+
+def open_granule(path, bounds, daily=False):
+    """One granule -> bounds-subset DataArray; the dataset is closed before
+    returning, so the open-dataset count stays bounded by MAX_WORKERS.
+
+    v07 keeps the precip fields under the 'Grid' HDF5 group; Early run
     names the rate field 'precipitation' (older files: 'precipitationCal').
-    Files are opened one at a time (open_mfdataset needs a dask chunk
-    manager, which is not a dep) with decode_times=False — IMERG stamps
-    'seconds since 1980-01-06' under calendar 'julian', which xarray cannot
-    decode without cftime; the offset is decoded by hand instead.
+    daily=True is for GPM_3IMERGDE granules: 'precipitation' there is the
+    day's accumulated mm (a single time step), kept as a one-timestamp
+    array so resample(time="1D").sum() treats it as the day total.
     """
     import xarray as xr
 
-    def _open_one(path):
-        try:
-            ds = xr.open_dataset(str(path), group="Grid",
-                                 engine="h5netcdf", decode_times=False)
-        except (OSError, KeyError, ValueError):
-            ds = xr.open_dataset(str(path), engine="h5netcdf",
-                                 decode_times=False)
+    try:
+        ds = xr.open_dataset(str(path), group="Grid",
+                             engine="h5netcdf", decode_times=False)
+    except (OSError, KeyError, ValueError):
+        ds = xr.open_dataset(str(path), engine="h5netcdf",
+                             decode_times=False)
+    try:
         var = "precipitation" if "precipitation" in ds else "precipitationCal"
-        da = ds[var]
-        if "time" in da.dims and not np.issubdtype(
-                da["time"].dtype, np.datetime64):
-            units = str(da["time"].attrs.get("units", ""))
-            m = re.search(r"seconds since (\d{4}-\d{2}-\d{2})", units)
-            epoch = np.datetime64(m.group(1) if m else "1980-01-06")
-            secs = np.asarray(da["time"].values).astype("int64")
-            da = da.assign_coords(
-                time=epoch + secs.astype("timedelta64[s]"))
-        # Subset to the bbox and materialize BEFORE closing the file:
-        # concatenating lazy global grids (~336 x 26 MB) and resampling
-        # would materialize ~9 GB at once and OOM the runner.
-        small = _subset(da, bounds).load()
+        da = _subset(_decode_time(ds[var]), bounds)
+        if daily:
+            if "time" in da.dims:
+                da = da.isel(time=slice(0, 1))
+            else:
+                m = _IMERG_NAME_RE.search(Path(path).name)
+                ymd = m.group(1) if m else "19700101"
+                da = da.expand_dims(
+                    time=[np.datetime64(
+                        f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}")])
+        return da.load()
+    finally:
         ds.close()
-        Path(path).unlink(missing_ok=True)
-        return small
 
-    arrays = [_open_one(p) for p in paths]
-    da = arrays[0] if len(arrays) == 1 else xr.concat(
+
+def open_halfhourly(paths, bounds):
+    """Open IMERG HDF5s as one (time, lat, lon) mm/h DataArray over `bounds`.
+
+    Files are opened one at a time (open_mfdataset needs a dask chunk
+    manager, which is not a dep) and closed after subsetting — see
+    open_granule for the per-file details.
+    """
+    import xarray as xr
+
+    arrays = [open_granule(p, bounds) for p in paths]
+    return arrays[0] if len(arrays) == 1 else xr.concat(
         arrays, dim="time").sortby("time")
-    return da
+
+
+def _accumulate(increments):
+    """Per-step mm increments -> (daily mm/day, 3-day rolling mm, steps/day).
+
+    `steps` counts increments per day — 48 for a full half-hourly day, 1 for
+    a day served by a single GPM_3IMERGDE granule.
+    """
+    daily = increments.resample(time="1D").sum()
+    steps = increments.resample(time="1D").count().max(
+        dim=[d for d in increments.dims if d != "time"])
+    rain3 = daily.rolling(time=3, min_periods=3).sum()
+    return daily, rain3, steps
 
 
 def daily_and_3day(halfhourly):
@@ -328,22 +374,92 @@ def daily_and_3day(halfhourly):
     IMERG rates are mm/h over 30-min windows, so daily = sum(rate) * 0.5.
     rain3[i] covers days i-2..i; the first two days carry NaN.
     """
-    daily = (halfhourly * 0.5).resample(time="1D").sum()
-    steps = halfhourly.resample(time="1D").count().max(
-        dim=[d for d in halfhourly.dims if d != "time"])
-    rain3 = daily.rolling(time=3, min_periods=3).sum()
-    return daily, rain3, steps
+    return _accumulate(halfhourly * 0.5)
+
+
+def _daterange(start: dt.date, end: dt.date):
+    d = start
+    while d < end:
+        yield d
+        d += dt.timedelta(days=1)
+
+
+def _stream_granules(granules, bounds, dest_dir, daily=False):
+    """download -> open -> subset -> delete, <=MAX_WORKERS files in flight.
+
+    Returns (granule, DataArray) pairs in granule order. Each raw HDF5 is
+    deleted as soon as its subset is read, so peak disk use and open
+    datasets are bounded by MAX_WORKERS, not the granule count.
+    """
+    if not granules:
+        return []
+    _edl_login()
+    import earthaccess
+
+    dest_dir = Path(dest_dir)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    def work(g):
+        out = []
+        for f in earthaccess.download([g], str(dest_dir)) or []:
+            path = Path(f)
+            try:
+                out.append((g, open_granule(path, bounds, daily=daily)))
+            finally:
+                path.unlink(missing_ok=True)
+        return out
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        return [pair for part in ex.map(work, granules) for pair in part]
+
+
+def fetch_increments(bounds, end: dt.date, days: int, work_dir: Path):
+    """Streamed per-granule precip increments (mm) over the lookback window.
+
+    Days older than RECENT_HALFHOURS come from the daily product
+    GPM_3IMERGDE when CMR has coverage for them; the trailing window — and
+    any older day the daily product missed — comes from half-hourly
+    GPM_3IMERGHHE (rate * 0.5 mm per step).
+    """
+    window_start = end - dt.timedelta(days=days)
+    hh_start = end - dt.timedelta(hours=RECENT_HALFHOURS)
+    daily_gs = []
+    if window_start < hh_start:
+        daily_gs = search_granules_range(
+            bounds, window_start, hh_start - dt.timedelta(days=1),
+            short_name=DAILY_SHORT_NAME) or []
+    covered = {granule_start_tag(g)[:8] for g in daily_gs}
+    uncovered = [d for d in _daterange(window_start, hh_start)
+                 if d.strftime("%Y%m%d") not in covered]
+    hh_from = min(uncovered, default=hh_start)
+    hh_gs = search_granules_range(bounds, hh_from, end) or []
+    if uncovered:
+        need = {d.strftime("%Y%m%d") for d in uncovered}
+        recent = hh_start.strftime("%Y%m%d")
+        hh_gs = [g for g in hh_gs
+                 if granule_start_tag(g)[:8] >= recent
+                 or granule_start_tag(g)[:8] in need]
+    if not daily_gs and not hh_gs:
+        raise RuntimeError(
+            f"no {SHORT_NAME}/{DAILY_SHORT_NAME} granules in window "
+            f"ending {end}")
+    raw = Path(work_dir) / "raw"
+    incs = [da * 0.5 for _, da in _stream_granules(hh_gs, bounds, raw)]
+    incs += [da for _, da in _stream_granules(
+        daily_gs, bounds, raw, daily=True)]
+    if not incs:
+        raise RuntimeError("earthaccess.download returned no files")
+    return incs
 
 
 def fetch_daily(bounds, end: dt.date, days: int, work_dir: Path):
-    """Search -> download -> open -> aggregate. Returns (daily, rain3, steps)."""
-    granules = search_granules(bounds, end, days)
-    if not granules:
-        raise RuntimeError(f"no {SHORT_NAME} granules in window ending {end}")
-    paths = download_granules(granules, Path(work_dir) / "raw")
-    if not paths:
-        raise RuntimeError("earthaccess.download returned no files")
-    return daily_and_3day(open_halfhourly(paths, bounds))
+    """Search -> stream -> aggregate. Returns (daily, rain3, steps)."""
+    import xarray as xr
+
+    incs = fetch_increments(bounds, end, days, work_dir)
+    inc = incs[0] if len(incs) == 1 else xr.concat(
+        incs, dim="time").sortby("time")
+    return _accumulate(inc)
 
 
 # --------------------------------------------------------------------------- #
@@ -544,20 +660,38 @@ def run_case(case: str, start: dt.date, end: dt.date, bounds=None, *,
         if not granules:
             raise RuntimeError(
                 f"no {SHORT_NAME} granules in {start}..{end} for {case}")
-        paths = download_granules(granules, Path(out_dir) / "raw")
-        for g, path in zip(granules, paths):
+        raw = Path(out_dir) / "raw"
+        _edl_login()
+        import earthaccess
+        raw.mkdir(parents=True, exist_ok=True)
+
+        def work(g):
+            das = []
+            for f in earthaccess.download([g], str(raw)) or []:
+                path = Path(f)
+                try:
+                    da = open_halfhourly([path], bounds)
+                    if "time" in da.dims:
+                        da = da.isel(time=0)
+                    das.append(da)
+                finally:
+                    path.unlink(missing_ok=True)
+            return das
+
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+            results = list(ex.map(work, granules))
+        for g, das in zip(granules, results):
             tag = granule_start_tag(g)
-            da = open_halfhourly([path], bounds)
-            if "time" in da.dims:
-                da = da.isel(time=0)
-            lat_name = next(d for d in da.dims if "lat" in d.lower())
-            lon_name = next(d for d in da.dims if "lon" in d.lower())
-            cog = Path(out_dir) / f"{LEAF}_{tag}.tif"
-            write_cog(cog, da.values, da[lat_name].values,
-                      da[lon_name].values)
-            assets.append({"tag": tag, "cog": cog, "product": "halfhourly",
-                           "date": f"{tag[:4]}-{tag[4:6]}-{tag[6:8]}",
-                           "source": {"granule": _granule_name(g)}})
+            for da in das:
+                lat_name = next(d for d in da.dims if "lat" in d.lower())
+                lon_name = next(d for d in da.dims if "lon" in d.lower())
+                cog = Path(out_dir) / f"{LEAF}_{tag}.tif"
+                write_cog(cog, da.values, da[lat_name].values,
+                          da[lon_name].values)
+                assets.append({"tag": tag, "cog": cog,
+                               "product": "halfhourly",
+                               "date": f"{tag[:4]}-{tag[4:6]}-{tag[6:8]}",
+                               "source": {"granule": _granule_name(g)}})
     else:
         assets = scan_cogs(out_dir)
     if ingest and assets and ensure_collection is not None:
