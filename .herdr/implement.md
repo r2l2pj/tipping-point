@@ -63,8 +63,16 @@ no pushes.
 - hermes-fesolucoes is NOT EE-registered (see
   `.herdr/implement-gee-verify.md`: `earthengine.computations.create`
   denied) — real runs blocked; dry-run + fake tests are the proof.
+# unit/opera-dswx — OPERA DSWx-HLS fetch + ingest (validation.yml ruling L8a)
 
-## Commands run
+## Files created (2 source + this report)
+
+- `pipeline/fetch/opera.py` (417 lines) — module IS the CLI:
+  `python -m pipeline.fetch.opera --event <id>|--case <id>
+  [--start/--end] [--limit N] [--no-download|--dry-run]`
+- `pipeline/tests/test_fetch_opera.py` (329 lines, 13 tests)
+
+## What it does
 
 - `$UV sync` — OK.
 - `$UV run pytest pipeline/tests/test_ingest.py -q` — **16 passed** (0.04 s).
@@ -174,3 +182,58 @@ names on `fetch.swot` — no network, no real ee/storage.
   scope files (+ this report).
 
 Files: 2 created (+ .herdr/implement.md). Tests: 11, all passing.
+- CMR search for `OPERA_L3_DSWX-HLS_V1` over case AOI + window via
+  `earthaccess.search_data` — **lazy import, unauthenticated**. Sorted
+  least-cloudy first (missing cloud last), `--limit N` slices post-sort.
+- `--event` reads aoi + window from `events/*.json` via `tp.events`
+  (default window: reference_date .. window.end, same convention as
+  `tp.hls_fetch`); `--case` reads the config.yaml case via `tp.config`
+  (event_date .. event_date + window_after_days) or, with `--event`,
+  overrides only the output case name. `--start/--end` override bounds.
+- Per granule picks the B01_WTR band link (`wtr_link` prefers `B01_WTR`,
+  rejects BWTR/WTR-1/WTR-2 via `_wtr_rank`), downloads just that file —
+  **auth happens here only**: `EARTHDATA_TOKEN` bearer first (ruling L6,
+  same env-strategy pattern as `live/fetch.py`), then `EDL_USER/EDL_PASS`
+  mapped only when BOTH are set, then `~/.netrc` — `RuntimeError` naming
+  what's missing. (Review fix: a partial EDL pair no longer leaks an
+  empty `EARTHDATA_*` var and lets earthaccess try netrc first.)
+- Clips to AOI bbox (reprojected into the raster CRS) and writes a COG
+  (GTiff fallback) to gitignored
+  `data/raw/opera/<case>/opera_dswx_<yyyymmdd>.tif`.
+- Stages via `stage_to_gcs(local_path, bucket=$NOW_GCS_BUCKET, case, name)`
+  → `ingest_asset(uri, asset_id=projects/$GEE_PROJECT/assets/tipping-point/
+  <case>/opera/opera_dswx_<yyyymmdd>, kind='image')` → `append_manifest`.
+- **Idempotent**: `data/<case>/assets.json` is read for existing
+  `asset_id`s; hits are skipped before auth/download/stage
+  (`status: "exists"`). Records: `{granule, date, cloud_cover, wtr,
+  local_path, asset_id, gcs_uri, status}` printed as JSON.
+
+## Assumptions (flag for lead)
+
+1. Ingest module assumed to land as `pipeline/fetch/ingest.py` — imported
+   lazily via `from . import ingest` (guarded), so `--no-download` /
+   `--dry-run` work without it; download path errors cleanly if absent.
+2. `assets.json` dedup read assumed at `data/<case>/assets.json`, entries
+   under an `"assets"` list (tolerates a bare list too).
+3. `OPERA_L3_DSWx-HLS` collection searched as a single `short_name`
+   string (per PLAN.md "OPERA_L3_DSWX-HLS_V1"); no version split.
+4. Reuses `tp.hls_fetch` sort/record/cloud/date helpers rather than
+   duplicating them; adds an OPERA native-id date fallback regex.
+
+## Commands + results
+
+- `$UV sync` — ok
+- `$UV run pytest pipeline/tests/test_fetch_opera.py -q` — **13 passed**
+- `$UV run ruff check .` — **all checks passed** (one justified
+  `# noqa: BLE001` on the COG-driver fallback, matching live/fetch.py
+  precedent)
+- Regression: `pytest test_fetch_opera + test_hls_fetch +
+  test_fetch_inventory` — **27 passed**
+- `python -m pipeline.fetch.opera --event rs-2024-05 --dry-run` and
+  `--case rs_2024 --dry-run` — both print resolved params JSON
+  (verified end-to-end, no creds needed)
+
+No network in tests: earthaccess, rasterio(.mask/.warp), and
+fetch.ingest are all faked via `sys.modules`.
+
+Commit: files above on `unit/opera-dswx`, not pushed.
