@@ -220,6 +220,8 @@ def test_render_now_missing_outputs_and_manifest_last(production):
                  for rel in ("manifest.json", "now/manifest.json", "now/alerts.json")}
     entries = fallback.render_now(production, bucket="bucket", ee_client=ee, client=client,
                                   fetch_png=lambda url: b"PNG")
+    assert [args for method, args, _ in calls if method == "select"] == [
+        ("TPI_slide",)] * 4 + [("TPI_flood",)] * 4
     assert sum(1 for call in calls if call[0] == "getThumbURL") == 8
     exports = [kw for method, _, kw in calls if method == "export"]
     assert len(exports) == 4
@@ -267,6 +269,19 @@ def test_render_preserves_existing_local_products(production):
     assert all((production / rel).read_bytes() == content for rel, content in local.items())
     assert len([1 for method, _, _ in calls if method == "getThumbURL"]) == 7
     assert not any(method in ("reduceRegion", "reduceToVectors") for method, _, _ in calls)
+
+
+def test_render_missing_contracted_band_fails(production):
+    ee, client, calls = fake_render_clients()
+
+    def select(band):
+        assert band == "TPI_slide"
+        raise RuntimeError("required TPI_slide band absent")
+
+    ee.Image = lambda asset: SimpleNamespace(select=select)
+    with pytest.raises(RuntimeError, match="required TPI_slide band absent"):
+        fallback.render_now(production, bucket="bucket", ee_client=ee, client=client)
+    assert not any(method in ("export", "getThumbURL", "upload") for method, _, _ in calls)
 
 
 def test_render_missing_asset_metadata_errors(production):

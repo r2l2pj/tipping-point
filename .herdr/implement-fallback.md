@@ -45,3 +45,9 @@ git diff --check
 Commands also run: scoped uv run ruff check; git diff --check; git status --short; git log -3 --oneline; todo log/add/edit; hc send t6f contract questions, resolved design and implementation status. Initial copy-only tests were 45 passed with scoped ruff clean; rework's first ruff pass found one test-only lambda style issue and diff --check found trailing blank line, both corrected. Final verification recorded in completion message.
 
 No live GEE/GCS run attempted; all rendering and storage evidence uses injected fakes. No claim of real cloud output or real pixel correctness beyond the declared EE operations/parameters. Existing locked uv environment reused; no dependency-file modifications.
+
+## Review fix — contracted band selection
+
+Review of e7a8b08 identified positional select(0). Renderer now selects TPI_slide for tpi_slide_d{k}, TPI_flood for tpi_flood_d{k}; it does not fall back to another band when the contracted band is absent. R/S layers are not rendered by this exporter and remain outside this selector.
+
+Regression-first evidence on e7a8b08: uv run pytest pipeline/tests/test_fallback.py::test_render_now_missing_outputs_and_manifest_last -q failed with `At index 0 diff: (0,) != ('TPI_slide',)`. After the fix, the full existing command (fallback + ingest + jobs tests) produced `57 passed in 0.24s`. Added an absent-band test proving selection failure propagates without exports/uploads or positional fallback. Scoped uv run ruff check: `All checks passed!`; git diff --check: exit 0. These commands used the pinned uv path above. No live request, new dependency or push.

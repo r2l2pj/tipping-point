@@ -144,7 +144,8 @@ def render_now(root: str | Path, *, bucket=None, prefix="fallback/", client=None
             continue
         if not layer.get("asset"):
             raise ValueError(f"missing required GEE asset reference for {name}")
-        image = ee.Image(layer["asset"]).select(0)
+        band = {"tpi_slide": "TPI_slide", "tpi_flood": "TPI_flood"}[name.rsplit("_d", 1)[0]]
+        image = ee.Image(layer["asset"]).select(band)
         metadata = image.toDictionary(["data_date", "updated_at"]).getInfo()
         if not metadata.get("data_date") or not metadata.get("updated_at"):
             raise ValueError(f"missing required asset timestamps for {name}")
