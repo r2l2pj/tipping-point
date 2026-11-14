@@ -166,6 +166,12 @@ index input.
   pair); candidates are HLS optical and stay "candidates", never confirmed.
 - WA landslide hit-rate may be null — the GLC inventory has no in-window
   points; radar confirms floods only for this case.
+- wa_2025 `flooded_km2` is a **lower bound within the NISAR swath**: the
+  post scene covers ~74% of the case AOI (south-west is outside the
+  swath); `swath_coverage_pct` and `flooded_km2_scope` say so in metrics.
+- NISAR post-acquisition (2025-12-16) can miss early-receding water: the
+  Skagit peaked ~Dec 11-12, so its flats show little flood signal while
+  the still-high Snohomish/Skykomish valleys dominate.
 - NISAR frames are BETA pre-calibration products; use relative
   before/after change on the same frame.
 
