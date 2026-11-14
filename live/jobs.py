@@ -30,6 +30,7 @@ if __package__ in (None, ""):
 from live.config import (
     FORECAST_DAYS,
     IMERG_LOOKBACK_DAYS,
+    NISAR_LOOKBACK_DAYS,
     NOW_BOUNDS,
     NOW_DIR,
     QUIET_HOURS,
@@ -131,6 +132,12 @@ def now(dry_run: bool = False) -> None:
         ("now.fetch.geosfp",
          [sys.executable, "-m", "pipeline.fetch.geosfp",
           "--days", str(FORECAST_DAYS)]),
+        # best-effort: the CLI writes [] on failure, never exits nonzero
+        ("now.nisar_passes",
+         [sys.executable, "-m", "live.fetch", "nisar-passes",
+          "--bounds", w, s, e, n, "--days", str(NISAR_LOOKBACK_DAYS),
+          "--out", str(NOW_DIR / "nisar_passes.json"),
+          "--manifest", str(NOW_DIR / "manifest.json")]),
         ("now.tpi",
          [sys.executable, "tools/now_tpi.py"]),
     ]

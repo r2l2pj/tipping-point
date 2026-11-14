@@ -377,3 +377,53 @@ def nisar_recent_passes(bounds, days: int = 14) -> list[dict]:
         }
         for p in results
     ]
+
+
+def _nisar_passes_cli(args) -> int:
+    """Best-effort pass-list writer — the now job must never fail here."""
+    import json
+
+    try:
+        passes = nisar_recent_passes(tuple(args.bounds), days=args.days)
+    except Exception as exc:  # noqa: BLE001 — offline/asf_search failure -> []
+        print(f"WARNING: NISAR pass list failed ({exc}) — writing []",
+              file=sys.stderr)
+        passes = []
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(passes, ensure_ascii=False, indent=2) + "\n")
+    print(f"nisar-passes: wrote {args.out} ({len(passes)} passes)")
+    if args.manifest and args.manifest.exists():
+        doc = json.loads(args.manifest.read_text())
+        doc["nisar_passes"] = passes
+        args.manifest.write_text(
+            json.dumps(doc, ensure_ascii=False, indent=2) + "\n")
+        print(f"nisar-passes: updated nisar_passes in {args.manifest}")
+    return 0
+
+
+def main(argv=None) -> int:
+    import argparse
+    from pathlib import Path
+
+    p = argparse.ArgumentParser(
+        prog="live.fetch", description=__doc__.splitlines()[0])
+    sub = p.add_subparsers(dest="cmd", required=True)
+    np_ = sub.add_parser(
+        "nisar-passes",
+        help="write the recent NISAR pass list (never fails the job)")
+    np_.add_argument("--bounds", type=float, nargs=4, required=True,
+                     metavar=("W", "S", "E", "N"))
+    np_.add_argument("--days", type=int, default=14)
+    np_.add_argument("--out", type=Path, required=True,
+                     help="JSON output path (e.g. data/now/nisar_passes.json)")
+    np_.add_argument("--manifest", type=Path, default=None,
+                     help="also update this manifest's nisar_passes key "
+                          "(e.g. data/now/manifest.json)")
+    args = p.parse_args(argv)
+    if args.cmd == "nisar-passes":
+        return _nisar_passes_cli(args)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

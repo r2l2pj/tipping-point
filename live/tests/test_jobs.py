@@ -41,6 +41,7 @@ def test_now_runs_steps_in_locked_order(calls):
         "pipeline.fetch.imerg",
         "pipeline.fetch.smap",
         "pipeline.fetch.geosfp",
+        "live.fetch",
         "tools/now_tpi.py",
         "tools/build_manifest.py",
         "tools/export_fallback.py",
@@ -51,6 +52,42 @@ def test_now_runs_steps_in_locked_order(calls):
     assert imerg[imerg.index("--bounds") + 1:imerg.index("--bounds") + 5] == [w, s, e, n]
     assert imerg[imerg.index("--days") + 1] == "7"
     assert calls[2][calls[2].index("--days") + 1] == "3"
+    nisar = calls[3]
+    assert nisar[nisar.index("nisar-passes") - 2:nisar.index("nisar-passes")] == [
+        "-m", "live.fetch"]
+    assert nisar[nisar.index("--bounds") + 1:nisar.index("--bounds") + 5] == [w, s, e, n]
+    assert nisar[nisar.index("--days") + 1] == str(jobs.NISAR_LOOKBACK_DAYS)
+    assert nisar[nisar.index("--out") + 1].endswith("nisar_passes.json")
+    assert nisar[nisar.index("--manifest") + 1].endswith("manifest.json")
+
+
+def test_nisar_passes_cli_never_fails(tmp_path, monkeypatch):
+    from live import fetch
+
+    def boom(bounds, days=14):
+        raise RuntimeError("asf_search offline")
+    monkeypatch.setattr(fetch, "nisar_recent_passes", boom)
+    out = tmp_path / "nisar_passes.json"
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text('{"mode": "live", "nisar_passes": [{"old": 1}]}')
+    rc = fetch.main(["nisar-passes", "--bounds", "-58", "-34", "-48", "-22.5",
+                     "--days", "14", "--out", str(out),
+                     "--manifest", str(manifest)])
+    assert rc == 0
+    assert json.loads(out.read_text()) == []
+    assert json.loads(manifest.read_text())["nisar_passes"] == []
+
+
+def test_nisar_passes_cli_writes_passes(tmp_path, monkeypatch):
+    from live import fetch
+
+    monkeypatch.setattr(fetch, "nisar_recent_passes",
+                        lambda bounds, days=14: [{"granule": "NISA_g1"}])
+    out = tmp_path / "nisar_passes.json"
+    rc = fetch.main(["nisar-passes", "--bounds", "-58", "-34", "-48", "-22.5",
+                     "--out", str(out)])
+    assert rc == 0
+    assert json.loads(out.read_text()) == [{"granule": "NISA_g1"}]
 
 
 def test_now_export_fallback_is_last_after_alerts_and_manifest(monkeypatch):
@@ -66,6 +103,7 @@ def test_now_export_fallback_is_last_after_alerts_and_manifest(monkeypatch):
         "pipeline.fetch.imerg",
         "pipeline.fetch.smap",
         "pipeline.fetch.geosfp",
+        "live.fetch",
         "tools/now_tpi.py",
         "alerts",
         "tools/build_manifest.py",
