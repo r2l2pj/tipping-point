@@ -276,7 +276,7 @@ def test_imerg_open_halfhourly_subsets(monkeypatch):
     """Group='Grid' open, 'precipitation' var, bounds clip."""
     seen = {}
 
-    def fake_mfdataset(files, group=None, combine=None, engine=None):
+    def fake_open_dataset(path, group=None, engine=None, decode_times=True):
         seen["group"] = group
         lats = np.linspace(-60, -20, 9)     # ascending, 5 deg step
         lons = np.linspace(-60, -40, 5)
@@ -287,7 +287,7 @@ def test_imerg_open_halfhourly_subsets(monkeypatch):
         return xr.Dataset({"precipitation": da})
 
     fake_xr = types.ModuleType("xarray")
-    fake_xr.open_mfdataset = fake_mfdataset
+    fake_xr.open_dataset = fake_open_dataset
     monkeypatch.setitem(sys.modules, "xarray", fake_xr)
     out = imerg.open_halfhourly(["a.h5"], (-55.0, -50.0, -51.0, -40.0))
     assert seen["group"] == "Grid"

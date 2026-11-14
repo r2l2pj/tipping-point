@@ -284,17 +284,36 @@ def open_halfhourly(paths, bounds):
 
     v07 keeps the half-hourly fields under the 'Grid' HDF5 group; Early run
     names the rate field 'precipitation' (older files: 'precipitationCal').
+    Files are opened one at a time (open_mfdataset needs a dask chunk
+    manager, which is not a dep) with decode_times=False — IMERG stamps
+    'seconds since 1980-01-06' under calendar 'julian', which xarray cannot
+    decode without cftime; the offset is decoded by hand instead.
     """
     import xarray as xr
 
-    files = [str(p) for p in paths]
-    try:
-        ds = xr.open_mfdataset(files, group="Grid", combine="by_coords",
-                               engine="h5netcdf")
-    except (OSError, KeyError, ValueError):
-        ds = xr.open_mfdataset(files, combine="by_coords", engine="h5netcdf")
-    var = "precipitation" if "precipitation" in ds else "precipitationCal"
-    return _subset(ds[var], bounds)
+    def _open_one(path):
+        try:
+            ds = xr.open_dataset(str(path), group="Grid",
+                                 engine="h5netcdf", decode_times=False)
+        except (OSError, KeyError, ValueError):
+            ds = xr.open_dataset(str(path), engine="h5netcdf",
+                                 decode_times=False)
+        var = "precipitation" if "precipitation" in ds else "precipitationCal"
+        da = ds[var]
+        if "time" in da.dims and not np.issubdtype(
+                da["time"].dtype, np.datetime64):
+            units = str(da["time"].attrs.get("units", ""))
+            m = re.search(r"seconds since (\d{4}-\d{2}-\d{2})", units)
+            epoch = np.datetime64(m.group(1) if m else "1980-01-06")
+            secs = np.asarray(da["time"].values).astype("int64")
+            da = da.assign_coords(
+                time=epoch + secs.astype("timedelta64[s]"))
+        return da
+
+    arrays = [_open_one(p) for p in paths]
+    da = arrays[0] if len(arrays) == 1 else xr.concat(
+        arrays, dim="time").sortby("time")
+    return _subset(da, bounds)
 
 
 def daily_and_3day(halfhourly):
