@@ -172,10 +172,15 @@ def _download(url: str, limit: int = MAX_DOWNLOAD_BYTES) -> bytes | None:
     return fetch(url, limit=limit)
 
 
-def _download_url(image, aoi, stem: str) -> str:
+def _download_url(image, aoi, stem: str, projection) -> str:
+    # Download on GFS's native grid: crs + crsTransform from a source
+    # image's .projection() — a plain `scale` would silently resample
+    # (measured 8.39 mm resampled vs 9.04 mm native day sum).
     return image.getDownloadURL({
-        "name": stem, "region": aoi, "scale": SCALE_M,
-        "crs": "EPSG:4326", "format": "GEO_TIFF", "filePerBand": False})
+        "name": stem, "region": aoi,
+        "crs": projection.crs(),
+        "crsTransform": projection.transform(),
+        "format": "GEO_TIFF", "filePerBand": False})
 
 
 def write_cog(path: Path, data: bytes, band_names: list[str],
@@ -242,7 +247,9 @@ def fetch(case: str, issue: dt.date, days=DEFAULT_DAYS, *,
     path = cog_path(case_id, issue, out_root)
     if fetch is None:
         fetch = _download
-    data = fetch(_download_url(image, aoi, path.stem),
+    projection = (col.filter(ee.Filter.eq("creation_time", run_ms))
+                     .first().projection())
+    data = fetch(_download_url(image, aoi, path.stem, projection),
                  limit=MAX_DOWNLOAD_BYTES)
     if data is None:
         raise RuntimeError(
@@ -261,6 +268,8 @@ def fetch(case: str, issue: dt.date, days=DEFAULT_DAYS, *,
         "collection": COLLECTION,
         "band": BAND,
         "scale_m": SCALE_M,
+        "grid": "native GFS 0.25 deg grid (crsTransform from source "
+                "projection, no resampling)",
         "native_resolution": "~25 km (0.25 deg); day bucket = sum of "
                              "trailing 1-6h accumulations valid in the day",
         "cog": str(path),

@@ -30,14 +30,18 @@ class StubList(list):
 
 
 class StubImage:
-    def __init__(self, members=(), bands=None):
+    def __init__(self, members=(), bands=None, projection=None):
         self.members = list(members)
         self.bands = bands
         self.names = None
         self.url_params = None
+        self._projection = projection
 
     def clip(self, aoi):
         return self
+
+    def projection(self):
+        return self._projection
 
     def toFloat(self):
         return self
@@ -72,6 +76,13 @@ class StubCollection:
 
     def select(self, band):
         return self
+
+    def first(self):
+        return StubImage(members=self.rows[:1],
+                         projection=types.SimpleNamespace(
+                             crs=lambda: "EPSG:4326",
+                             transform=lambda: [0.25, 0, -180.0,
+                                                0, -0.25, 90.0]))
 
     def sum(self):
         return StubImage(members=self.rows,
@@ -206,6 +217,19 @@ def _tiff_bytes(count=3, h=4, w=5):
             dst.write(np.arange(count * h * w,
                                 dtype=np.float64).reshape(count, h, w))
         return mem.read()
+
+
+def test_download_url_uses_native_grid():
+    """crsTransform from the source projection — no `scale` resample."""
+    proj = types.SimpleNamespace(
+        crs=lambda: "EPSG:4326",
+        transform=lambda: [0.25, 0, -180.0, 0, -0.25, 90.0])
+    img = StubImage()
+    gfs._download_url(img, ("rect", ()), "stem", proj)
+    params = img.url_params
+    assert params["crs"] == "EPSG:4326"
+    assert params["crsTransform"] == [0.25, 0, -180.0, 0, -0.25, 90.0]
+    assert "scale" not in params
 
 
 def test_fetch_writes_cog_and_sidecar(tmp_path, monkeypatch):
