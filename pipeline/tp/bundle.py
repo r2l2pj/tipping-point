@@ -52,13 +52,16 @@ SINGLE_LAYERS = {
     "opera_validation": (("*_opera_validation_*.tif", "*_opera_*.tif"), "gray"),
 }
 
-# product -> (cog glob patterns, mask values, feature "status" label).
+# product -> (cog glob patterns, mask values, feature "status" label,
+#             min_area_km2, simplify_m). The tolerances keep display
+# polygons small enough for the fallback branch (GitHub file cap).
 MASK_PRODUCTS = {
-    "permanent_water": (("*_water_nisar_*.tif",), (1,), None),
-    "flood_confirmed": (("*_flood_nisar_*.tif",), (1,), None),
+    "permanent_water": (("*_water_nisar_*.tif",), (1,), None, 0.005, 25.0),
+    "flood_confirmed": (("*_flood_nisar_*.tif",), (1,), None, 0.001, 10.0),
     # 1 candidate + 2 high-confidence — both stay "candidate", never confirmed
     "landslide_candidates": (
-        ("*_landslide_candidates_*.tif", "*_hls_scar_*.tif"), (1, 2), "candidate"),
+        ("*_landslide_candidates_*.tif", "*_hls_scar_*.tif"), (1, 2), "candidate",
+        0.001, 10.0),
 }
 
 POP_PATTERNS = ("*_pop_*.tif", "*_gpw_*.tif", "*_population_*.tif")
@@ -334,7 +337,7 @@ def publish_case(event_id: str, dry_run: bool = False,
         record(layer, day.isoformat(), rel, cog, bounds, False)
 
     # ---- geojson: mask products ---------------------------------------
-    for product, (patterns, values, status) in MASK_PRODUCTS.items():
+    for product, (patterns, values, status, min_area, simplify) in MASK_PRODUCTS.items():
         cog = _first(cog_dir, patterns)
         if cog is None:
             skip(product, f"no COG matching {'/'.join(patterns)}")
@@ -344,7 +347,8 @@ def publish_case(event_id: str, dry_run: bool = False,
         if dry_run:
             out["planned"].append(rel)
             continue
-        mask_to_geojson(cog, target, values=values)
+        mask_to_geojson(cog, target, values=values,
+                        min_area_km2=min_area, simplify_m=simplify)
         if status:
             _stamp_status(target, status)   # candidates — never 'confirmed'
         out["written"].append(rel)
@@ -437,8 +441,15 @@ def publish_case(event_id: str, dry_run: bool = False,
     for f in sorted(ser_dir.glob(f"{case}_rain_soil_*.json")):
         rec = json.loads(f.read_text())
         dates = _dates_in(str(rec.get("date", "")).replace("-", "")) or _dates_in(f.stem)
-        if not dates:
+        if not dates and not rec.get("days"):
             skip(f.name, "rain_soil record has no date")
+            continue
+        for row in rec.get("days", []):
+            d = _dates_in(str(row.get("date", "")).replace("-", ""))
+            if d:
+                days[d[-1]] = {"imerg_mm": row.get("rain3_mm"),
+                               "smap": row.get("smap")}
+        if rec.get("days"):
             continue
         days[dates[-1]] = {"imerg_mm": rec.get("imerg_mm"), "smap": rec.get("smap")}
         rain_p95 = rain_p95 if rain_p95 is not None else rec.get("rain_p95_mm")

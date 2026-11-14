@@ -280,6 +280,11 @@ def run(case_id: str, project: str | None = None) -> dict:
             if not _write_cog(images[spec["image"]], aoi, path, fetch=_download,
                               max_bytes=32 * 1024 * 1024):
                 raise RuntimeError(f"direct GEE download exceeds size limit: {path}")
+            band_desc = names if spec["bands"] > 1 else [spec["image"].lower()]
+            import rasterio
+            with rasterio.open(path, "r+") as src:
+                for i, n in enumerate(band_desc, 1):
+                    src.set_band_description(i, n)
         elif spec["kind"] == "asset" and "image" in spec:
             data_date = ("static" if spec["image"] in ("T_slide", "T_flood")
                          else plan["dates"][-1])
