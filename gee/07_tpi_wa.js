@@ -2,7 +2,7 @@
 // Mesma lógica de 01_tpi_index.js, caso Washington.
 // Event: ../events/wa-2025-12.json (keep bbox in sync by hand)
 var aoi = ee.Geometry.Rectangle([-122.6, 47.0, -121.5, 48.5]);
-var ref = ee.Date('2025-12-12'); // data de referência do evento
+var ref = ee.Date('2025-12-10'); // data de referência do evento
 
 var imerg = ee.ImageCollection('NASA/GPM_L3/IMERG_V07').select('precipitation');
 var dem = ee.Image('NASA/NASADEM_HGT/001').select('elevation');
@@ -34,6 +34,13 @@ var hand = dem.subtract(dem.focalMin({radius: 1500, units: 'meters'})); // proxy
 var T_flood = ee.Image(1).subtract(hand.unitScale(5, 15)).clamp(0, 1)
   .where(slope.gt(5), 0);
 
+// TPI = média geométrica ponderada R^wR · S^wS · T^wT (doc v4).
+// Pesos de config.yaml thresholds.tpi_weights; uniformes = (R·S·T)^(1/3).
+var TPI_W = [0.3333, 0.3333, 0.3334]; // [R, S, T]
+function tpi(r, s, t) {
+  return r.pow(TPI_W[0]).multiply(s.pow(TPI_W[1])).multiply(t.pow(TPI_W[2]));
+}
+
 function tpiAt(t) {
   t = ee.Date(t);
   var rain3 = accum(t, 3);
@@ -43,13 +50,13 @@ function tpiAt(t) {
     .where(rain3.gte(p99), 1).clamp(0, 1);
   var S = ee.ImageCollection('NASA/SMAP/SPL4SMGP/008').select('sm_rootzone_wetness')
     .filterDate(t.advance(-1, 'day'), t).mean().unitScale(0.5, 0.9).clamp(0, 1);
-  return R.multiply(S).multiply(T_slide).rename('TPI_slide')
-    .addBands(R.multiply(S).multiply(T_flood).rename('TPI_flood'))
+  return tpi(R, S, T_slide).rename('TPI_slide')
+    .addBands(tpi(R, S, T_flood).rename('TPI_flood'))
     .set('system:time_start', t.millis());
 }
 
-// Série diária: 10 dias antes até 5 depois do evento
-var dates = ee.List.sequence(-10, 5).map(function (d) { return ref.advance(d, 'day'); });
+// Série diária: 10 dias antes até 10 depois do evento
+var dates = ee.List.sequence(-10, 10).map(function (d) { return ref.advance(d, 'day'); });
 var series = ee.ImageCollection(dates.map(tpiAt));
 
 // Classes: 0 Baixo, 1 Moderado, 2 Alto, 3 Crítico
@@ -63,7 +70,7 @@ Map.addLayer(classes(peak.select('TPI_flood')).clip(aoi), {min: 0, max: 3, palet
 // Exporta a série como um GeoTIFF multibanda (uma banda por dia) para o app
 Export.image.toDrive({
   image: series.select('TPI_slide').toBands().toFloat().clip(aoi),
-  description: 'tpi_slide_series_wa', region: aoi, scale: 1000,
+  description: 'wa_2025_tpi_slide_series_20251210', region: aoi, scale: 1000,
   fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
 });
 

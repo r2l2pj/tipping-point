@@ -7,7 +7,7 @@ Usage: uv run python pipeline/scripts/02_flood_mask.py --event wa-2025-12 \
 import argparse
 from pathlib import Path
 
-from tp.events import event_data_dir
+from tp.events import artifact_stem, event_data_dir
 from tp.flood_mask import flood_mask
 
 
@@ -27,13 +27,17 @@ def main() -> None:
     args = ap.parse_args()
 
     out = event_data_dir(args.event) / "cog"
-    print(
-        flood_mask(
-            args.pre, args.post, out,
-            watermask_path=args.watermask, hand_path=args.hand,
-            mmu_ha=args.mmu_ha, bright=not args.no_bright,
-        )
+    stats = flood_mask(
+        args.pre, args.post, out,
+        watermask_path=args.watermask, hand_path=args.hand,
+        mmu_ha=args.mmu_ha, bright=not args.no_bright,
     )
+    # v4 file naming: <caso>_<camada>_<AAAAMMDD>.tif
+    for layer in ("flood_nisar", "water_nisar", "flood_bright_nisar"):
+        src = out / f"{layer}.tif"
+        if src.exists():
+            src.rename(out / f"{artifact_stem(args.event, layer)}.tif")
+    print(stats)
 
 
 if __name__ == "__main__":

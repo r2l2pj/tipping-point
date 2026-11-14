@@ -15,7 +15,7 @@ STATIC_DIR = REPO_ROOT / "static"
 NOW_DIR = REPO_ROOT / "now"
 STATIC_NPZ = "sul_static.npz"
 
-# Sul do Brasil inteiro (RS, SC, PR) — doc v3 manifest "now".bounds
+# Sul do Brasil inteiro (RS, SC, PR) — doc v4 manifest "now".bounds
 NOW_BOUNDS = (-58.0, -34.0, -48.0, -22.5)  # west, south, east, north
 NOW_RES_DEG = 0.01                          # ~1 km
 IMERG_LOOKBACK_DAYS = 7
@@ -34,6 +34,7 @@ SLOPE_RANGE_DEG = tuple(_cfg["slope_range_deg"])            # (15, 30)
 HAND_RANGE_M = tuple(_cfg["hand_range_m"])                  # (5, 15)
 HAND_PROXY_RADIUS_M = _cfg["hand_proxy_radius_m"]           # 1500
 TPI_CLASSES = tuple(_cfg["tpi_classes"])                    # (0.2, 0.4, 0.6)
+TPI_WEIGHTS = tuple(_cfg.get("tpi_weights", (1 / 3, 1 / 3, 1 / 3)))  # geomean [R,S,T]
 MIN_BLOB_PIXELS = _cfg["min_blob_pixels"]                   # 10
 SLOPE_FLOOD_MAX_DEG = 5.0                                   # gee/01: slope.gt(5) -> T_flood=0
 

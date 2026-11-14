@@ -69,8 +69,11 @@ def _clim_for_month(static: dict[str, np.ndarray], month: int) -> dict[str, np.n
 
 
 def build_manifest(bounds, updated_at, data_dates, layers, nisar_passes) -> dict:
+    """now/manifest.json — the `now` node of the v4 manifest schema
+    (data/SCHEMA.md): {mode: "live", bounds, data_dates, layers:[...]}.
+    `products`/`nisar_passes` are additive keys the side panel reads."""
     return {
-        "schema": "tipping-point/now@1",
+        "schema": "tipping-point/now@2",
         "mode": "live",
         "updated_at": updated_at,
         "bounds": list(bounds),
@@ -127,11 +130,12 @@ def run(args) -> dict:
     for kind, arrs in (("tpi_slide", slides), ("tpi_flood", floods)):
         for k, cls in enumerate(arrs):
             rel = f"png/{kind}_d{k}.png"
-            files[rel] = render.classes_png_bytes(cls)
-            layers.append({
-                "id": f"{kind}_d{k}", "type": "png", "path": rel,
-                "day": days[k].isoformat(), "bounds": list(args.bounds),
-                "legend": LABELS,
+            png, png_bounds = render.layer_png_3857(cls, transform)
+            files[rel] = png
+            layers.append({  # v4 layer shape {id, date, png, cog, legend} + bounds
+                "id": f"{kind}_d{k}", "date": days[k].isoformat(),
+                "png": rel, "cog": None, "legend": LABELS,
+                "bounds": png_bounds, "forecast": k > 0,
             })
 
     feats = []
@@ -143,13 +147,15 @@ def run(args) -> dict:
     area_km2 = pixel_area_km2(lats)
     crit_mask = (slides[0] >= 2) | (slides[1] >= 2) | (floods[0] >= 2) | (floods[1] >= 2)
     pop = static.get("pop")
+    people_critical = None if pop is None else float(np.nansum(pop * crit_mask))
     summary = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z"),
         "critical_km2": {"slide": float((area_km2 * (slides[0] >= 2)).sum()),
                           "flood": float((area_km2 * (floods[0] >= 2)).sum()),
                           "any": float((area_km2 * crit_mask).sum())},
-        "people_exposed": (None if pop is None else
-                           float(np.nansum(pop * crit_mask))),
+        "people_exposed": people_critical,
+        "people_critical": people_critical,   # v4 metrics key (same value)
+        "forecast_source": "geos-fp",         # v4 metrics key (D+1..D+3)
         "classes_km2": {
             LABELS[c]: float((area_km2 * (slides[0] == c)).sum()) for c in range(4)},
         "data_dates": {"imerg": imerg_date, "smap": smap_date,

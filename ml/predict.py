@@ -9,7 +9,7 @@ slope < 5° and water, and writes (spec §3):
   * ``hazard_classes.tif`` — uint8 classes 0-3 per the SCHEMA `tpi` legend
 
     uv run python -m ml.predict --static static.tif --dynamic "dyn_*.tif" \
-        --out data/rs-2024-05/cog/hazard_slide_series.tif
+        --out data/rs-2024-05/cog/rs_2024_hazard_slide_series_20240502.tif
 """
 from __future__ import annotations
 
@@ -150,8 +150,11 @@ def predict_series(
     peak = np.where(finite, prob_series, -np.inf).max(axis=0)
     peak[~finite.any(axis=0)] = np.nan
     classes = classify(peak)[None]                           # worst frame per pixel
+    # classes COG keeps the --out stem: rs_2024_hazard_slide_series_20240502.tif
+    # -> rs_2024_hazard_classes_20240502.tif (v4 naming, data/SCHEMA.md)
+    stem = Path(out_path).stem.replace("slide_series", "classes")
     return _write_cog(out_path, hazard, profile), _write_cog(
-        Path(out_path).with_name("hazard_classes.tif"), classes, profile
+        Path(out_path).with_name(stem + ".tif"), classes, profile
     )
 
 

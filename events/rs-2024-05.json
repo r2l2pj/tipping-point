@@ -12,8 +12,10 @@
   "gee": {
     "aoi_bbox": [-52.5, -30.5, -50.5, -29.0],
     "reference_date": "2024-05-02",
-    "window": { "start": "2024-04-20", "end": "2024-05-31" },
-    "note": "JS can't read files — the gee/0*.js pasted bboxes/dates must mirror these values by hand."
+    "window": { "start": "2024-04-22", "end": "2024-05-07" },
+    "window_before_days": 10,
+    "window_after_days": 5,
+    "note": "JS can't read files — the gee/0*.js pasted bboxes/dates must mirror these values by hand. window = reference_date -/+ window_*_days (config.yaml cases.rs_2024)."
   },
   "nisar": {
     "maturity": null,

@@ -7,7 +7,7 @@ of pixels that ever crosses the threshold gets a first-crossing time, and
 The anchor must be an independently sourced, dated first-slide/fatality report —
 never the assigned label time, which would be circular (spec §2.2).
 
-    uv run python -m ml.lead_time --hazard data/rs-2024-05/cog/hazard_slide_series.tif \
+    uv run python -m ml.lead_time --hazard data/rs-2024-05/cog/rs_2024_hazard_slide_series_20240502.tif \
         --anchor 2024-05-01T00:00:00Z --threshold 0.12
 """
 from __future__ import annotations
@@ -76,11 +76,13 @@ def cluster_lead_times(
 
 
 def summarize(clusters: pd.DataFrame) -> dict:
-    """metrics.json `alert` fields per data/SCHEMA.md."""
+    """metrics.json lead-time fields — flat v4 keys per data/SCHEMA.md."""
     if clusters.empty:
-        return {"lead_hours_median": 0.0, "warned_before_pct": 0.0, "n_clusters": 0}
+        return {"lead_time_mean_h": 0.0, "lead_time_median_h": 0.0,
+                "warned_before_pct": 0.0, "n_clusters": 0}
     return {
-        "lead_hours_median": float(clusters["lead_hours"].median()),
+        "lead_time_mean_h": float(clusters["lead_hours"].mean()),
+        "lead_time_median_h": float(clusters["lead_hours"].median()),
         "warned_before_pct": float((clusters["lead_hours"] > 0).mean() * 100),
         "n_clusters": len(clusters),
         "lead_hours_max": float(clusters["lead_hours"].max()),
@@ -115,9 +117,9 @@ def main(argv: list[str] | None = None) -> int:
     metrics = {"event": args.event}
     if metrics_path.exists():
         metrics = json.loads(metrics_path.read_text())
-    metrics.setdefault("alert", {}).update(
-        {k: v for k, v in summary.items() if k != "n_clusters"}
-    )
+    metrics.update({k: v for k, v in summary.items()
+                    if k in ("lead_time_mean_h", "lead_time_median_h",
+                             "warned_before_pct")})
     metrics.setdefault("landslide_ml", {})["lead_hours"] = summary
     metrics_path.parent.mkdir(parents=True, exist_ok=True)
     metrics_path.write_text(json.dumps(metrics, indent=2, default=str) + "\n")

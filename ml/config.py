@@ -9,6 +9,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import yaml
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ML_DIR = Path(__file__).resolve().parent
 MODEL_DIR = ML_DIR / "models"
@@ -99,6 +101,13 @@ MONOTONE_CONSTRAINTS = {
 FPR_TARGET = 0.05          # thresholds are set at fixed FPR on validation folds
 HAZARD_THRESHOLD = 0.12    # LHASA-style fallback until refit on fold scores
 CLASS_BREAKS = (0.2, 0.4, 0.6)  # SCHEMA `tpi` legend: 0 Baixo / 1 Moderado / 2 Alto / 3 Critico
+# Geomean exponents [R,S,T] for the manual-TPI baseline (evaluate.py);
+# uniform thirds = plain (R·S·T)^(1/3). From config.yaml thresholds.
+TPI_WEIGHTS = tuple(
+    yaml.safe_load((REPO_ROOT / "config.yaml").read_text())
+    .get("thresholds", {})
+    .get("tpi_weights", (1 / 3, 1 / 3, 1 / 3))
+)
 MIN_SLOPE_DEG = 5.0        # mask gentler slopes (LHASA-style)
 LC_WATER = 0               # MODIS LC_Type1 water class
 RASTER_NODATA = 255        # uint8 nodata for hazard rasters

@@ -1,7 +1,10 @@
 """Polygonise a mask raster (flood/water/landslide) to GeoJSON EPSG:4326.
 
 Usage: uv run python pipeline/scripts/06_polygonize.py --event wa-2025-12 \
-    --raster data/wa-2025-12/cog/flood_nisar.tif
+    --raster data/wa-2025-12/cog/wa_2025_flood_nisar_20251210.tif
+
+The default output name keeps the raster stem, so v4-named inputs
+(<caso>_<camada>_<AAAAMMDD>) yield same-named .geojson outputs.
 """
 import argparse
 from pathlib import Path

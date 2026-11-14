@@ -6,6 +6,13 @@ offline on the RS-2024 post-disaster inventories and applied to produce the
 `hazard_slide_series` COG the app replays. Labels are UFRGS/Cemaden
 inventories (CC-BY-4.0), never model inputs.
 
+Deviation from the doc (v4, intentional): the learned model is offline
+XGBoost, superseding the doc's in-GEE `smileRandomForest` (block-CV and
+monotone constraints aren't available in GEE). `metrics.json` still uses the
+contract keys — `rf_auc` holds the learned-model AUC, `rule_auc` the manual
+slope-rule baseline. The manual-TPI baseline in `evaluate.py` uses the v4
+geometric mean `TPI = (R·S·T)^(1/3)`, same as `gee/01_tpi_index.js`.
+
 ## Layout
 
 ```
@@ -31,7 +38,7 @@ Outputs follow `data/SCHEMA.md`: `data/<event>/cog/hazard_slide_series.tif`,
 uv run pytest ml/tests/                      # tests
 uv run python -m ml.train --features features.parquet
 uv run python -m ml.predict --static static.tif --dynamic dyn_*.tif \
-    --out data/rs-2024-05/cog/hazard_slide_series.tif
+    --out data/rs-2024-05/cog/rs_2024_hazard_slide_series_20240502.tif
 ```
 
 GEE steps require `earthengine authenticate` + `GEE_PROJECT` (see `.env.example`);

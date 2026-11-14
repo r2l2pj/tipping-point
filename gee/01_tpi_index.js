@@ -33,6 +33,13 @@ var hand = dem.subtract(dem.focalMin({radius: 1500, units: 'meters'})); // proxy
 var T_flood = ee.Image(1).subtract(hand.unitScale(5, 15)).clamp(0, 1)
   .where(slope.gt(5), 0);
 
+// TPI = média geométrica ponderada R^wR · S^wS · T^wT (doc v4).
+// Pesos de config.yaml thresholds.tpi_weights; uniformes = (R·S·T)^(1/3).
+var TPI_W = [0.3333, 0.3333, 0.3334]; // [R, S, T]
+function tpi(r, s, t) {
+  return r.pow(TPI_W[0]).multiply(s.pow(TPI_W[1])).multiply(t.pow(TPI_W[2]));
+}
+
 function tpiAt(t) {
   t = ee.Date(t);
   var rain3 = accum(t, 3);
@@ -42,8 +49,8 @@ function tpiAt(t) {
     .where(rain3.gte(p99), 1).clamp(0, 1);
   var S = ee.ImageCollection('NASA/SMAP/SPL4SMGP/008').select('sm_rootzone_wetness')
     .filterDate(t.advance(-1, 'day'), t).mean().unitScale(0.5, 0.9).clamp(0, 1);
-  return R.multiply(S).multiply(T_slide).rename('TPI_slide')
-    .addBands(R.multiply(S).multiply(T_flood).rename('TPI_flood'))
+  return tpi(R, S, T_slide).rename('TPI_slide')
+    .addBands(tpi(R, S, T_flood).rename('TPI_flood'))
     .set('system:time_start', t.millis());
 }
 
@@ -62,7 +69,7 @@ Map.addLayer(classes(peak.select('TPI_flood')).clip(aoi), {min: 0, max: 3, palet
 // Exporta a série como um GeoTIFF multibanda (uma banda por dia) para o app
 Export.image.toDrive({
   image: series.select('TPI_slide').toBands().toFloat().clip(aoi),
-  description: 'tpi_slide_series_rs', region: aoi, scale: 1000,
+  description: 'rs_2024_tpi_slide_series_20240502', region: aoi, scale: 1000,
   fileFormat: 'GeoTIFF', formatOptions: {cloudOptimized: true}
 });
 

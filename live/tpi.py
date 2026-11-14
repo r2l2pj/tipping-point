@@ -4,7 +4,9 @@ R: piecewise score of 3-day rain against monthly p90/p95/p99 climatology.
 S: SMAP L4 sm_rootzone_wetness rescaled to [0,1] over soil_wetness_range.
 T_slide: slope rescaled over slope_range_deg.
 T_flood: 1 - HAND rescaled over hand_range_m, zeroed where slope > 5 deg.
-TPI = R * S * T; classes are counts of thresholds exceeded (0..3).
+TPI = (R·S·T)^(1/3) — weighted geometric mean R^wR·S^wS·T^wT, uniform by
+default (config.yaml thresholds.tpi_weights). Classes are counts of
+thresholds exceeded (0..3).
 """
 from __future__ import annotations
 
@@ -17,6 +19,7 @@ from .config import (
     SLOPE_RANGE_DEG,
     SOIL_WETNESS_RANGE,
     TPI_CLASSES,
+    TPI_WEIGHTS,
 )
 
 
@@ -56,15 +59,21 @@ def terrain_flood(hand_m: np.ndarray, slope_deg: np.ndarray) -> np.ndarray:
 
 
 def tpi(rain3: np.ndarray, sm: np.ndarray, clim: dict[str, np.ndarray],
-        t_slide: np.ndarray, t_flood: np.ndarray) -> dict[str, np.ndarray]:
-    """Full TPI. `clim` holds p90/p95/p99 for the target month's climatology."""
+        t_slide: np.ndarray, t_flood: np.ndarray,
+        weights: tuple[float, float, float] = TPI_WEIGHTS) -> dict[str, np.ndarray]:
+    """Full TPI — weighted geometric mean R^wR·S^wS·T^wT (uniform 1/3 default).
+
+    `clim` holds p90/p95/p99 for the target month's climatology. `weights`
+    comes from config.yaml thresholds.tpi_weights.
+    """
     r = rain_score(rain3, clim["p90"], clim["p95"], clim["p99"])
     s = soil_score(sm)
+    wr, ws, wt = weights
     return {
         "r": r,
         "s": s,
-        "tpi_slide": r * s * t_slide,
-        "tpi_flood": r * s * t_flood,
+        "tpi_slide": r ** wr * s ** ws * t_slide ** wt,
+        "tpi_flood": r ** wr * s ** ws * t_flood ** wt,
     }
 
 

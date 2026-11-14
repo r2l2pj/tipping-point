@@ -142,7 +142,11 @@ def _open_match(path: Path | None, ref) -> np.ndarray | None:
 
 
 def _write_mask(ref, mask: np.ndarray, path: Path) -> None:
-    """Write a uint8 mask COG with the reference grid (no nodata tag)."""
+    """Write a uint8 mask COG with the reference grid (no nodata tag).
+
+    COGs keep their native/4326 CRS (doc v4); only pre-rendered PNGs for the
+    app's MapLibre image sources are reprojected to EPSG:3857 (live/render.py).
+    """
     import rasterio
 
     with rasterio.open(

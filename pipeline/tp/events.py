@@ -22,3 +22,14 @@ def event_data_dir(event_id: str) -> Path:
     for sub in ("cog", "geojson", "series"):
         (d / sub).mkdir(parents=True, exist_ok=True)
     return d
+
+
+def artifact_stem(event_id: str, layer: str, date: str | None = None) -> str:
+    """'<caso>_<camada>_<AAAAMMDD>' filename stem (doc v4 file-naming rule).
+
+    <caso> is the config.yaml case key ('wa-2025-12' -> 'wa_2025'); the date
+    defaults to the event's reference_date (ISO 'YYYY-MM-DD').
+    """
+    case = "_".join(event_id.split("-")[:2])
+    ymd = (date or load_event(event_id)["reference_date"]).replace("-", "")
+    return f"{case}_{layer}_{ymd}"

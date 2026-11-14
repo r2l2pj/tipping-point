@@ -3,7 +3,7 @@
   "name": "Western Washington atmospheric rivers",
   "country": "US",
   "start_date": "2025-12-08",
-  "reference_date": "2025-12-12",
+  "reference_date": "2025-12-10",
   "window": {
     "start": "2025-11-01",
     "end": "2026-01-31"
@@ -19,8 +19,11 @@
   },
   "gee": {
     "aoi_bbox": [-122.6, 47.0, -121.5, 48.5],
-    "reference_date": "2025-12-12",
-    "note": "JS can't read files — the gee/0*.js pasted bboxes/dates must mirror these values by hand."
+    "reference_date": "2025-12-10",
+    "window": { "start": "2025-11-30", "end": "2025-12-20" },
+    "window_before_days": 10,
+    "window_after_days": 10,
+    "note": "JS can't read files — the gee/0*.js pasted bboxes/dates must mirror these values by hand. window = reference_date -/+ window_*_days (config.yaml cases.wa_2025)."
   },
   "nisar": {
     "maturity": "BETA",

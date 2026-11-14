@@ -60,7 +60,7 @@ def test_terrain_flood():
     assert terrain_flood(np.array([0.0, 5.0, 10.0, 20.0]), steep).tolist() == [0.0] * 4
 
 
-def test_tpi_product():
+def test_tpi_geomean():
     shape = (3,)
     clim = {"p90": np.zeros(shape), "p95": np.ones(shape), "p99": np.full(shape, 2.0)}
     out = tpi(np.full(shape, 5.0), np.full(shape, 1.0), clim,
@@ -68,6 +68,21 @@ def test_tpi_product():
     assert out["r"] == pytest.approx([1.0] * 3)
     assert out["tpi_slide"] == pytest.approx([1.0] * 3)
     assert out["tpi_flood"] == pytest.approx([1.0] * 3)
+    # geometric mean, not product: r=0.5, s=t=1 -> 0.5^(1/3) (not 0.5)
+    out = tpi(np.ones(shape), np.full(shape, 0.9), clim,
+              np.ones(shape), np.ones(shape),
+              weights=(1 / 3, 1 / 3, 1 / 3))  # rain3 == p95 -> r = 0.5
+    assert out["r"] == pytest.approx([0.5] * 3)
+    assert out["tpi_slide"] == pytest.approx([0.5 ** (1 / 3)] * 3)
+    # config.yaml weights (0.3333, 0.3333, 0.3334) give the same geomean
+    assert config.TPI_WEIGHTS == (0.3333, 0.3333, 0.3334)
+    out = tpi(np.ones(shape), np.full(shape, 0.9), clim,
+              np.ones(shape), np.ones(shape))
+    assert out["tpi_slide"] == pytest.approx([0.5 ** (1 / 3)] * 3, abs=1e-3)
+    # weights are honoured: w_R=1 -> tpi == r
+    out = tpi(np.ones(shape), np.full(shape, 0.9), clim,
+              np.full(shape, 0.5), np.ones(shape), weights=(1.0, 0.0, 0.0))
+    assert out["tpi_slide"] == pytest.approx([0.5] * 3)
 
 
 def test_classify_cuts():

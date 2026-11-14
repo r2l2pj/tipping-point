@@ -4,8 +4,9 @@ Reports the two honest scores from spec §2.4/§5.3:
   * event-window AUC (positives vs N1 spatial negatives) — the headline
   * all-negatives AUC (adds N2 temporal negatives)
 
-Baselines on the same folds: slope-only and the doc's manual TPI_slide = R×S×T
-(gee/01_tpi_index.js). Thresholds are set at a fixed FPR on the OOF scores.
+Baselines on the same folds: slope-only and the doc's manual
+TPI_slide = (R·S·T)^(1/3) (gee/01_tpi_index.js). Thresholds are set at a
+fixed FPR on the OOF scores.
 """
 from __future__ import annotations
 
@@ -58,12 +59,16 @@ def _unit_scale(x, lo, hi):
 
 
 def manual_tpi_score(
-    df: pd.DataFrame, percentiles: tuple[float, float, float] | None = None
+    df: pd.DataFrame,
+    percentiles: tuple[float, float, float] | None = None,
+    weights: tuple[float, float, float] = cfg.TPI_WEIGHTS,
 ) -> np.ndarray:
-    """Manual TPI_slide = R×S×T (gee/01_tpi_index.js).
+    """Manual TPI_slide = R^wR·S^wS·T^wT — doc v4 geometric mean (gee/01).
 
     R: piecewise ramp of 3-day rain against climatological p90/p95/p99.
     S: SMAP wetness unitScale(0.5, 0.9).  T: slope unitScale(15°, 30°).
+    weights: geomean exponents (config.yaml thresholds.tpi_weights);
+    uniform thirds = (R·S·T)^(1/3).
 
     The feature table has no rain climatology columns, so p90/p95/p99 of
     rain_3d ≈ rain_24h + rain_ante_2d are estimated from the given rows —
@@ -78,7 +83,8 @@ def manual_tpi_score(
     R = np.where(rain3 >= p99, 1.0, R).clip(0, 1)
     S = _unit_scale(df["sm_profile_wetness"], 0.5, 0.9)
     T = _unit_scale(df["slope_max"], 15.0, 30.0)
-    return R * S * T
+    wr, ws, wt = weights
+    return R ** wr * S ** ws * T ** wt
 
 
 # --- Fold evaluation ----------------------------------------------------------
@@ -144,15 +150,21 @@ def importance(model, X_sample: pd.DataFrame, with_shap: bool = True) -> dict:
 
 # --- metrics.json ---------------------------------------------------------------
 def update_metrics_json(
-    section: dict, event_id: str = cfg.EVENT_ID, path: str | Path | None = None
+    section: dict,
+    event_id: str = cfg.EVENT_ID,
+    path: str | Path | None = None,
+    flat: dict | None = None,
 ) -> Path:
-    """Merge ``section`` under ``landslide_ml`` in data/<event>/metrics.json."""
+    """Merge ``section`` under ``landslide_ml`` in data/<event>/metrics.json;
+    ``flat`` keys are merged at top level (v4 key list, data/SCHEMA.md)."""
     path = Path(path) if path else cfg.DATA_DIR / event_id / "metrics.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     metrics = {"event": event_id}
     if path.exists():
         metrics = json.loads(path.read_text())
     metrics.setdefault("landslide_ml", {}).update(section)
+    if flat:
+        metrics.update(flat)
     path.write_text(json.dumps(metrics, indent=2) + "\n")
     log.info("wrote %s", path)
     return path
@@ -206,7 +218,15 @@ def main(argv: list[str] | None = None) -> int:
             "labels_cemaden": cfg.ZENODO_CEMADEN,
         },
     }
-    update_metrics_json(metrics, event_id=args.event, path=args.metrics_out)
+    # v4 flat keys: learned-model AUC, manual-rule AUC, feature importance.
+    # rule_auc is the doc's "regra manual de declividade" (slope_only baseline).
+    flat = {
+        "rf_auc": cv["event_window"]["model"]["roc_auc"]["mean"],
+        "rule_auc": cv["event_window"]["slope_only"]["roc_auc"]["mean"],
+        "tpi_manual_auc": cv["event_window"]["tpi_manual"]["roc_auc"]["mean"],
+        "feature_importance": imp.get("gain", {}),
+    }
+    update_metrics_json(metrics, event_id=args.event, path=args.metrics_out, flat=flat)
     return 0
 
 

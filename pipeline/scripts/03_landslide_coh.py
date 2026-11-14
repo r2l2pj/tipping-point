@@ -8,7 +8,7 @@ Usage: uv run python pipeline/scripts/03_landslide_coh.py --event wa-2025-12 \
 import argparse
 from pathlib import Path
 
-from tp.events import event_data_dir
+from tp.events import artifact_stem, event_data_dir
 from tp.landslide_coh import MAX_ELEV_M, landslide_candidates
 
 
@@ -31,7 +31,8 @@ def main() -> None:
                     help="elevation cap in metres (crude snow line)")
     args = ap.parse_args()
 
-    out = event_data_dir(args.event) / "cog" / "landslide_candidates.tif"
+    out = event_data_dir(args.event) / "cog" / (
+        artifact_stem(args.event, "landslide_candidates") + ".tif")
     print(
         landslide_candidates(
             Path(args.coh_ref), Path(args.coh_evt), Path(args.slope), out,

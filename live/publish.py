@@ -1,9 +1,12 @@
 """Write now/ artifacts — manifest.json is ALWAYS written last.
 
 The app reads manifest.json first to discover the layer set; writing it last
-guarantees it never points at a half-updated set of files. The same ordering
-is kept for the optional GCS upload (env-gated via NOW_GCS_BUCKET): rsync
-everything except manifest.json, then copy manifest.json.
+guarantees it never points at a half-updated set of files. The manifest dict
+is built by live/run_now.build_manifest and follows the v4 `now` node shape
+(data/SCHEMA.md): {mode: "live", bounds, data_dates, layers:[{id, date, png,
+cog, legend, bounds}]}. The same ordering is kept for the optional GCS
+upload (env-gated via NOW_GCS_BUCKET): rsync everything except manifest.json,
+then copy manifest.json.
 """
 from __future__ import annotations
 

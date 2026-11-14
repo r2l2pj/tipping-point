@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 
-from tp.events import event_data_dir
+from tp.events import artifact_stem, event_data_dir
 from tp.validation import validate_flood, write_metrics
 
 
@@ -14,8 +14,11 @@ def main() -> None:
     args = ap.parse_args()
 
     d = event_data_dir(args.event)
-    m = validate_flood(d / "cog" / "water_nisar.tif", args.opera_wtr)
-    write_metrics({"event": args.event, "flood": m}, d / "metrics.json")
+    m = validate_flood(
+        d / "cog" / f"{artifact_stem(args.event, 'water_nisar')}.tif",
+        args.opera_wtr)
+    # v4 metrics.json keys are flat (data/SCHEMA.md)
+    write_metrics({"event": args.event, **m}, d / "metrics.json")
     print(m)
 
 

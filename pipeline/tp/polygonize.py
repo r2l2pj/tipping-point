@@ -1,4 +1,10 @@
-"""Polygonise a mask raster to GeoJSON (EPSG:4326) with area_km2 attributes."""
+"""Polygonise a mask raster to GeoJSON (EPSG:4326) with area_km2 attributes.
+
+CRS conventions (doc v4): GeoJSON vectors and COGs stay EPSG:4326 — only
+pre-rendered PNGs for the app's MapLibre image sources are EPSG:3857
+(rendered by live/render.py; a 4326 PNG stretched over lon/lat corners
+misaligns at these latitudes).
+"""
 from __future__ import annotations
 
 from pathlib import Path

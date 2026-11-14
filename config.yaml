@@ -1,4 +1,4 @@
-# Tipping Point — shared thresholds (project doc v3, "Exemplo de config.yaml")
+# Tipping Point — shared thresholds (project doc v4, "Exemplo de config.yaml")
 # GEE scripts keep a pasted copy (JS cannot read files); Python reads this file.
 
 cases:
@@ -20,6 +20,7 @@ thresholds:
   hand_range_m: [5, 15]
   hand_proxy_radius_m: 1500
   tpi_classes: [0.2, 0.4, 0.6]
+  tpi_weights: [0.3333, 0.3333, 0.3334]   # geomean exponents [R,S,T]; uniform = plain (R·S·T)^(1/3)
   flood_db_drop: -3
   water_db_max: -15          # fallback only — prefer per-scene Otsu/KI (ml-sar report)
   coherence_drop: 0.3

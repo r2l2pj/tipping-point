@@ -89,14 +89,24 @@ def test_metrics_on_toy():
     assert thr == pytest.approx(0.7)
 
 
-def test_manual_tpi_is_rain_soil_slope_product():
+def test_manual_tpi_is_rain_soil_slope_geomean():
     df = pd.DataFrame({
-        "rain_24h": [0.0, 300.0, 0.0],
-        "rain_ante_2d": [0.0, 300.0, 0.0],
-        "sm_profile_wetness": [0.9, 0.9, 0.9],
-        "slope_max": [30.0, 30.0, 30.0],
+        "rain_24h": [0.0, 300.0, 0.0, 100.0],
+        "rain_ante_2d": [0.0, 300.0, 0.0, 100.0],
+        "sm_profile_wetness": [0.9, 0.9, 0.9, 0.9],
+        "slope_max": [30.0, 30.0, 30.0, 30.0],
     })
     s = manual_tpi_score(df, percentiles=(50.0, 200.0, 400.0))
     assert s[0] == pytest.approx(0.0)          # no rain → 0
     assert s[1] == pytest.approx(1.0)          # ≥p99 rain, wet, steep → 1
     assert s[1] > s[2]                         # rain is the trigger
+    # geometric mean: rain3 == p95 -> r=0.5, s=t=1 -> ~0.5^(1/3) (not 0.5;
+    # abs tol covers the config's rounded 0.3333 weights)
+    assert s[3] == pytest.approx(0.5 ** (1 / 3), abs=1e-3)
+    s3 = manual_tpi_score(df, percentiles=(50.0, 200.0, 400.0),
+                          weights=(1 / 3, 1 / 3, 1 / 3))
+    assert s3[3] == pytest.approx(0.5 ** (1 / 3))
+    # weights honoured: w_R=1 -> score == r
+    s2 = manual_tpi_score(df, percentiles=(50.0, 200.0, 400.0),
+                          weights=(1.0, 0.0, 0.0))
+    assert s2[3] == pytest.approx(0.5)

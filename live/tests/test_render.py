@@ -1,9 +1,15 @@
 """PNG/GeoJSON rendering on synthetic class arrays."""
 import numpy as np
+import pytest
 import rasterio
 from rasterio.transform import from_origin
 
-from live.render import classes_png_bytes, critical_features, feature_collection
+from live.render import (
+    classes_png_bytes,
+    critical_features,
+    feature_collection,
+    layer_png_3857,
+)
 
 TR = from_origin(-52.0, -29.0, 0.01, 0.01)
 
@@ -20,6 +26,26 @@ def test_png_rgba_and_alpha():
     assert bands[3, 0, 0] == 0          # invalid pixel is transparent
     assert bands[3, 4, 0] == 255
     assert bands[0, 0, 1] == 0xBD       # class 3 -> bd0026 red channel
+
+
+def test_layer_png_3857():
+    """PNGs for the app are warped to EPSG:3857; bounds come back in lon/lat."""
+    cls = np.zeros((10, 20), dtype=np.uint8)
+    cls[:5] = 3
+    png, bounds = layer_png_3857(cls, TR)
+    with rasterio.MemoryFile(png) as mf, mf.open() as src:
+        assert src.count == 4
+        assert src.read()[3].max() == 255   # alpha band
+    # 3857 extent back in lon/lat ≈ source grid [-52,-29.1,-51.8,-29.0]
+    # (10x20 px of 0.01 deg), within pixel-snapping tolerance
+    assert bounds[0] == pytest.approx(-52.0, abs=0.01)
+    assert bounds[1] == pytest.approx(-29.1, abs=0.01)
+    assert bounds[2] == pytest.approx(-51.8, abs=0.01)
+    assert bounds[3] == pytest.approx(-29.0, abs=0.01)
+    # both classes survive the warp (class 3 -> bd0026, class 0 -> ffffb2)
+    with rasterio.MemoryFile(png) as mf, mf.open() as src:
+        red = src.read(1)
+    assert (red == 0xBD).sum() > 0 and (red == 0xFF).sum() > 0
 
 
 def test_critical_features_polygons_and_min_size():
