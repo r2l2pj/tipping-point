@@ -53,12 +53,17 @@ jobs:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
         run: uv run python -c "from live.fetch import check_earthdata_token; check_earthdata_token()"
 
-      - name: Run now job (IMERG Early + SMAP L4 + GEOS-FP -> GEE now/ assets)
+      # L20: local TPI path — run_now --local fetches IMERG Early / SMAP L4 /
+      # GEOS-FP, computes TPI in numpy against per-doy climatology + terrain
+      # pulled from the GEE assets, writes data/now directly. No EE raster
+      # ingest (loadGeoTIFF requires gs://), so the GEE asset path stays off.
+      - name: Run now job (IMERG Early + SMAP L4 + GEOS-FP -> local TPI -> data/now)
         env:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GEE_PROJECT: ${{ vars.GEE_PROJECT }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NOW_LOCAL: "1"
         run: uv run python live/jobs.py now
 
       - name: Publish data/ to Neon storage
