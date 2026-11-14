@@ -1,8 +1,8 @@
 name: validation
 
-# Validation — daily while a case is active: OPERA DSWx for active windows and
-# SWOT Hydrocron series as a table asset. The job itself decides activeness and
-# exits 0 when no case is active (L8a).
+# Validation — daily while a case is active: GEE catalog OPERA validation and
+# SWOT Hydrocron series as a table asset, without an OPERA Earthdata fetch.
+# The job itself decides activeness and exits 0 when no case is active (L8a).
 
 on:
   schedule:
@@ -53,7 +53,7 @@ jobs:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
         run: uv run python -c "from live.fetch import check_earthdata_token; check_earthdata_token()"
 
-      - name: Run validation job (OPERA DSWx + SWOT Hydrocron)
+      - name: Run validation job (GEE OPERA + SWOT)
         env:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}

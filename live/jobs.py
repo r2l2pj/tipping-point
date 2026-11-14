@@ -212,15 +212,15 @@ def active_cases(today: dt.date | None = None) -> list[str]:
 
 
 def validation(today: dt.date | None = None, dry_run: bool = False) -> None:
-    """Daily while a case is active: OPERA DSWx + SWOT Hydrocron."""
+    """Daily while a case is active: GEE OPERA validation + SWOT Hydrocron."""
     active = active_cases(today)
     if not active:
         print("no active case", flush=True)
         return
     env = _job_env()
     for cid in active:
-        _run_step(f"opera[{cid}]",
-                  [sys.executable, "-m", "pipeline.fetch.opera", "--case", cid],
+        _run_step(f"opera-gee[{cid}]",
+                  [sys.executable, "-m", "gee.opera", "--case", cid],
                   env, dry_run)
         _run_step(f"swot[{cid}]",
                   [sys.executable, "-m", "pipeline.fetch.swot", "--case", cid],

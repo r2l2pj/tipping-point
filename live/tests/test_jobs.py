@@ -142,15 +142,14 @@ def test_validation_no_active_case(monkeypatch, calls, capsys):
     assert calls == []
 
 
-def test_validation_active_case_runs_opera_and_swot(monkeypatch, calls):
+def test_validation_active_case_runs_gee_opera_and_swot(monkeypatch, calls):
     monkeypatch.setattr(
         jobs, "_event_dates",
         lambda: {"zz-2030-01": dt.date(2030, 1, 10),
                  "ev-old": dt.date(2000, 1, 1)})
     monkeypatch.setattr(jobs, "_event_to_case", dict)
     jobs.validation(today=dt.date(2030, 1, 11))
-    assert [_tokens(c) for c in calls] == [
-        "pipeline.fetch.opera", "pipeline.fetch.swot"]
+    assert [_tokens(c) for c in calls] == ["gee.opera", "pipeline.fetch.swot"]
     for cmd in calls:
         assert cmd[cmd.index("--case") + 1] == "zz_2030"
 
