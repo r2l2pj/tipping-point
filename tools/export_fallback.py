@@ -1,10 +1,11 @@
-"""Copy producer-written data files to GCS as a static fallback."""
+"""Publish static fallback files, rendering missing live outputs from GEE assets."""
 from __future__ import annotations
 
 import argparse
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "pipeline"))
 
 from tp import fallback
@@ -21,8 +22,17 @@ def main(argv=None) -> None:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
     try:
-        entries = fallback.plan(args.root, now=args.now, case=args.case, prefix=args.prefix)
+        entries = (fallback.now_plan(args.root, prefix=args.prefix) if args.now else
+                   fallback.plan(args.root, case=args.case, prefix=args.prefix))
         if not args.dry_run:
+            if args.now:
+                try:
+                    fallback.render_now(args.root, bucket=args.bucket, prefix=args.prefix)
+                except Exception as exc:
+                    raise RuntimeError(
+                        "GEE fallback rendering failed; check required assets, GOOGLE_APPLICATION_CREDENTIALS, "
+                        "GCP_SA_KEY, bucket permissions and connectivity") from exc
+                entries = fallback.plan(args.root, now=True, prefix=args.prefix)
             fallback.upload(entries, bucket=args.bucket)
     except (OSError, ValueError, KeyError, RuntimeError) as exc:
         parser.exit(1, f"fallback export failed: {exc}\n")

@@ -150,3 +150,160 @@ def test_cli_subprocess_dry_run(data):
                             check=False, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert result.stdout.splitlines() == [key for _, key in fallback.plan(data, case="wa_2025")]
+
+
+@pytest.fixture
+def production(tmp_path):
+    layers = []
+    for hazard in ("slide", "flood"):
+        for day in range(4):
+            name = f"tpi_{hazard}_d{day}"
+            layers.append({"id": name, "date": f"2026-11-{14 + day}",
+                           "asset": f"projects/test/assets/tipping-point/now/{name}",
+                           "png": f"png/{name}.png",
+                           "cog": f"cog/{name}.tif" if day < 2 else None})
+    node = {"bounds": [-58, -34, -48, -22.5], "updated_at": "2026-11-14T00:00:00Z",
+            "layers": layers, "products": {"summary": "summary.json", "alerts": "alerts.json",
+                                           "critical_areas": "geojson/critical_areas.geojson"}}
+    write(tmp_path, "now/manifest.json", json.dumps(node).encode())
+    write(tmp_path, "manifest.json", json.dumps({"cases": {"now": node}}).encode())
+    write(tmp_path, "now/alerts.json", b'{"candidates": []}')
+    return tmp_path
+
+
+def fake_render_clients(state="COMPLETED"):
+    calls = []
+
+    class Image:
+        def __init__(self, name="pixelArea"):
+            self.name = name
+
+        def __getattr__(self, method):
+            def operation(*args, **kwargs):
+                calls.append((method, args, kwargs))
+                if method == "toDictionary":
+                    return SimpleNamespace(getInfo=lambda: {
+                        "data_date": "2026-11-14", "updated_at": "2026-11-14T00:00:00Z"})
+                if method == "reduceRegion":
+                    return SimpleNamespace(getInfo=lambda: {"area": 12.5})
+                if method == "reduceToVectors":
+                    return SimpleNamespace(getInfo=lambda: {"features": [{
+                        "type": "Feature", "geometry": {"type": "Polygon", "coordinates": []},
+                        "properties": {"class": 2}}]})
+                if method == "getThumbURL":
+                    return "fake-png-url"
+                return self
+            return operation
+
+    Image.pixelArea = lambda: Image()
+
+    def export(**kwargs):
+        calls.append(("export", (), kwargs))
+        return SimpleNamespace(start=lambda: calls.append(("start", (), {})),
+                               status=lambda: {"state": state})
+
+    ee = SimpleNamespace(Image=Image, Geometry=SimpleNamespace(Rectangle=lambda bounds: bounds),
+                         Reducer=SimpleNamespace(sum=lambda: "sum"),
+                         batch=SimpleNamespace(Export=SimpleNamespace(image=SimpleNamespace(toCloudStorage=export))))
+
+    def blob(key):
+        return SimpleNamespace(download_to_filename=lambda path: write(Path(path).parent, Path(path).name, b"COG"),
+                               upload_from_filename=lambda path: calls.append(("upload", (), {"key": key})))
+
+    client = SimpleNamespace(bucket=lambda name: SimpleNamespace(blob=blob))
+    return ee, client, calls
+
+
+def test_render_now_missing_outputs_and_manifest_last(production):
+    ee, client, calls = fake_render_clients()
+    originals = {rel: (production / rel).read_bytes()
+                 for rel in ("manifest.json", "now/manifest.json", "now/alerts.json")}
+    entries = fallback.render_now(production, bucket="bucket", ee_client=ee, client=client,
+                                  fetch_png=lambda url: b"PNG")
+    assert sum(1 for call in calls if call[0] == "getThumbURL") == 8
+    exports = [kw for method, _, kw in calls if method == "export"]
+    assert len(exports) == 4
+    assert all(e["formatOptions"] == {"cloudOptimized": True} and e["crs"] == "EPSG:4326" for e in exports)
+    thumbs = [kw for method, args, kw in calls if method == "getThumbURL"]
+    assert len(thumbs) == 8
+    params = [args[0] for method, args, _ in calls if method == "getThumbURL"]
+    assert all(p["crs"] == "EPSG:3857" for p in params)
+    assert any(method == "gte" and args == (0.4,) for method, args, _ in calls)
+    assert len([1 for method, _, _ in calls if method == "reduceToVectors"]) == 4
+    summary = json.loads((production / "now/summary.json").read_text())
+    assert summary["critical_km2"] == {"slide": 12.5, "flood": 12.5, "any": 12.5}
+    critical = json.loads((production / "now/geojson/critical_areas.geojson").read_text())
+    assert len(critical["features"]) == 4
+    assert {f["properties"]["hazard"] for f in critical["features"]} == {"slide", "flood"}
+    assert all(f["properties"]["label"] == "Alto" for f in critical["features"])
+    assert all((production / rel).read_bytes() == content for rel, content in originals.items())
+    fallback.upload(fallback.plan(production, now=True), bucket="bucket", client=client)
+    assert [kw["key"] for method, _, kw in calls if method == "upload"][-2:] == [
+        "fallback/now/manifest.json", "fallback/manifest.json"]
+    assert all(path.is_file() for path, _ in entries)
+    calls.clear()
+    fallback.render_now(production, bucket="bucket", ee_client=ee, client=client, fetch_png=lambda url: b"PNG")
+    assert not any(method in ("export", "getThumbURL", "reduceRegion", "reduceToVectors")
+                   for method, _, _ in calls)
+
+
+@pytest.mark.parametrize("state", ["FAILED", "CANCELLED", "RUNNING"])
+def test_cog_failure_never_publishes_manifests(production, state):
+    ee, client, calls = fake_render_clients(state)
+    with pytest.raises(RuntimeError, match="GEE COG export"):
+        fallback.render_now(production, bucket="bucket", ee_client=ee, client=client,
+                            fetch_png=lambda url: b"PNG", sleep=lambda n: None, max_polls=1)
+    assert not any(method == "upload" for method, _, _ in calls)
+
+
+def test_render_preserves_existing_local_products(production):
+    ee, client, calls = fake_render_clients()
+    local = {"now/summary.json": b'{"producer": true}',
+             "now/geojson/critical_areas.geojson": b'{"features": []}',
+             "now/png/tpi_slide_d0.png": b"producer PNG"}
+    for rel, content in local.items():
+        write(production, rel, content)
+    fallback.render_now(production, bucket="bucket", ee_client=ee, client=client, fetch_png=lambda url: b"PNG")
+    assert all((production / rel).read_bytes() == content for rel, content in local.items())
+    assert len([1 for method, _, _ in calls if method == "getThumbURL"]) == 7
+    assert not any(method in ("reduceRegion", "reduceToVectors") for method, _, _ in calls)
+
+
+def test_render_missing_asset_metadata_errors(production):
+    ee, client, calls = fake_render_clients()
+    image = ee.Image()
+    image.toDictionary = lambda fields: SimpleNamespace(getInfo=dict)
+    image.select = lambda band: image
+    ee.Image = lambda name: image
+    with pytest.raises(ValueError, match="missing required asset timestamps"):
+        fallback.render_now(production, bucket="bucket", ee_client=ee, client=client)
+    assert not any(method == "export" for method, _, _ in calls)
+
+
+def test_render_cli_error_hides_sdk_secrets(production, monkeypatch, capsys):
+    def fail(*args, **kwargs):
+        raise RuntimeError("secret-sdk-detail")
+
+    monkeypatch.setattr(fallback, "render_now", fail)
+    with pytest.raises(SystemExit) as exc:
+        export_fallback.main(["--now", "--root", str(production), "--bucket", "gs://bucket"])
+    assert exc.value.code == 1
+    message = capsys.readouterr().err
+    assert "secret-sdk-detail" not in message
+    assert "GEE fallback rendering failed" in message
+
+
+def test_now_dry_run_missing_renders_is_offline(production, monkeypatch, capsys):
+    monkeypatch.setattr(fallback, "render_now", lambda *a, **kw: pytest.fail("render in dry run"))
+    export_fallback.main(["--now", "--root", str(production), "--dry-run"])
+    keys = capsys.readouterr().out.splitlines()
+    assert "fallback/now/summary.json" in keys
+    assert keys[-2:] == ["fallback/now/manifest.json", "fallback/manifest.json"]
+    assert not (production / "now/summary.json").exists()
+
+
+@pytest.mark.parametrize("rel", ["now/alerts.json", "now/manifest.json", "manifest.json"])
+def test_now_missing_producer_file_errors(production, rel):
+    (production / rel).unlink()
+    with pytest.raises(FileNotFoundError):
+        fallback.now_plan(production)
