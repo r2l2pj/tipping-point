@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-14T21:40:50Z",
+  "updated_at": "2026-11-14T21:47:26Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -11,7 +11,44 @@
         -29.0
       ],
       "forecast_source": "perfect-forecast",
+      "data_basis": "hindcast — IMERG_V07 + SMAP SPL4SMGP as archived in GEE (no real-time latency modelled); not as-available",
       "layers": [
+        {
+          "id": "night_lights_post",
+          "date": "2024-05-02",
+          "png": "rs_2024/png/night_lights_post_20240502.png",
+          "cog": null,
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.502037,
+            -30.506849,
+            -50.497572,
+            -28.997617
+          ]
+        },
+        {
+          "id": "night_lights_pre",
+          "date": "2024-05-02",
+          "png": "rs_2024/png/night_lights_pre_20240502.png",
+          "cog": null,
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -52.502037,
+            -30.506849,
+            -50.497572,
+            -28.997617
+          ]
+        },
         {
           "id": "tpi_flood",
           "date": "2024-04-22",
@@ -790,7 +827,44 @@
         48.5
       ],
       "forecast_source": "perfect-forecast",
+      "data_basis": "hindcast — IMERG_V07 + SMAP SPL4SMGP as archived in GEE (no real-time latency modelled); not as-available",
       "layers": [
+        {
+          "id": "night_lights_post",
+          "date": "2025-12-10",
+          "png": "wa_2025/png/night_lights_post_20251210.png",
+          "cog": null,
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.60207,
+            46.998783,
+            -121.49758,
+            48.500042
+          ]
+        },
+        {
+          "id": "night_lights_pre",
+          "date": "2025-12-10",
+          "png": "wa_2025/png/night_lights_pre_20251210.png",
+          "cog": null,
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.60207,
+            46.998783,
+            -121.49758,
+            48.500042
+          ]
+        },
         {
           "id": "tpi_flood",
           "date": "2025-11-30",

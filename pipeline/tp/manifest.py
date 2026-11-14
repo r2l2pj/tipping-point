@@ -251,6 +251,8 @@ def build_case_node(event_id: str, data_root: Path | str = DATA_DIR) -> dict:
         "mode": "replay",
         "bounds": config_case(case_id)["aoi"],
         "forecast_source": "perfect-forecast",
+        "data_basis": ("hindcast — IMERG_V07 + SMAP SPL4SMGP as archived in GEE "
+                       "(no real-time latency modelled); not as-available"),
         "layers": layers,
         "metrics": metrics,
         "data_dates": _data_dates(event_id, case_dir),

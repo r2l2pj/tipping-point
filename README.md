@@ -128,6 +128,13 @@ silent 0.
 | OPERA DSWx | `OPERA/DSWX/L3_V1/HLS` (rs_2024), `OPERA/DSWX/L3_V1/S1` (wa_2025) | validation IoU/F1 (`B01_WTR`, ≤5 d after event, ruling L10b) |
 | HLS | `NASA/HLS/HLSL30/v002`, `NASA/HLS/HLSS30/v002` | scar candidates, cloud fraction |
 
+Replay-case caveat: the published TPI frames are a **hindcast** — IMERG_V07
+and SMAP L4 as archived in GEE, with no real-time latency modelled. A frame
+labeled `D` uses rain ending `D` 00Z plus the SMAP granule(s) valid on D-1
+(which in reality only existed ~2–3 days later). The honest "known before"
+number is the lead-time series (IMERG Early ~4 h + SMAP at real latency).
+Manifest `cases.<id>.data_basis` carries this label for the app.
+
 Off-GEE fetches: NISAR GCOV (below), SWOT Hydrocron (reach ids in
 `events/*.json`), GEOS-FP forecast, GLC/UFRGS-Cemaden landslide
 inventories.
