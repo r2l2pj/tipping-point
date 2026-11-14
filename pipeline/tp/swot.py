@@ -58,10 +58,27 @@ def fetch_reach(reach_id: str, start: str, end: str) -> pd.DataFrame:
 def river_series(
     reach_ids: list[str], start: str, end: str, out_path: Path
 ) -> pd.DataFrame:
-    """Fetch each reach, merge sorted by time_str, write records JSON."""
+    """Fetch each reach, merge sorted by time_str, write records JSON.
+
+    Some SWORD ids have no Hydrocron timeseries (small reaches); a 400
+    'not found' is skipped and reported, not fatal."""
+    frames, missing = [], []
+    for rid in reach_ids:
+        try:
+            frames.append(fetch_reach(rid, start, end))
+        except requests.HTTPError as e:
+            if e.response is not None and e.response.status_code == 400:
+                missing.append(rid)
+                continue
+            raise
+    if missing:
+        print(f"Hydrocron: no timeseries for {len(missing)} reach(es): "
+              f"{', '.join(missing)}")
+    if not frames:
+        raise RuntimeError(
+            f"no Hydrocron timeseries for any reach in {reach_ids}")
     df = (
-        pd.concat([fetch_reach(rid, start, end) for rid in reach_ids],
-                  ignore_index=True)
+        pd.concat(frames, ignore_index=True)
         .sort_values("time_str", ignore_index=True)
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
