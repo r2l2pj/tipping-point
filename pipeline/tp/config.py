@@ -66,9 +66,19 @@ def now_name() -> str:
     return now["name"]
 
 
+def climatology() -> dict:
+    """The 'climatology' block (scale, years, window/offset settings)."""
+    return load_config().get("climatology") or {}
+
+
 def clim_scale() -> float:
     """Divisor for stored climatology percentiles (int16 mm*scale); 1 if unset."""
-    return (load_config().get("climatology") or {}).get("scale", 1)
+    return climatology().get("scale", 1)
+
+
+def seed() -> int:
+    """Global RNG seed (config.yaml 'seed'; 42 when absent)."""
+    return int(load_config().get("seed", 42))
 
 
 def event_id(name: str) -> str:

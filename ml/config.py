@@ -7,24 +7,32 @@ Spec: .crew/reports/ml-predict.md §5.1-5.4.
 from __future__ import annotations
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
-import yaml
+from tp.config import case as _tp_case
+from tp.config import event_id as _tp_event_id
+from tp.config import seed as _tp_seed
+from tp.config import threshold as _tp_threshold
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ML_DIR = Path(__file__).resolve().parent
 MODEL_DIR = ML_DIR / "models"
 DATA_DIR = REPO_ROOT / "data"
-EVENT_ID = "rs-2024-05"
+ML_CASE = "rs_2024"
+EVENT_ID = _tp_event_id(ML_CASE)
+SEED = _tp_seed()  # config.yaml seed: 42
 
-# --- AOI / timing (sync with events/rs-2024-05.json) -------------------------
-AOI_BBOX = (-52.5, -30.5, -50.5, -29.0)  # west, south, east, north
+# --- AOI / timing (config.yaml cases.rs_2024; events/rs-2024-05.json mirrors) --
+_ML = _tp_case(ML_CASE)
+AOI_BBOX = tuple(_ML["aoi"])  # west, south, east, north
 # Window in which each positive cell gets t = end of its max-24h IMERG window.
-EVENT_WINDOW = ("2024-04-27", "2024-05-06")
-# Replay frames: 10 daily frames over the event window (spec §3 "10 daily frames").
+EVENT_WINDOW = tuple(d.isoformat() for d in _ML["label_window"])
+# Replay frames: one daily 00Z frame per label_window day (spec §3 "10 daily frames").
 FRAME_TIMES_UTC = [
-    f"2024-04-{d:02d}T00:00:00Z" for d in range(27, 31)
-] + [f"2024-05-{d:02d}T00:00:00Z" for d in range(1, 7)]
+    f"{(_ML['label_window'][0] + timedelta(days=i)).isoformat()}T00:00:00Z"
+    for i in range((_ML["label_window"][1] - _ML["label_window"][0]).days + 1)
+]
 
 BLOCK_SIZE_DEG = 0.25  # ~25 km, larger than IMERG 0.1° and SMAP 9 km pixels
 CELL_SIZE_M = 90.0     # static-grid resolution; positives deduped to one per cell
@@ -100,14 +108,10 @@ MONOTONE_CONSTRAINTS = {
 # --- Thresholds / output classes --------------------------------------------
 FPR_TARGET = 0.05          # thresholds are set at fixed FPR on validation folds
 HAZARD_THRESHOLD = 0.12    # LHASA-style fallback until refit on fold scores
-CLASS_BREAKS = (0.2, 0.4, 0.6)  # SCHEMA `tpi` legend: 0 Baixo / 1 Moderado / 2 Alto / 3 Critico
+CLASS_BREAKS = tuple(_tp_threshold("tpi_classes", (0.2, 0.4, 0.6)))  # SCHEMA `tpi` legend: 0-3
 # Geomean exponents [R,S,T] for the manual-TPI baseline (evaluate.py);
 # uniform thirds = plain (R·S·T)^(1/3). From config.yaml thresholds.
-TPI_WEIGHTS = tuple(
-    yaml.safe_load((REPO_ROOT / "config.yaml").read_text())
-    .get("thresholds", {})
-    .get("tpi_weights", (1 / 3, 1 / 3, 1 / 3))
-)
+TPI_WEIGHTS = tuple(_tp_threshold("tpi_weights", (1 / 3, 1 / 3, 1 / 3)))
 MIN_SLOPE_DEG = 5.0        # mask gentler slopes (LHASA-style)
 LC_WATER = 0               # MODIS LC_Type1 water class
 RASTER_NODATA = 255        # uint8 nodata for hazard rasters

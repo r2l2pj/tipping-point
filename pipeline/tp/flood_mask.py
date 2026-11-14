@@ -23,11 +23,11 @@ from tp.config import threshold
 
 FLOOD_DROP_DB = float(threshold("flood_db_drop", -3.0))
 WATER_DB = float(threshold("water_db_max", -15.0))  # fallback and upper clamp for the adaptive threshold
-BRIGHT_RISE_DB = 3.0
+BRIGHT_RISE_DB = float(threshold("bright_rise_db", 3.0))
 _HAND_RANGE_M = threshold("hand_range_m", [5, 15])
 HAND_FLOOD_M = float(_HAND_RANGE_M[1])
 HAND_BRIGHT_M = float(_HAND_RANGE_M[0])
-MMU_HA = 3.0
+MMU_HA = float(threshold("mmu_ha", 3.0))
 TILE_PX = 512
 _FILL_DB = 10.0           # bright fill so nodata never reads as water
 

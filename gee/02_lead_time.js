@@ -1,3 +1,5 @@
+// Reference mirror only — the canonical implementation is the Python gee/*.py
+// modules, which read config.yaml. This script is not used by any pipeline.
 // ===== Antecipação do alerta, nível 1 =====
 // Depends on `series` from 01_tpi_index.js — paste both or reference the exported asset.
 // Catalog asset: projects/<GEE_PROJECT>/assets/tipping-point/rs2024_initiation

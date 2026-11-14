@@ -170,7 +170,7 @@ def sample_n1(footprint_geom, slides_fc, static_img=None, ee=None):
         .distance(ee.Kernel.euclidean(radius=cfg.N1_MIN_DIST_M, units="meters"))
     )
     n_each = cfg.N1_COUNT // 2
-    pts = ee.FeatureCollection.randomPoints(footprint_geom, cfg.N1_COUNT * 2, seed=1)
+    pts = ee.FeatureCollection.randomPoints(footprint_geom, cfg.N1_COUNT * 2, seed=cfg.SEED)
     tagged = (
         dist.addBands(static_img.select("slope_mean"))
         .sampleRegions(pts, scale=cfg.CELL_SIZE_M, geometries=True)

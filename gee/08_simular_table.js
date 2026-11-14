@@ -1,3 +1,5 @@
+// Reference mirror only — the canonical implementation is the Python gee/*.py
+// modules, which read config.yaml. This script is not used by any pipeline.
 // ===== Pré-calcula os alertas do /simular para o caso RS 2024 =====
 // Doc do projeto v3, "Código GEE 5". Lê o asset que 01_tpi_index.js exporta com
 // Export.image.toAsset — sem ele este script não roda. Saída: CSV no Drive que

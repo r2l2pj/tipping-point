@@ -29,8 +29,8 @@ COH_DROP = float(threshold("coherence_drop", 0.3))
 MIN_SLOPE_DEG = float(threshold("slope_range_deg", [15, 30])[0])
 MIN_REF_COH = float(threshold("coherence_ref_min", 0.4))
 MIN_PATCH_PX = int(threshold("min_blob_pixels", 10))
-MAX_ELEV_M = 600.0      # crude snow-line cap; tune visually per event
-HV_DROP_DB = 2.0        # high-confidence vote on HV backscatter loss
+MAX_ELEV_M = float(threshold("coh_max_elev_m", 600.0))  # crude snow-line cap; tune visually per event
+HV_DROP_DB = float(threshold("hv_drop_db", 2.0))        # high-confidence vote on HV backscatter loss
 
 
 def _to_db(x: np.ndarray) -> np.ndarray:

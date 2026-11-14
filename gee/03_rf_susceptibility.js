@@ -1,3 +1,5 @@
+// Reference mirror only — the canonical implementation is the Python gee/*.py
+// modules, which read config.yaml. This script is not used by any pipeline.
 // ===== Suscetibilidade com Random Forest, nível 3a =====
 // Draft from project doc. Catalog asset: projects/<GEE_PROJECT>/assets/tipping-point/glc_brasil
 var region = ee.Geometry.Rectangle([-58, -34, -39, -19]); // Sul e Sudeste

@@ -21,6 +21,7 @@ import ee
 from tp.config import REPO_ROOT
 from tp.config import case as _tp_case
 from tp.config import case_id as _tp_case_id
+from tp.config import climatology as _tp_climatology
 from tp.config import event_id as _tp_event_id
 
 GEE_PROJECT = os.environ.get("GEE_PROJECT", "")
@@ -30,7 +31,7 @@ COL_SMAP = "NASA/SMAP/SPL4SMGP/008"  # /007 is discontinued
 BAND_SMAP = "sm_rootzone_wetness"
 IMG_NASADEM = "NASA/NASADEM_HGT/001"
 BAND_DEM = "elevation"
-CLIM_YEARS = (2001, 2023)
+CLIM_YEARS = tuple(_tp_climatology().get("years") or (2001, 2023))
 ASSET_ROOT = "projects/{GEE_PROJECT}/assets/tipping-point"
 
 # D10: GCP_SA_KEY is canonical; GEE_SERVICE_ACCOUNT_KEY is the fallback.

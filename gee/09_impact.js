@@ -1,3 +1,5 @@
+// Reference mirror only — the canonical implementation is the Python gee/*.py
+// modules, which read config.yaml. This script is not used by any pipeline.
 // ===== Camada de impacto (doc v4 "impact") =====
 // Run AFTER 01_tpi_index.js / 07_tpi_wa.js (they export the TPI series assets
 // this script reads). Events: ../events/rs-2024-05.json, wa-2025-12.json.
