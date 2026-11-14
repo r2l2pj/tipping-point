@@ -13,6 +13,11 @@ cases:
     window_before_days: 10
     window_after_days: 10
 
+domains:
+  now:
+    name: sul_brasil
+    bbox: [-58.0, -34.0, -48.0, -22.5]   # oeste, sul, leste, norte
+
 thresholds:
   rain_percentiles: [90, 95, 99]
   soil_wetness_range: [0.5, 0.9]
@@ -26,5 +31,8 @@ thresholds:
   coherence_drop: 0.3
   coherence_ref_min: 0.4
   min_blob_pixels: 10
+
+climatology:
+  scale: 10            # stored clim_rain p90|p95|p99 are int16 mm*scale
 
 seed: 42

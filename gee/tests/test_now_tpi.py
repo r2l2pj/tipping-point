@@ -150,6 +150,12 @@ def test_day_stack_reuses_tpi_scoring(fake_ee):
     assert {"R", "S", "TPI_slide", "TPI_flood"} <= renames
     sel = {c[1][0] for c in log if c[0] == "clim.select"}
     assert sel == {"p90", "p95", "p99"}            # climatology band names
+    # stored percentiles are int16 mm*10 — divided by climatology.scale
+    from tp.config import clim_scale
+    divs = [c for c in log
+            if c[0].startswith("clim.select()") and c[0].endswith(".divide")]
+    assert len(divs) == 3
+    assert all(list(c[1]) == [clim_scale()] for c in divs)
     weights = {c[0].split(".")[0]: c[1][0]
                for c in log if c[0].endswith(".pow")}
     assert weights["smap"] == pytest.approx(0.3333)

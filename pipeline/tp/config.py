@@ -49,6 +49,19 @@ def case_id(name: str) -> str:
     raise KeyError(f"unknown case/event {name!r}; config.yaml cases: {sorted(cases)}")
 
 
+def now_bounds() -> tuple[float, float, float, float]:
+    """(west, south, east, north) bbox of the 'now' domain (domains.now.bbox)."""
+    now = (load_config().get("domains") or {}).get("now") or {}
+    if "bbox" not in now:
+        raise KeyError("config.yaml is missing domains.now.bbox")
+    return tuple(now["bbox"])
+
+
+def clim_scale() -> float:
+    """Divisor for stored climatology percentiles (int16 mm*scale); 1 if unset."""
+    return (load_config().get("climatology") or {}).get("scale", 1)
+
+
 def event_id(name: str) -> str:
     """Event id ('rs-2024-05') for a case id or event id.
 

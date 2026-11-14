@@ -398,8 +398,9 @@ them server-side (geotiff.js/ee range reads). Tree:
 ```
 tipping-point/
 ├── static/<domain>/             # domain = south_brazil | wa_2025
-│   ├── clim_rain                # ImageCollection, 366 images, `doy` property;
-│   │                            #   bands p90|p95|p99 = 3-day-sum mm percentiles (~10 km)
+│   ├── clim_rain                # ImageCollection, `doy` property;
+│   │                            #   bands p90|p95|p99 = 3-day-sum mm percentiles,
+│   │                            #   int16 mm*10 (config.yaml climatology.scale)
 │   ├── slope                    # degrees
 │   └── hand                     # metres
 ├── <case>/                      # rs_2024, wa_2025
@@ -416,6 +417,13 @@ tipping-point/
 - Every derived asset carries the image properties `data_date`
   (YYYY-MM-DD) and `updated_at` (ISO-8601) — readers can check freshness
   without the manifest.
+- Climatology layout (approved): per-case `static/<case>/clim_rain`
+  collections cover the case's event window (~25 doys over the case AOI);
+  the live now mode uses a rolling ~75-doy window over the `domains.now`
+  bbox in config.yaml at `static/south_brazil/clim_rain`. Percentile bands
+  are stored int16 mm*10 (~0.9 GB total). The read interface is unchanged —
+  `doy` image property, `p90|p95|p99` bands — with consumers dividing by
+  `climatology.scale` (`tp.config.clim_scale()`) before scoring.
 - Reader rule: a manifest layer's `asset` is the PRIMARY source (served via
   the app server); `png`/`cog` remain the fallback, unchanged.
 - Extra ingested rasters beyond the names above are recorded by asset id in

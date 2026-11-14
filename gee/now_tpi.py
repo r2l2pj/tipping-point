@@ -40,14 +40,13 @@ from pathlib import Path
 
 import ee
 import tp.metrics as _metrics
-from tp.config import thresholds
+from tp.config import clim_scale, now_bounds, thresholds
 
 from . import common, tpi
 
 FORECAST_DAYS = 3                     # d0 observed + d1..d3 GEOS-FP leads
 FORECAST_SOURCE = "geos-fp"
 SCALE_M = 1000                        # matches gee.tpi series scale (~1 km grid)
-NOW_BOUNDS = (-58.0, -34.0, -48.0, -22.5)  # west,south,east,north — live/config.NOW_BOUNDS
 
 # `now/` input collections and `static/south_brazil/` inputs (leaf names).
 COLLECTIONS = ("imerg_early", "smap_l4", "geosfp")
@@ -181,8 +180,10 @@ def day_stack(rain3, smap, clim, t_slide, t_flood):
     """4-band (R, S, TPI_slide, TPI_flood) image — gee.tpi.tpi_at's scoring
     against the precomputed DOY climatology (bands p90|p95|p99)."""
     thr = thresholds()
-    r = tpi.rain_score(rain3, clim.select("p90"), clim.select("p95"),
-                       clim.select("p99"))
+    scale = clim_scale()
+    p90, p95, p99 = (clim.select(b).divide(scale)
+                     for b in ("p90", "p95", "p99"))
+    r = tpi.rain_score(rain3, p90, p95, p99)
     s = smap.select(0).unitScale(*thr["soil_wetness_range"]).clamp(0, 1)
     w = thr.get("tpi_weights")
     return (r.rename("R").addBands(s.rename("S"))
@@ -196,7 +197,7 @@ def compute(project: str) -> dict:
     asset = lambda name: common.asset_path(name, project)
     tags = {n: collection_tags(asset(f"now/{n}")) for n in COLLECTIONS}
     plans = day_plans(tags["imerg_early"], tags["smap_l4"], tags["geosfp"])
-    aoi = ee.Geometry.Rectangle(list(NOW_BOUNDS))
+    aoi = ee.Geometry.Rectangle(list(now_bounds()))
     t_slide, t_flood = terrain_scores(asset)
     clim_col = ee.ImageCollection(asset("static/south_brazil/clim_rain"))
     updated_at = _utcnow()
