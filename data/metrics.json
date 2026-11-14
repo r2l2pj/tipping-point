@@ -2,7 +2,7 @@
   "cases": {
     "wa_2025": {
       "event": "wa-2025-12",
-      "flooded_km2": 28.291130745181892,
+      "flooded_km2": 27.986782691534348,
       "water_km2": 304.07798965256404,
       "threshold_db": -15.0,
       "flood_bright_km2": 0.6621649771870278,
@@ -168,9 +168,9 @@
       "_null_reasons": {
         "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog stub is empty (0 dated points)",
         "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson is an empty stub (1 feature, 0 coordinates): no dated inventory points available; fell back to cluster-lead vs damage_anchor",
-        "people_flooded": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
-        "flooded_km2": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
-        "flood_source": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "people_flooded": "no NISAR coverage — event predates launch (Jul 2025)",
+        "flooded_km2": "no NISAR coverage — event predates launch (Jul 2025)",
+        "flood_source": "no NISAR coverage — event predates launch (Jul 2025)",
         "rf_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data.",
         "rule_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data."
       },
