@@ -81,7 +81,11 @@ def earthaccess_login(creds: dict | None = None):
             strategy="netrc" if "netrc" in creds else "environment"
         )
     except Exception as e:
-        raise RuntimeError(f"Earthdata login failed: {e}") from e
+        # No {e} interpolation: the underlying error may echo credentials.
+        raise RuntimeError(
+            "Earthdata login failed: check EARTHDATA_TOKEN, "
+            "EDL_USER/EDL_PASS, or ~/.netrc credentials"
+        ) from e
 
 
 def asf_session(creds: dict | None = None):
