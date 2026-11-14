@@ -194,6 +194,26 @@ def test_ingest_table_skips_existing_parts(monkeypatch, tmp_path):
     assert entry["status"] == "ingesting"
 
 
+def test_ingest_table_chunks_on_payload_bytes(monkeypatch, tmp_path):
+    """Few but large features (wide boundaries): split so no EE export
+    request approaches the 10 MB serialized-payload cap."""
+    calls = _install_fakes(monkeypatch)
+    monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")
+    monkeypatch.setattr(ingest, "TABLE_CHUNK_BYTES", 300)
+    aid = "projects/p/assets/tipping-point/wa_2025/municipal_boundaries"
+    features = [{"type": "Feature", "geometry": None,
+                 "properties": {"pad": "x" * 120}} for _ in range(10)]
+    geo = tmp_path / "wide.geojson"
+    geo.write_text(json.dumps(
+        {"type": "FeatureCollection", "features": features}))
+    entry = ingest.ingest_table(geo, asset_id=aid)
+    fc_sizes = [c[1] for c in calls if c[0] == "fc"]
+    assert len(fc_sizes) > 2                      # split happened
+    assert sum(fc_sizes) == 10
+    assert max(fc_sizes) < 10
+    assert len(entry["parts"]) == len(fc_sizes)
+
+
 def test_ingest_table_small_collection_single_chunk(monkeypatch, tmp_path):
     calls = _install_fakes(monkeypatch)
     monkeypatch.setenv("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/sa.json")

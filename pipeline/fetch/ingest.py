@@ -50,6 +50,10 @@ MANIFEST_SCHEMA = "tipping-point/gee-assets@1"
 # task) in ingest_table; catalogs up to ~20k features must never land in
 # a single inline object OR a single EE request.
 TABLE_CHUNK_FEATURES = 5000
+# The EE table-export request embeds the whole serialized collection and
+# is capped at 10 MB; serialized ee.Feature JSON runs ~2x the GeoJSON
+# text, so chunks also split on a 4 MB GeoJSON budget (~8 MB on wire).
+TABLE_CHUNK_BYTES = 4_000_000
 # D10 convention (gee/common.py): GCP_SA_KEY is canonical for SA creds.
 BUCKET_ENV_VARS = ("NOW_GCS_BUCKET", "GCS_BUCKET")
 SA_KEY_ENV_VARS = ("GCP_SA_KEY", "GEE_SERVICE_ACCOUNT_KEY")
@@ -264,10 +268,16 @@ def ingest_table(geojson_path, *, asset_id, force=False,
     chunk_size = int(chunk_size)
     if chunk_size < 1:
         raise ValueError("chunk_size must be >= 1")
-    chunks = [
-        features[i:i + chunk_size]
-        for i in range(0, len(features), chunk_size)
-    ] or [[]]
+    chunks, cur, cur_bytes = [], [], 0
+    for f in features:
+        size = len(json.dumps(f, separators=(",", ":")))
+        if cur and (len(cur) >= chunk_size
+                    or cur_bytes + size > TABLE_CHUNK_BYTES):
+            chunks.append(cur)
+            cur, cur_bytes = [], 0
+        cur.append(f)
+        cur_bytes += size
+    chunks.append(cur)
     single = len(chunks) == 1
     targets = (
         [asset_id] if single
