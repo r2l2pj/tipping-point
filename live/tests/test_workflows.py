@@ -91,4 +91,4 @@ def test_fallback_publish_and_permissions(name, cron, job):
 
 def test_now_cron():
     _, doc = _load("now.yml")
-    assert _on(doc)["schedule"] == [{"cron": "0 */3 * * *"}]
+    assert _on(doc)["schedule"] == [{"cron": "0 */6 * * *"}]
