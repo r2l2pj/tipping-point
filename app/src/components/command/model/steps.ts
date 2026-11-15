@@ -505,6 +505,35 @@ export function floodCaptionNote(
   on: readonly LayerId[]
 ): string {
   const post = floodPostDate(bundle);
-  if (!post || !on.includes("flood") || !floodShownOn(bundle, date)) return "";
+  if (!post || !on.includes("flood")) return "";
+  if (!floodShownOn(bundle, date)) {
+    // Conductor: before the pass that mapped the outlines, say when it comes.
+    const next = nextNisarPass(bundle, date);
+    return next ? ` · next NISAR pass: ${fmtDate(next).replace(/,\s*\d{4}$/, "")}` : "";
+  }
   return ` · NISAR flood outlines (pass ${fmtDate(post)})`;
+}
+
+// The first NISAR pass after a day, from the data: the dated NISAR frames,
+// the pair layers and lead-analysis timeline marks of kind 'nisar'.
+export function nextNisarPass(bundle: CcBundle, date: string | undefined): string | undefined {
+  if (!date) return undefined;
+  const day = date.slice(0, 10);
+  // lead-analysis/lead-ml NISAR marks (main track) win over the frame list,
+  // which also holds context passes from other tracks.
+  const tmarks = (bundle.metricsView as Record<string, unknown> | undefined)?.timeline_marks;
+  const marked = Array.isArray(tmarks)
+    ? tmarks.flatMap((x) => (x && typeof x === "object" && (x as Record<string, unknown>).kind === "nisar" && typeof (x as Record<string, unknown>).date === "string" ? [((x as Record<string, unknown>).date as string).slice(0, 10)] : []))
+    : [];
+  if (marked.length) return marked.filter((d) => d > day).sort()[0];
+  const dates = new Set<string>();
+  for (const raw of bundle.manifest?.layers ?? []) {
+    const l = raw as unknown as Record<string, unknown>;
+    if (typeof l.date === "string" && (l.kind === "nisar_frame" || /^(nisar|radar)_(pre|post)$/.test(String(l.id)))) dates.add(l.date.slice(0, 10));
+  }
+  const dd = bundle.data_dates as Record<string, unknown> | undefined;
+  for (const k of ["nisar_pre", "nisar_post"]) if (typeof dd?.[k] === "string") dates.add((dd[k] as string).slice(0, 10));
+  const tm = (bundle.metricsView as Record<string, unknown> | undefined)?.timeline_marks;
+  if (Array.isArray(tm)) for (const x of tm) if (x && typeof x === "object" && (x as Record<string, unknown>).kind === "nisar" && typeof (x as Record<string, unknown>).date === "string") dates.add(((x as Record<string, unknown>).date as string).slice(0, 10));
+  return [...dates].filter((d) => d > day).sort()[0];
 }

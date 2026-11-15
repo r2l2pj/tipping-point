@@ -395,7 +395,7 @@ export default function MapStage({
             <button type="button" data-caption title={full} aria-expanded={capOpen} onClick={() => setCapOpen((o) => !o)}
               className={`${chip} max-w-full truncate !py-0.5 text-left ${caption.forecast ? "border-2 border-dashed border-cc-forecast-ink" : ""}`}>
               <span className="sr-only">{full} </span>
-              <span aria-hidden="true">{shortCaption(caption.text, caption.forecast)} ⓘ</span>
+              <span aria-hidden="true">{shortCaption(caption.text, caption.forecast)}{captionNote.startsWith(" · next NISAR pass") ? captionNote : ""} ⓘ</span>
             </button>
           </div>
         );

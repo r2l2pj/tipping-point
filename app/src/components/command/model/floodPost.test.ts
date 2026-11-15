@@ -65,8 +65,8 @@ describe("floodCaptionNote", () => {
     expect(floodCaptionNote(wa, "2025-12-16", ["tpi", "flood"]))
       .toBe(" · NISAR flood outlines (pass Dec 16, 2025)");
   });
-  test("silent before the pass, without the layer, or without a post date", () => {
-    expect(floodCaptionNote(wa, "2025-12-15", ["tpi", "flood"])).toBe("");
+  test("before the pass: names the next pass (conductor); silent without the layer or a post date", () => {
+    expect(floodCaptionNote(wa, "2025-12-15", ["tpi", "flood"])).toBe(" · next NISAR pass: Dec 16");
     expect(floodCaptionNote(wa, "2025-12-16", ["tpi"])).toBe("");
     expect(floodCaptionNote(bundle({}), "2025-12-16", ["tpi", "flood"])).toBe("");
   });
