@@ -136,3 +136,22 @@ def test_serve_combine_multiplies_by_t_ml(tmp_path):
     assert layers[0]["legend"]["type"] == "relative_index"
     assert layers[0]["title"].startswith("Relative likelihood of a rain-triggered landslide within 24h")
     assert np.nanmax(pb) <= 0.5 + 1e-6
+
+
+def test_frames_monotone_in_horizon(tmp_path):
+    """P(trigger within H) never decreases with H (lead-ml 5baed62)."""
+    import rasterio
+    out = tmp_path / "now"
+    _obs(out)
+    p_trigger.run(out, D, bounds=BOUNDS, model_path=_smoke_model(tmp_path),
+                  static_path=_static(tmp_path), rain_fc=np.full((14, 20, 20), 10.0),
+                  gfs_issued="2026-11-15T00:00:00Z",
+                  soil={v: np.full((20, 20), 0.3) for v in p_trigger.SOIL_VARS})
+    prev = None
+    for h in p_trigger.HORIZONS:
+        with rasterio.open(out / "cog" / f"p_trigger_{h}.tif") as ds:
+            p = ds.read(1)
+        if prev is not None:
+            ok = np.isfinite(p) & np.isfinite(prev)
+            assert (p[ok] >= prev[ok] - 1e-7).all(), h
+        prev = p

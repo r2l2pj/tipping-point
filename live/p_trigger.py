@@ -137,7 +137,8 @@ def frame_layers(today: dt.date, gfs_issued: str, files: dict,
                             f"forecast to {(today + dt.timedelta(days=n - 1)):%b %-d} "
                             f"(issued {issued})"),
             "low_skill": h in LOW_SKILL,
-            "domain": "Brazilian land only (model trained on Brazilian inventories)",
+            "domain": ("Brazilian land only — product scope: no landslide labels "
+                       "and no Brazilian civil-defence audience outside Brazil"),
             "model": {"name": model_meta.get("model") or model_meta.get("name", "p_trigger_xgb"),
                       "combine": model_meta.get("serve_combine"),
                       "version": model_meta.get("version"),
@@ -186,8 +187,9 @@ def run(out_dir: Path, today: dt.date, bounds=NOW_BOUNDS, model_path=MODEL_PATH,
             raise ValueError("model asks for x t_ml but the static stack has no t_ml band")
         tml = st["t_ml"]
         out = {k: (v * tml).astype(np.float32) for k, v in out.items()}
-    # the model and T_ML are trained on Brazilian inventories: outside
-    # Brazilian land (IBGE outline minus MCD12Q1 water) the index is nodata
+    # product scope, not model domain: outside Brazilian land (IBGE outline
+    # minus MCD12Q1 water) there are no landslide labels to check the index
+    # against and no Brazilian civil-defence audience, so it is nodata there
     # (2026-11-15: 32 % of the 14 d > 0.1 area fell in Paraguay/Argentina)
     from live.run_now import now_land_mask
     land = now_land_mask(tuple(bounds), lats.size, lons.size)
