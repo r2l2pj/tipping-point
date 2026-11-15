@@ -87,6 +87,7 @@ const SRC = {
   nl: "tp-nl-img",
   tml: "tp-tml-img",
   prob: "tp-prob-img",
+  change: "tp-change-img",
   muni: "tp-muni",
   catalog: "tp-catalog",
   ems: "tp-ems",
@@ -121,6 +122,7 @@ const LYR = {
   nl: "tp-nl-lyr",
   tml: "tp-tml-lyr",
   prob: "tp-prob-lyr",
+  change: "tp-change-lyr",
   zonesFill: "tp-zones-fill",
   zonesLine: "tp-zones-line",
   muni: "tp-muni-line",
@@ -146,6 +148,7 @@ const DYNAMIC_IMG: [string, string][] = [
   [LYR.opera, SRC.opera],
   [LYR.nl, SRC.nl],
   [LYR.tml, SRC.tml],
+  [LYR.change, SRC.change],
 ];
 
 // Free Mapzen Terrarium elevation tiles — standard source for MapLibre
@@ -663,6 +666,29 @@ export function useMapLayers(
       overlay.nightLights);
     imgOverlay("t_ml", SRC.tml, LYR.tml, 0.7, LYR.muni, overlay.tml);
 
+    // NISAR change overlay (Lucas, t5w): the Δ-dB canvas composite paints as
+    // an image source on the after-frame bounds — above the risk raster and
+    // water, below the flood (NISAR candidate) polygons. Its own opacity
+    // slider, independent of the data-raster strength.
+    const change = options?.changeImage;
+    if (change) {
+      ensureImageLayer(
+        map,
+        SRC.change,
+        LYR.change,
+        change.url,
+        boundsToImageCoordinates(change.bounds),
+        options?.changeOpacity ?? 0.85,
+        LYR.floodFill
+      );
+      vis(LYR.change, true);
+      if (map.getLayer(LYR.change) && options?.changeOpacity !== undefined) {
+        map.setPaintProperty(LYR.change, "raster-opacity", options.changeOpacity);
+      }
+    } else {
+      vis(LYR.change, false);
+    }
+
     // Image source for the day's PNG frame (created lazily — MapLibre image
     // sources need url+coordinates up front; the raster layer sits below
     // permanent water per the v4 layer order). A frame that 404'd before is
@@ -887,7 +913,7 @@ export function useMapLayers(
       console.warn("MapLayers update failed (map kept alive)", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity]);
+  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity]);
 
   // Priority-zone pins — top 20 by rank (matches the side list), anchored
   // at the polygon label point (real files are Polygons, not Points).

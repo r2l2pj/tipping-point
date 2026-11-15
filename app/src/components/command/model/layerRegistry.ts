@@ -14,6 +14,7 @@ import {
 import { availability, hasNisarPair, missingText, NO_RADAR_TEXT } from "./availability";
 import { declared } from "./lazy";
 import { fmtDataStamp, fmtDate } from "./format";
+import { NISAR_CHANGE_LABEL, nisarChangeFrames, nisarChangeAvailable, nisarChangeUnavailableReason, resolveChangePair, type NisarChangeSel } from "./nisarChange";
 import type { MapOverlays } from "./overlays";
 import { CANDIDATES_LABEL, floodLabels } from "./radar";
 import { floodPostDate, frameBasis, partlyForecastText } from "./steps";
@@ -21,7 +22,7 @@ import { HAZARD_LABEL, RISK_PAUSED_SHORT, type CcBundle, type Hazard } from "./t
 
 export type LayerId =
   | "tpi" | "imerg" | "smap" | "tml" | "ptrigger"
-  | "flood" | "candidates"
+  | "flood" | "candidates" | "nisarChange"
   | "catalog" | "opera" | "ems" | "hand";
 
 export type LayerGroup = "Analysis" | "Observations" | "Replay evidence";
@@ -88,6 +89,7 @@ const DEFS: Def[] = [
   { id: "tml", group: "Analysis", short: "Modeled landslide hazard" },
   { id: "ptrigger", group: "Analysis", short: "Rain-triggered landslide likelihood" },
   { id: "flood", group: "Observations", short: "Flood" },
+  { id: "nisarChange", group: "Observations", short: "NISAR change" },
   { id: "candidates", group: "Observations", short: "Scar candidates" },
   { id: "catalog", group: "Replay evidence", short: "Landslide catalog" },
   { id: "opera", group: "Replay evidence", short: "NISAR vs OPERA flood check" },
@@ -139,6 +141,9 @@ export function layerAvailable(bundle: CcBundle, id: LayerId, hazard: Hazard): b
       );
     case "opera":
       return !!pngLayer(bundle, "opera_validation");
+    case "nisarChange":
+      // Two same-track, same-pol NISAR frame passes with a fixed stretch.
+      return nisarChangeAvailable(bundle);
     case "flood":
       // Live: the OPERA DSWx-S1 candidates draw in the same layer.
       return hasProduct(bundle, bundle.flood, "flood_confirmed") ||
@@ -167,14 +172,18 @@ const hasProduct = (
     : declared(bundle, key) && bundle.lazy?.[key as "landslide_candidates"] !== "missing";
 
 // Rows for a case. `stepDate` is the date of the selected step. Replay
-// evidence rows exist in Replay only.
+// evidence rows exist in Replay only. `change.sel` is the picked NISAR
+// before/after pair (the Radar card's pass pickers) — its resolved spec sets
+// the change row's sub and whether it can be turned on.
 export function layerRows(
   bundle: CcBundle,
   on: readonly LayerId[],
   hazard: Hazard,
   stepDate?: string,
-  probHorizon: ProbHorizon = "24h"
+  probHorizon: ProbHorizon = "24h",
+  change?: { sel?: NisarChangeSel }
 ): LayerRow[] {
+  const changeSpec = resolveChangePair(bundle, change?.sel ?? {}, stepDate);
   const radar = availability(bundle, "radar");
   const passDates = [dateOf(bundle, "nisar_pre"), dateOf(bundle, "nisar_post")]
     .filter((d): d is string => !!d).map((d) => fmtDate(d));
@@ -187,6 +196,7 @@ export function layerRows(
     tml: "Modeled landslide hazard (XGBoost)",
     ptrigger: probLayerTitle(probHorizon),
     flood: floodLabels(bundle).layer,
+    nisarChange: NISAR_CHANGE_LABEL,
     candidates: CANDIDATES_LABEL,
     catalog: "Landslide catalog",
     opera: "NISAR vs OPERA flood check",
@@ -200,6 +210,7 @@ export function layerRows(
     smap: dateOf(bundle, "smap") ? `data ${fmtDataStamp(dateOf(bundle, "smap"))}` : undefined,
     ptrigger: probLayerNote(probFrame(bundle.manifest?.layers, probHorizon, stepDate)),
     flood: passDates.length ? `NISAR passes: ${passDates.join(", ")}` : undefined,
+    nisarChange: "pair" in changeSpec ? changeSpec.label : undefined,
     opera: pngLayer(bundle, "opera_validation")?.date
       ? `data ${fmtDataStamp(pngLayer(bundle, "opera_validation")?.date)}` : undefined,
   };
@@ -213,11 +224,17 @@ export function layerRows(
     ems: NO_MAP_LAYER_TEXT,
     hand: NO_MAP_LAYER_TEXT,
     flood: radar.state === "not-applicable" ? NO_RADAR_TEXT : missingText(availability(bundle, "flood_confirmed")),
+    // ≥2 passes that cannot composite keep the row with the reason; fewer
+    // hide it entirely (NO_MAP_LAYER_TEXT is filtered out of the column).
+    nisarChange: nisarChangeFrames(bundle).length < 2 ? NO_MAP_LAYER_TEXT
+      : nisarChangeUnavailableReason(bundle) ?? ("reason" in changeSpec ? changeSpec.reason : NO_MAP_LAYER_TEXT),
     candidates: missingText(availability(bundle, "landslide_candidates")),
     catalog: missingText(availability(bundle, "landslide_catalog")),
   };
   return DEFS.filter((d) => d.group !== "Replay evidence" || bundle.mode === "replay").map((d) => {
-    const available = layerAvailable(bundle, d.id, hazard);
+    // The change layer paints only when the selected pair composites — a
+    // blocked pick (tracks/pols differ, stretch unset) disables the row.
+    const available = d.id === "nisarChange" ? "pair" in changeSpec : layerAvailable(bundle, d.id, hazard);
     return {
       id: d.id,
       group: d.group,

@@ -2,7 +2,9 @@
 // layer that is on. Class colors and opacities stay in src/lib/tpi.ts.
 import { OPERA } from "@/lib/layers";
 import { cutsFor, TPI_CLASSES } from "@/lib/tpi";
+import { CHANGE_CYAN, CHANGE_RED } from "./changeComposite";
 import type { LayerId } from "./layerRegistry";
+import { NISAR_CHANGE_LEGEND, NISAR_CHANGE_LEGEND_RED } from "./nisarChange";
 import { CANDIDATES_LABEL, EMS_FILL, floodLabels, FLOODED_FILL } from "./radar";
 import type { CcBundle } from "./types";
 
@@ -74,7 +76,7 @@ export function mlLowToday(bundle: CcBundle, horizon = "24h"): string | undefine
     ? `Low everywhere today (top 1% of land ≤ ${p99.toFixed(2)})` : undefined;
 }
 
-export function layerLegendRows(bundle: CcBundle, on: readonly LayerId[], probHorizon = "24h", stepDate?: string): LayerLegendRow[] {
+export function layerLegendRows(bundle: CcBundle, on: readonly LayerId[], probHorizon = "24h", stepDate?: string, changeCyan = true): LayerLegendRow[] {
   const rows: LayerLegendRow[] = [];
   if (on.includes("imerg")) {
     rows.push(...(rainLegendRows(bundle, stepDate) ?? [{ id: "imerg", label: "Rain (GPM IMERG)", swatch: "linear-gradient(90deg, #e6f1fb, #2166ac)" }]));
@@ -89,6 +91,16 @@ export function layerLegendRows(bundle: CcBundle, on: readonly LayerId[], probHo
   }
   if (on.includes("tml")) rows.push({ id: "tml", label: "Modeled landslide hazard, 0 to 1", swatch: "linear-gradient(90deg, #ffffb2, #bd0026)" });
   if (on.includes("flood")) rows.push({ id: "flood", label: floodLabels(bundle).layer, swatch: FLOODED_FILL });
+  // The Δ-dB overlay: red darker/water, cyan brighter (optional toggle).
+  if (on.includes("nisarChange")) {
+    rows.push({
+      id: "nisar-change",
+      label: changeCyan ? NISAR_CHANGE_LEGEND : NISAR_CHANGE_LEGEND_RED,
+      swatch: changeCyan
+        ? `linear-gradient(90deg, ${CHANGE_RED} 50%, ${CHANGE_CYAN} 50%)`
+        : CHANGE_RED,
+    });
+  }
   if (on.includes("candidates")) rows.push({ id: "candidates", label: CANDIDATES_LABEL, swatch: "#7b3294" });
   if (on.includes("catalog")) rows.push({ id: "catalog", label: "Landslide catalog point", swatch: "#ffffff", round: true });
   if (on.includes("ems")) rows.push({ id: "ems", label: "Independent flood map (EU emergency service)", swatch: EMS_FILL });

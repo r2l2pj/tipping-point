@@ -45,6 +45,7 @@ export default function LayersColumn({
   satellite,
   opacity = OPACITY_DEFAULT,
   onOpacity,
+  changeCyan = true,
   className = "",
 }: {
   bundle: CcBundle;
@@ -65,6 +66,8 @@ export default function LayersColumn({
   // handler the control is not drawn.
   opacity?: number;
   onOpacity?: (value: number) => void;
+  // NISAR change layer: cyan (≥3 dB brighter) paints too, or red only.
+  changeCyan?: boolean;
   className?: string;
 }) {
   // Collapsing hides the rows only; the legend stays visible (rule 3).
@@ -134,7 +137,7 @@ export default function LayersColumn({
             })}
           </div>
 
-          <Legend bundle={bundle} layers={layers} hazard={hazard} stepDate={stepDate} probHorizon={probHorizon} className="mt-2.5 shrink-0" />
+          <Legend bundle={bundle} layers={layers} hazard={hazard} stepDate={stepDate} probHorizon={probHorizon} changeCyan={changeCyan} className="mt-2.5 shrink-0" />
 
           {onOpacity && (
             <label className="mt-1 block border-t border-cc-rule pb-1 pt-3 text-[13px]" data-opacity>
@@ -239,7 +242,7 @@ export default function LayersColumn({
         </div>
       )}
 
-      {!open && <Legend bundle={bundle} layers={layers} hazard={hazard} stepDate={stepDate} probHorizon={probHorizon} className="mt-2 shrink-0 border-t border-cc-rule pt-2.5" />}
+      {!open && <Legend bundle={bundle} layers={layers} hazard={hazard} stepDate={stepDate} probHorizon={probHorizon} changeCyan={changeCyan} className="mt-2 shrink-0 border-t border-cc-rule pt-2.5" />}
     </aside>
   );
 }
@@ -252,6 +255,7 @@ export function Legend({
   stepDate,
   probHorizon = "24h",
   compact = false,
+  changeCyan = true,
   className = "",
 }: {
   bundle: CcBundle;
@@ -260,6 +264,7 @@ export function Legend({
   stepDate?: string; // the frame on the map: the legend names its date (rule 3)
   probHorizon?: string; // ML horizon on the map (its 'low today' stats)
   compact?: boolean;
+  changeCyan?: boolean; // NISAR change legend says cyan only when it paints
   className?: string;
 }) {
   const swatch = "inline-block h-4 w-[22px] shrink-0 rounded-[3px]";
@@ -282,7 +287,7 @@ export function Legend({
             Hatched: forecast
           </span>
         )}
-        {layerLegendRows(bundle, layers, probHorizon, stepDate).map((r) => r.note ? (
+        {layerLegendRows(bundle, layers, probHorizon, stepDate, changeCyan).map((r) => r.note ? (
           <span key={r.id} className="pl-[32px] text-xs text-cc-muted" data-legend-note>{r.label}</span>
         ) : (
           <span key={r.id} className="inline-flex items-center gap-2.5">

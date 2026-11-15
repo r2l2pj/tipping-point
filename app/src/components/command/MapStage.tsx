@@ -19,6 +19,8 @@ import { hasGfsFrames } from "./model/forecastCompare";
 import { isRiskLayer } from "./model/sideCompare";
 import { fmtDate } from "./model/format";
 import { layerStateFor, overlaysFor } from "./model/layerRegistry";
+import { resolveChangePair } from "./model/nisarChange";
+import { useNisarChangeImage } from "./useNisarChange";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -110,6 +112,13 @@ export default function MapStage({
   );
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
   const gfsAny = useMemo(() => hasGfsFrames(bundle), [bundle]);
+  // NISAR change layer (Lucas, t5w): the Δ-dB composite of the picked pair —
+  // a reasoned spec still resolves, the overlay only paints on a pair.
+  const changeSpec = useMemo(
+    () => resolveChangePair(bundle, state.nisarChange ?? {}, step?.date),
+    [bundle, state.nisarChange, step?.date]
+  );
+  const changeImage = useNisarChangeImage(changeSpec, state.layers.includes("nisarChange"), state.changeCyan);
   const options = useMemo(
     () => ({
       zoneMarkers: false,
@@ -125,8 +134,10 @@ export default function MapStage({
           ? undefined
           : (bundle.series?.reference_date ?? bundle.reference_date)?.slice(0, 10),
       opacity: state.overlayOpacity,
+      changeImage,
+      changeOpacity: state.changeOpacity,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
@@ -437,13 +448,13 @@ export default function MapStage({
             ))}
           </div>
           <div className="flex items-end gap-2">
-            <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact
+            <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan}
               className={`rounded-[10px] bg-white/95 px-2.5 py-2 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)] max-[639px]:hidden ${state.layersOpen ? "min-[900px]:hidden" : ""}`} />
             {/* Phones: the legend is collapsed by default so it does not cover
                 the map and the timeline chips; one tap opens it. */}
             <details data-legend-phone className="min-[640px]:hidden rounded-[10px] bg-white/95 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
               <summary className="cursor-pointer list-none px-2.5 py-1.5 text-xs font-semibold">Legend</summary>
-              <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact className="max-h-[50vh] overflow-y-auto px-2.5 pb-2" />
+              <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan} className="max-h-[50vh] overflow-y-auto px-2.5 pb-2" />
             </details>
             <LocatorInset bbox={bundle.bbox} className="max-[899px]:hidden" />
           </div>

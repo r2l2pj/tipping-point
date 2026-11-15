@@ -2,6 +2,7 @@
 
 import { PASSES_SHOWN, type RadarCard as RadarModel } from "./model/radar";
 import { fmtBrt, fmtDate } from "./model/format";
+import { CHANGE_OPACITY_MIN, NISAR_CHANGE_LABEL } from "./model/nisarChange";
 import NisarSeriesChart from "./NisarSeriesChart";
 import { Icon, ICON } from "./ui";
 import { isMissingText } from "./model/sparse";
@@ -32,11 +33,31 @@ export default function RadarCard({
   onCompare,
   hideMissing = false,
   swipeDates,
+  change,
 }: {
   radar: RadarModel;
   hideMissing?: boolean; // featured replay: no "pending" scar block (conductor, v6)
   // Lucas: the NISAR dates of the open swipe, as chips (no slider).
   swipeDates?: { dates: string[]; before: string; after: string; onPick: (before: string, after: string) => void };
+  // Lucas (t5w): the Δ-dB change overlay on the normal map — a switch plus
+  // the two pass pickers, pol, the cyan toggle and its own opacity.
+  change?: {
+    on: boolean;
+    available: boolean; // the resolved pair composites (a reasoned pick disables the switch)
+    reason?: string;
+    label?: string; // "Dec 16, 2025 → Dec 28, 2025 · HH · track 172D"
+    pol?: "HH" | "HV";
+    pols: ("HH" | "HV")[];
+    cyan: boolean;
+    opacity: number;
+    passes: { value: string; label: string }[]; // every pass: "<date>|<track>"
+    before?: string;
+    after?: string;
+    onToggle: () => void;
+    onPair: (patch: { before?: string; after?: string; pol?: "HH" | "HV" }) => void;
+    onCyan: () => void;
+    onOpacity: (value: number) => void;
+  };
   floodOn: boolean;
   compareOpen: boolean;
   onConfirm: () => void;
@@ -121,6 +142,81 @@ export default function RadarCard({
         )}
         {swipeDates && <SwipeDatePicker {...swipeDates} />}
       </div>
+
+      {/* NISAR change layer (t5w): Δ of two same-track, same-pol passes —
+          red ≥3 dB darker = likely new water, cyan brighter. The pair
+          defaults to the passes bracketing the selected day. */}
+      {change && change.passes.length >= 2 && (
+        <div className="mt-2 rounded-lg border border-cc-line px-2.5 py-2 text-xs" data-change-layer>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={change.on}
+              aria-disabled={!change.available && !change.on}
+              disabled={!change.available && !change.on}
+              aria-label={change.available || change.on ? NISAR_CHANGE_LABEL : `${NISAR_CHANGE_LABEL}: ${change.reason ?? "no pair"}`}
+              onClick={change.onToggle}
+              className={`relative h-[22px] w-[38px] shrink-0 rounded-full border-[1.5px] ${
+                change.on ? "border-cc-accent bg-cc-accent" : "border-[#9aa7a0] bg-[#c9d1cb]"
+              } ${!change.available && !change.on ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+            >
+              <span aria-hidden="true" className={`absolute top-[2px] h-[15px] w-[15px] rounded-full bg-white shadow-[0_0_0_1px_rgba(22,36,43,0.25)] transition-[left] ${change.on ? "left-[19px]" : "left-[2px]"}`} />
+            </button>
+            <span className="grow text-[13px] font-semibold leading-tight">{NISAR_CHANGE_LABEL}</span>
+          </div>
+          {change.on && (
+            <div className="mt-1.5 grid w-full gap-1" data-change-picks>
+              {([["before", "Before"], ["after", "After"]] as const).map(([k, lab]) => {
+                const v = k === "before" ? change.before : change.after;
+                const opts = !v || change.passes.some((p) => p.value === v)
+                  ? change.passes
+                  : [...change.passes, { value: v, label: `${fmtDate(v.slice(0, 10))} — no pass` }];
+                return (
+                  <div key={k} className="flex items-center gap-1" role="group" aria-label={`Change pass ${k}`}>
+                    <span className="w-12 shrink-0 text-cc-muted">{lab}</span>
+                    <select
+                      aria-label={`Change pass ${k}`}
+                      value={v ?? ""}
+                      onChange={(e) => change.onPair({ [k]: e.target.value })}
+                      className="h-7 min-w-0 grow rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold"
+                    >
+                      {!v && <option value="">—</option>}
+                      {opts.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+                    </select>
+                  </div>
+                );
+              })}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                {change.pols.length > 1 && (
+                  <span role="radiogroup" aria-label="Polarization" className="flex gap-1">
+                    {change.pols.map((p) => (
+                      <button key={p} type="button" role="radio" aria-checked={change.pol === p}
+                        onClick={() => change.onPair({ pol: p })}
+                        className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${change.pol === p ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>{p}</button>
+                    ))}
+                  </span>
+                )}
+                <label className="flex items-center gap-1.5">
+                  <input type="checkbox" checked={change.cyan} onChange={change.onCyan} />
+                  Also show brighter (cyan)
+                </label>
+                <label className="flex min-w-28 flex-1 items-center gap-1.5">
+                  <span className="text-cc-muted">Opacity</span>
+                  <input type="range" min={CHANGE_OPACITY_MIN * 100} max={100} step={5}
+                    value={Math.round(change.opacity * 100)}
+                    onChange={(e) => change.onOpacity(Number(e.target.value) / 100)}
+                    aria-valuetext={`${Math.round(change.opacity * 100)} percent`}
+                    className="min-w-16 flex-1 accent-cc-accent" />
+                </label>
+              </div>
+            </div>
+          )}
+          <p className={`m-0 mt-1 text-[11px] leading-tight ${change.reason ? "italic text-cc-warn" : "text-cc-faint"}`} data-change-status>
+            {change.reason ?? change.label ?? "Two passes, same track and polarization, with a fixed brightness stretch."}
+          </p>
+        </div>
+      )}
 
       {/* A caveat stays in view; the method notes fold away. */}
       {caveats.map((l) => (

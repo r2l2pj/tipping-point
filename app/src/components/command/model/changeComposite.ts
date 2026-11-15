@@ -58,6 +58,48 @@ export function changeComposite(before: Raster, after: Raster): Uint8ClampedArra
 
 export const CHANGE_LEGEND = "Red: radar got darker = likely new water · Cyan: got brighter · Grey: no change";
 
+// The map overlay variant (Lucas, t5w): not an RGB composite — a threshold
+// map of Δ = after_dB − before_dB. |Δ| < CHANGE_DB stays transparent so the
+// basemap and the risk raster show through; darker (likely new water) paints
+// red, brighter cyan (optional). Needs both stretches (gray → dB); the
+// toggle is blocked without them, so a missing stretch never reaches here —
+// the raw gray difference stands in only for tests/preview.
+export const CHANGE_DB = 3;
+export const CHANGE_RED = "#ff1f1f";
+export const CHANGE_CYAN = "#22d3ee";
+const RED_RGB: [number, number, number] = [0xff, 0x1f, 0x1f];
+const CYAN_RGB: [number, number, number] = [0x22, 0xd3, 0xee];
+
+export function deltaComposite(before: Raster, after: Raster, cyan = true): Uint8ClampedArray<ArrayBuffer> {
+  const { width: aW, height: aH, bounds: aB } = after;
+  const out = new Uint8ClampedArray(aW * aH * 4);
+  const aN = mercY(aB[3]), aS = mercY(aB[1]);
+  const bN = mercY(before.bounds[3]), bS = mercY(before.bounds[1]);
+  const [bw, , be] = before.bounds;
+  const db = (g: number, s?: Stretch) => (s ? toDb(g, s) : g);
+  for (let j = 0; j < aH; j++) {
+    const y = aN - ((j + 0.5) / aH) * (aN - aS);
+    const bj = Math.floor(((bN - y) / (bN - bS)) * before.height);
+    for (let i = 0; i < aW; i++) {
+      const o = (j * aW + i) * 4;
+      if (after.data[o + 3] < MIN_ALPHA) continue;
+      const lon = aB[0] + ((i + 0.5) / aW) * (aB[2] - aB[0]);
+      const bi = Math.floor(((lon - bw) / (be - bw)) * before.width);
+      if (bi < 0 || bj < 0 || bi >= before.width || bj >= before.height) continue;
+      const p = (bj * before.width + bi) * 4;
+      if (before.data[p + 3] < MIN_ALPHA) continue;
+      const d = db(after.data[o], after.stretch) - db(before.data[p], before.stretch);
+      const c = d <= -CHANGE_DB ? RED_RGB : d >= CHANGE_DB && cyan ? CYAN_RGB : undefined;
+      if (!c) continue;
+      out[o] = c[0];
+      out[o + 1] = c[1];
+      out[o + 2] = c[2];
+      out[o + 3] = 255;
+    }
+  }
+  return out;
+}
+
 // Only a same-track, same-polarization pair is a valid change composite.
 export function changeBlockedReason(
   l: { layer: string; track?: string; pol?: string },
