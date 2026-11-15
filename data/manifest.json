@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T14:49:47Z",
+  "updated_at": "2026-11-15T15:05:59Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -3146,7 +3146,7 @@
             -121.455735,
             48.509603
           ],
-          "kind": "observed"
+          "forecast": false
         },
         {
           "id": "nisar_pre",
@@ -3165,7 +3165,7 @@
             -121.455735,
             48.509603
           ],
-          "kind": "observed"
+          "forecast": false
         },
         {
           "id": "nisar_ref",
@@ -3184,7 +3184,7 @@
             -121.455735,
             48.509603
           ],
-          "kind": "observed"
+          "forecast": false
         },
         {
           "id": "opera_validation",
@@ -3203,8 +3203,7 @@
             -121.499877,
             48.501347
           ],
-          "forecast": false,
-          "kind": "observed"
+          "forecast": false
         },
         {
           "id": "tpi_flood",
