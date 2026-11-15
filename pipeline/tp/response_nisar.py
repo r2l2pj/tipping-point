@@ -54,7 +54,38 @@ NEON_BASE = (
     "tipping-point-data"
 )
 GPW_NEON_URL = f"{NEON_BASE}/{GPW_REL.as_posix()}"
-HAND_REL = Path("data/static/south_brazil/terrain/hand_m.tif")
+HAND_REL = Path("data/static/south_brazil/terrain/hand_m.tif")          # 0.01 deg (~1 km) legacy
+HAND90_REL = Path("data/static/south_brazil/terrain/hand_90m.tif")      # 3 arc-sec HAND proxy (preferred)
+
+
+def hand_default(repo_root=None) -> Path | None:
+    """Finest HAND raster present: 90 m proxy first, then the legacy ~1 km one."""
+    from tp.config import REPO_ROOT as _R
+
+    root = Path(repo_root or _R)
+    for rel in (HAND90_REL, HAND_REL):
+        if (root / rel).is_file():
+            return root / rel
+    return None
+
+
+def hand_source(hand_path) -> dict | None:
+    """Identity of the HAND raster used (repo-relative path, sha256 prefix, resolution)."""
+    import hashlib
+
+    import rasterio
+
+    if not hand_path:
+        return None
+    p = Path(hand_path)
+    h = hashlib.sha256()
+    with open(p, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    with rasterio.open(p) as src:
+        res = abs(src.res[0])
+    return {"file": (_hand_label(p) or "").replace("HAND (m), ", ""), "sha256_12": h.hexdigest()[:12],
+            "res_deg": res, "res_m_approx": round(res * 111320)}
 
 
 def _hand_label(hand_path) -> str | None:
@@ -595,7 +626,7 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
         reasons["hand"] = "HAND raster absent: flood not HAND-gated, bright layer HAND-gated off"
 
     features: list[dict] = []
-    tot = {"open": 0.0, "bright": 0.0, "receded": 0.0}
+    tot = {"open": 0.0, "bright": 0.0, "receded": 0.0, "pre_open": 0.0, "pre_people": 0.0}
     for p in plan["pairs"]:
         pre, post = p["pre"], p["post"]
         label = f"{post['track']:03d}{post['look']}_{post['frame']:03d}"
@@ -611,6 +642,7 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
             continue
         grid = data["grid"]
         det = detect(data["pre"], data["post"], grid, hand_path)
+        det0 = detect(data["pre"], data["post"], grid, None) if hand_path else None   # pre-gate
         del data["pre"], data["post"]
         props = {
             "source": SOURCE,
@@ -628,6 +660,14 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
         f_bright = candidate_features(det["bright"], grid, bbox, gpw,
                                       {**props, "flood_type": "bright", "confidence": "lower"})
         open_km2 = sum(f["properties"]["area_km2"] for f in f_open)
+        if det0 is not None:
+            f0 = candidate_features(det0["flood"], grid, bbox, gpw, dict(props))
+            tot["pre_open"] += sum(f["properties"]["area_km2"] for f in f0)
+            tot["pre_people"] += sum(f["properties"]["people"] or 0 for f in f0)
+            del f0, det0
+        else:
+            tot["pre_open"] += open_km2
+            tot["pre_people"] += sum(f["properties"]["people"] or 0 for f in f_open)
         bright_km2 = sum(f["properties"]["area_km2"] for f in f_bright)
         features += f_open + f_bright
         tot["open"] += open_km2
@@ -667,4 +707,16 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
     if gpw is not None:
         meta["people_flooded"] = int(sum(f["properties"]["people"] or 0 for f in features))
     meta["n_polygons"] = len(features)
+    # what the HAND <= 15 m gate removed (open water; the bright layer exists
+    # only with HAND, so it is not part of the comparison)
+    meta["pre_hand_flooded_km2"] = round(tot["pre_open"], 3)
+    meta["hand_excluded_km2"] = round(max(0.0, tot["pre_open"] - tot["open"]), 3) if hand_path else None
+    if gpw is not None:
+        meta["pre_hand_people"] = int(round(tot["pre_people"]))
+        meta["hand_excluded_people"] = (max(0, int(round(tot["pre_people"])) - int(sum(
+            f["properties"]["people"] or 0 for f in features if f["properties"].get("flood_type") == "open-water")))
+            if hand_path else None)
+    if not hand_path:
+        reasons["hand_excluded_km2"] = "no HAND raster: flood not HAND-gated"
+    meta["hand_source"] = hand_source(hand_path)
     return _finish(features)

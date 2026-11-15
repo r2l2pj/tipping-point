@@ -42,9 +42,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     bbox = config.now_bounds()
-    hand = None if args.no_hand else config.REPO_ROOT / rn.HAND_REL
-    if hand is not None and not hand.is_file():
-        hand = None
+    hand = None if args.no_hand else rn.hand_default(config.REPO_ROOT)
 
     def _pair(granules, bb):
         return fetch_nisar.pair_latest_pass(

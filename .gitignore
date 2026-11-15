@@ -38,3 +38,6 @@ data/now/static/*/*
 # ML training store (rebuilt by `python -m ml.local db`; Lucas publishes the full one deliberately)
 data/ml/*.sqlite
 data/ml/*.sqlite.tmp
+
+# 90 m HAND proxy (static-v1 Release asset, 390 MB)
+data/static/south_brazil/terrain/hand_90m.tif

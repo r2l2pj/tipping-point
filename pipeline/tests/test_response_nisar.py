@@ -302,3 +302,23 @@ def test_hand_label_never_absolute(tmp_path):
     assert rn._hand_label(None) is None
     assert rn._hand_label(REPO_ROOT / rn.HAND_REL) == f"HAND (m), {rn.HAND_REL.as_posix()}"
     assert rn._hand_label(tmp_path / "hand_m.tif") == "HAND (m), hand_m.tif"
+
+
+def test_hand_default_prefers_90m_and_source_identity(tmp_path):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+    from tp import response_nisar as rn
+
+    assert rn.hand_default(tmp_path) is None
+    for rel, res in ((rn.HAND_REL, 0.01), (rn.HAND90_REL, 1 / 1200)):
+        p = tmp_path / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with rasterio.open(p, "w", driver="GTiff", height=4, width=4, count=1, dtype="float32",
+                           crs="EPSG:4326", transform=from_origin(-50, -29, res, res)) as dst:
+            dst.write(np.zeros((4, 4), np.float32), 1)
+    assert rn.hand_default(tmp_path) == tmp_path / rn.HAND90_REL
+    src = rn.hand_source(tmp_path / rn.HAND90_REL)
+    assert src["res_m_approx"] == 93 and len(src["sha256_12"]) == 12
+    assert not src["file"].startswith("/")
+    assert rn.hand_source(None) is None

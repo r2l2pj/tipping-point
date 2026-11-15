@@ -486,6 +486,19 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
   `brazil_outline_source`, `_null_reasons` (every null key explained;
   a failed baseline bootstrap nulls the km2/people keys and says so).
 
+#### R2 — NISAR GCOV radar flood candidates (`pipeline/scripts/14_response_nisar.py`)
+
+- `response/flood_nisar.geojson` — candidate polygons (`flood_type` open-water |
+  bright, `confidence`, `people`, `status: "candidate"`).
+- `response/nisar_meta.json` — `latest_acquired`, `latency_h`, `pairs[]`,
+  `flooded_km2` / `open_water_km2` / `bright_km2` / `people_flooded`
+  (after the HAND gate), plus the gate breakdown: `pre_hand_flooded_km2` /
+  `pre_hand_people` (open-water candidates with no HAND gate),
+  `hand_excluded_km2` / `hand_excluded_people` (removed by HAND > 15 m),
+  `hand_source` {file, sha256_12, res_deg, res_m_approx} (prefers the 90 m
+  proxy `data/static/south_brazil/terrain/hand_90m.tif`, static-v1, else the
+  legacy ~1 km `hand_m.tif`), `method`, `_null_reasons`.
+
 #### R3 — response summary + priority zones (`pipeline/scripts/15_response_summary.py`)
 
 Runs after the TPI job, R1 and R2. Inputs: `response/flood_dswx.geojson`,
