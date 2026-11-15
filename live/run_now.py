@@ -383,11 +383,14 @@ def run(args) -> dict:
         payload["paused_reason"] = "run checks failed: " + ", ".join(
             k for k, v in checks.items() if v is False)
     files["alerts.json"] = payload
-    files["prev_classes.npz"] = render.npz_bytes(
-        worst=np.maximum(np.maximum(slides[0], floods[0]),
-                         np.maximum(slides[1], floods[1])),
-        landslide=np.maximum(slides[0], slides[1]),
-        flood=np.maximum(floods[0], floods[1]))
+    # the alert baseline advances only when alerts were actually evaluated:
+    # a paused run must not swallow the upgrades it suppressed
+    if not alerts_paused:
+        files["prev_classes.npz"] = render.npz_bytes(
+            worst=np.maximum(np.maximum(slides[0], floods[0]),
+                             np.maximum(slides[1], floods[1])),
+            landslide=np.maximum(slides[0], slides[1]),
+            flood=np.maximum(floods[0], floods[1]))
 
     # ---- write everything, manifest LAST ------------------------------------
     updated_at = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")

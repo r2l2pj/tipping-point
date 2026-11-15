@@ -155,14 +155,23 @@ def test_run_now_end_to_end(fake_now):
 
     # every expected artifact exists
     for rel in [
-        "summary.json", "alerts.json", "prev_classes.npz",
+        "summary.json", "alerts.json",
         "geojson/critical_areas.geojson", "manifest.json",
         "cog/tpi_slide_today.tif", "cog/tpi_slide_d1.tif",
         "cog/tpi_flood_today.tif", "cog/tpi_flood_d1.tif",
         *[f"png/{k}_d{i}.png" for k in ("tpi_slide", "tpi_flood") for i in range(4)],
     ]:
         assert (out_dir / rel).exists(), rel
-    assert json.loads((out_dir / "manifest.json").read_text())["schema"] == "tipping-point/now@2"
+    m = json.loads((out_dir / "manifest.json").read_text())
+    assert m["schema"] == "tipping-point/now@2"
+    # fixture has no municipal boundaries -> checks fail -> alerts paused,
+    # candidates withheld, and the alert baseline NOT advanced (a paused
+    # run must not swallow the upgrades it suppressed)
+    assert m["alerts_paused"] is True and m["verified"] is False
+    assert m["checks"]["municipalities_loaded"] is False
+    a = json.loads((out_dir / "alerts.json").read_text())
+    assert a["paused"] is True and a["candidates"] == []
+    assert not (out_dir / "prev_classes.npz").exists()
 
 
 def test_no_upload_flag_removed():
