@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T11:08:43Z",
+  "updated_at": "2026-11-15T11:16:55Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -6920,13 +6920,11 @@
         "priority_zones": "wa_2025/geojson/priority_zones.geojson",
         "permanent_water": "wa_2025/geojson/permanent_water.geojson",
         "flood_confirmed": "wa_2025/geojson/flood_confirmed.geojson",
-        "landslide_candidates": null,
+        "landslide_candidates": "wa_2025/geojson/landslide_candidates.geojson",
         "swot_reference": "wa_2025/series/swot_reference.json",
         "swot_series": "wa_2025/series/swot.json"
       },
-      "_null_reasons": {
-        "landslide_candidates": "no landslide candidate product yet"
-      }
+      "_null_reasons": {}
     },
     "now": {
       "schema": "tipping-point/now@2",

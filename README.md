@@ -159,6 +159,7 @@ Lead-time counts (observed replay, anchor = first damage report):
 | Black Marble | `NASA/VIIRS/002/VNP46A2` (`DNB_BRDF_Corrected_NTL`) | pre/post night-lights change |
 | OPERA DSWx | `OPERA/DSWX/L3_V1/HLS` (rs_2024), `OPERA/DSWX/L3_V1/S1` (wa_2025) | validation IoU/F1 (`B01_WTR`, ≤5 d after event, ruling L10b) |
 | HLS | `NASA/HLS/HLSL30/v002`, `NASA/HLS/HLSS30/v002` | scar candidates, cloud fraction |
+| OPERA DIST-ALERT-HLS | LP DAAC `OPERA_L3_DIST-ALERT-HLS_V1` (`VEG-DIST-STATUS`/`VEG-DIST-DATE`) | landslide scar candidates (Now + rs_2024/wa_2025 replays) |
 
 Replay-case caveat: the published TPI frames are a **hindcast** — IMERG_V07
 and SMAP L4 as archived in GEE, with no real-time latency modelled. A frame
@@ -257,6 +258,10 @@ index input.
   reduce but do not remove this. The rain-support rule has no flow routing.
 - GUNW/coherence landslide detection is moot for wa_2025 (no event-crossing
   pair); candidates are HLS optical and stay "candidates", never confirmed.
+- WA 2025 DIST-ALERT scar candidates (window 2025-12-05..2026-02-28,
+  176 candidates, 1.25 km²): none lies within 500 m of the 15 WGS inventory
+  points. Winter cloud and snow limit HLS looks, and 15 points cannot
+  measure precision; they stay "candidates" and are shown as such.
 - WA landslide hit-rate rests on n = 15 undated WGS inventory points:
   66.7 % (10 of 15) are Critical on the case peak day 2025-12-12 —
   small-sample; per-day values in metrics `landslide_hit.per_day`.

@@ -485,7 +485,20 @@
       "flood_warned_basis": "forecast_gfs (issued 24-48 h before the anchor)",
       "gpw_product": "GPW v4.11 population count (CIESIN/NASA SEDAC), 30 arc-sec",
       "population_total": 3431240,
-      "population_total_scope": "sum of the case GPW COG over the case AOI"
+      "population_total_scope": "sum of the case GPW COG over the case AOI",
+      "scar_source": "opera-dist-alert-hls",
+      "scar_window": [
+        "2025-12-05",
+        "2026-02-28"
+      ],
+      "scar_candidates_n": 176,
+      "scar_candidates_km2": 1.246,
+      "scar_people": 13.8,
+      "scar_hit_100m_pct": 0.0,
+      "scar_hit_500m_pct": 0.0,
+      "scar_precision_500m_pct": 0.0,
+      "scar_inventory_n": 15,
+      "scar_method": "OPERA DIST-ALERT-HLS VEG-DIST-STATUS in {5,6,8} (>=50 % loss), first detection in window, slope > 15 deg (NASADEM via GEE T_slide 90 m), not cropland/water (MCD12Q1 2025), 3 px..1 km2; candidates, never confirmed"
     },
     "rs_2024": {
       "event": "rs-2024-05",

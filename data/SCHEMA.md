@@ -631,6 +631,14 @@ Always `status: "candidate"`.
   `products.landslide_candidates`) + metrics `scar_*` (candidates n/km²/people,
   inventory hit rate within 100/500 m, precision proxy within 500 m,
   `scar_sensitivity` table).
+- Replay wa_2025: `wa_2025/geojson/landslide_candidates.geojson` + `scar_*`.
+  The Brazil static masks do not cover WA, so gates come from the gitignored
+  `static/cache/wa/` cache: slope > 15° from the case T_slide COG (GEE
+  NASADEM, 90 m export) and MCD12Q1 tile h09v04
+  (`tools/convert_mcd12q1.py --bbox`); people from the case GPW count COG;
+  municipalities = US Census TIGER county subdivisions (`name` only — no
+  IBGE `code`/`uf`). Window 2025-12-05 … 2026-02-28 (the storm plus the
+  first cloud-free looks, ~12 weeks).
 
 #### R3 — response summary + priority zones (`pipeline/scripts/15_response_summary.py`)
 
