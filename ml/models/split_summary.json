@@ -1,82 +1,82 @@
 {
   "3a": {
     "buffer": {
-      "n_rows": 3107,
-      "n_events": 7,
-      "n_pos": 1197,
-      "n_neg": 1910,
-      "date_min": "2009-09-08",
-      "date_max": "2024-05-01",
+      "n_rows": 161,
+      "n_events": 8,
+      "n_pos": 8,
+      "n_neg": 153,
+      "date_min": "2010-04-06",
+      "date_max": "2020-12-10",
       "bbox": [
-        -57.994,
-        -33.926,
-        -39.045,
-        -14.007
+        -57.979,
+        -33.934,
+        -39.372,
+        -14.119
       ],
       "regions": {
-        "south_southeast_brazil": 1197
+        "south_southeast_brazil": 8
       }
     },
     "test": {
-      "n_rows": 2039,
+      "n_rows": 5796,
       "n_events": 4,
-      "n_pos": 45,
-      "n_neg": 1994,
-      "date_min": "2011-07-07",
+      "n_pos": 1449,
+      "n_neg": 4347,
+      "date_min": "2022-02-15",
       "date_max": "2024-05-01",
       "bbox": [
-        -57.999,
-        -33.956,
-        -39.034,
-        -14.007
+        -57.994,
+        -33.989,
+        -39.003,
+        -14.004
       ],
       "regions": {
-        "south_southeast_brazil": 45
+        "south_southeast_brazil": 1449
       }
     },
     "train": {
-      "n_rows": 5679,
-      "n_events": 9,
-      "n_pos": 1770,
-      "n_neg": 3909,
-      "date_min": "2010-12-30",
-      "date_max": "2024-05-01",
+      "n_rows": 174,
+      "n_events": 7,
+      "n_pos": 73,
+      "n_neg": 101,
+      "date_min": "2009-12-31",
+      "date_max": "2018-11-10",
       "bbox": [
-        -58.0,
-        -33.997,
-        -39.063,
-        -14.002
+        -57.954,
+        -33.058,
+        -39.507,
+        -14.022
       ],
       "regions": {
-        "south_southeast_brazil": 1770
+        "south_southeast_brazil": 73
       }
     },
     "val": {
-      "n_rows": 1851,
-      "n_events": 22,
-      "n_pos": 157,
-      "n_neg": 1694,
-      "date_min": "2009-12-31",
-      "date_max": "2024-05-01",
+      "n_rows": 69,
+      "n_events": 10,
+      "n_pos": 20,
+      "n_neg": 49,
+      "date_min": "2009-09-08",
+      "date_max": "2024-02-17",
       "bbox": [
-        -57.989,
-        -33.42,
-        -39.0,
-        -14.007
+        -57.832,
+        -31.513,
+        -39.799,
+        -14.224
       ],
       "regions": {
-        "south_southeast_brazil": 157
+        "south_southeast_brazil": 20
       }
     }
   },
   "3b": {
     "buffer": {
-      "n_rows": 2571,
-      "n_events": 288,
-      "n_pos": 411,
-      "n_neg": 2160,
+      "n_rows": 2935,
+      "n_events": 328,
+      "n_pos": 465,
+      "n_neg": 2470,
       "date_min": "2015-04-03",
-      "date_max": "2026-10-31",
+      "date_max": "2026-09-06",
       "bbox": [
         -159.477,
         -45.88,
@@ -84,39 +84,41 @@
         57.11
       ],
       "regions": {
-        "north_america": 198,
-        "asia": 157,
-        "europe_africa": 21,
+        "north_america": 224,
+        "asia": 177,
+        "europe_africa": 26,
+        "south_southeast_brazil": 16,
         "other": 14,
-        "south_southeast_brazil": 13,
         "south_america": 8
       }
     },
     "test": {
-      "n_rows": 18944,
-      "n_events": 2,
-      "n_pos": 3008,
-      "n_neg": 15936,
-      "date_min": "2015-09-27",
+      "n_rows": 88964,
+      "n_events": 11,
+      "n_pos": 14894,
+      "n_neg": 74070,
+      "date_min": "2015-04-23",
       "date_max": "2025-12-14",
       "bbox": [
         -121.927,
         -29.892,
-        -50.255,
+        77.672,
         48.651
       ],
       "regions": {
-        "south_southeast_brazil": 3000,
-        "north_america": 8
+        "north_america": 5152,
+        "south_southeast_brazil": 3449,
+        "asia": 3156,
+        "europe_africa": 3137
       }
     },
     "train": {
-      "n_rows": 8623,
-      "n_events": 893,
-      "n_pos": 1235,
-      "n_neg": 7388,
+      "n_rows": 8381,
+      "n_events": 870,
+      "n_pos": 1209,
+      "n_neg": 7172,
       "date_min": "2015-04-02",
-      "date_max": "2026-10-31",
+      "date_max": "2026-09-06",
       "bbox": [
         -179.981,
         -45.828,
@@ -124,21 +126,21 @@
         64.793
       ],
       "regions": {
-        "north_america": 516,
-        "asia": 455,
-        "europe_africa": 159,
+        "north_america": 505,
+        "asia": 445,
+        "europe_africa": 155,
         "other": 57,
         "south_america": 43,
-        "south_southeast_brazil": 5
+        "south_southeast_brazil": 4
       }
     },
     "val": {
-      "n_rows": 4793,
-      "n_events": 417,
-      "n_pos": 702,
-      "n_neg": 4091,
+      "n_rows": 4362,
+      "n_events": 399,
+      "n_pos": 642,
+      "n_neg": 3720,
       "date_min": "2015-04-01",
-      "date_max": "2026-10-31",
+      "date_max": "2026-09-06",
       "bbox": [
         -171.464,
         -45.907,
@@ -146,12 +148,11 @@
         61.016
       ],
       "regions": {
-        "north_america": 341,
-        "asia": 259,
-        "europe_africa": 61,
+        "north_america": 323,
+        "asia": 220,
+        "europe_africa": 60,
         "south_america": 21,
-        "other": 18,
-        "south_southeast_brazil": 2
+        "other": 18
       }
     }
   }

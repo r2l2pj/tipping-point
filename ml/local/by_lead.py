@@ -116,7 +116,8 @@ def run(fetch: bool = False) -> dict:
     sm = _smap(rows[el].reset_index(drop=True), fetch)
     for c in sm.columns:
         rows.loc[el, c] = sm[c].to_numpy()
-    rows["t_ml"] = tml["cal"](M.predict(tml["model"], rows, tml["cols"]))
+    from .combo import t_ml_scores
+    rows["t_ml"] = t_ml_scores(rows, tml)
     log.info("by_lead rows: %s", rows.neg_set.value_counts().to_dict())
 
     rain = _rain()

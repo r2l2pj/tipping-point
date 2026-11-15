@@ -65,6 +65,23 @@ def _smap(rows: pd.DataFrame, fetch: bool = True) -> pd.DataFrame:
     return D.SmapPoints.load().sample(lon, lat, d).reset_index(drop=True)
 
 
+def t_ml_scores(rows: pd.DataFrame, entry: dict) -> np.ndarray:
+    """Calibrated T_ML at ``rows``; climate inputs (rain_mean/soil_mean, S+SE Brazil
+    rasters) are sampled at the unique points when the rows lack them (NaN outside
+    the 3a region = out of domain; XGBoost routes NaN by its default branch)."""
+    need = [c for c in entry["cols"] if c not in rows.columns]
+    if need:
+        from . import sources_dynamic as D
+        pts = rows[["lon", "lat"]].drop_duplicates().reset_index(drop=True)
+        cl = D.climate(pts.lon.to_numpy(), pts.lat.to_numpy()).reset_index(drop=True)
+        pts = pd.concat([pts, cl[[c for c in need if c in cl]]], axis=1)
+        rows = rows.merge(pts, on=["lon", "lat"], how="left")
+        for c in need:
+            if c not in rows:
+                rows[c] = np.nan
+    return entry["cal"](M.predict(entry["model"], rows, entry["cols"]))
+
+
 def _auc(y, p) -> dict:
     ok = np.isfinite(p)
     y, p = np.asarray(y)[ok], np.asarray(p)[ok]
@@ -91,7 +108,7 @@ def run(source: str = "gfs", fetch: bool = True, trigger: str = "xgb_all") -> di
     rows = pd.concat([hz, el], ignore_index=True, sort=False)
     log.info("combo rows: %d same-point/pos + %d elsewhere", len(hz), len(el))
 
-    p_tml = tml_e["cal"](M.predict(tml_e["model"], rows, tml_e["cols"]))
+    p_tml = t_ml_scores(rows, tml_e)
     rain = _rain()
     gfs = gfs_reader(gfs_jobs(load_rows("horizon_3b"))) if source == "gfs" else None
     ents = {trigger: b3["entries"][trigger]}
