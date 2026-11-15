@@ -19,7 +19,7 @@ LAYER_KEYS = {"id", "date", "png", "cog", "legend", "bounds", "forecast",
 PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
                  "swot_reference", "swot_series",
                  "priority_zones", "permanent_water", "flood_confirmed", "flood_candidates",
-                 "landslide_candidates"}
+                 "landslide_candidates", "nisar_timeseries"}
 
 
 def _data_root(tmp_path, *case_ids):

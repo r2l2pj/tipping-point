@@ -48,6 +48,7 @@ SINGLE_LAYERS = {
     "hillshade": (("*_hillshade_*.tif",), "gray"),
     "nisar_pre": (("*_nisar_pre_*.tif",), "gray"),
     "nisar_post": (("*_nisar_post_*.tif",), "gray"),
+    "nisar_ref": (("*_nisar_ref_*.tif",), "gray"),
     "night_lights_pre": (("*_night_lights_pre_*.tif",), "gray"),
     "night_lights_post": (("*_night_lights_post_*.tif",), "gray"),
     "t_ml": (("*_t_ml_*.tif", "*_hazard_classes_*.tif"), "class"),

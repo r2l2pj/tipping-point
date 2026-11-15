@@ -225,6 +225,11 @@ def _products(event_id: str, case_id: str, case_dir: Path) -> tuple[dict, dict]:
         f"{case_id}/series/swot.json" if series.exists() else None)
     if not series.exists():
         reasons["swot_series"] = "no SWOT reach series for this case"
+    ts = case_dir / "nisar_timeseries.json"
+    products["nisar_timeseries"] = (
+        f"{case_id}/nisar_timeseries.json" if ts.exists() else None)
+    if not ts.exists():
+        reasons["nisar_timeseries"] = "no NISAR 3-date time series yet"
     # science review 2026-11-15: NISAR flood polygons are CANDIDATES, never
     # confirmed. 'flood_candidates' is the contract key; 'flood_confirmed'
     # stays one cycle as a deprecated alias (same file / same reason).

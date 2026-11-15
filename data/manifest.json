@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T12:35:31Z",
+  "updated_at": "2026-11-15T14:04:04Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -2983,11 +2983,18 @@
         "flood_confirmed": null,
         "landslide_candidates": "rs_2024/geojson/landslide_candidates.geojson",
         "swot_reference": "rs_2024/series/swot_reference.json",
-        "swot_series": "rs_2024/series/swot.json"
+        "swot_series": "rs_2024/series/swot.json",
+        "nisar_timeseries": null,
+        "flood_candidates": null
+      },
+      "_deprecated": {
+        "products.flood_confirmed": "alias of products.flood_candidates (NISAR polygons are candidates); removed next cycle"
       },
       "_null_reasons": {
         "permanent_water": "not yet produced",
-        "flood_confirmed": "No NISAR coverage — event predates launch (Jul 2025)"
+        "flood_confirmed": "No NISAR coverage — event predates launch (Jul 2025)",
+        "nisar_timeseries": "no NISAR 3-date time series yet",
+        "flood_candidates": "No NISAR coverage — event predates launch (Jul 2025)"
       }
     },
     "wa_2025": {
@@ -3050,9 +3057,9 @@
             "Crítico"
           ],
           "bounds": [
-            -122.612107,
-            46.990446,
-            -121.455602,
+            -122.612106,
+            46.990354,
+            -121.455735,
             48.509603
           ],
           "kind": "observed"
@@ -3069,9 +3076,28 @@
             "Crítico"
           ],
           "bounds": [
-            -122.612107,
-            46.990446,
-            -121.455602,
+            -122.612106,
+            46.990354,
+            -121.455735,
+            48.509603
+          ],
+          "kind": "observed"
+        },
+        {
+          "id": "nisar_ref",
+          "date": "2025-11-10",
+          "png": "wa_2025/png/nisar_ref_20251110.png",
+          "cog": "wa_2025/cog/wa_2025_nisar_ref_20251110_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -122.612106,
+            46.990354,
+            -121.455735,
             48.509603
           ],
           "kind": "observed"
@@ -6942,7 +6968,12 @@
         "flood_confirmed": "wa_2025/geojson/flood_confirmed.geojson",
         "landslide_candidates": "wa_2025/geojson/landslide_candidates.geojson",
         "swot_reference": "wa_2025/series/swot_reference.json",
-        "swot_series": "wa_2025/series/swot.json"
+        "swot_series": "wa_2025/series/swot.json",
+        "nisar_timeseries": "wa_2025/nisar_timeseries.json",
+        "flood_candidates": "wa_2025/geojson/flood_confirmed.geojson"
+      },
+      "_deprecated": {
+        "products.flood_confirmed": "alias of products.flood_candidates (NISAR polygons are candidates); removed next cycle"
       },
       "_null_reasons": {}
     },
