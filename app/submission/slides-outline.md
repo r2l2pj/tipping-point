@@ -13,7 +13,7 @@
 - The Uruguay River floods our home state's western border towns again and again: red alerts for Itaqui and Uruguaiana on Jul 26–29, 2026 (Defesa Civil RS) and new floods in October 2026: the Uruguaiana gauge (ANA) stayed above its 8.50 m flood stage Oct 5–21, crest 10.02 m on Oct 16, and again Oct 29–31
 - Clouds hide the river from optical satellites during the flood; alerts cover whole municipalities, not which streets are under water
 - Context: May 2024, Rio Grande do Sul floods — 478 municipalities affected, 185 deaths, 581,638 people displaced at the peak (Government of Rio Grande do Sul, SOS Rio Grande do Sul, updated Aug 19, 2025)
-- *Visual:* the Uruguaiana NISAR map from the app ([TBD] screenshot once the series is published)
+- *Visual:* the Uruguaiana NISAR before/after swipe (Sep 30 → Oct 12) — `.crew/gallery/v6b/1-uy-nisar.png`
 
 ## Slide 3 — Prevent the disaster, not the flood: when · where · who (Uruguaiana, Oct 2026)
 - **When:** our index, fed by NASA satellite rain (GPM IMERG), turned the Uruguaiana region Critical on Sep 30, five days before flood stage (Oct 5; 13,129 km², 6,121 on the low floodplain); NOAA's forecast from Sep 27 already pointed there, 8 days ahead. Near-real-time rain; holds when scaled to the final product (3,541 km² on the floodplain)
