@@ -41,13 +41,13 @@
         }
       ],
       "official_warning_delta_h": -71.83333333333333,
-      "first_critical_at": "2025-11-30",
+      "first_critical_at": "2025-12-09",
       "official_warning_at": "2025-12-06T00:10:00Z",
-      "critical_km2": 4129.437,
+      "critical_km2": 3428.689,
       "critical_km2_date": "2025-12-12",
-      "people_critical": 254263,
-      "critical_slide_km2": 2663.825,
-      "critical_flood_km2": 1465.612,
+      "people_critical": 225583,
+      "critical_slide_km2": 2690.04,
+      "critical_flood_km2": 738.649,
       "_null_reasons": {
         "lead_time_median_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
         "lead_time_iqr_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
@@ -201,6 +201,7 @@
         "unit": "% of NISAR-mapped flood-candidate area",
         "definition": "share of the NISAR-mapped new-flood-candidate AREA (GCOV, post 2025-12-16) with TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in the frames available 24-48 h before the anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, frames depicting dates <= the anchor day); each damage location takes the ~90 m TPI cell that contains it",
         "confirmed_flood_km2": 27.921,
+        "mapped_flood_km2": 27.921,
         "confirmed_flood_km2_label": "27.9 km² of NISAR-mapped flood-candidate pixels on the ~12 m flood raster (the denominator); the canonical flooded_km2 27.99 km² is the polygon set within the swath",
         "canonical_flooded_km2": 27.99,
         "anchor_basis": "onset",
@@ -215,7 +216,7 @@
           ],
           "alto_or_critico_pct": 0.0,
           "critico_pct": 0.0,
-          "no_tpi_pct": 0.0
+          "no_tpi_pct": 0.36
         },
         "forecast_gfs": {
           "frames": [
@@ -223,19 +224,17 @@
           ],
           "alto_or_critico_pct": 0.0,
           "critico_pct": 0.0,
-          "no_tpi_pct": 0.0
+          "no_tpi_pct": 0.36
         },
         "best_issued_gfs_before_anchor": {
-          "issue": "2025-12-05",
-          "hours_before_anchor": 80.0,
+          "issue": "2025-12-07",
+          "hours_before_anchor": 32.0,
           "frames": [
-            "issued 2025-12-05 d1 -> 2025-12-06",
-            "issued 2025-12-05 d2 -> 2025-12-07",
-            "issued 2025-12-05 d3 -> 2025-12-08"
+            "issued 2025-12-07 d1 -> 2025-12-08"
           ],
-          "alto_or_critico_pct": 0.14,
+          "alto_or_critico_pct": 0.0,
           "critico_pct": 0.0,
-          "no_tpi_pct": 0.0
+          "no_tpi_pct": 0.36
         },
         "by_issue_gfs": [
           {
@@ -248,7 +247,7 @@
             ],
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "issue": "2025-12-02",
@@ -260,7 +259,7 @@
             ],
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "issue": "2025-12-03",
@@ -270,9 +269,9 @@
               "issued 2025-12-03 d2 -> 2025-12-05",
               "issued 2025-12-03 d3 -> 2025-12-06"
             ],
-            "alto_or_critico_pct": 0.14,
-            "critico_pct": 0.14,
-            "no_tpi_pct": 0.0
+            "alto_or_critico_pct": 0.0,
+            "critico_pct": 0.0,
+            "no_tpi_pct": 0.36
           },
           {
             "issue": "2025-12-04",
@@ -282,9 +281,9 @@
               "issued 2025-12-04 d2 -> 2025-12-06",
               "issued 2025-12-04 d3 -> 2025-12-07"
             ],
-            "alto_or_critico_pct": 0.14,
-            "critico_pct": 0.14,
-            "no_tpi_pct": 0.0
+            "alto_or_critico_pct": 0.0,
+            "critico_pct": 0.0,
+            "no_tpi_pct": 0.36
           },
           {
             "issue": "2025-12-05",
@@ -294,9 +293,9 @@
               "issued 2025-12-05 d2 -> 2025-12-07",
               "issued 2025-12-05 d3 -> 2025-12-08"
             ],
-            "alto_or_critico_pct": 0.14,
+            "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "issue": "2025-12-06",
@@ -307,7 +306,7 @@
             ],
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "issue": "2025-12-07",
@@ -317,7 +316,7 @@
             ],
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           }
         ],
         "by_date_observed": [
@@ -326,147 +325,147 @@
             "hours_before_anchor": 200.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-01",
             "hours_before_anchor": 176.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-02",
             "hours_before_anchor": 152.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-03",
             "hours_before_anchor": 128.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-04",
             "hours_before_anchor": 104.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-05",
             "hours_before_anchor": 80.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-06",
             "hours_before_anchor": 56.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-07",
             "hours_before_anchor": 32.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-08",
             "hours_before_anchor": 8.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-09",
             "hours_before_anchor": -16.0,
-            "alto_or_critico_pct": 0.01,
+            "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-10",
             "hours_before_anchor": -40.0,
-            "alto_or_critico_pct": 41.0,
-            "critico_pct": 8.97,
-            "no_tpi_pct": 0.0
+            "alto_or_critico_pct": 24.45,
+            "critico_pct": 9.25,
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-11",
             "hours_before_anchor": -64.0,
-            "alto_or_critico_pct": 89.03,
-            "critico_pct": 41.69,
-            "no_tpi_pct": 0.0
+            "alto_or_critico_pct": 96.06,
+            "critico_pct": 44.96,
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-12",
             "hours_before_anchor": -88.0,
-            "alto_or_critico_pct": 98.94,
-            "critico_pct": 70.18,
-            "no_tpi_pct": 0.0
+            "alto_or_critico_pct": 98.81,
+            "critico_pct": 73.56,
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-13",
             "hours_before_anchor": -112.0,
-            "alto_or_critico_pct": 97.06,
-            "critico_pct": 41.23,
-            "no_tpi_pct": 0.0
+            "alto_or_critico_pct": 97.72,
+            "critico_pct": 41.5,
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-14",
             "hours_before_anchor": -136.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-15",
             "hours_before_anchor": -160.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-16",
             "hours_before_anchor": -184.0,
-            "alto_or_critico_pct": 0.0,
+            "alto_or_critico_pct": 0.14,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-17",
             "hours_before_anchor": -208.0,
-            "alto_or_critico_pct": 1.02,
+            "alto_or_critico_pct": 1.14,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-18",
             "hours_before_anchor": -232.0,
-            "alto_or_critico_pct": 0.14,
+            "alto_or_critico_pct": 0.19,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-19",
             "hours_before_anchor": -256.0,
-            "alto_or_critico_pct": 0.14,
+            "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           },
           {
             "date": "2025-12-20",
             "hours_before_anchor": -280.0,
-            "alto_or_critico_pct": 0.14,
+            "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.0
+            "no_tpi_pct": 0.36
           }
         ],
         "by_lead": {
@@ -509,7 +508,7 @@
             "gfs": {
               "issue": "2025-12-05",
               "hours_before_anchor": 80.0,
-              "alto_or_critico_pct": 0.14,
+              "alto_or_critico_pct": 0.0,
               "critico_pct": 0.0,
               "frames": [
                 "issued 2025-12-05 d1 -> 2025-12-06",
@@ -539,22 +538,22 @@
               ],
               "alto_or_critico_pct": 0.0,
               "critico_pct": 0.0,
-              "no_tpi_pct": 0.0
+              "no_tpi_pct": 0.36
             },
             "forecast_gfs": {
               "frames": [
                 "issued 2025-12-08 d1 -> 2025-12-09"
               ],
-              "alto_or_critico_pct": 0.14,
+              "alto_or_critico_pct": 0.0,
               "critico_pct": 0.0,
-              "no_tpi_pct": 0.0
+              "no_tpi_pct": 0.36
             },
             "by_lead": {
               "24": {
                 "gfs": {
                   "issue": "2025-12-08",
                   "hours_before_anchor": 24.6,
-                  "alto_or_critico_pct": 0.14,
+                  "alto_or_critico_pct": 0.0,
                   "critico_pct": 0.0,
                   "frames": [
                     "issued 2025-12-08 d1 -> 2025-12-09"
@@ -571,7 +570,7 @@
                 "gfs": {
                   "issue": "2025-12-07",
                   "hours_before_anchor": 48.6,
-                  "alto_or_critico_pct": 0.14,
+                  "alto_or_critico_pct": 0.0,
                   "critico_pct": 0.0,
                   "frames": [
                     "issued 2025-12-07 d1 -> 2025-12-08",
@@ -589,7 +588,7 @@
                 "gfs": {
                   "issue": "2025-12-06",
                   "hours_before_anchor": 72.6,
-                  "alto_or_critico_pct": 0.14,
+                  "alto_or_critico_pct": 0.0,
                   "critico_pct": 0.0,
                   "frames": [
                     "issued 2025-12-06 d1 -> 2025-12-07",
@@ -607,8 +606,7 @@
             }
           }
         ],
-        "explanation": "TPI_flood is pixel-local: at the flooded pixels T_flood is high (HAND, mean ~0.96) but local 3-day rain stayed below the pixel's P90 (R = 0) and SMAP wetness low until the 2025-12-10 frame. The river flooding was driven by rain upstream in the Cascades, which a pixel-local R does not see; the index rose on the flooded valley floors only after the first damage report.",
-        "mapped_flood_km2": 27.921
+        "explanation": "TPI_flood is pixel-local: at the flooded pixels T_flood is high (HAND, mean ~0.96) but local 3-day rain stayed below the pixel's P90 (R = 0) and SMAP wetness low until the 2025-12-10 frame. The river flooding was driven by rain upstream in the Cascades, which a pixel-local R does not see; the index rose on the flooded valley floors only after the first damage report."
       },
       "flood_warned_pct": 0.0,
       "flood_warned_critical_pct": 0.0,
@@ -643,7 +641,7 @@
       "flood_warned_gfs_48h_issue": "2025-12-06",
       "flood_warned_observed_48h_pct": 0.0,
       "flood_warned_observed_48h_critical_pct": 0.0,
-      "flood_warned_gfs_72h_pct": 0.14,
+      "flood_warned_gfs_72h_pct": 0.0,
       "flood_warned_gfs_72h_critical_pct": 0.0,
       "flood_warned_gfs_72h_issue": "2025-12-05",
       "flood_warned_observed_72h_pct": 0.0,
@@ -678,7 +676,7 @@
           {
             "issue": "2025-12-03",
             "warned": true,
-            "first_critical_date": "2025-12-06",
+            "first_critical_date": "2025-12-05",
             "hazard": "slide",
             "lead_h": 128.0
           },
@@ -794,7 +792,7 @@
             "skipped_issues": [],
             "gfs_24h_pct": 0.0,
             "gfs_48h_pct": 0.0,
-            "gfs_72h_pct": 0.14,
+            "gfs_72h_pct": 0.0,
             "gfs_24h_critical_pct": 0.0,
             "gfs_48h_critical_pct": 0.0,
             "gfs_72h_critical_pct": 0.0
@@ -809,7 +807,7 @@
             ],
             "gfs_24h_pct": 0.0,
             "gfs_48h_pct": 0.0,
-            "gfs_72h_pct": 0.14,
+            "gfs_72h_pct": 0.0,
             "gfs_24h_critical_pct": 0.0,
             "gfs_48h_critical_pct": 0.0,
             "gfs_72h_critical_pct": 0.0
@@ -825,7 +823,7 @@
             ],
             "gfs_24h_pct": 0.0,
             "gfs_48h_pct": 0.0,
-            "gfs_72h_pct": 0.14,
+            "gfs_72h_pct": 0.0,
             "gfs_24h_critical_pct": 0.0,
             "gfs_48h_critical_pct": 0.0,
             "gfs_72h_critical_pct": 0.0
@@ -842,7 +840,7 @@
             ],
             "gfs_24h_pct": 0.0,
             "gfs_48h_pct": 0.0,
-            "gfs_72h_pct": 0.14,
+            "gfs_72h_pct": 0.0,
             "gfs_24h_critical_pct": 0.0,
             "gfs_48h_critical_pct": 0.0,
             "gfs_72h_critical_pct": 0.0
@@ -878,10 +876,10 @@
       "official_warning_delta_basis": "official_warning_at - first_critical_time: how long before the first observed TPI_slide >= 0.6 pixel anywhere in the AOI the published official warning was issued. Warning instant = official_warning_at (INMET 2024-04-26T16:50Z for RS; the earlier Canoas municipal notice 2024-04-25T20:40Z in events/rs-2024-05.json is not used here). NWS 2025-12-06 00:10Z for WA.",
       "lead_time_anchor_source": "L37 onset: heavy rain began 2025-12-08 00:00 PST = 08:00Z; Skagit County EOC fully activated 21:00 PST. Source: WA EMD SEOC sitrep 25-4783 (2025-12-10) https://content.govdelivery.com/attachments/WAMILITARY/2025/12/11/file_attachments/3490229/SEOC_Sitrep-25-4783_12102025.pdf",
       "first_critical_at_basis": "first date whose slide-union-flood per-day max TPI > 0.6 (bundle tpi_max over all *_tpi_{slide,flood}_* bands); differs from lead_time first_critical_time, which is the first TPI_slide-only pixel >= 0.6",
-      "flood_warned_gfs_24h_area_share_pct": 0.0,
-      "flood_warned_gfs_24h_critical_area_share_pct": 0.0,
-      "flood_warned_gfs_24h_lift": null,
-      "flood_warned_gfs_24h_critical_lift": null,
+      "flood_warned_gfs_24h_area_share_pct": 0.16,
+      "flood_warned_gfs_24h_critical_area_share_pct": 0.01,
+      "flood_warned_gfs_24h_lift": 0.0,
+      "flood_warned_gfs_24h_critical_lift": 0.0,
       "prediction_lift": {
         "definition": "lift = hit rate / area share, for the NOAA GFS 00Z run issued >= 24 h before the L37 onset (frames depicting dates <= the onset day, max over frames); area share = % of the scored domain (finite-TPI cells; geodesic km²) above the same cut. Lift 1 = no better than a random location of the domain.",
         "rows": {
@@ -892,11 +890,11 @@
             },
             "domain": "wa_2025 case grid (finite TPI_flood)",
             "area": {
-              "domain_km2": 13748.4,
-              "alto_plus_km2": 0.3,
-              "alto_plus_share_pct": 0.0,
-              "critico_km2": 0.0,
-              "critico_share_pct": 0.0
+              "domain_km2": 11982.6,
+              "alto_plus_km2": 18.7,
+              "alto_plus_share_pct": 0.16,
+              "critico_km2": 1.1,
+              "critico_share_pct": 0.01
             },
             "issue": "2025-12-07",
             "frames": [
@@ -904,8 +902,8 @@
             ],
             "hazard": "flood",
             "lift": {
-              "alto_plus": null,
-              "critico": null
+              "alto_plus": 0.0,
+              "critico": 0.0
             }
           }
         }
@@ -989,12 +987,12 @@
                   "critical": {
                     "n_units": 140,
                     "n_hit_units": 14,
-                    "n_alarms": 66,
-                    "n_hits": 13,
-                    "false_alarms": 53,
-                    "precision_pct": 19.7,
+                    "n_alarms": 69,
+                    "n_hits": 14,
+                    "false_alarms": 55,
+                    "precision_pct": 20.29,
                     "baseline_pct": 10.0,
-                    "lift": 1.97,
+                    "lift": 2.03,
                     "n_slide_municipalities": 2,
                     "n_municipalities": 7,
                     "pod_before_onset_pct": 100.0,
@@ -1002,18 +1000,18 @@
                     "alarm_lead_h_all": {
                       "median": 8.0,
                       "iqr": [
-                        -40.0,
-                        56.0
+                        -34.0,
+                        50.0
                       ],
-                      "n": 13
+                      "n": 14
                     },
                     "alarm_lead_h_issued_before_onset": {
-                      "median": 56.0,
+                      "median": 44.0,
                       "iqr": [
-                        20.0,
-                        68.0
+                        26.0,
+                        62.0
                       ],
-                      "n": 7
+                      "n": 8
                     },
                     "by_issue_day": [
                       {
@@ -1033,7 +1031,7 @@
                       {
                         "issue": "2025-12-03",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 2,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -1061,9 +1059,9 @@
                       {
                         "issue": "2025-12-07",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 3,
-                        "n_hits": 1,
-                        "precision_pct": 33.33
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
                       },
                       {
                         "issue": "2025-12-08",
@@ -1096,9 +1094,9 @@
                       {
                         "issue": "2025-12-12",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 1,
+                        "n_alarms": 0,
                         "n_hits": 0,
-                        "precision_pct": 0.0
+                        "precision_pct": null
                       },
                       {
                         "issue": "2025-12-13",
@@ -1152,7 +1150,7 @@
                       {
                         "issue": "2025-12-20",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 1,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       }
@@ -1161,12 +1159,12 @@
                   "alto_plus": {
                     "n_units": 140,
                     "n_hit_units": 14,
-                    "n_alarms": 84,
+                    "n_alarms": 82,
                     "n_hits": 14,
-                    "false_alarms": 70,
-                    "precision_pct": 16.67,
+                    "false_alarms": 68,
+                    "precision_pct": 17.07,
                     "baseline_pct": 10.0,
-                    "lift": 1.67,
+                    "lift": 1.71,
                     "n_slide_municipalities": 2,
                     "n_municipalities": 7,
                     "pod_before_onset_pct": 100.0,
@@ -1198,7 +1196,7 @@
                       {
                         "issue": "2025-12-02",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 2,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -1261,14 +1259,14 @@
                       {
                         "issue": "2025-12-11",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 6,
+                        "n_alarms": 5,
                         "n_hits": 2,
-                        "precision_pct": 33.33
+                        "precision_pct": 40.0
                       },
                       {
                         "issue": "2025-12-12",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 3,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -1289,7 +1287,7 @@
                       {
                         "issue": "2025-12-15",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 6,
+                        "n_alarms": 5,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -1338,31 +1336,31 @@
                   "critical": {
                     "n_units": 140,
                     "n_hit_units": 14,
-                    "n_alarms": 66,
-                    "n_hits": 11,
-                    "false_alarms": 55,
-                    "precision_pct": 16.67,
+                    "n_alarms": 69,
+                    "n_hits": 12,
+                    "false_alarms": 57,
+                    "precision_pct": 17.39,
                     "baseline_pct": 10.0,
-                    "lift": 1.67,
+                    "lift": 1.74,
                     "n_slide_municipalities": 2,
                     "n_municipalities": 7,
                     "pod_before_onset_pct": 100.0,
                     "pod_before_window_end_pct": 100.0,
                     "alarm_lead_h_all": {
-                      "median": -16.0,
+                      "median": -4.0,
                       "iqr": [
                         -40.0,
-                        20.0
+                        32.0
                       ],
-                      "n": 11
+                      "n": 12
                     },
                     "alarm_lead_h_issued_before_onset": {
                       "median": 32.0,
                       "iqr": [
-                        8.0,
-                        56.0
+                        14.0,
+                        50.0
                       ],
-                      "n": 5
+                      "n": 6
                     },
                     "by_issue_day": [
                       {
@@ -1382,7 +1380,7 @@
                       {
                         "issue": "2025-12-03",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 2,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -1410,9 +1408,9 @@
                       {
                         "issue": "2025-12-07",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 3,
-                        "n_hits": 1,
-                        "precision_pct": 33.33
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
                       },
                       {
                         "issue": "2025-12-08",
@@ -1445,9 +1443,9 @@
                       {
                         "issue": "2025-12-12",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 1,
+                        "n_alarms": 0,
                         "n_hits": 0,
-                        "precision_pct": 0.0
+                        "precision_pct": null
                       },
                       {
                         "issue": "2025-12-13",
@@ -1501,7 +1499,7 @@
                       {
                         "issue": "2025-12-20",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 1,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       }
@@ -1510,12 +1508,12 @@
                   "alto_plus": {
                     "n_units": 140,
                     "n_hit_units": 14,
-                    "n_alarms": 84,
+                    "n_alarms": 82,
                     "n_hits": 13,
-                    "false_alarms": 71,
-                    "precision_pct": 15.48,
+                    "false_alarms": 69,
+                    "precision_pct": 15.85,
                     "baseline_pct": 10.0,
-                    "lift": 1.55,
+                    "lift": 1.59,
                     "n_slide_municipalities": 2,
                     "n_municipalities": 7,
                     "pod_before_onset_pct": 100.0,
@@ -1547,7 +1545,7 @@
                       {
                         "issue": "2025-12-02",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 2,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -1610,16 +1608,16 @@
                       {
                         "issue": "2025-12-11",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 6,
+                        "n_alarms": 5,
                         "n_hits": 2,
-                        "precision_pct": 33.33
+                        "precision_pct": 40.0
                       },
                       {
                         "issue": "2025-12-12",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 3,
+                        "n_alarms": 2,
                         "n_hits": 1,
-                        "precision_pct": 33.33
+                        "precision_pct": 50.0
                       },
                       {
                         "issue": "2025-12-13",
@@ -1638,7 +1636,7 @@
                       {
                         "issue": "2025-12-15",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 6,
+                        "n_alarms": 5,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -1685,18 +1683,18 @@
           }
         }
       },
-      "alarm_precision_critical_pct": 19.7,
-      "alarm_precision_critical_n_alarms": 66,
-      "alarm_precision_critical_n_hits": 13,
-      "alarm_precision_critical_false_alarms": 53,
-      "alarm_precision_alto_plus_pct": 16.67,
-      "alarm_precision_alto_plus_n_alarms": 84,
+      "alarm_precision_critical_pct": 20.29,
+      "alarm_precision_critical_n_alarms": 69,
+      "alarm_precision_critical_n_hits": 14,
+      "alarm_precision_critical_false_alarms": 55,
+      "alarm_precision_alto_plus_pct": 17.07,
+      "alarm_precision_alto_plus_n_alarms": 82,
       "alarm_precision_alto_plus_n_hits": 14,
-      "alarm_precision_alto_plus_false_alarms": 70,
+      "alarm_precision_alto_plus_false_alarms": 68,
       "alarm_pod_before_onset_pct": 100.0,
-      "alarm_lead_h_median": 56.0,
+      "alarm_lead_h_median": 44.0,
       "alarm_baseline_pct": 10.0,
-      "alarm_lift": 1.97,
+      "alarm_lift": 2.03,
       "withdrawn": {
         "people_flooded": {
           "value": 1150.8775801961883,
@@ -4021,7 +4019,10 @@
               }
             }
           }
-        }
+        },
+        "served": true,
+        "served_since": "2026-11-15 ~13:30 BRT (L46): canonical COGs/PNGs/metrics are v2; v1 values remain in before_after and in git history",
+        "people_critical_note": "served people_critical 225,583 = native 30\" GPW exact fractions (same method as RS); the before_after v2 row (196,670) used the old ~1 km case pop COG"
       }
     },
     "rs_2024": {
@@ -4062,11 +4063,11 @@
       "official_warning_delta_h": -31.166666666666668,
       "first_critical_at": "2024-04-28",
       "official_warning_at": "2024-04-26T16:50:00Z",
-      "critical_km2": 10870.642,
+      "critical_km2": 9174.578,
       "critical_km2_date": "2024-05-03",
-      "people_critical": 1681783,
-      "critical_slide_km2": 3223.806,
-      "critical_flood_km2": 7646.837,
+      "people_critical": 1627862,
+      "critical_slide_km2": 3218.664,
+      "critical_flood_km2": 5955.914,
       "_null_reasons": {
         "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog has 16,027 points but none are dated",
         "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson has 16,027 points but none are dated: point-level lead times are undefined; fell back to cluster-lead vs damage_anchor",
@@ -4075,7 +4076,13 @@
         "flood_source": "no NISAR coverage — event predates launch (Jul 2025)",
         "iou": "no NISAR water mask: event predates NISAR launch (Jul 2025), so NISAR-vs-OPERA IoU is undefined",
         "f1": "no NISAR water mask: event predates NISAR launch (Jul 2025), so NISAR-vs-OPERA F1 is undefined",
-        "flood_warned_pct": "no flood reference map for RS 2024: event predates NISAR, OPERA DSWx-HLS was 100 % cloud, OPERA DSWx-S1 has no granules for 2024-05-01..20 (CMR) and the S1 RTC route is pending the ASF OPERA RTC-S1 EULA"
+        "flood_warned_pct": "no flood reference map for RS 2024: event predates NISAR, OPERA DSWx-HLS was 100 % cloud, OPERA DSWx-S1 has no granules for 2024-05-01..20 (CMR) and the S1 RTC route is pending the ASF OPERA RTC-S1 EULA",
+        "landslide_ems_warned_gfs_24h_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
+        "landslide_ems_warned_gfs_24h_critical_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
+        "landslide_ems_warned_gfs_24h_centroid_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
+        "landslide_ems_warned_gfs_24h_centroid_critical_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
+        "flood_ems_flagged_before_onset_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
+        "flood_ems_flagged_before_onset_critical_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)"
       },
       "lead_time_median_h": -21.0,
       "lead_time_iqr_h": [
@@ -4656,17 +4663,17 @@
           "frames": [
             "20240428"
           ],
-          "alto_or_critico_pct": 0.25,
+          "alto_or_critico_pct": 0.59,
           "critico_pct": 0.0,
-          "no_tpi_pct": 0.75
+          "no_tpi_pct": 0.95
         },
         "forecast_gfs": {
           "frames": [
             "issued 2024-04-28 d1 -> 2024-04-29"
           ],
-          "alto_or_critico_pct": 36.45,
-          "critico_pct": 1.87,
-          "no_tpi_pct": 0.77
+          "alto_or_critico_pct": 5.77,
+          "critico_pct": 0.18,
+          "no_tpi_pct": 0.95
         },
         "best_issued_gfs_before_anchor": {
           "issue": "2024-04-23",
@@ -4676,9 +4683,9 @@
             "issued 2024-04-23 d2 -> 2024-04-25",
             "issued 2024-04-23 d3 -> 2024-04-26"
           ],
-          "alto_or_critico_pct": 40.63,
-          "critico_pct": 10.61,
-          "no_tpi_pct": 0.77
+          "alto_or_critico_pct": 43.64,
+          "critico_pct": 11.54,
+          "no_tpi_pct": 0.95
         },
         "by_issue_gfs": [
           {
@@ -4689,9 +4696,9 @@
               "issued 2024-04-23 d2 -> 2024-04-25",
               "issued 2024-04-23 d3 -> 2024-04-26"
             ],
-            "alto_or_critico_pct": 40.63,
-            "critico_pct": 10.61,
-            "no_tpi_pct": 0.77
+            "alto_or_critico_pct": 43.64,
+            "critico_pct": 11.54,
+            "no_tpi_pct": 0.95
           },
           {
             "issue": "2024-04-24",
@@ -4703,7 +4710,7 @@
             ],
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.77
+            "no_tpi_pct": 0.95
           },
           {
             "issue": "2024-04-25",
@@ -4715,7 +4722,7 @@
             ],
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.77
+            "no_tpi_pct": 0.95
           },
           {
             "issue": "2024-04-26",
@@ -4727,7 +4734,7 @@
             ],
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.77
+            "no_tpi_pct": 0.95
           },
           {
             "issue": "2024-04-27",
@@ -4738,7 +4745,7 @@
             ],
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.77
+            "no_tpi_pct": 0.95
           },
           {
             "issue": "2024-04-28",
@@ -4746,9 +4753,9 @@
             "frames": [
               "issued 2024-04-28 d1 -> 2024-04-29"
             ],
-            "alto_or_critico_pct": 36.45,
-            "critico_pct": 1.87,
-            "no_tpi_pct": 0.77
+            "alto_or_critico_pct": 5.77,
+            "critico_pct": 0.18,
+            "no_tpi_pct": 0.95
           }
         ],
         "by_date_observed": [
@@ -4757,112 +4764,112 @@
             "hours_before_anchor": 171.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.75
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-04-23",
             "hours_before_anchor": 147.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.75
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-04-24",
             "hours_before_anchor": 123.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.75
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-04-25",
             "hours_before_anchor": 99.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.75
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-04-26",
             "hours_before_anchor": 75.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.75
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-04-27",
             "hours_before_anchor": 51.0,
             "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.75
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-04-28",
             "hours_before_anchor": 27.0,
-            "alto_or_critico_pct": 0.25,
+            "alto_or_critico_pct": 0.59,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.75
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-04-29",
             "hours_before_anchor": 3.0,
-            "alto_or_critico_pct": 3.66,
+            "alto_or_critico_pct": 1.85,
             "critico_pct": 0.0,
-            "no_tpi_pct": 0.75
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-04-30",
             "hours_before_anchor": -21.0,
-            "alto_or_critico_pct": 88.83,
-            "critico_pct": 73.46,
-            "no_tpi_pct": 0.75
+            "alto_or_critico_pct": 88.73,
+            "critico_pct": 74.12,
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-05-01",
             "hours_before_anchor": -45.0,
-            "alto_or_critico_pct": 90.8,
-            "critico_pct": 84.11,
-            "no_tpi_pct": 0.75
+            "alto_or_critico_pct": 90.63,
+            "critico_pct": 83.97,
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-05-02",
             "hours_before_anchor": -69.0,
-            "alto_or_critico_pct": 91.04,
-            "critico_pct": 85.1,
-            "no_tpi_pct": 0.75
+            "alto_or_critico_pct": 90.87,
+            "critico_pct": 84.96,
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-05-03",
             "hours_before_anchor": -93.0,
-            "alto_or_critico_pct": 91.05,
-            "critico_pct": 85.35,
-            "no_tpi_pct": 0.75
+            "alto_or_critico_pct": 90.88,
+            "critico_pct": 85.21,
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-05-04",
             "hours_before_anchor": -117.0,
-            "alto_or_critico_pct": 91.07,
-            "critico_pct": 85.38,
-            "no_tpi_pct": 0.75
+            "alto_or_critico_pct": 90.9,
+            "critico_pct": 85.24,
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-05-05",
             "hours_before_anchor": -141.0,
-            "alto_or_critico_pct": 91.07,
-            "critico_pct": 85.38,
-            "no_tpi_pct": 0.75
+            "alto_or_critico_pct": 90.9,
+            "critico_pct": 85.24,
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-05-06",
             "hours_before_anchor": -165.0,
-            "alto_or_critico_pct": 82.4,
-            "critico_pct": 72.86,
-            "no_tpi_pct": 0.75
+            "alto_or_critico_pct": 81.77,
+            "critico_pct": 72.2,
+            "no_tpi_pct": 0.95
           },
           {
             "date": "2024-05-07",
             "hours_before_anchor": -189.0,
-            "alto_or_critico_pct": 81.77,
-            "critico_pct": 71.87,
-            "no_tpi_pct": 0.75
+            "alto_or_critico_pct": 81.41,
+            "critico_pct": 71.59,
+            "no_tpi_pct": 0.95
           }
         ],
         "by_lead": {
@@ -4870,8 +4877,8 @@
             "gfs": {
               "issue": "2024-04-28",
               "hours_before_anchor": 27.0,
-              "alto_or_critico_pct": 36.45,
-              "critico_pct": 1.87,
+              "alto_or_critico_pct": 5.77,
+              "critico_pct": 0.18,
               "frames": [
                 "issued 2024-04-28 d1 -> 2024-04-29"
               ]
@@ -4879,7 +4886,7 @@
             "observed": {
               "band_date": "2024-04-28",
               "hours_before_anchor": 27.0,
-              "alto_or_critico_pct": 0.25,
+              "alto_or_critico_pct": 0.59,
               "critico_pct": 0.0
             }
           },
@@ -4933,9 +4940,9 @@
               "frames": [
                 "20240429"
               ],
-              "alto_or_critico_pct": 3.66,
+              "alto_or_critico_pct": 1.85,
               "critico_pct": 0.0,
-              "no_tpi_pct": 0.75
+              "no_tpi_pct": 0.95
             },
             "forecast_gfs": {
               "frames": [
@@ -4943,7 +4950,7 @@
               ],
               "alto_or_critico_pct": 0.0,
               "critico_pct": 0.0,
-              "no_tpi_pct": 0.77
+              "no_tpi_pct": 0.95
             },
             "by_lead": {
               "24": {
@@ -4959,7 +4966,7 @@
                 "observed": {
                   "band_date": "2024-04-29",
                   "hours_before_anchor": 27.0,
-                  "alto_or_critico_pct": 3.66,
+                  "alto_or_critico_pct": 1.85,
                   "critico_pct": 0.0
                 }
               },
@@ -4967,8 +4974,8 @@
                 "gfs": {
                   "issue": "2024-04-28",
                   "hours_before_anchor": 51.0,
-                  "alto_or_critico_pct": 36.45,
-                  "critico_pct": 1.87,
+                  "alto_or_critico_pct": 5.77,
+                  "critico_pct": 0.18,
                   "frames": [
                     "issued 2024-04-28 d1 -> 2024-04-29",
                     "issued 2024-04-28 d2 -> 2024-04-30"
@@ -4977,7 +4984,7 @@
                 "observed": {
                   "band_date": "2024-04-28",
                   "hours_before_anchor": 51.0,
-                  "alto_or_critico_pct": 0.25,
+                  "alto_or_critico_pct": 0.59,
                   "critico_pct": 0.0
                 }
               },
@@ -5014,9 +5021,9 @@
                 "20240429",
                 "20240430"
               ],
-              "alto_or_critico_pct": 88.83,
-              "critico_pct": 73.46,
-              "no_tpi_pct": 0.75
+              "alto_or_critico_pct": 88.73,
+              "critico_pct": 74.12,
+              "no_tpi_pct": 0.95
             },
             "forecast_gfs": {
               "frames": [
@@ -5024,17 +5031,17 @@
                 "issued 2024-04-29 d1 -> 2024-04-30",
                 "issued 2024-04-29 d2 -> 2024-05-01"
               ],
-              "alto_or_critico_pct": 88.13,
-              "critico_pct": 69.07,
-              "no_tpi_pct": 0.77
+              "alto_or_critico_pct": 87.25,
+              "critico_pct": 62.18,
+              "no_tpi_pct": 0.95
             },
             "by_lead": {
               "24": {
                 "gfs": {
                   "issue": "2024-04-30",
                   "hours_before_anchor": 24.0,
-                  "alto_or_critico_pct": 88.13,
-                  "critico_pct": 69.07,
+                  "alto_or_critico_pct": 87.25,
+                  "critico_pct": 62.18,
                   "frames": [
                     "issued 2024-04-30 d1 -> 2024-05-01"
                   ]
@@ -5042,15 +5049,15 @@
                 "observed": {
                   "band_date": "2024-04-30",
                   "hours_before_anchor": 24.0,
-                  "alto_or_critico_pct": 88.83,
-                  "critico_pct": 73.46
+                  "alto_or_critico_pct": 88.73,
+                  "critico_pct": 74.12
                 }
               },
               "48": {
                 "gfs": {
                   "issue": "2024-04-29",
                   "hours_before_anchor": 48.0,
-                  "alto_or_critico_pct": 0.27,
+                  "alto_or_critico_pct": 0.57,
                   "critico_pct": 0.01,
                   "frames": [
                     "issued 2024-04-29 d1 -> 2024-04-30",
@@ -5060,7 +5067,7 @@
                 "observed": {
                   "band_date": "2024-04-29",
                   "hours_before_anchor": 48.0,
-                  "alto_or_critico_pct": 3.66,
+                  "alto_or_critico_pct": 1.85,
                   "critico_pct": 0.0
                 }
               },
@@ -5068,8 +5075,8 @@
                 "gfs": {
                   "issue": "2024-04-28",
                   "hours_before_anchor": 72.0,
-                  "alto_or_critico_pct": 70.89,
-                  "critico_pct": 22.01,
+                  "alto_or_critico_pct": 74.61,
+                  "critico_pct": 24.36,
                   "frames": [
                     "issued 2024-04-28 d1 -> 2024-04-29",
                     "issued 2024-04-28 d2 -> 2024-04-30",
@@ -5079,7 +5086,7 @@
                 "observed": {
                   "band_date": "2024-04-28",
                   "hours_before_anchor": 72.0,
-                  "alto_or_critico_pct": 0.25,
+                  "alto_or_critico_pct": 0.59,
                   "critico_pct": 0.0
                 }
               }
@@ -5087,9 +5094,9 @@
           }
         ]
       },
-      "slide_warned_pct": 36.45,
-      "slide_warned_critical_pct": 1.87,
-      "slide_warned_observed_pct": 0.25,
+      "slide_warned_pct": 5.77,
+      "slide_warned_critical_pct": 0.18,
+      "slide_warned_observed_pct": 0.59,
       "slide_warned_basis": "forecast_gfs (00Z runs issued 24-48 h before the event onset 2024-04-29 00:00 BRT (UTC-3))",
       "flood_warned_pct": null,
       "gpw_product": "GPW v4.11 population count (CIESIN/NASA SEDAC), 30 arc-sec",
@@ -5186,9 +5193,9 @@
           }
         ]
       },
-      "slide_warned_gfs_24h_pct": 36.45,
-      "slide_warned_gfs_24h_critical_pct": 1.87,
-      "slide_warned_observed_24h_pct": 0.25,
+      "slide_warned_gfs_24h_pct": 5.77,
+      "slide_warned_gfs_24h_critical_pct": 0.18,
+      "slide_warned_observed_24h_pct": 0.59,
       "slide_warned_observed_24h_critical_pct": 0.0,
       "slide_warned_gfs_48h_pct": 0.0,
       "slide_warned_gfs_48h_critical_pct": 0.0,
@@ -5288,12 +5295,12 @@
             "anchor_utc": "2024-04-30T03:00:00+00:00",
             "earliest_critical_issue": "2024-04-23",
             "would_have_warned_h": 171.0,
-            "lead_h_median": 63.0,
+            "lead_h_median": 75.0,
             "lead_h_iqr": [
-              45.0,
-              99.0
+              63.0,
+              123.0
             ],
-            "n_warned": 4,
+            "n_warned": 3,
             "n_issue_days": 8
           },
           {
@@ -5358,10 +5365,10 @@
             "s_age_days_at_issue": 1,
             "anchor_basis": "onset",
             "skipped_issues": [],
-            "gfs_24h_pct": 36.45,
+            "gfs_24h_pct": 5.77,
             "gfs_48h_pct": 0.0,
             "gfs_72h_pct": 0.0,
-            "gfs_24h_critical_pct": 1.87,
+            "gfs_24h_critical_pct": 0.18,
             "gfs_48h_critical_pct": 0.0,
             "gfs_72h_critical_pct": 0.0
           },
@@ -5373,10 +5380,10 @@
               "2024-04-23",
               "2024-04-24"
             ],
-            "gfs_24h_pct": 35.41,
+            "gfs_24h_pct": 5.64,
             "gfs_48h_pct": 0.0,
             "gfs_72h_pct": 0.0,
-            "gfs_24h_critical_pct": 1.44,
+            "gfs_24h_critical_pct": 0.16,
             "gfs_48h_critical_pct": 0.0,
             "gfs_72h_critical_pct": 0.0
           },
@@ -5389,10 +5396,10 @@
               "2024-04-24",
               "2024-04-25"
             ],
-            "gfs_24h_pct": 35.35,
+            "gfs_24h_pct": 5.61,
             "gfs_48h_pct": 0.0,
             "gfs_72h_pct": 0.0,
-            "gfs_24h_critical_pct": 1.4,
+            "gfs_24h_critical_pct": 0.08,
             "gfs_48h_critical_pct": 0.0,
             "gfs_72h_critical_pct": 0.0
           },
@@ -5406,10 +5413,10 @@
               "2024-04-25",
               "2024-04-26"
             ],
-            "gfs_24h_pct": 34.25,
+            "gfs_24h_pct": 5.42,
             "gfs_48h_pct": 0.0,
             "gfs_72h_pct": null,
-            "gfs_24h_critical_pct": 1.19,
+            "gfs_24h_critical_pct": 0.06,
             "gfs_48h_critical_pct": 0.0,
             "gfs_72h_critical_pct": null
           }
@@ -5896,13 +5903,13 @@
       "official_warning_delta_basis": "official_warning_at - first_critical_time: how long before the first observed TPI_slide >= 0.6 pixel anywhere in the AOI the published official warning was issued. Warning instant = official_warning_at (INMET 2024-04-26T16:50Z for RS; the earlier Canoas municipal notice 2024-04-25T20:40Z in events/rs-2024-05.json is not used here). NWS 2025-12-06 00:10Z for WA.",
       "lead_time_anchor_source": "L37 onset: first deaths of the event (2 flood deaths, Paverama) on 2024-04-29 00:00 BRT = 03:00Z. Sources: MetSul laudo https://metsul.com/wp-content/uploads/2024/06/metsul-laudo_V4_assinado.pdf ; Jornal do Comercio 2024-04-29 ; SGB https://rigeo.sgb.gov.br/bitstream/doc/25165/1/guimaraes_et_al_evento_catastrofico_serra_rs.pdf",
       "first_critical_at_basis": "first date whose slide-union-flood per-day max TPI > 0.6 (bundle tpi_max over all *_tpi_{slide,flood}_* bands); differs from lead_time first_critical_time, which is the first TPI_slide-only pixel >= 0.6",
-      "flood_ems_iou": 0.185,
-      "flood_ems_f1": 0.3123,
-      "flood_ems_precision": 0.4645,
-      "flood_ems_recall": 0.2352,
+      "flood_ems_iou": 0.1967,
+      "flood_ems_f1": 0.3288,
+      "flood_ems_precision": 0.7478,
+      "flood_ems_recall": 0.2107,
       "flood_ems_flooded_km2": 32.038,
-      "flood_ems_flagged_before_onset_pct": 6.56,
-      "flood_ems_flagged_before_onset_critical_pct": 0.1,
+      "flood_ems_flagged_before_onset_pct": 0.0,
+      "flood_ems_flagged_before_onset_critical_pct": 0.0,
       "flood_ems": {
         "activation": "EMSR720",
         "licence": "Copernicus EMS — free use with attribution: © European Union, Copernicus Emergency Management Service",
@@ -6157,16 +6164,16 @@
           "gfs_issue": null,
           "gfs_frames": null,
           "observed_band": "20240506",
-          "tp": 1066,
-          "fp": 1229,
-          "fn": 3466,
-          "iou": 0.185,
-          "f1": 0.3123,
-          "precision": 0.4645,
-          "recall": 0.2352,
+          "tp": 955,
+          "fp": 322,
+          "fn": 3577,
+          "iou": 0.1967,
+          "f1": 0.3288,
+          "precision": 0.7478,
+          "recall": 0.2107,
           "ems_flooded_km2": 32.038,
-          "tpi_flagged_km2": 16.229,
-          "overlap_km2": 7.537,
+          "tpi_flagged_km2": 9.029,
+          "overlap_km2": 6.752,
           "domain_km2": 258.212,
           "aois": [
             "AOI01",
@@ -6199,13 +6206,13 @@
           "denominator_km2": 36.451,
           "denominator_note": "union of all EMS-mapped flood polygons (all dates/AOIs), rasterized centre-in on the ~90 m grid",
           "observed_band_20240429": {
-            "alto_or_critico_pct": 0.21,
+            "alto_or_critico_pct": 0.0,
             "critico_pct": 0.0
           },
           "gfs_issued": {
             "2024-04-28": {
-              "alto_or_critico_pct": 6.56,
-              "critico_pct": 0.1,
+              "alto_or_critico_pct": 0.0,
+              "critico_pct": 0.0,
               "frames": [
                 "issued 2024-04-28 d1 -> 2024-04-29"
               ]
@@ -6228,15 +6235,15 @@
               ]
             }
           },
-          "gfs_any_issue_alto_or_critico_pct": 6.56,
-          "gfs_any_issue_critico_pct": 0.1,
+          "gfs_any_issue_alto_or_critico_pct": 0.0,
+          "gfs_any_issue_critico_pct": 0.0,
           "by_lead": {
             "24": {
               "gfs": {
                 "issue": "2024-04-28",
                 "hours_before_anchor": 27.0,
-                "alto_or_critico_pct": 6.56,
-                "critico_pct": 0.1,
+                "alto_or_critico_pct": 0.0,
+                "critico_pct": 0.0,
                 "frames": [
                   "issued 2024-04-28 d1 -> 2024-04-29"
                 ]
@@ -6298,16 +6305,16 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240504",
-            "tp": 240,
-            "fp": 1481,
-            "fn": 352,
-            "iou": 0.1158,
-            "f1": 0.2075,
-            "precision": 0.1395,
-            "recall": 0.4054,
+            "tp": 204,
+            "fp": 877,
+            "fn": 388,
+            "iou": 0.1389,
+            "f1": 0.2439,
+            "precision": 0.1887,
+            "recall": 0.3446,
             "ems_flooded_km2": 4.186,
-            "tpi_flagged_km2": 12.17,
-            "overlap_km2": 1.697,
+            "tpi_flagged_km2": 7.644,
+            "overlap_km2": 1.443,
             "domain_km2": 125.697,
             "aois": [
               "AOI01",
@@ -6326,16 +6333,16 @@
               "issued 2024-05-03 d1_flood -> 2024-05-04"
             ],
             "observed_band": null,
-            "tp": 240,
-            "fp": 1481,
-            "fn": 352,
-            "iou": 0.1158,
-            "f1": 0.2075,
-            "precision": 0.1395,
-            "recall": 0.4054,
+            "tp": 204,
+            "fp": 877,
+            "fn": 388,
+            "iou": 0.1389,
+            "f1": 0.2439,
+            "precision": 0.1887,
+            "recall": 0.3446,
             "ems_flooded_km2": 4.186,
-            "tpi_flagged_km2": 12.17,
-            "overlap_km2": 1.697,
+            "tpi_flagged_km2": 7.644,
+            "overlap_km2": 1.443,
             "domain_km2": 125.697,
             "aois": [
               "AOI01",
@@ -6352,16 +6359,16 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240504",
-            "tp": 180,
-            "fp": 1127,
-            "fn": 412,
-            "iou": 0.1047,
-            "f1": 0.1896,
-            "precision": 0.1377,
-            "recall": 0.3041,
+            "tp": 151,
+            "fp": 633,
+            "fn": 441,
+            "iou": 0.1233,
+            "f1": 0.2195,
+            "precision": 0.1926,
+            "recall": 0.2551,
             "ems_flooded_km2": 4.186,
-            "tpi_flagged_km2": 9.243,
-            "overlap_km2": 1.273,
+            "tpi_flagged_km2": 5.544,
+            "overlap_km2": 1.068,
             "domain_km2": 125.697,
             "aois": [
               "AOI01",
@@ -6380,16 +6387,16 @@
               "issued 2024-05-03 d1_flood -> 2024-05-04"
             ],
             "observed_band": null,
-            "tp": 180,
-            "fp": 1127,
-            "fn": 412,
-            "iou": 0.1047,
-            "f1": 0.1896,
-            "precision": 0.1377,
-            "recall": 0.3041,
+            "tp": 151,
+            "fp": 633,
+            "fn": 441,
+            "iou": 0.1233,
+            "f1": 0.2195,
+            "precision": 0.1926,
+            "recall": 0.2551,
             "ems_flooded_km2": 4.186,
-            "tpi_flagged_km2": 9.243,
-            "overlap_km2": 1.273,
+            "tpi_flagged_km2": 5.544,
+            "overlap_km2": 1.068,
             "domain_km2": 125.697,
             "aois": [
               "AOI01",
@@ -6406,16 +6413,16 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240504",
-            "tp": 309,
-            "fp": 1412,
-            "fn": 396,
-            "iou": 0.146,
-            "f1": 0.2547,
-            "precision": 0.1795,
-            "recall": 0.4383,
+            "tp": 258,
+            "fp": 823,
+            "fn": 447,
+            "iou": 0.1688,
+            "f1": 0.2889,
+            "precision": 0.2387,
+            "recall": 0.366,
             "ems_flooded_km2": 4.986,
-            "tpi_flagged_km2": 12.17,
-            "overlap_km2": 2.185,
+            "tpi_flagged_km2": 7.644,
+            "overlap_km2": 1.824,
             "domain_km2": 125.697,
             "aois": [
               "AOI01",
@@ -6434,16 +6441,16 @@
               "issued 2024-05-03 d1_flood -> 2024-05-04"
             ],
             "observed_band": null,
-            "tp": 309,
-            "fp": 1412,
-            "fn": 396,
-            "iou": 0.146,
-            "f1": 0.2547,
-            "precision": 0.1795,
-            "recall": 0.4383,
+            "tp": 258,
+            "fp": 823,
+            "fn": 447,
+            "iou": 0.1688,
+            "f1": 0.2889,
+            "precision": 0.2387,
+            "recall": 0.366,
             "ems_flooded_km2": 4.986,
-            "tpi_flagged_km2": 12.17,
-            "overlap_km2": 2.185,
+            "tpi_flagged_km2": 7.644,
+            "overlap_km2": 1.824,
             "domain_km2": 125.697,
             "aois": [
               "AOI01",
@@ -6460,16 +6467,16 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240504",
-            "tp": 236,
-            "fp": 1071,
-            "fn": 469,
-            "iou": 0.1329,
-            "f1": 0.2346,
-            "precision": 0.1806,
-            "recall": 0.3348,
+            "tp": 194,
+            "fp": 590,
+            "fn": 511,
+            "iou": 0.1498,
+            "f1": 0.2606,
+            "precision": 0.2474,
+            "recall": 0.2752,
             "ems_flooded_km2": 4.986,
-            "tpi_flagged_km2": 9.243,
-            "overlap_km2": 1.669,
+            "tpi_flagged_km2": 5.544,
+            "overlap_km2": 1.372,
             "domain_km2": 125.697,
             "aois": [
               "AOI01",
@@ -6488,16 +6495,16 @@
               "issued 2024-05-03 d1_flood -> 2024-05-04"
             ],
             "observed_band": null,
-            "tp": 236,
-            "fp": 1071,
-            "fn": 469,
-            "iou": 0.1329,
-            "f1": 0.2346,
-            "precision": 0.1806,
-            "recall": 0.3348,
+            "tp": 194,
+            "fp": 590,
+            "fn": 511,
+            "iou": 0.1498,
+            "f1": 0.2606,
+            "precision": 0.2474,
+            "recall": 0.2752,
             "ems_flooded_km2": 4.986,
-            "tpi_flagged_km2": 9.243,
-            "overlap_km2": 1.669,
+            "tpi_flagged_km2": 5.544,
+            "overlap_km2": 1.372,
             "domain_km2": 125.697,
             "aois": [
               "AOI01",
@@ -6514,16 +6521,16 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240505",
-            "tp": 309,
-            "fp": 1263,
-            "fn": 369,
-            "iou": 0.1592,
-            "f1": 0.2747,
-            "precision": 0.1966,
-            "recall": 0.4558,
+            "tp": 284,
+            "fp": 765,
+            "fn": 394,
+            "iou": 0.1968,
+            "f1": 0.3289,
+            "precision": 0.2707,
+            "recall": 0.4189,
             "ems_flooded_km2": 4.792,
-            "tpi_flagged_km2": 11.111,
-            "overlap_km2": 2.184,
+            "tpi_flagged_km2": 7.414,
+            "overlap_km2": 2.007,
             "domain_km2": 112.431,
             "aois": [
               "AOI02",
@@ -6542,16 +6549,16 @@
               "issued 2024-05-04 d1_flood -> 2024-05-05"
             ],
             "observed_band": null,
-            "tp": 260,
-            "fp": 1072,
-            "fn": 418,
-            "iou": 0.1486,
-            "f1": 0.2587,
-            "precision": 0.1952,
-            "recall": 0.3835,
+            "tp": 236,
+            "fp": 599,
+            "fn": 442,
+            "iou": 0.1848,
+            "f1": 0.312,
+            "precision": 0.2826,
+            "recall": 0.3481,
             "ems_flooded_km2": 4.792,
-            "tpi_flagged_km2": 9.415,
-            "overlap_km2": 1.838,
+            "tpi_flagged_km2": 5.901,
+            "overlap_km2": 1.668,
             "domain_km2": 112.431,
             "aois": [
               "AOI02",
@@ -6568,16 +6575,16 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240505",
-            "tp": 203,
-            "fp": 918,
-            "fn": 475,
-            "iou": 0.1272,
-            "f1": 0.2257,
-            "precision": 0.1811,
-            "recall": 0.2994,
+            "tp": 182,
+            "fp": 470,
+            "fn": 496,
+            "iou": 0.1585,
+            "f1": 0.2737,
+            "precision": 0.2791,
+            "recall": 0.2684,
             "ems_flooded_km2": 4.792,
-            "tpi_flagged_km2": 7.924,
-            "overlap_km2": 1.435,
+            "tpi_flagged_km2": 4.608,
+            "overlap_km2": 1.286,
             "domain_km2": 112.431,
             "aois": [
               "AOI02",
@@ -6596,16 +6603,16 @@
               "issued 2024-05-04 d1_flood -> 2024-05-05"
             ],
             "observed_band": null,
-            "tp": 160,
-            "fp": 832,
-            "fn": 518,
-            "iou": 0.106,
-            "f1": 0.1916,
-            "precision": 0.1613,
-            "recall": 0.236,
+            "tp": 141,
+            "fp": 405,
+            "fn": 537,
+            "iou": 0.1302,
+            "f1": 0.2304,
+            "precision": 0.2582,
+            "recall": 0.208,
             "ems_flooded_km2": 4.792,
-            "tpi_flagged_km2": 7.012,
-            "overlap_km2": 1.131,
+            "tpi_flagged_km2": 3.859,
+            "overlap_km2": 0.997,
             "domain_km2": 112.431,
             "aois": [
               "AOI02",
@@ -6622,406 +6629,406 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240505",
-            "tp": 392,
-            "fp": 1180,
-            "fn": 435,
+            "tp": 362,
+            "fp": 687,
+            "fn": 465,
+            "iou": 0.2391,
+            "f1": 0.3859,
+            "precision": 0.3451,
+            "recall": 0.4377,
+            "ems_flooded_km2": 5.845,
+            "tpi_flagged_km2": 7.414,
+            "overlap_km2": 2.559,
+            "domain_km2": 112.431,
+            "aois": [
+              "AOI02",
+              "AOI03",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-05",
+            "rasterization": "area_weighted",
+            "threshold": "alto_plus",
+            "tpi_source": "gfs_issued_24h",
+            "gfs_issue": "2024-05-04",
+            "gfs_frames": [
+              "issued 2024-05-04 d1_flood -> 2024-05-05"
+            ],
+            "observed_band": null,
+            "tp": 301,
+            "fp": 534,
+            "fn": 526,
+            "iou": 0.2212,
+            "f1": 0.3622,
+            "precision": 0.3605,
+            "recall": 0.364,
+            "ems_flooded_km2": 5.845,
+            "tpi_flagged_km2": 5.901,
+            "overlap_km2": 2.127,
+            "domain_km2": 112.431,
+            "aois": [
+              "AOI02",
+              "AOI03",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-05",
+            "rasterization": "area_weighted",
+            "threshold": "critico",
+            "tpi_source": "observed",
+            "gfs_issue": null,
+            "gfs_frames": null,
+            "observed_band": "20240505",
+            "tp": 237,
+            "fp": 415,
+            "fn": 590,
+            "iou": 0.1908,
+            "f1": 0.3205,
+            "precision": 0.3635,
+            "recall": 0.2866,
+            "ems_flooded_km2": 5.845,
+            "tpi_flagged_km2": 4.608,
+            "overlap_km2": 1.675,
+            "domain_km2": 112.431,
+            "aois": [
+              "AOI02",
+              "AOI03",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-05",
+            "rasterization": "area_weighted",
+            "threshold": "critico",
+            "tpi_source": "gfs_issued_24h",
+            "gfs_issue": "2024-05-04",
+            "gfs_frames": [
+              "issued 2024-05-04 d1_flood -> 2024-05-05"
+            ],
+            "observed_band": null,
+            "tp": 191,
+            "fp": 355,
+            "fn": 636,
+            "iou": 0.1616,
+            "f1": 0.2782,
+            "precision": 0.3498,
+            "recall": 0.231,
+            "ems_flooded_km2": 5.845,
+            "tpi_flagged_km2": 3.859,
+            "overlap_km2": 1.35,
+            "domain_km2": 112.431,
+            "aois": [
+              "AOI02",
+              "AOI03",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-06",
+            "rasterization": "center",
+            "threshold": "alto_plus",
+            "tpi_source": "observed",
+            "gfs_issue": null,
+            "gfs_frames": null,
+            "observed_band": "20240506",
+            "tp": 955,
+            "fp": 322,
+            "fn": 3577,
+            "iou": 0.1967,
+            "f1": 0.3288,
+            "precision": 0.7478,
+            "recall": 0.2107,
+            "ems_flooded_km2": 32.038,
+            "tpi_flagged_km2": 9.029,
+            "overlap_km2": 6.752,
+            "domain_km2": 258.212,
+            "aois": [
+              "AOI01",
+              "AOI02",
+              "AOI03",
+              "AOI04",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-06",
+            "rasterization": "center",
+            "threshold": "alto_plus",
+            "tpi_source": "gfs_issued_24h",
+            "gfs_issue": "2024-05-05",
+            "gfs_frames": [
+              "issued 2024-05-05 d1_flood -> 2024-05-06"
+            ],
+            "observed_band": null,
+            "tp": 970,
+            "fp": 330,
+            "fn": 3562,
+            "iou": 0.1995,
+            "f1": 0.3326,
+            "precision": 0.7462,
+            "recall": 0.214,
+            "ems_flooded_km2": 32.038,
+            "tpi_flagged_km2": 9.191,
+            "overlap_km2": 6.858,
+            "domain_km2": 258.212,
+            "aois": [
+              "AOI01",
+              "AOI02",
+              "AOI03",
+              "AOI04",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-06",
+            "rasterization": "center",
+            "threshold": "critico",
+            "tpi_source": "observed",
+            "gfs_issue": null,
+            "gfs_frames": null,
+            "observed_band": "20240506",
+            "tp": 650,
+            "fp": 196,
+            "fn": 3882,
+            "iou": 0.1375,
+            "f1": 0.2417,
+            "precision": 0.7683,
+            "recall": 0.1434,
+            "ems_flooded_km2": 32.038,
+            "tpi_flagged_km2": 5.982,
+            "overlap_km2": 4.596,
+            "domain_km2": 258.212,
+            "aois": [
+              "AOI01",
+              "AOI02",
+              "AOI03",
+              "AOI04",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-06",
+            "rasterization": "center",
+            "threshold": "critico",
+            "tpi_source": "gfs_issued_24h",
+            "gfs_issue": "2024-05-05",
+            "gfs_frames": [
+              "issued 2024-05-05 d1_flood -> 2024-05-06"
+            ],
+            "observed_band": null,
+            "tp": 639,
+            "fp": 195,
+            "fn": 3893,
+            "iou": 0.1352,
+            "f1": 0.2382,
+            "precision": 0.7662,
+            "recall": 0.141,
+            "ems_flooded_km2": 32.038,
+            "tpi_flagged_km2": 5.897,
+            "overlap_km2": 4.518,
+            "domain_km2": 258.212,
+            "aois": [
+              "AOI01",
+              "AOI02",
+              "AOI03",
+              "AOI04",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-06",
+            "rasterization": "area_weighted",
+            "threshold": "alto_plus",
+            "tpi_source": "observed",
+            "gfs_issue": null,
+            "gfs_frames": null,
+            "observed_band": "20240506",
+            "tp": 1036,
+            "fp": 241,
+            "fn": 3899,
+            "iou": 0.2002,
+            "f1": 0.3335,
+            "precision": 0.8113,
+            "recall": 0.2099,
+            "ems_flooded_km2": 34.887,
+            "tpi_flagged_km2": 9.029,
+            "overlap_km2": 7.325,
+            "domain_km2": 258.212,
+            "aois": [
+              "AOI01",
+              "AOI02",
+              "AOI03",
+              "AOI04",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-06",
+            "rasterization": "area_weighted",
+            "threshold": "alto_plus",
+            "tpi_source": "gfs_issued_24h",
+            "gfs_issue": "2024-05-05",
+            "gfs_frames": [
+              "issued 2024-05-05 d1_flood -> 2024-05-06"
+            ],
+            "observed_band": null,
+            "tp": 1053,
+            "fp": 247,
+            "fn": 3882,
+            "iou": 0.2032,
+            "f1": 0.3378,
+            "precision": 0.81,
+            "recall": 0.2134,
+            "ems_flooded_km2": 34.887,
+            "tpi_flagged_km2": 9.191,
+            "overlap_km2": 7.445,
+            "domain_km2": 258.212,
+            "aois": [
+              "AOI01",
+              "AOI02",
+              "AOI03",
+              "AOI04",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-06",
+            "rasterization": "area_weighted",
+            "threshold": "critico",
+            "tpi_source": "observed",
+            "gfs_issue": null,
+            "gfs_frames": null,
+            "observed_band": "20240506",
+            "tp": 714,
+            "fp": 132,
+            "fn": 4221,
+            "iou": 0.1409,
+            "f1": 0.247,
+            "precision": 0.844,
+            "recall": 0.1447,
+            "ems_flooded_km2": 34.887,
+            "tpi_flagged_km2": 5.982,
+            "overlap_km2": 5.049,
+            "domain_km2": 258.212,
+            "aois": [
+              "AOI01",
+              "AOI02",
+              "AOI03",
+              "AOI04",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-06",
+            "rasterization": "area_weighted",
+            "threshold": "critico",
+            "tpi_source": "gfs_issued_24h",
+            "gfs_issue": "2024-05-05",
+            "gfs_frames": [
+              "issued 2024-05-05 d1_flood -> 2024-05-06"
+            ],
+            "observed_band": null,
+            "tp": 703,
+            "fp": 131,
+            "fn": 4232,
+            "iou": 0.1388,
+            "f1": 0.2437,
+            "precision": 0.8429,
+            "recall": 0.1425,
+            "ems_flooded_km2": 34.887,
+            "tpi_flagged_km2": 5.897,
+            "overlap_km2": 4.971,
+            "domain_km2": 258.212,
+            "aois": [
+              "AOI01",
+              "AOI02",
+              "AOI03",
+              "AOI04",
+              "AOI05"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-07",
+            "rasterization": "center",
+            "threshold": "alto_plus",
+            "tpi_source": "observed",
+            "gfs_issue": null,
+            "gfs_frames": null,
+            "observed_band": "20240507",
+            "tp": 330,
+            "fp": 55,
+            "fn": 935,
+            "iou": 0.25,
+            "f1": 0.4,
+            "precision": 0.8571,
+            "recall": 0.2609,
+            "ems_flooded_km2": 8.948,
+            "tpi_flagged_km2": 2.724,
+            "overlap_km2": 2.335,
+            "domain_km2": 41.8,
+            "aois": [
+              "AOI01"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-07",
+            "rasterization": "center",
+            "threshold": "alto_plus",
+            "tpi_source": "gfs_issued_24h",
+            "gfs_issue": "2024-05-06",
+            "gfs_frames": [
+              "issued 2024-05-06 d1_flood -> 2024-05-07"
+            ],
+            "observed_band": null,
+            "tp": 0,
+            "fp": 0,
+            "fn": 1265,
+            "iou": 0.0,
+            "f1": 0.0,
+            "precision": null,
+            "recall": 0.0,
+            "ems_flooded_km2": 8.948,
+            "tpi_flagged_km2": 0.0,
+            "overlap_km2": 0.0,
+            "domain_km2": 41.8,
+            "aois": [
+              "AOI01"
+            ],
+            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
+          },
+          {
+            "image_date_utc": "2024-05-07",
+            "rasterization": "center",
+            "threshold": "critico",
+            "tpi_source": "observed",
+            "gfs_issue": null,
+            "gfs_frames": null,
+            "observed_band": "20240507",
+            "tp": 255,
+            "fp": 41,
+            "fn": 1010,
             "iou": 0.1953,
-            "f1": 0.3268,
-            "precision": 0.2494,
-            "recall": 0.474,
-            "ems_flooded_km2": 5.845,
-            "tpi_flagged_km2": 11.111,
-            "overlap_km2": 2.771,
-            "domain_km2": 112.431,
-            "aois": [
-              "AOI02",
-              "AOI03",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-05",
-            "rasterization": "area_weighted",
-            "threshold": "alto_plus",
-            "tpi_source": "gfs_issued_24h",
-            "gfs_issue": "2024-05-04",
-            "gfs_frames": [
-              "issued 2024-05-04 d1_flood -> 2024-05-05"
-            ],
-            "observed_band": null,
-            "tp": 329,
-            "fp": 1003,
-            "fn": 498,
-            "iou": 0.1798,
-            "f1": 0.3048,
-            "precision": 0.247,
-            "recall": 0.3978,
-            "ems_flooded_km2": 5.845,
-            "tpi_flagged_km2": 9.415,
-            "overlap_km2": 2.325,
-            "domain_km2": 112.431,
-            "aois": [
-              "AOI02",
-              "AOI03",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-05",
-            "rasterization": "area_weighted",
-            "threshold": "critico",
-            "tpi_source": "observed",
-            "gfs_issue": null,
-            "gfs_frames": null,
-            "observed_band": "20240505",
-            "tp": 262,
-            "fp": 859,
-            "fn": 565,
-            "iou": 0.1554,
-            "f1": 0.269,
-            "precision": 0.2337,
-            "recall": 0.3168,
-            "ems_flooded_km2": 5.845,
-            "tpi_flagged_km2": 7.924,
-            "overlap_km2": 1.852,
-            "domain_km2": 112.431,
-            "aois": [
-              "AOI02",
-              "AOI03",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-05",
-            "rasterization": "area_weighted",
-            "threshold": "critico",
-            "tpi_source": "gfs_issued_24h",
-            "gfs_issue": "2024-05-04",
-            "gfs_frames": [
-              "issued 2024-05-04 d1_flood -> 2024-05-05"
-            ],
-            "observed_band": null,
-            "tp": 214,
-            "fp": 778,
-            "fn": 613,
-            "iou": 0.1333,
-            "f1": 0.2353,
-            "precision": 0.2157,
-            "recall": 0.2588,
-            "ems_flooded_km2": 5.845,
-            "tpi_flagged_km2": 7.012,
-            "overlap_km2": 1.513,
-            "domain_km2": 112.431,
-            "aois": [
-              "AOI02",
-              "AOI03",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-06",
-            "rasterization": "center",
-            "threshold": "alto_plus",
-            "tpi_source": "observed",
-            "gfs_issue": null,
-            "gfs_frames": null,
-            "observed_band": "20240506",
-            "tp": 1066,
-            "fp": 1229,
-            "fn": 3466,
-            "iou": 0.185,
-            "f1": 0.3123,
-            "precision": 0.4645,
-            "recall": 0.2352,
-            "ems_flooded_km2": 32.038,
-            "tpi_flagged_km2": 16.229,
-            "overlap_km2": 7.537,
-            "domain_km2": 258.212,
-            "aois": [
-              "AOI01",
-              "AOI02",
-              "AOI03",
-              "AOI04",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-06",
-            "rasterization": "center",
-            "threshold": "alto_plus",
-            "tpi_source": "gfs_issued_24h",
-            "gfs_issue": "2024-05-05",
-            "gfs_frames": [
-              "issued 2024-05-05 d1_flood -> 2024-05-06"
-            ],
-            "observed_band": null,
-            "tp": 1198,
-            "fp": 1269,
-            "fn": 3334,
-            "iou": 0.2065,
-            "f1": 0.3423,
-            "precision": 0.4856,
-            "recall": 0.2643,
-            "ems_flooded_km2": 32.038,
-            "tpi_flagged_km2": 17.444,
-            "overlap_km2": 8.47,
-            "domain_km2": 258.212,
-            "aois": [
-              "AOI01",
-              "AOI02",
-              "AOI03",
-              "AOI04",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-06",
-            "rasterization": "center",
-            "threshold": "critico",
-            "tpi_source": "observed",
-            "gfs_issue": null,
-            "gfs_frames": null,
-            "observed_band": "20240506",
-            "tp": 743,
-            "fp": 984,
-            "fn": 3789,
-            "iou": 0.1347,
-            "f1": 0.2374,
-            "precision": 0.4302,
-            "recall": 0.1639,
-            "ems_flooded_km2": 32.038,
-            "tpi_flagged_km2": 12.213,
-            "overlap_km2": 5.254,
-            "domain_km2": 258.212,
-            "aois": [
-              "AOI01",
-              "AOI02",
-              "AOI03",
-              "AOI04",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-06",
-            "rasterization": "center",
-            "threshold": "critico",
-            "tpi_source": "gfs_issued_24h",
-            "gfs_issue": "2024-05-05",
-            "gfs_frames": [
-              "issued 2024-05-05 d1_flood -> 2024-05-06"
-            ],
-            "observed_band": null,
-            "tp": 802,
-            "fp": 1005,
-            "fn": 3730,
-            "iou": 0.1448,
-            "f1": 0.253,
-            "precision": 0.4438,
-            "recall": 0.177,
-            "ems_flooded_km2": 32.038,
-            "tpi_flagged_km2": 12.778,
-            "overlap_km2": 5.671,
-            "domain_km2": 258.212,
-            "aois": [
-              "AOI01",
-              "AOI02",
-              "AOI03",
-              "AOI04",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-06",
-            "rasterization": "area_weighted",
-            "threshold": "alto_plus",
-            "tpi_source": "observed",
-            "gfs_issue": null,
-            "gfs_frames": null,
-            "observed_band": "20240506",
-            "tp": 1179,
-            "fp": 1116,
-            "fn": 3756,
-            "iou": 0.1948,
-            "f1": 0.3261,
-            "precision": 0.5137,
-            "recall": 0.2389,
-            "ems_flooded_km2": 34.887,
-            "tpi_flagged_km2": 16.229,
-            "overlap_km2": 8.336,
-            "domain_km2": 258.212,
-            "aois": [
-              "AOI01",
-              "AOI02",
-              "AOI03",
-              "AOI04",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-06",
-            "rasterization": "area_weighted",
-            "threshold": "alto_plus",
-            "tpi_source": "gfs_issued_24h",
-            "gfs_issue": "2024-05-05",
-            "gfs_frames": [
-              "issued 2024-05-05 d1_flood -> 2024-05-06"
-            ],
-            "observed_band": null,
-            "tp": 1318,
-            "fp": 1149,
-            "fn": 3617,
-            "iou": 0.2166,
-            "f1": 0.3561,
-            "precision": 0.5343,
-            "recall": 0.2671,
-            "ems_flooded_km2": 34.887,
-            "tpi_flagged_km2": 17.444,
-            "overlap_km2": 9.318,
-            "domain_km2": 258.212,
-            "aois": [
-              "AOI01",
-              "AOI02",
-              "AOI03",
-              "AOI04",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-06",
-            "rasterization": "area_weighted",
-            "threshold": "critico",
-            "tpi_source": "observed",
-            "gfs_issue": null,
-            "gfs_frames": null,
-            "observed_band": "20240506",
-            "tp": 835,
-            "fp": 892,
-            "fn": 4100,
-            "iou": 0.1433,
-            "f1": 0.2507,
-            "precision": 0.4835,
-            "recall": 0.1692,
-            "ems_flooded_km2": 34.887,
-            "tpi_flagged_km2": 12.213,
-            "overlap_km2": 5.904,
-            "domain_km2": 258.212,
-            "aois": [
-              "AOI01",
-              "AOI02",
-              "AOI03",
-              "AOI04",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-06",
-            "rasterization": "area_weighted",
-            "threshold": "critico",
-            "tpi_source": "gfs_issued_24h",
-            "gfs_issue": "2024-05-05",
-            "gfs_frames": [
-              "issued 2024-05-05 d1_flood -> 2024-05-06"
-            ],
-            "observed_band": null,
-            "tp": 895,
-            "fp": 912,
-            "fn": 4040,
-            "iou": 0.1531,
-            "f1": 0.2655,
-            "precision": 0.4953,
-            "recall": 0.1814,
-            "ems_flooded_km2": 34.887,
-            "tpi_flagged_km2": 12.778,
-            "overlap_km2": 6.328,
-            "domain_km2": 258.212,
-            "aois": [
-              "AOI01",
-              "AOI02",
-              "AOI03",
-              "AOI04",
-              "AOI05"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-07",
-            "rasterization": "center",
-            "threshold": "alto_plus",
-            "tpi_source": "observed",
-            "gfs_issue": null,
-            "gfs_frames": null,
-            "observed_band": "20240507",
-            "tp": 389,
-            "fp": 276,
-            "fn": 876,
-            "iou": 0.2524,
-            "f1": 0.4031,
-            "precision": 0.585,
-            "recall": 0.3075,
+            "f1": 0.3267,
+            "precision": 0.8615,
+            "recall": 0.2016,
             "ems_flooded_km2": 8.948,
-            "tpi_flagged_km2": 4.704,
-            "overlap_km2": 2.752,
-            "domain_km2": 41.8,
-            "aois": [
-              "AOI01"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-07",
-            "rasterization": "center",
-            "threshold": "alto_plus",
-            "tpi_source": "gfs_issued_24h",
-            "gfs_issue": "2024-05-06",
-            "gfs_frames": [
-              "issued 2024-05-06 d1_flood -> 2024-05-07"
-            ],
-            "observed_band": null,
-            "tp": 0,
-            "fp": 0,
-            "fn": 1265,
-            "iou": 0.0,
-            "f1": 0.0,
-            "precision": null,
-            "recall": 0.0,
-            "ems_flooded_km2": 8.948,
-            "tpi_flagged_km2": 0.0,
-            "overlap_km2": 0.0,
-            "domain_km2": 41.8,
-            "aois": [
-              "AOI01"
-            ],
-            "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
-          },
-          {
-            "image_date_utc": "2024-05-07",
-            "rasterization": "center",
-            "threshold": "critico",
-            "tpi_source": "observed",
-            "gfs_issue": null,
-            "gfs_frames": null,
-            "observed_band": "20240507",
-            "tp": 302,
-            "fp": 212,
-            "fn": 963,
-            "iou": 0.2045,
-            "f1": 0.3395,
-            "precision": 0.5875,
-            "recall": 0.2387,
-            "ems_flooded_km2": 8.948,
-            "tpi_flagged_km2": 3.636,
-            "overlap_km2": 2.137,
+            "tpi_flagged_km2": 2.094,
+            "overlap_km2": 1.804,
             "domain_km2": 41.8,
             "aois": [
               "AOI01"
@@ -7062,16 +7069,16 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240507",
-            "tp": 433,
-            "fp": 232,
-            "fn": 978,
-            "iou": 0.2635,
-            "f1": 0.4171,
-            "precision": 0.6511,
-            "recall": 0.3069,
+            "tp": 353,
+            "fp": 32,
+            "fn": 1058,
+            "iou": 0.2446,
+            "f1": 0.3931,
+            "precision": 0.9169,
+            "recall": 0.2502,
             "ems_flooded_km2": 9.981,
-            "tpi_flagged_km2": 4.704,
-            "overlap_km2": 3.063,
+            "tpi_flagged_km2": 2.724,
+            "overlap_km2": 2.497,
             "domain_km2": 41.8,
             "aois": [
               "AOI01"
@@ -7112,16 +7119,16 @@
             "gfs_issue": null,
             "gfs_frames": null,
             "observed_band": "20240507",
-            "tp": 342,
-            "fp": 172,
-            "fn": 1069,
-            "iou": 0.216,
-            "f1": 0.3553,
-            "precision": 0.6654,
-            "recall": 0.2424,
+            "tp": 275,
+            "fp": 21,
+            "fn": 1136,
+            "iou": 0.192,
+            "f1": 0.3222,
+            "precision": 0.9291,
+            "recall": 0.1949,
             "ems_flooded_km2": 9.981,
-            "tpi_flagged_km2": 3.636,
-            "overlap_km2": 2.42,
+            "tpi_flagged_km2": 2.094,
+            "overlap_km2": 1.946,
             "domain_km2": 41.8,
             "aois": [
               "AOI01"
@@ -7552,10 +7559,10 @@
       "flood_ems_method": "Copernicus EMS Rapid Mapping activation EMSR720 (event GLIDE FL-2024-000063-BRA, activated 2024-05-03) mapped the May 2024 Rio Grande do Sul floods with semi-automatic SAR delineation (DEL products: COSMO-SkyMed, RADARSAT-2, PAZ) and photo-interpreted optical grading (GRA: Pleiades Neo, GeoEye-1, WorldView-3) on five small Taquari-valley AOIs — Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza. All '5-Flood' polygons (observedEventA 'Flooded area' and 'Flood trace', plus DEL_MONIT 'Maximum flood extent') were unioned per AOI+image date, minus the BLP hydrographyA permanent/reference-water layer, rasterized centre-in onto the ~90 m TPI_flood grid (area-weighted variant at >=50% coverage reported alongside), and scored ONLY inside the EMS AOI extents. IMPORTANT COVERAGE LIMIT: the EMS AOIs cover ~51.6-51.9 W, 29.0-29.3 S — Porto Alegre, Guaiba, Canoas, Eldorado do Sul and Sao Leopoldo were never mapped, so every score is Taquari-valley-only evidence, not AOI-wide. For each EMS image date E, IoU/F1/precision/recall compare EMS flood cells with TPI_flood Alto+ (>0.4) and Critico (>0.6) in (a) the observed band dated E (rain days E-3..E-1) and (b) the GFS 00Z run issued 24 h before E restricted to frames depicting dates <= E. 'Flagged before onset' measures the % of the EMS flood footprint already Alto+/Critico in the observed band dated 2024-04-29 and in the GFS runs issued 2024-04-26/27/28 (onset 2024-04-29 03:00Z; tools/warned_before.py evaluate/by_lead). Caveats: EMS polygons are imagery-mapped extent at a moment — they miss flooding under cloud/vegetation, GRA 'Flood trace' marks earlier water no longer present, and the EMS image date E pairs loosely with our frame convention (observed band E = rain E-3..E-1, GFS frames depicting E = rain E-2..E; docs/conventions-dates.md).",
       "landslide_ems_n": 497,
       "landslide_ems_km2": 6.371,
-      "landslide_ems_warned_observed_pct": 31.99,
+      "landslide_ems_warned_observed_pct": 5.03,
       "landslide_ems_warned_observed_critical_pct": 0.0,
-      "landslide_ems_warned_gfs_24h_pct": 81.09,
-      "landslide_ems_warned_gfs_24h_critical_pct": 20.72,
+      "landslide_ems_warned_gfs_24h_pct": 0.0,
+      "landslide_ems_warned_gfs_24h_critical_pct": 0.0,
       "landslide_ems_warned_gfs_48h_pct": 0.0,
       "landslide_ems_warned_gfs_48h_critical_pct": 0.0,
       "landslide_ems_warned_gfs_72h_pct": 0.0,
@@ -7634,10 +7641,10 @@
               "any_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 159,
-                  "pct": 31.99,
-                  "hit_area_km2": 4.021,
-                  "area_pct": 63.11
+                  "hit_n": 25,
+                  "pct": 5.03,
+                  "hit_area_km2": 0.685,
+                  "area_pct": 10.75
                 },
                 "critico": {
                   "n": 497,
@@ -7650,10 +7657,10 @@
               "centroid_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 80,
-                  "pct": 16.1,
-                  "hit_area_km2": 1.088,
-                  "area_pct": 17.08
+                  "hit_n": 9,
+                  "pct": 1.81,
+                  "hit_area_km2": 0.112,
+                  "area_pct": 1.76
                 },
                 "critico": {
                   "n": 497,
@@ -7671,33 +7678,33 @@
               "any_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 457,
-                  "pct": 91.95,
-                  "hit_area_km2": 6.204,
-                  "area_pct": 97.37
+                  "hit_n": 454,
+                  "pct": 91.35,
+                  "hit_area_km2": 6.199,
+                  "area_pct": 97.3
                 },
                 "critico": {
                   "n": 497,
-                  "hit_n": 419,
-                  "pct": 84.31,
-                  "hit_area_km2": 6.043,
-                  "area_pct": 94.84
+                  "hit_n": 414,
+                  "pct": 83.3,
+                  "hit_area_km2": 6.027,
+                  "area_pct": 94.6
                 }
               },
               "centroid_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 369,
-                  "pct": 74.25,
-                  "hit_area_km2": 4.535,
-                  "area_pct": 71.18
+                  "hit_n": 359,
+                  "pct": 72.23,
+                  "hit_area_km2": 4.49,
+                  "area_pct": 70.47
                 },
                 "critico": {
                   "n": 497,
-                  "hit_n": 276,
-                  "pct": 55.53,
-                  "hit_area_km2": 2.752,
-                  "area_pct": 43.19
+                  "hit_n": 263,
+                  "pct": 52.92,
+                  "hit_area_km2": 2.632,
+                  "area_pct": 41.32
                 }
               }
             },
@@ -7708,33 +7715,33 @@
               "any_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 464,
-                  "pct": 93.36,
-                  "hit_area_km2": 6.216,
-                  "area_pct": 97.56
+                  "hit_n": 462,
+                  "pct": 92.96,
+                  "hit_area_km2": 6.214,
+                  "area_pct": 97.53
                 },
                 "critico": {
                   "n": 497,
-                  "hit_n": 436,
-                  "pct": 87.73,
-                  "hit_area_km2": 6.128,
-                  "area_pct": 96.18
+                  "hit_n": 434,
+                  "pct": 87.32,
+                  "hit_area_km2": 6.127,
+                  "area_pct": 96.16
                 }
               },
               "centroid_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 393,
-                  "pct": 79.07,
-                  "hit_area_km2": 4.654,
-                  "area_pct": 73.04
+                  "hit_n": 384,
+                  "pct": 77.26,
+                  "hit_area_km2": 4.611,
+                  "area_pct": 72.37
                 },
                 "critico": {
                   "n": 497,
-                  "hit_n": 330,
-                  "pct": 66.4,
-                  "hit_area_km2": 3.724,
-                  "area_pct": 58.44
+                  "hit_n": 321,
+                  "pct": 64.59,
+                  "hit_area_km2": 3.681,
+                  "area_pct": 57.78
                 }
               }
             },
@@ -7745,33 +7752,33 @@
               "any_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 464,
-                  "pct": 93.36,
-                  "hit_area_km2": 6.216,
-                  "area_pct": 97.56
+                  "hit_n": 462,
+                  "pct": 92.96,
+                  "hit_area_km2": 6.214,
+                  "area_pct": 97.53
                 },
                 "critico": {
                   "n": 497,
-                  "hit_n": 437,
-                  "pct": 87.93,
-                  "hit_area_km2": 6.131,
-                  "area_pct": 96.23
+                  "hit_n": 435,
+                  "pct": 87.53,
+                  "hit_area_km2": 6.13,
+                  "area_pct": 96.21
                 }
               },
               "centroid_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 394,
-                  "pct": 79.28,
-                  "hit_area_km2": 4.658,
-                  "area_pct": 73.11
+                  "hit_n": 385,
+                  "pct": 77.46,
+                  "hit_area_km2": 4.616,
+                  "area_pct": 72.45
                 },
                 "critico": {
                   "n": 497,
-                  "hit_n": 336,
-                  "pct": 67.61,
-                  "hit_area_km2": 3.86,
-                  "area_pct": 60.58
+                  "hit_n": 327,
+                  "pct": 65.79,
+                  "hit_area_km2": 3.818,
+                  "area_pct": 59.92
                 }
               }
             }
@@ -7788,33 +7795,33 @@
               "any_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 403,
-                  "pct": 81.09,
-                  "hit_area_km2": 5.939,
-                  "area_pct": 93.21
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
                 },
                 "critico": {
                   "n": 497,
-                  "hit_n": 103,
-                  "pct": 20.72,
-                  "hit_area_km2": 2.726,
-                  "area_pct": 42.78
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
                 }
               },
               "centroid_cell": {
                 "alto_plus": {
                   "n": 497,
-                  "hit_n": 283,
-                  "pct": 56.94,
-                  "hit_area_km2": 3.269,
-                  "area_pct": 51.31
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
                 },
                 "critico": {
                   "n": 497,
-                  "hit_n": 35,
-                  "pct": 7.04,
-                  "hit_area_km2": 0.307,
-                  "area_pct": 4.82
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
                 }
               }
             },
@@ -7908,12 +7915,12 @@
         "inventory_16027": {
           "n_points": 16027,
           "unit": "% of inventory points (point's TPI cell — not any-cell-touched)",
-          "gfs_24h_pct": 36.45,
+          "gfs_24h_pct": 5.77,
           "gfs_48h_pct": 0.0,
           "gfs_72h_pct": 0.0,
-          "observed_29_pct": 3.66,
+          "observed_29_pct": 1.85,
           "ems_gfs_pct": [
-            81.09,
+            0.0,
             0.0,
             0.0
           ],
@@ -7989,39 +7996,39 @@
         }
       },
       "landslide_ems_method": "Copernicus EMS Rapid Mapping activation EMSR720 photo-interpreted 497 landslide ('6-Mass Movement') polygons (~6.4 km²) on the five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza) from post-event optical imagery acquired 2024-05-06..05-15 (Pleiades Neo, GeoEye-1) — the slides are UNDATED: imagery shows the scars, not the failure time, so every polygon is scored against the L37 event onset 2024-04-29 03:00Z. (A) Each member polygon takes every ~90 m TPI_slide cell it touches (all_touched rasterization clipped to the EMS AOI extents; centroid-cell variant alongside) and counts as warned when ANY touched cell is Alto+ (> 0.4) [Crítico > 0.6]; shares are reported as polygon counts and geodesic-area weighted. Sources: the observed series bands dated 2024-04-29..05-02 (curve) and the GFS 00Z runs issued 2024-04-28/27/26 (24/48/72 h before onset; max over d1..d3 _slide frames depicting dates <= the onset day — the warned_before by_lead convention). (B) Scar candidates = OPERA DIST-ALERT-HLS vegetation-loss polygons inside the same AOI extents (representative-point containment): hit rate = % of EMS polygons with a candidate within 100/500 m; precision = % of in-AOI candidates within 100/500 m of an EMS polygon (polygon-to-polygon, UTM 22S). Random baseline (science-review item D2): the same number of random placements per seed on steep terrain (T_slide > 0, i.e. NASADEM slope >= 15 deg — the scar product's own terrain gate, read from the case T_slide COG because the 1\" steep15_1as.tif it used is a gitignored static asset) inside the AOI extents, each buffered to a circle whose area is drawn with replacement from the in-AOI candidate areas; 200 seeds; mean and 95 % interval (2.5/97.5 percentiles); lift = observed / baseline mean. Caveats: EMS mapped only five small AOIs — scores are Taquari-valley-only, not AOI-wide; slides are undated (post-event imagery); polygons are imagery-mapped extent at a moment and miss cloud/vegetation-hidden slides; any-cell-touched is more permissive than the published point-cell scoring of the 16,027-point inventory.",
-      "slide_warned_gfs_24h_area_share_pct": 4.16,
-      "slide_warned_gfs_24h_critical_area_share_pct": 0.29,
-      "slide_warned_gfs_24h_lift": 8.76,
-      "slide_warned_gfs_24h_critical_lift": 6.45,
-      "landslide_ems_warned_gfs_24h_area_share_pct": 26.72,
-      "landslide_ems_warned_gfs_24h_critical_area_share_pct": 2.4,
-      "landslide_ems_warned_gfs_24h_lift": 3.03,
-      "landslide_ems_warned_gfs_24h_critical_lift": 8.63,
-      "landslide_ems_warned_gfs_24h_centroid_area_share_pct": 26.72,
-      "landslide_ems_warned_gfs_24h_centroid_critical_area_share_pct": 2.4,
-      "landslide_ems_warned_gfs_24h_centroid_lift": 2.13,
-      "landslide_ems_warned_gfs_24h_centroid_critical_lift": 2.93,
-      "landslide_ems_warned_gfs_24h_centroid_pct": 56.94,
-      "landslide_ems_warned_gfs_24h_centroid_critical_pct": 7.04,
-      "flood_ems_flagged_before_onset_area_share_pct": 2.94,
-      "flood_ems_flagged_before_onset_critical_area_share_pct": 0.08,
-      "flood_ems_flagged_before_onset_lift": 2.23,
-      "flood_ems_flagged_before_onset_critical_lift": 1.25,
+      "slide_warned_gfs_24h_area_share_pct": 2.13,
+      "slide_warned_gfs_24h_critical_area_share_pct": 0.11,
+      "slide_warned_gfs_24h_lift": 2.71,
+      "slide_warned_gfs_24h_critical_lift": 1.64,
+      "landslide_ems_warned_gfs_24h_area_share_pct": 0.0,
+      "landslide_ems_warned_gfs_24h_critical_area_share_pct": 0.0,
+      "landslide_ems_warned_gfs_24h_lift": null,
+      "landslide_ems_warned_gfs_24h_critical_lift": null,
+      "landslide_ems_warned_gfs_24h_centroid_area_share_pct": 0.0,
+      "landslide_ems_warned_gfs_24h_centroid_critical_area_share_pct": 0.0,
+      "landslide_ems_warned_gfs_24h_centroid_lift": null,
+      "landslide_ems_warned_gfs_24h_centroid_critical_lift": null,
+      "landslide_ems_warned_gfs_24h_centroid_pct": 0.0,
+      "landslide_ems_warned_gfs_24h_centroid_critical_pct": 0.0,
+      "flood_ems_flagged_before_onset_area_share_pct": 0.0,
+      "flood_ems_flagged_before_onset_critical_area_share_pct": 0.0,
+      "flood_ems_flagged_before_onset_lift": null,
+      "flood_ems_flagged_before_onset_critical_lift": null,
       "prediction_lift": {
         "definition": "lift = hit rate / area share, for the NOAA GFS 00Z run issued >= 24 h before the L37 onset (frames depicting dates <= the onset day, max over frames); area share = % of the scored domain (finite-TPI cells; geodesic km²) above the same cut. Lift 1 = no better than a random location of the domain.",
         "rows": {
           "rs_inventory_slide": {
             "hit": {
-              "alto_plus": 36.45,
-              "critico": 1.87
+              "alto_plus": 5.77,
+              "critico": 0.18
             },
             "domain": "rs_2024 case grid (finite TPI_slide)",
             "area": {
-              "domain_km2": 31971.6,
-              "alto_plus_km2": 1329.4,
-              "alto_plus_share_pct": 4.16,
-              "critico_km2": 93.5,
-              "critico_share_pct": 0.29
+              "domain_km2": 30076.2,
+              "alto_plus_km2": 641.8,
+              "alto_plus_share_pct": 2.13,
+              "critico_km2": 34.1,
+              "critico_share_pct": 0.11
             },
             "issue": "2024-04-28",
             "frames": [
@@ -8029,22 +8036,22 @@
             ],
             "hazard": "slide",
             "lift": {
-              "alto_plus": 8.76,
-              "critico": 6.45
+              "alto_plus": 2.71,
+              "critico": 1.64
             }
           },
           "rs_ems_landslide_any_cell": {
             "hit": {
-              "alto_plus": 81.09,
-              "critico": 20.72
+              "alto_plus": 0.0,
+              "critico": 0.0
             },
             "domain": "EMSR720 AOI extents (Taquari valley)",
             "area": {
-              "domain_km2": 258.2,
-              "alto_plus_km2": 69.0,
-              "alto_plus_share_pct": 26.72,
-              "critico_km2": 6.2,
-              "critico_share_pct": 2.4
+              "domain_km2": 238.7,
+              "alto_plus_km2": 0.0,
+              "alto_plus_share_pct": 0.0,
+              "critico_km2": 0.0,
+              "critico_share_pct": 0.0
             },
             "note": "any touched cell counts — inflates the hit vs an area share; use the centroid row for lift",
             "issue": "2024-04-28",
@@ -8053,22 +8060,22 @@
             ],
             "hazard": "slide",
             "lift": {
-              "alto_plus": 3.03,
-              "critico": 8.63
+              "alto_plus": null,
+              "critico": null
             }
           },
           "rs_ems_landslide_centroid": {
             "hit": {
-              "alto_plus": 56.94,
-              "critico": 7.04
+              "alto_plus": 0.0,
+              "critico": 0.0
             },
             "domain": "EMSR720 AOI extents (Taquari valley)",
             "area": {
-              "domain_km2": 258.2,
-              "alto_plus_km2": 69.0,
-              "alto_plus_share_pct": 26.72,
-              "critico_km2": 6.2,
-              "critico_share_pct": 2.4
+              "domain_km2": 238.7,
+              "alto_plus_km2": 0.0,
+              "alto_plus_share_pct": 0.0,
+              "critico_km2": 0.0,
+              "critico_share_pct": 0.0
             },
             "issue": "2024-04-28",
             "frames": [
@@ -8076,22 +8083,22 @@
             ],
             "hazard": "slide",
             "lift": {
-              "alto_plus": 2.13,
-              "critico": 2.93
+              "alto_plus": null,
+              "critico": null
             }
           },
           "rs_ems_flood": {
             "hit": {
-              "alto_plus": 6.56,
-              "critico": 0.1
+              "alto_plus": 0.0,
+              "critico": 0.0
             },
             "domain": "EMSR720 AOI extents (Taquari valley)",
             "area": {
-              "domain_km2": 258.2,
-              "alto_plus_km2": 7.6,
-              "alto_plus_share_pct": 2.94,
-              "critico_km2": 0.2,
-              "critico_share_pct": 0.08
+              "domain_km2": 238.7,
+              "alto_plus_km2": 0.0,
+              "alto_plus_share_pct": 0.0,
+              "critico_km2": 0.0,
+              "critico_share_pct": 0.0
             },
             "issue": "2024-04-28",
             "frames": [
@@ -8099,8 +8106,8 @@
             ],
             "hazard": "flood",
             "lift": {
-              "alto_plus": 2.23,
-              "critico": 1.25
+              "alto_plus": null,
+              "critico": null
             }
           }
         }
@@ -8394,12 +8401,12 @@
                   "critical": {
                     "n_units": 2070,
                     "n_hit_units": 516,
-                    "n_alarms": 971,
-                    "n_hits": 327,
-                    "false_alarms": 644,
-                    "precision_pct": 33.68,
+                    "n_alarms": 948,
+                    "n_hits": 330,
+                    "false_alarms": 618,
+                    "precision_pct": 34.81,
                     "baseline_pct": 24.93,
-                    "lift": 1.35,
+                    "lift": 1.4,
                     "n_slide_municipalities": 86,
                     "n_municipalities": 138,
                     "pod_before_onset_pct": 100.0,
@@ -8410,7 +8417,7 @@
                         -45.0,
                         3.0
                       ],
-                      "n": 327
+                      "n": 330
                     },
                     "alarm_lead_h_issued_before_onset": {
                       "median": 3.0,
@@ -8418,7 +8425,7 @@
                         3.0,
                         27.0
                       ],
-                      "n": 155
+                      "n": 158
                     },
                     "by_issue_day": [
                       {
@@ -8452,16 +8459,16 @@
                       {
                         "issue": "2024-04-27",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 1,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-04-28",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 97,
-                        "n_hits": 69,
-                        "precision_pct": 71.13
+                        "n_alarms": 100,
+                        "n_hits": 72,
+                        "precision_pct": 72.0
                       },
                       {
                         "issue": "2024-04-29",
@@ -8508,14 +8515,14 @@
                       {
                         "issue": "2024-05-05",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 96,
+                        "n_alarms": 71,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-06",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 5,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -8531,12 +8538,12 @@
                   "alto_plus": {
                     "n_units": 2070,
                     "n_hit_units": 516,
-                    "n_alarms": 1093,
+                    "n_alarms": 1066,
                     "n_hits": 343,
-                    "false_alarms": 750,
-                    "precision_pct": 31.38,
+                    "false_alarms": 723,
+                    "precision_pct": 32.18,
                     "baseline_pct": 24.93,
-                    "lift": 1.26,
+                    "lift": 1.29,
                     "n_slide_municipalities": 86,
                     "n_municipalities": 138,
                     "pod_before_onset_pct": 100.0,
@@ -8561,7 +8568,7 @@
                       {
                         "issue": "2024-04-23",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 55,
+                        "n_alarms": 54,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -8638,21 +8645,21 @@
                       {
                         "issue": "2024-05-04",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 119,
+                        "n_alarms": 118,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-05",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 107,
+                        "n_alarms": 89,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-06",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 9,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -8673,12 +8680,12 @@
                   "critical": {
                     "n_units": 2070,
                     "n_hit_units": 516,
-                    "n_alarms": 971,
-                    "n_hits": 413,
-                    "false_alarms": 558,
-                    "precision_pct": 42.53,
+                    "n_alarms": 948,
+                    "n_hits": 416,
+                    "false_alarms": 532,
+                    "precision_pct": 43.88,
                     "baseline_pct": 24.93,
-                    "lift": 1.71,
+                    "lift": 1.76,
                     "n_slide_municipalities": 86,
                     "n_municipalities": 138,
                     "pod_before_onset_pct": 100.0,
@@ -8689,7 +8696,7 @@
                         -45.0,
                         3.0
                       ],
-                      "n": 413
+                      "n": 416
                     },
                     "alarm_lead_h_issued_before_onset": {
                       "median": 3.0,
@@ -8697,7 +8704,7 @@
                         3.0,
                         27.0
                       ],
-                      "n": 155
+                      "n": 158
                     },
                     "by_issue_day": [
                       {
@@ -8731,16 +8738,16 @@
                       {
                         "issue": "2024-04-27",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 1,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-04-28",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 97,
-                        "n_hits": 69,
-                        "precision_pct": 71.13
+                        "n_alarms": 100,
+                        "n_hits": 72,
+                        "precision_pct": 72.0
                       },
                       {
                         "issue": "2024-04-29",
@@ -8787,14 +8794,14 @@
                       {
                         "issue": "2024-05-05",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 96,
+                        "n_alarms": 71,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-06",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 5,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -8810,12 +8817,12 @@
                   "alto_plus": {
                     "n_units": 2070,
                     "n_hit_units": 516,
-                    "n_alarms": 1093,
+                    "n_alarms": 1066,
                     "n_hits": 429,
-                    "false_alarms": 664,
-                    "precision_pct": 39.25,
+                    "false_alarms": 637,
+                    "precision_pct": 40.24,
                     "baseline_pct": 24.93,
-                    "lift": 1.57,
+                    "lift": 1.61,
                     "n_slide_municipalities": 86,
                     "n_municipalities": 138,
                     "pod_before_onset_pct": 100.0,
@@ -8840,7 +8847,7 @@
                       {
                         "issue": "2024-04-23",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 55,
+                        "n_alarms": 54,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -8917,21 +8924,21 @@
                       {
                         "issue": "2024-05-04",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 119,
+                        "n_alarms": 118,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-05",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 107,
+                        "n_alarms": 89,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-06",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 9,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -8970,12 +8977,12 @@
                   "critical": {
                     "n_units": 2070,
                     "n_hit_units": 60,
-                    "n_alarms": 971,
+                    "n_alarms": 948,
                     "n_hits": 35,
-                    "false_alarms": 936,
-                    "precision_pct": 3.6,
+                    "false_alarms": 913,
+                    "precision_pct": 3.69,
                     "baseline_pct": 2.9,
-                    "lift": 1.24,
+                    "lift": 1.27,
                     "n_slide_municipalities": 10,
                     "n_municipalities": 138,
                     "pod_before_onset_pct": 100.0,
@@ -9028,16 +9035,16 @@
                       {
                         "issue": "2024-04-27",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 1,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-04-28",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 97,
+                        "n_alarms": 100,
                         "n_hits": 5,
-                        "precision_pct": 5.15
+                        "precision_pct": 5.0
                       },
                       {
                         "issue": "2024-04-29",
@@ -9084,14 +9091,14 @@
                       {
                         "issue": "2024-05-05",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 96,
+                        "n_alarms": 71,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-06",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 5,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -9107,12 +9114,12 @@
                   "alto_plus": {
                     "n_units": 2070,
                     "n_hit_units": 60,
-                    "n_alarms": 1093,
+                    "n_alarms": 1066,
                     "n_hits": 40,
-                    "false_alarms": 1053,
-                    "precision_pct": 3.66,
+                    "false_alarms": 1026,
+                    "precision_pct": 3.75,
                     "baseline_pct": 2.9,
-                    "lift": 1.26,
+                    "lift": 1.29,
                     "n_slide_municipalities": 10,
                     "n_municipalities": 138,
                     "pod_before_onset_pct": 100.0,
@@ -9137,7 +9144,7 @@
                       {
                         "issue": "2024-04-23",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 55,
+                        "n_alarms": 54,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -9214,21 +9221,21 @@
                       {
                         "issue": "2024-05-04",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 119,
+                        "n_alarms": 118,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-05",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 107,
+                        "n_alarms": 89,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-06",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 9,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -9249,12 +9256,12 @@
                   "critical": {
                     "n_units": 2070,
                     "n_hit_units": 60,
-                    "n_alarms": 971,
+                    "n_alarms": 948,
                     "n_hits": 45,
-                    "false_alarms": 926,
-                    "precision_pct": 4.63,
+                    "false_alarms": 903,
+                    "precision_pct": 4.75,
                     "baseline_pct": 2.9,
-                    "lift": 1.6,
+                    "lift": 1.64,
                     "n_slide_municipalities": 10,
                     "n_municipalities": 138,
                     "pod_before_onset_pct": 100.0,
@@ -9307,16 +9314,16 @@
                       {
                         "issue": "2024-04-27",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 1,
+                        "n_alarms": 3,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-04-28",
                         "window_overlaps_trigger": true,
-                        "n_alarms": 97,
+                        "n_alarms": 100,
                         "n_hits": 5,
-                        "precision_pct": 5.15
+                        "precision_pct": 5.0
                       },
                       {
                         "issue": "2024-04-29",
@@ -9363,14 +9370,14 @@
                       {
                         "issue": "2024-05-05",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 96,
+                        "n_alarms": 71,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-06",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 5,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -9386,12 +9393,12 @@
                   "alto_plus": {
                     "n_units": 2070,
                     "n_hit_units": 60,
-                    "n_alarms": 1093,
+                    "n_alarms": 1066,
                     "n_hits": 50,
-                    "false_alarms": 1043,
-                    "precision_pct": 4.57,
+                    "false_alarms": 1016,
+                    "precision_pct": 4.69,
                     "baseline_pct": 2.9,
-                    "lift": 1.58,
+                    "lift": 1.62,
                     "n_slide_municipalities": 10,
                     "n_municipalities": 138,
                     "pod_before_onset_pct": 100.0,
@@ -9416,7 +9423,7 @@
                       {
                         "issue": "2024-04-23",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 55,
+                        "n_alarms": 54,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -9493,21 +9500,21 @@
                       {
                         "issue": "2024-05-04",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 119,
+                        "n_alarms": 118,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-05",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 107,
+                        "n_alarms": 89,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
                       {
                         "issue": "2024-05-06",
                         "window_overlaps_trigger": false,
-                        "n_alarms": 9,
+                        "n_alarms": 2,
                         "n_hits": 0,
                         "precision_pct": 0.0
                       },
@@ -9526,18 +9533,18 @@
           }
         }
       },
-      "alarm_precision_critical_pct": 33.68,
-      "alarm_precision_critical_n_alarms": 971,
-      "alarm_precision_critical_n_hits": 327,
-      "alarm_precision_critical_false_alarms": 644,
-      "alarm_precision_alto_plus_pct": 31.38,
-      "alarm_precision_alto_plus_n_alarms": 1093,
+      "alarm_precision_critical_pct": 34.81,
+      "alarm_precision_critical_n_alarms": 948,
+      "alarm_precision_critical_n_hits": 330,
+      "alarm_precision_critical_false_alarms": 618,
+      "alarm_precision_alto_plus_pct": 32.18,
+      "alarm_precision_alto_plus_n_alarms": 1066,
       "alarm_precision_alto_plus_n_hits": 343,
-      "alarm_precision_alto_plus_false_alarms": 750,
+      "alarm_precision_alto_plus_false_alarms": 723,
       "alarm_pod_before_onset_pct": 100.0,
       "alarm_lead_h_median": 3.0,
       "alarm_baseline_pct": 24.93,
-      "alarm_lift": 1.35,
+      "alarm_lift": 1.4,
       "replay_v2": {
         "generated": "2026-11-15T15:21:32+00:00",
         "method": "v2 = TPI re-scored with R computed on the 90 m TPI grid: P3 = 3-day IMERG sum over [D-3d, D) from the upstream imerg_daily.npz cube (0.1 deg; GEE NASA/GPM_L3/IMERG_V07 / GES DISC identical), percentiles p90/p95/p99 PER 0.1 deg cell (2001-2023, 3-day sums ending D+-30d step 3), both bilinear to the 90 m grid then rain_score; S = the case s_series bilinear to 90 m (unchanged); T = the existing t_slide/t_flood COGs; TPI = (R*S*T)^(1/3) = NaN on permanent water (JRC GSW occurrence>=50% at 30 m max-resampled to 90 m OR MCD12Q1 IGBP 17). Issued GFS frames: P3 = observed IMERG days < issue + GFS 0.25 deg days >= issue (L28b), percentiles at the depicted day E=I+k, S held at band I-1. All tools re-run with cog_suffix=_v2; scoring rules/anchors/thresholds identical to v1.",
@@ -13881,7 +13888,10 @@
               }
             }
           }
-        }
+        },
+        "served": true,
+        "served_since": "2026-11-15 ~13:30 BRT (L46): canonical COGs/PNGs/metrics are v2; v1 values remain in before_after and in git history",
+        "as_available_sensitivity": "v1 36.45 % / lift 8.8x used IMERG Early observed rain (as available in real time) with a Final-based climatology; Early was 1.34x Final over the Serra on 2024-04-27 (GES DISC V07B, box mean 26.0 vs 19.4 mm)"
       }
     },
     "rs_uruguai_2026": {

@@ -195,3 +195,29 @@ PYTHONPATH=.:pipeline python tools/replay_v2_png.py --band-date 20240502
 
 All six scoring tools also accept `--cog-suffix _v2` directly (dry-run;
 `--write` with a suffix is refused so v1 keys cannot be overwritten).
+
+
+## Served since 2026-11-15 ~13:30 BRT (L46)
+
+v2 is now the served replay: the canonical `*_tpi_{slide,flood}_<ref>.tif` and
+`*_tpi_gfs_<issue>.tif` COGs, the app PNGs, critical areas / priority zones,
+series and every metric key were regenerated from v2 (v1 stays in git history
+and in `cases.<c>.replay_v2.before_after`). WA `people_critical` served =
+225,583 (native 30″ GPW exact fractions, the same method as RS 1.63 M); the v2
+column above (196,670) used the old ~1 km case pop COG.
+
+## Why v1 said 36 % — the "as-available" sensitivity
+
+The drop is not a few 10 km blocks: the 5,842 v1-warned slides sat in 81 of the
+113 IMERG 0.1° cells holding the inventory (only 7 cells fully warned), and both
+climatologies agree (p90 at the warned slides 41.5 mm v1 vs 41.0 mm v2). The
+difference is the observed rain: v1's GFS frames used IMERG **Early**
+(GPM_3IMERGDE, as available in real time) for 2024-04-27, scored against a
+**Final**-based climatology. Over the Serra box on 2024-04-27 Early was
+**1.34× Final** (mean 26.0 vs 19.4 mm, max 75.9 vs 57.5 mm, GES DISC V07B). With
+Final, the Apr 29 frame's 3-day rain at the slides is ~34 mm (< p90 ≈ 41 mm →
+R = 0 at most slides); with Early it reaches ~p90. So v1 (36.45 %, lift 8.8×) is
+the as-available view with mixed products, v2 (5.77 %, lift 2.7×) the
+consistent-product view, and v2 is the headline (L46: lead with the
+conservative number). The live Now job has the same Early-vs-Final mix
+(known bias, README "Declared limitations").
