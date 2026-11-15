@@ -46,9 +46,11 @@ export function useFootprint(url: string | undefined, b: Box | undefined): GeoJS
 }
 
 // Add/update the outline (dark halo + red line) on a map.
-export function drawFootprint(map: import("maplibre-gl").Map, id: string, poly: GeoJSON.Polygon | undefined, before?: string) {
+export function drawFootprint(map: import("maplibre-gl").Map, id: string, poly: GeoJSON.Polygon | GeoJSON.FeatureCollection | undefined, before?: string) {
   try {
-    const data: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: poly ? [{ type: "Feature", properties: {}, geometry: poly }] : [] };
+    const data: GeoJSON.FeatureCollection = !poly ? { type: "FeatureCollection", features: [] }
+      : poly.type === "FeatureCollection" ? poly
+      : { type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: poly }] };
     const src = map.getSource(id) as import("maplibre-gl").GeoJSONSource | undefined;
     if (src) { src.setData(data); return; }
     map.addSource(id, { type: "geojson", data });

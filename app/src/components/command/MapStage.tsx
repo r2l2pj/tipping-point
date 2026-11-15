@@ -31,6 +31,7 @@ import { useFloodNisar } from "./useFloodNisar";
 import { useRadarPassRequest } from "./useRadarPick";
 import { drawFootprint, useFootprint } from "./useFootprint";
 import { FOOTPRINT_LEGEND } from "./model/footprint";
+import { MOSAIC_NOTE, mosaicChip, mosaicFor, nisarMosaics } from "./model/nisarMosaic";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -171,12 +172,32 @@ export default function MapStage({
     return () => { if (t) clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fit on entering the view and on a dance click only
   }, [map, radarOn, riverWin, passReq?.n]);
+  // Lucas + lead-analysis: the NISAR MOSAIC of the day (tracks merged per
+  // ~6-day window) replaces the single pass while the view follows the
+  // timeline; a pass picked in the picker pins that single pass.
+  const mosaicList = useMemo(() => nisarMosaics(bundle), [bundle]);
+  const mosaic = radarOn && !rPick.date ? mosaicFor(mosaicList, step?.date, rPick.pol) : undefined;
+  const shownFrame = mosaic ? { url: mosaic.url, bounds: mosaic.bounds, stretch: mosaic.stretch } : rFrame;
+  const [seams, setSeams] = useState(false);
   // The swath-edge note only when the visible map runs past the frame's
   // missing side (zoomed out, or a pass that does not fill the window).
-  const swathNote = rFrame && viewBox
+  const swathNote = rFrame && !mosaic && viewBox
     ? swathEdgeNote(rFrame.pass, rFrame.bounds, bundle.bbox as LonLatBox | undefined, viewBox) : undefined;
   // Lucas: a red outline around the NISAR swath (where the radar looked).
-  const radarFootprint = useFootprint(radarOn ? rFrame?.url : undefined, rFrame?.bounds);
+  const radarFootprint = useFootprint(radarOn ? shownFrame?.url : undefined, shownFrame?.bounds);
+  // 'Show pass seams': one outline per contributing pass (lead-analysis footprints).
+  useEffect(() => {
+    if (!map) return;
+    let live = true;
+    const url = seams && mosaic?.footprintsUrl;
+    const draw = (fc?: GeoJSON.FeatureCollection) => {
+      const run = () => drawFootprint(map, "tp-radar-seams", fc, "tp-flood-fill");
+      if (map.isStyleLoaded()) run(); else map.once("load", run);
+    };
+    if (!url) { draw(undefined); return; }
+    fetch(url).then((r) => (r.ok ? r.json() : undefined)).then((fc) => { if (live) draw(fc as GeoJSON.FeatureCollection | undefined); }).catch(() => {});
+    return () => { live = false; };
+  }, [map, seams, mosaic?.footprintsUrl]);
   useEffect(() => {
     if (!map) return;
     const run = () => drawFootprint(map, "tp-radar-footprint", radarOn ? radarFootprint : undefined, "tp-flood-fill");
@@ -184,7 +205,7 @@ export default function MapStage({
   }, [map, radarOn, radarFootprint]);
   // Lucas: 'Water in red' (default) recolours the frame — darker = redder.
   const radarLook = useRadarLook();
-  const radarUrl = useWaterUrl(rFrame?.url, rFrame?.stretch, radarLook === "water");
+  const radarUrl = useWaterUrl(shownFrame?.url, shownFrame?.stretch, radarLook === "water");
   // L61: Flood + TPI on an observed day → the flood + NISAR frame when
   // lead-analysis published one for the day, with the NISAR water on top.
   const floodNisarOn = useFloodNisar();
@@ -230,12 +251,12 @@ export default function MapStage({
       opacity: state.overlayOpacity,
       changeImage,
       changeOpacity: state.changeOpacity,
-      radarFrame: rFrame && radarUrl ? { url: radarUrl, bounds: rFrame.bounds } : undefined,
+      radarFrame: shownFrame && radarUrl ? { url: radarUrl, bounds: shownFrame.bounds } : undefined,
       nisarWater: fnWaterShown,
       // Lucas: NISAR is the star — the risk index sits under it, more transparent.
       tpiOpacity: radarOn && state.layers.includes("tpi") ? 0.35 : undefined,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl, fnFrame, fnWaterShown, radarOn]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, radarUrl, fnFrame, fnWaterShown, radarOn, shownFrame]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
@@ -464,19 +485,33 @@ export default function MapStage({
       {rFrame && (
         <div role="group" aria-label="NISAR radar frame" data-radar-frame
           className={`absolute z-10 flex max-w-[calc(100%-28px)] flex-col items-start gap-1 ${chip} !py-1`} style={{ left: L(14), top: 52 }}>
-          <span data-radar-chip className="text-xs font-semibold">{rFrame.chip}{rFrame.note ? ` (${rFrame.note})` : ""}</span>
+          <span data-radar-chip className="text-xs font-semibold">{mosaic ? mosaicChip(mosaic) : <>{rFrame.chip}{rFrame.note ? ` (${rFrame.note})` : ""}</>}</span>
           <span data-radar-follow={rFrame.pinned ? "pinned" : "timeline"} className="text-[11px] font-medium text-cc-muted">
-            {rFrame.pinned ? `Pinned: ${fmtDate(rFrame.pass.date)} — the next timeline step follows the day again` : "Following the timeline"}
+            {rFrame.pinned ? `Pinned: ${fmtDate(rFrame.pass.date)} — the next timeline step follows the day again`
+              : mosaic ? `Following the timeline · mosaic of ${mosaic.passes.length} passes${mosaic.coverage !== undefined ? ` · ${Math.round(mosaic.coverage)} % of the area` : ""}` : "Following the timeline"}
           </span>
+          {mosaic && (
+            <>
+              <span className="max-w-[340px] text-[11px] font-medium text-cc-muted" data-mosaic-note>{MOSAIC_NOTE}</span>
+              {mosaic.footprintsUrl && (
+                <label className="flex items-center gap-1 text-[11px] font-medium">
+                  <input type="checkbox" checked={seams} onChange={(e) => setSeams(e.target.checked)} data-mosaic-seams />
+                  Show pass seams
+                </label>
+              )}
+            </>
+          )}
           {swathNote && <span className="text-[11px] font-medium text-cc-warn" data-swath-note>{swathNote}</span>}
           <div className="flex flex-wrap items-center gap-1">
             {(["HH", "HV"] as const).map((p) => {
-              const has = !!rFrame.pass.frames[p];
+              // A mosaic switches pol without pinning a pass; HV only where the window has it.
+              const has = mosaic ? mosaicList.some((m) => m.start === mosaic.start && m.pol === p) : !!rFrame.pass.frames[p];
+              const on = (mosaic ? mosaic.pol : rFrame.pol) === p;
               return (
-                <button key={p} type="button" aria-pressed={rFrame.pol === p} disabled={!has} data-radar-pol={p}
-                  title={has ? undefined : `No ${p} image for this pass`}
-                  onClick={() => setRPick((x) => ({ ...x, date: rFrame.pass.date, track: rFrame.pass.track, pol: p }))}
-                  className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${rFrame.pol === p ? "bg-cc-accent text-white" : "border border-cc-line-strong"} disabled:opacity-40`}>
+                <button key={p} type="button" aria-pressed={on} disabled={!has} data-radar-pol={p}
+                  title={has ? undefined : `No ${p} image for this ${mosaic ? "window" : "pass"}`}
+                  onClick={() => setRPick((x) => (mosaic ? { ...x, pol: p } : { ...x, date: rFrame.pass.date, track: rFrame.pass.track, pol: p }))}
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${on ? "bg-cc-accent text-white" : "border border-cc-line-strong"} disabled:opacity-40`}>
                   {p}
                 </button>
               );
