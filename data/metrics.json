@@ -60,7 +60,9 @@
         "rule_auc": "cases.* rule_auc is the per-case key written only for rs_2024 by ml.local export from the 3a slope-rule TEST on S+SE Brazil blocks (metrics_ml.json 3a.models.rule_slope.test.roc_auc); WA 2025 is a held-out 3b TEST event, so no per-case rule AUC exists; the TPI>0.6 rule's WA TEST metrics live at metrics_ml.json by_lead.scopes.wa_2025.<lead 0-13>.{both|same_point|elsewhere}.rule_tpi and 3b.horizons.<24h|48h|72h|7d|14d>.{gfs|perfect}.rule_tpi.by_region.north_america (values there are being re-scored by ML v2, L33 — quote them from that file, not from here), surfaced as data/ml/ml_card.json trigger.<h>.<src>.rule_tpi.by_event.wa_2025.",
         "lead_time_mean_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
         "feature_importance": "cases.* feature_importance is the served 3a T_ML model's gain share written only for rs_2024 by ml.local export (bundle_3a -> data/ml/feature_importance.json); WA 2025 is a held-out 3b TEST event, and importance is a property of the trained models, not a per-event metric — the 3b trigger model's importance lives at metrics_ml.json 3b.importance (gain_share / gain_share_feature / permutation_pr_auc_drop_test, exported to data/ml/feature_importance_3b.json).",
-        "lead_time_asavail": "as-available replay was never produced for wa_2025 (A5 run was rs_2024 only); not re-anchored to the L37 onset yet"
+        "lead_time_asavail": "as-available replay was never produced for wa_2025 (A5 run was rs_2024 only); not re-anchored to the L37 onset yet",
+        "flood_warned_gfs_24h_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2025-12-07)",
+        "flood_warned_gfs_24h_critical_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2025-12-07)"
       },
       "lead_time_median_h": null,
       "lead_time_iqr_h": null,
@@ -875,7 +877,39 @@
       "official_warning_delta_warning_utc": "2025-12-06T00:10:00Z",
       "official_warning_delta_basis": "official_warning_at - first_critical_time: how long before the first observed TPI_slide >= 0.6 pixel anywhere in the AOI the published official warning was issued. Warning instant = official_warning_at (INMET 2024-04-26T16:50Z for RS; the earlier Canoas municipal notice 2024-04-25T20:40Z in events/rs-2024-05.json is not used here). NWS 2025-12-06 00:10Z for WA.",
       "lead_time_anchor_source": "L37 onset: heavy rain began 2025-12-08 00:00 PST = 08:00Z; Skagit County EOC fully activated 21:00 PST. Source: WA EMD SEOC sitrep 25-4783 (2025-12-10) https://content.govdelivery.com/attachments/WAMILITARY/2025/12/11/file_attachments/3490229/SEOC_Sitrep-25-4783_12102025.pdf",
-      "first_critical_at_basis": "first date whose slide-union-flood per-day max TPI > 0.6 (bundle tpi_max over all *_tpi_{slide,flood}_* bands); differs from lead_time first_critical_time, which is the first TPI_slide-only pixel >= 0.6"
+      "first_critical_at_basis": "first date whose slide-union-flood per-day max TPI > 0.6 (bundle tpi_max over all *_tpi_{slide,flood}_* bands); differs from lead_time first_critical_time, which is the first TPI_slide-only pixel >= 0.6",
+      "flood_warned_gfs_24h_area_share_pct": 0.0,
+      "flood_warned_gfs_24h_critical_area_share_pct": 0.0,
+      "flood_warned_gfs_24h_lift": null,
+      "flood_warned_gfs_24h_critical_lift": null,
+      "prediction_lift": {
+        "definition": "lift = hit rate / area share, for the NOAA GFS 00Z run issued >= 24 h before the L37 onset (frames depicting dates <= the onset day, max over frames); area share = % of the scored domain (finite-TPI cells; geodesic km²) above the same cut. Lift 1 = no better than a random location of the domain.",
+        "rows": {
+          "wa_nisar_flood": {
+            "hit": {
+              "alto_plus": 0.0,
+              "critico": 0.0
+            },
+            "domain": "wa_2025 case grid (finite TPI_flood)",
+            "area": {
+              "domain_km2": 13748.4,
+              "alto_plus_km2": 0.3,
+              "alto_plus_share_pct": 0.0,
+              "critico_km2": 0.0,
+              "critico_share_pct": 0.0
+            },
+            "issue": "2025-12-07",
+            "frames": [
+              "issued 2025-12-07 d1_flood -> 2025-12-08"
+            ],
+            "hazard": "flood",
+            "lift": {
+              "alto_plus": null,
+              "critico": null
+            }
+          }
+        }
+      }
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -4841,7 +4875,123 @@
           "domain": "cells whose centre is inside an EMS AOI extent (all_touched=False)"
         }
       },
-      "landslide_ems_method": "Copernicus EMS Rapid Mapping activation EMSR720 photo-interpreted 497 landslide ('6-Mass Movement') polygons (~6.4 km²) on the five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza) from post-event optical imagery acquired 2024-05-06..05-15 (Pleiades Neo, GeoEye-1) — the slides are UNDATED: imagery shows the scars, not the failure time, so every polygon is scored against the L37 event onset 2024-04-29 03:00Z. (A) Each member polygon takes every ~90 m TPI_slide cell it touches (all_touched rasterization clipped to the EMS AOI extents; centroid-cell variant alongside) and counts as warned when ANY touched cell is Alto+ (> 0.4) [Crítico > 0.6]; shares are reported as polygon counts and geodesic-area weighted. Sources: the observed series bands dated 2024-04-29..05-02 (curve) and the GFS 00Z runs issued 2024-04-28/27/26 (24/48/72 h before onset; max over d1..d3 _slide frames depicting dates <= the onset day — the warned_before by_lead convention). (B) Scar candidates = OPERA DIST-ALERT-HLS vegetation-loss polygons inside the same AOI extents (representative-point containment): hit rate = % of EMS polygons with a candidate within 100/500 m; precision = % of in-AOI candidates within 100/500 m of an EMS polygon (polygon-to-polygon, UTM 22S). Random baseline (science-review item D2): the same number of random placements per seed on steep terrain (T_slide > 0, i.e. NASADEM slope >= 15 deg — the scar product's own terrain gate, read from the case T_slide COG because the 1\" steep15_1as.tif it used is a gitignored static asset) inside the AOI extents, each buffered to a circle whose area is drawn with replacement from the in-AOI candidate areas; 200 seeds; mean and 95 % interval (2.5/97.5 percentiles); lift = observed / baseline mean. Caveats: EMS mapped only five small AOIs — scores are Taquari-valley-only, not AOI-wide; slides are undated (post-event imagery); polygons are imagery-mapped extent at a moment and miss cloud/vegetation-hidden slides; any-cell-touched is more permissive than the published point-cell scoring of the 16,027-point inventory."
+      "landslide_ems_method": "Copernicus EMS Rapid Mapping activation EMSR720 photo-interpreted 497 landslide ('6-Mass Movement') polygons (~6.4 km²) on the five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza) from post-event optical imagery acquired 2024-05-06..05-15 (Pleiades Neo, GeoEye-1) — the slides are UNDATED: imagery shows the scars, not the failure time, so every polygon is scored against the L37 event onset 2024-04-29 03:00Z. (A) Each member polygon takes every ~90 m TPI_slide cell it touches (all_touched rasterization clipped to the EMS AOI extents; centroid-cell variant alongside) and counts as warned when ANY touched cell is Alto+ (> 0.4) [Crítico > 0.6]; shares are reported as polygon counts and geodesic-area weighted. Sources: the observed series bands dated 2024-04-29..05-02 (curve) and the GFS 00Z runs issued 2024-04-28/27/26 (24/48/72 h before onset; max over d1..d3 _slide frames depicting dates <= the onset day — the warned_before by_lead convention). (B) Scar candidates = OPERA DIST-ALERT-HLS vegetation-loss polygons inside the same AOI extents (representative-point containment): hit rate = % of EMS polygons with a candidate within 100/500 m; precision = % of in-AOI candidates within 100/500 m of an EMS polygon (polygon-to-polygon, UTM 22S). Random baseline (science-review item D2): the same number of random placements per seed on steep terrain (T_slide > 0, i.e. NASADEM slope >= 15 deg — the scar product's own terrain gate, read from the case T_slide COG because the 1\" steep15_1as.tif it used is a gitignored static asset) inside the AOI extents, each buffered to a circle whose area is drawn with replacement from the in-AOI candidate areas; 200 seeds; mean and 95 % interval (2.5/97.5 percentiles); lift = observed / baseline mean. Caveats: EMS mapped only five small AOIs — scores are Taquari-valley-only, not AOI-wide; slides are undated (post-event imagery); polygons are imagery-mapped extent at a moment and miss cloud/vegetation-hidden slides; any-cell-touched is more permissive than the published point-cell scoring of the 16,027-point inventory.",
+      "slide_warned_gfs_24h_area_share_pct": 4.16,
+      "slide_warned_gfs_24h_critical_area_share_pct": 0.29,
+      "slide_warned_gfs_24h_lift": 8.76,
+      "slide_warned_gfs_24h_critical_lift": 6.45,
+      "landslide_ems_warned_gfs_24h_area_share_pct": 26.72,
+      "landslide_ems_warned_gfs_24h_critical_area_share_pct": 2.4,
+      "landslide_ems_warned_gfs_24h_lift": 3.03,
+      "landslide_ems_warned_gfs_24h_critical_lift": 8.63,
+      "landslide_ems_warned_gfs_24h_centroid_area_share_pct": 26.72,
+      "landslide_ems_warned_gfs_24h_centroid_critical_area_share_pct": 2.4,
+      "landslide_ems_warned_gfs_24h_centroid_lift": 2.13,
+      "landslide_ems_warned_gfs_24h_centroid_critical_lift": 2.93,
+      "landslide_ems_warned_gfs_24h_centroid_pct": 56.94,
+      "landslide_ems_warned_gfs_24h_centroid_critical_pct": 7.04,
+      "flood_ems_flagged_before_onset_area_share_pct": 2.94,
+      "flood_ems_flagged_before_onset_critical_area_share_pct": 0.08,
+      "flood_ems_flagged_before_onset_lift": 2.23,
+      "flood_ems_flagged_before_onset_critical_lift": 1.25,
+      "prediction_lift": {
+        "definition": "lift = hit rate / area share, for the NOAA GFS 00Z run issued >= 24 h before the L37 onset (frames depicting dates <= the onset day, max over frames); area share = % of the scored domain (finite-TPI cells; geodesic km²) above the same cut. Lift 1 = no better than a random location of the domain.",
+        "rows": {
+          "rs_inventory_slide": {
+            "hit": {
+              "alto_plus": 36.45,
+              "critico": 1.87
+            },
+            "domain": "rs_2024 case grid (finite TPI_slide)",
+            "area": {
+              "domain_km2": 31971.6,
+              "alto_plus_km2": 1329.4,
+              "alto_plus_share_pct": 4.16,
+              "critico_km2": 93.5,
+              "critico_share_pct": 0.29
+            },
+            "issue": "2024-04-28",
+            "frames": [
+              "issued 2024-04-28 d1_slide -> 2024-04-29"
+            ],
+            "hazard": "slide",
+            "lift": {
+              "alto_plus": 8.76,
+              "critico": 6.45
+            }
+          },
+          "rs_ems_landslide_any_cell": {
+            "hit": {
+              "alto_plus": 81.09,
+              "critico": 20.72
+            },
+            "domain": "EMSR720 AOI extents (Taquari valley)",
+            "area": {
+              "domain_km2": 258.2,
+              "alto_plus_km2": 69.0,
+              "alto_plus_share_pct": 26.72,
+              "critico_km2": 6.2,
+              "critico_share_pct": 2.4
+            },
+            "note": "any touched cell counts — inflates the hit vs an area share; use the centroid row for lift",
+            "issue": "2024-04-28",
+            "frames": [
+              "issued 2024-04-28 d1_slide -> 2024-04-29"
+            ],
+            "hazard": "slide",
+            "lift": {
+              "alto_plus": 3.03,
+              "critico": 8.63
+            }
+          },
+          "rs_ems_landslide_centroid": {
+            "hit": {
+              "alto_plus": 56.94,
+              "critico": 7.04
+            },
+            "domain": "EMSR720 AOI extents (Taquari valley)",
+            "area": {
+              "domain_km2": 258.2,
+              "alto_plus_km2": 69.0,
+              "alto_plus_share_pct": 26.72,
+              "critico_km2": 6.2,
+              "critico_share_pct": 2.4
+            },
+            "issue": "2024-04-28",
+            "frames": [
+              "issued 2024-04-28 d1_slide -> 2024-04-29"
+            ],
+            "hazard": "slide",
+            "lift": {
+              "alto_plus": 2.13,
+              "critico": 2.93
+            }
+          },
+          "rs_ems_flood": {
+            "hit": {
+              "alto_plus": 6.56,
+              "critico": 0.1
+            },
+            "domain": "EMSR720 AOI extents (Taquari valley)",
+            "area": {
+              "domain_km2": 258.2,
+              "alto_plus_km2": 7.6,
+              "alto_plus_share_pct": 2.94,
+              "critico_km2": 0.2,
+              "critico_share_pct": 0.08
+            },
+            "issue": "2024-04-28",
+            "frames": [
+              "issued 2024-04-28 d1_flood -> 2024-04-29"
+            ],
+            "hazard": "flood",
+            "lift": {
+              "alto_plus": 2.23,
+              "critico": 1.25
+            }
+          }
+        }
+      }
     }
   }
 }
