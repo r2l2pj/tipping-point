@@ -23,6 +23,8 @@ import { resolveChangePair } from "./model/nisarChange";
 import { useNisarChangeImage } from "./useNisarChange";
 import { activeView } from "./model/views";
 import { passLabel, passValue, radarFrame, radarPasses, type Pol } from "./model/radarFrame";
+import { setRadarLook, useRadarLook, useWaterUrl } from "./useWaterRed";
+import { WATER_RED_LEGEND } from "./model/waterRamp";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -128,6 +130,9 @@ export default function MapStage({
     () => (radarOn ? radarFrame(radarPassList, step?.date, rPick) : undefined),
     [radarOn, radarPassList, step?.date, rPick]
   );
+  // Lucas: 'Water in red' (default) recolours the frame — darker = redder.
+  const radarLook = useRadarLook();
+  const radarUrl = useWaterUrl(rFrame?.url, rFrame?.stretch, radarLook === "water");
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
   const gfsAny = useMemo(() => hasGfsFrames(bundle), [bundle]);
   // NISAR change layer (Lucas, t5w): the Δ-dB composite of the picked pair —
@@ -154,9 +159,9 @@ export default function MapStage({
       opacity: state.overlayOpacity,
       changeImage,
       changeOpacity: state.changeOpacity,
-      radarFrame: rFrame ? { url: rFrame.url, bounds: rFrame.bounds } : undefined,
+      radarFrame: rFrame && radarUrl ? { url: radarUrl, bounds: rFrame.bounds } : undefined,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
@@ -407,7 +412,21 @@ export default function MapStage({
               </select>
             </label>
           </div>
-          <span className="text-[11px] font-medium text-cc-muted">Dark = smooth surface (open water) · bright = buildings, trees</span>
+          <div role="group" aria-label="Radar colours" data-radar-look className="flex flex-wrap items-center gap-1">
+            {([["water", "Water in red"], ["plain", "Plain radar"]] as const).map(([k, label]) => (
+              <button key={k} type="button" aria-pressed={radarLook === k} data-radar-look-btn={k}
+                onClick={() => setRadarLook(k)}
+                className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${radarLook === k ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>{label}</button>
+            ))}
+          </div>
+          {radarLook === "water" ? (
+            <span className="flex items-center gap-1 text-[11px] font-medium text-cc-muted" data-water-legend>
+              <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm" style={{ background: "linear-gradient(90deg,#9a9a9a,#ff1f1f)" }} />
+              {WATER_RED_LEGEND}{rFrame.stretch ? "" : " (approximate: brightness scale not declared for this frame)"}
+            </span>
+          ) : (
+            <span className="text-[11px] font-medium text-cc-muted">Dark = smooth surface (open water) · bright = buildings, trees</span>
+          )}
         </div>
       )}
 

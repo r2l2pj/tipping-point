@@ -4,8 +4,11 @@ import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import {
   Map as MapLibreMap,
   setWorkerUrl,
+  type ImageSource,
   type Map as MapInstance,
 } from "maplibre-gl";
+import { setRadarLook, useRadarLook, useWaterUrl } from "./useWaterRed";
+import { WATER_RED_LEGEND } from "./model/waterRamp";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { boundsToImageCoordinates } from "@/lib/tpi";
 import { cameraPatch, clipPathFor, dragStep, pctFromClientX, SWIPE_MAX_PCT, SWIPE_MIN_PCT } from "@/lib/swipe";
@@ -74,11 +77,23 @@ export default function CompareOverlay({
   const bothNisarSides = !!sidesCtl && sidesCtl.sides.L.layer === "nisar" && sidesCtl.sides.R.layer === "nisar";
   const changeBlocked = sidesCtl ? changeBlockedReason(sidesCtl.sides.L, sidesCtl.sides.R) : "Change view needs two NISAR passes";
   const changeOn = mode === "change" && bothNisarSides && !changeBlocked;
+  // Lucas: NISAR sides default to 'Water in red' (darker = redder); the
+  // Change view keeps the plain frames (it decodes the gray itself).
+  const look = useRadarLook();
+  const isRadar = (x: ComparePair["before"]) => !x.tiles && !x.geojson && (!!x.sensor || !!x.pol);
+  const anyRadar = isRadar(pair.before) || isRadar(pair.after);
+  const bUrl = useWaterUrl(isRadar(pair.before) ? pair.before.url : undefined, pair.before.stretch, look === "water");
+  const aUrl = useWaterUrl(isRadar(pair.after) ? pair.after.url : undefined, pair.after.stretch, look === "water");
+  const shown: ComparePair = {
+    ...pair,
+    before: { ...pair.before, url: bUrl ?? pair.before.url },
+    after: { ...pair.after, url: aUrl ?? pair.after.url },
+  };
   return (
     <>
       {changeOn
         ? <ChangeMap pair={pair} onClose={onClose} />
-        : <CompareMaps pair={pair} onClose={onClose} controlsRef={controlsRef} />}
+        : <CompareMaps pair={shown} onClose={onClose} controlsRef={controlsRef} />}
       {sidesCtl && (
         <div className="absolute z-30 top-20 flex -translate-x-1/2 flex-col items-center gap-1"
           // Centred on the visible map, never under the floating cards.
@@ -150,6 +165,20 @@ export default function CompareOverlay({
             })}
             {sidesCtl.warning && <p className="m-0 font-semibold text-cc-warn" role="status" data-compare-warning>{sidesCtl.warning}</p>}
             {sidesCtl.note && <p className="m-0 text-cc-muted" data-compare-note>{sidesCtl.note}</p>}
+            {anyRadar && !changeOn && (
+              <div role="group" aria-label="Radar colours" className="flex flex-wrap items-center gap-1" data-radar-look>
+                {([["water", "Water in red"], ["plain", "Plain radar"]] as const).map(([k, label]) => (
+                  <button key={k} type="button" aria-pressed={look === k} data-radar-look-btn={k}
+                    onClick={() => setRadarLook(k)} className={seg(look === k)}>{label}</button>
+                ))}
+                {look === "water" && (
+                  <span className="flex items-center gap-1 text-cc-muted" data-water-legend>
+                    <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm" style={{ background: "linear-gradient(90deg,#9a9a9a,#ff1f1f)" }} />
+                    {WATER_RED_LEGEND}{(isRadar(pair.before) && !pair.before.stretch) || (isRadar(pair.after) && !pair.after.stretch) ? " (approximate)" : ""}
+                  </span>
+                )}
+              </div>
+            )}
             {bothNisarSides && (
               <div role="group" aria-label="NISAR view" className="flex flex-wrap items-center gap-1" data-change-mode>
                 <button type="button" aria-pressed={!changeOn} onClick={() => setMode("side")} className={seg(!changeOn)}>Side by side</button>
@@ -175,6 +204,19 @@ function CompareMaps({
   controlsRef: MutableRefObject<CompareControls | null>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // The two maps and the latest pair: a recoloured NISAR frame ('Water in
+  // red') swaps the image in place — the camera and the divider stay.
+  const maps = useRef<{ b?: MapInstance; a?: MapInstance }>({});
+  const latest = useRef(pair);
+  useEffect(() => {
+    latest.current = pair;
+    for (const [m, side] of [[maps.current.b, pair.before], [maps.current.a, pair.after]] as const) {
+      const src = m?.getSource("swipe-image") as ImageSource | undefined;
+      if (src && src.type === "image" && side.url && !side.tiles) {
+        try { src.updateImage({ url: side.url, coordinates: boundsToImageCoordinates(side.bounds ?? pair.bounds) }); } catch { /* keep the old image */ }
+      }
+    }
+  }, [pair, pair.before.url, pair.after.url]);
   const beforeEl = useRef<HTMLDivElement>(null);
   const afterEl = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -279,8 +321,9 @@ function CompareMaps({
         fit(map, 0);
       }
     };
-    beforeMap.on("load", () => onLoad(beforeMap, pair.before));
-    afterMap.on("load", () => onLoad(afterMap, pair.after));
+    maps.current = { b: beforeMap, a: afterMap };
+    beforeMap.on("load", () => onLoad(beforeMap, latest.current.before));
+    afterMap.on("load", () => onLoad(afterMap, latest.current.after));
 
     controlsRef.current = {
       zoomIn: () => beforeMap.zoomIn(),
@@ -289,6 +332,7 @@ function CompareMaps({
     };
     return () => {
       controlsRef.current = null;
+      maps.current = {};
       beforeMap.remove();
       afterMap.remove();
     };

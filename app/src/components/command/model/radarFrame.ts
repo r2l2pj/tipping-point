@@ -7,6 +7,7 @@ import { canonicalCaseId } from "@/lib/contract";
 import { assetUrl } from "@/lib/layers";
 import { fmtDate } from "./format";
 import { nisarTracks, sensorName, sensorOf } from "./radar";
+import { stretchOf, type Stretch } from "./changeComposite";
 import type { CcBundle } from "./types";
 
 type BBox = [number, number, number, number];
@@ -15,7 +16,7 @@ export type Pol = "HH" | "HV";
 export interface RadarPass {
   date: string; // YYYY-MM-DD
   track: string; // "" when the manifest carries none
-  frames: Partial<Record<Pol, { url: string; bounds?: BBox }>>;
+  frames: Partial<Record<Pol, { url: string; bounds?: BBox; stretch?: Stretch }>>;
   sensor: string; // "NISAR radar" | "Radar"
 }
 
@@ -26,6 +27,7 @@ export interface RadarFrame {
   pol: Pol;
   url: string;
   bounds?: BBox;
+  stretch?: Stretch; // fixed dB stretch (undefined: not declared)
   chip: string; // "NISAR HH · Oct 12, 2026 · track 010D"
   note?: string; // why the frame is not on/before the day
 }
@@ -44,7 +46,7 @@ export function radarPasses(bundle: CcBundle): RadarPass[] {
         const frames: RadarPass["frames"] = {};
         for (const p of ["HH", "HV"] as const) {
           const side = f[p];
-          if (side?.url) frames[p] = { url: side.url, bounds: side.bounds };
+          if (side?.url) frames[p] = { url: side.url, bounds: side.bounds, stretch: side.stretch };
         }
         const any = f.HH ?? f.HV;
         out.push({ date: d, track: s.track, frames, sensor: any?.sensor ?? "NISAR radar" });
@@ -65,7 +67,7 @@ export function radarPasses(bundle: CcBundle): RadarPass[] {
       const key = `${date}|${track}`;
       const p = byDay.get(key) ?? { date, track, frames: {}, sensor: sensorName(sensorOf(l)) };
       const b = Array.isArray(l.bounds) && l.bounds.length === 4 ? (l.bounds as BBox) : undefined;
-      p.frames[pol] ??= { url, bounds: b };
+      p.frames[pol] ??= { url, bounds: b, stretch: stretchOf(l) };
       byDay.set(key, p);
     }
     out.push(...byDay.values());
@@ -109,6 +111,7 @@ export function radarFrame(passes: readonly RadarPass[], day: string | undefined
     pol,
     url: f.url,
     bounds: f.bounds,
+    stretch: f.stretch,
     chip: `${name} ${pol} · ${fmtDate(pass.date)}${pass.track ? ` · track ${pass.track}` : ""}`,
     ...(note ? { note } : {}),
   };
