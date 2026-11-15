@@ -13,6 +13,7 @@ import { horizonLabel, type ProbHorizon } from "@/lib/layers";
 import { fmtDayShort } from "./model/format";
 import { FLOODED_FILL, FLOODED_HALO, FLOODED_OPACITY, FLOODED_OUTLINE, type ComparePair } from "./model/radar";
 import { ISSUE_LEADS, type IssueLead } from "./model/steps";
+import { CHANGE_LEGEND, changeBlockedReason, changeComposite, type BBox as ChangeBBox } from "./model/changeComposite";
 import {
   COMPARE_LAYER_LABEL,
   isRiskLayer,
@@ -67,9 +68,17 @@ export default function CompareOverlay({
   const seg = (on: boolean) =>
     `rounded-full px-2.5 py-0.5 text-xs font-semibold ${on ? "bg-cc-accent text-white" : "text-cc-ink"}`;
   const sel = "h-7 rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold";
+  // Lucas: NISAR before/after can show the classic change composite (one
+  // map, red = new water) — only for a same-track, same-pol NISAR pair.
+  const [mode, setMode] = useState<"side" | "change">("side");
+  const bothNisarSides = !!sidesCtl && sidesCtl.sides.L.layer === "nisar" && sidesCtl.sides.R.layer === "nisar";
+  const changeBlocked = sidesCtl ? changeBlockedReason(sidesCtl.sides.L, sidesCtl.sides.R) : "Change view needs two NISAR passes";
+  const changeOn = mode === "change" && bothNisarSides && !changeBlocked;
   return (
     <>
-      <CompareMaps pair={pair} onClose={onClose} controlsRef={controlsRef} />
+      {changeOn
+        ? <ChangeMap pair={pair} onClose={onClose} />
+        : <CompareMaps pair={pair} onClose={onClose} controlsRef={controlsRef} />}
       {sidesCtl && (
         <div className="absolute z-30 top-20 flex -translate-x-1/2 flex-col items-center gap-1"
           // Centred on the visible map, never under the floating cards.
@@ -141,6 +150,14 @@ export default function CompareOverlay({
             })}
             {sidesCtl.warning && <p className="m-0 font-semibold text-cc-warn" role="status" data-compare-warning>{sidesCtl.warning}</p>}
             {sidesCtl.note && <p className="m-0 text-cc-muted" data-compare-note>{sidesCtl.note}</p>}
+            {bothNisarSides && (
+              <div role="group" aria-label="NISAR view" className="flex flex-wrap items-center gap-1" data-change-mode>
+                <button type="button" aria-pressed={!changeOn} onClick={() => setMode("side")} className={seg(!changeOn)}>Side by side</button>
+                <button type="button" aria-pressed={changeOn} disabled={!!changeBlocked} title={changeBlocked}
+                  onClick={() => setMode("change")} className={`${seg(changeOn)} disabled:opacity-45`}>Change (red = new water)</button>
+                {changeBlocked && <span className="italic text-cc-muted" data-change-blocked>{changeBlocked}</span>}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -344,6 +361,111 @@ function CompareMaps({
             <path d="M9 7l-5 5 5 5M15 7l5 5-5 5" />
           </svg>
         </div>
+      </div>
+      <button type="button" onClick={onClose}
+        style={{ bottom: "calc(var(--cc-ib, 0px) + 12px)" }}
+        className="absolute left-1/2 z-30 -translate-x-1/2 rounded-lg bg-white px-3.5 py-2 text-[13px] font-semibold text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+        Close compare
+      </button>
+    </div>
+  );
+}
+
+// Lucas: ONE map with the before/after change composite (R = before HH,
+// G = B = after HH), computed in the browser from the two frame PNGs; the
+// NISAR flood candidates toggle on top.
+function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose: () => void }) {
+  const el = useRef<HTMLDivElement>(null);
+  const [img, setImg] = useState<{ url: string; bounds: ChangeBBox; stats: string } | { error: string }>();
+  const [showFlood, setShowFlood] = useState(true);
+  const mapRef = useRef<MapLibreMap | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const load = (src: string) => new Promise<HTMLImageElement>((ok, fail) => {
+      const im = new Image();
+      im.crossOrigin = "anonymous";
+      im.onload = () => ok(im);
+      im.onerror = () => fail(new Error(src));
+      im.src = src;
+    });
+    const pixels = (im: HTMLImageElement) => {
+      const c = document.createElement("canvas");
+      c.width = im.naturalWidth; c.height = im.naturalHeight;
+      const ctx = c.getContext("2d", { willReadFrequently: true })!;
+      ctx.drawImage(im, 0, 0);
+      return ctx.getImageData(0, 0, c.width, c.height);
+    };
+    const bb = pair.before.bounds ?? pair.bounds, ab = pair.after.bounds ?? pair.bounds;
+    Promise.all([load(pair.before.url), load(pair.after.url)]).then(([b, a]) => {
+      const before = pixels(b), after = pixels(a);
+      const out = changeComposite(
+        { data: before.data, width: before.width, height: before.height, bounds: bb as ChangeBBox, stretch: pair.before.stretch },
+        { data: after.data, width: after.width, height: after.height, bounds: ab as ChangeBBox, stretch: pair.after.stretch },
+      );
+      const c = document.createElement("canvas");
+      c.width = after.width; c.height = after.height;
+      c.getContext("2d")!.putImageData(new ImageData(out, after.width, after.height), 0, 0);
+      let opaque = 0;
+      for (let k = 3; k < out.length; k += 4) if (out[k]) opaque++;
+      if (alive) setImg({ url: c.toDataURL("image/png"), bounds: ab as ChangeBBox, stats: `${after.width}x${after.height} opaque ${opaque}` });
+    }).catch(() => { if (alive) setImg({ error: "Could not read the two radar images for the change view" }); });
+    return () => { alive = false; };
+  }, [pair.before.url, pair.after.url, pair.before.bounds, pair.after.bounds, pair.bounds]);
+
+  useEffect(() => {
+    if (!el.current || !img || "error" in img) return;
+    const map = new MapLibreMap({ container: el.current, style: BASEMAP, minZoom: 5, maxZoom: 13, attributionControl: { compact: true } });
+    mapRef.current = map;
+    map.on("load", () => {
+      map.addSource("change-image", { type: "image", url: img.url, coordinates: boundsToImageCoordinates(img.bounds) });
+      map.addLayer({ id: "change-image", type: "raster", source: "change-image", paint: { "raster-opacity": 0.95 } });
+      if (pair.flood) {
+        map.addSource("change-flood", { type: "geojson", data: pair.flood.url });
+        map.addLayer({ id: "change-flood-fill", type: "fill", source: "change-flood", paint: { "fill-color": FLOODED_FILL, "fill-opacity": FLOODED_OPACITY } });
+        map.addLayer({ id: "change-flood-halo", type: "line", source: "change-flood", paint: { "line-color": FLOODED_HALO, "line-width": 3.5, "line-opacity": 0.55 } });
+        map.addLayer({ id: "change-flood-line", type: "line", source: "change-flood", paint: { "line-color": FLOODED_OUTLINE, "line-width": 1.5 } });
+      }
+      map.fitBounds([[img.bounds[0], img.bounds[1]], [img.bounds[2], img.bounds[3]]], { padding: 60, duration: 0 });
+    });
+    return () => { mapRef.current = null; map.remove(); };
+  }, [img, pair.flood]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    for (const id of ["change-flood-fill", "change-flood-halo", "change-flood-line"]) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", showFlood ? "visible" : "none");
+    }
+  }, [showFlood]);
+
+  return (
+    <div data-compare="change" data-change-map data-change-stats={img && !("error" in img) ? img.stats : undefined} className="absolute inset-0 z-20 overflow-hidden bg-cc-map">
+      {/* MapLibre sets its container to position:relative — the map gets its
+          own full-size box inside a positioned wrapper (as CompareMaps). */}
+      <div className="absolute inset-0"><div ref={el} className="h-full w-full" /></div>
+      {!img && <p className="absolute left-1/2 top-1/2 z-30 m-0 -translate-x-1/2 rounded-lg bg-white/95 px-3 py-1.5 text-sm shadow">Building the change view…</p>}
+      {img && "error" in img && <p className="absolute left-1/2 top-1/2 z-30 m-0 -translate-x-1/2 rounded-lg bg-white/95 px-3 py-1.5 text-sm shadow" role="alert">{img.error}</p>}
+      <div className="absolute z-30 flex max-w-[calc(100%-24px)] flex-col gap-1 rounded-lg bg-white/95 px-2.5 py-1.5 text-xs text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+        style={{ left: "calc(var(--cc-il, 0px) + 14px)", bottom: "calc(var(--cc-ib, 0px) + 60px)" }} data-change-legend>
+        <span className="font-semibold">{pair.before.label} → {pair.after.label}</span>
+        {(!pair.before.stretch || !pair.after.stretch) && (
+          <span className="rounded bg-cc-warn-soft px-1.5 py-0.5 font-semibold text-cc-warn" data-change-preview>
+            Preview only — the radar brightness stretch is not fixed yet for these frames
+          </span>
+        )}
+        <span className="flex flex-wrap items-center gap-x-2">
+          <span className="inline-block h-3 w-3 rounded-sm" style={{ background: "#d0262a" }} />Red: radar got darker = likely new water
+          <span className="inline-block h-3 w-3 rounded-sm" style={{ background: "#30d0d0" }} />Cyan: got brighter
+          <span className="inline-block h-3 w-3 rounded-sm" style={{ background: "#8a8a8a" }} />Grey: no change
+        </span>
+        <span className="sr-only">{CHANGE_LEGEND}</span>
+        {pair.flood && (
+          <label className="flex items-center gap-1.5">
+            <input type="checkbox" checked={showFlood} onChange={(e) => setShowFlood(e.target.checked)} />
+            {pair.flood.label} on top
+          </label>
+        )}
       </div>
       <button type="button" onClick={onClose}
         style={{ bottom: "calc(var(--cc-ib, 0px) + 12px)" }}

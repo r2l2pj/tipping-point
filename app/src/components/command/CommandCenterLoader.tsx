@@ -75,7 +75,7 @@ const PTRIGGER_DROP = ["title", "serve_note", "domain", "model", "obs_days", "fo
   "horizon_days", "obs_through", "gfs_issued", "basis", "partly_forecast"];
 // Kept: the rain legend (its stops are the colors of the re-rendered PNG)
 // and hand_low's swatch color.
-const KEEP_LEGEND = (id: string) => id.startsWith("imerg") || id === "hand_low";
+const KEEP_LEGEND = (id: string) => id.startsWith("imerg") || id === "hand_low" || id.startsWith("nisar_");
 function slimLayer(layer: NonNullable<CcBundle["manifest"]>["layers"][number]) {
   const out = { ...layer } as Record<string, unknown>;
   if (!KEEP_LEGEND(layer.id)) delete out.legend;
