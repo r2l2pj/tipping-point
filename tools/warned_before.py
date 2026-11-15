@@ -154,27 +154,27 @@ ONSET_SRC_WA = ("WA EMD SEOC sitrep 25-4783 (2025-12-10) https://content.govdeli
 # first documented damage day), not the peak. Sensitivity rows keep the other anchors.
 ANCHORS = {
     "rs_2024": [
-        {"basis": "onset", "utc": dt.datetime(2024, 4, 29, 3, tzinfo=dt.UTC),
+        {"short": "the first deaths", "basis": "onset", "utc": dt.datetime(2024, 4, 29, 3, tzinfo=dt.UTC),
          "local": "2024-04-29 00:00 BRT (UTC-3)",
          "label": "event onset: first deaths of the event (2 flood deaths, Paverama, 2024-04-29); "
                   "heavy rain from 2024-04-27, stalled from 04-29",
          "source": ONSET_SRC_RS},
-        {"basis": "first_landslide_deaths", "utc": dt.datetime(2024, 4, 30, 3, tzinfo=dt.UTC),
+        {"short": "the first landslide deaths", "basis": "first_landslide_deaths", "utc": dt.datetime(2024, 4, 30, 3, tzinfo=dt.UTC),
          "local": "2024-04-30 00:00 BRT (UTC-3)",
          "label": "sensitivity: first landslide deaths (Itaara, Silveira Martins, 2024-04-30)",
          "source": ONSET_SRC_RS},
-        {"basis": "fixed_dating_may1", "utc": dt.datetime(2024, 5, 1, tzinfo=dt.UTC),
+        {"short": "May 1 (previous dating)", "basis": "fixed_dating_may1", "utc": dt.datetime(2024, 5, 1, tzinfo=dt.UTC),
          "local": "2024-04-30 21:00 BRT",
          "label": "sensitivity: previous fixed RS dating 2024-05-01 00Z (ML TEST set; superseded by L37)",
          "source": "project convention (decisions L36a)"},
     ],
     "wa_2025": [
-        {"basis": "onset", "utc": dt.datetime(2025, 12, 8, 8, tzinfo=dt.UTC),
+        {"short": "heavy rain began", "basis": "onset", "utc": dt.datetime(2025, 12, 8, 8, tzinfo=dt.UTC),
          "local": "2025-12-08 00:00 PST (UTC-8)",
          "label": "event onset day: heavy rain begins 2025-12-08; Skagit County EOC full activation "
                   "21:00 PST; damage and evacuations 12-09/10",
          "source": ONSET_SRC_WA},
-        {"basis": "king_county_update", "utc": dt.datetime(2025, 12, 9, 0, 35, tzinfo=dt.UTC),
+        {"short": "the King County flood update", "basis": "king_county_update", "utc": dt.datetime(2025, 12, 9, 0, 35, tzinfo=dt.UTC),
          "local": "2025-12-08 16:35 PST",
          "label": "sensitivity: previous anchor, King County Flood Warning Center update "
                   "2025-12-09 00:35Z (data/wa_2025/forecast_lead_time.json)",
@@ -207,7 +207,8 @@ def by_lead(r: dict, anchor: dt.datetime) -> dict:
 
 def anchored(cog, case, hazard, series, idx, w, a: dict) -> dict:
     r = evaluate(cog, case, hazard, series, idx, w, a["utc"])
-    return {"anchor_basis": a["basis"], "anchor_utc": a["utc"].isoformat(), "anchor_local": a["local"],
+    return {"anchor_basis": a["basis"], "anchor_short": a["short"], "anchor_utc": a["utc"].isoformat(),
+            "anchor_local": a["local"],
             "anchor_label": a["label"], "anchor_source": a["source"], **r, "by_lead": by_lead(r, a["utc"])}
 
 
@@ -257,7 +258,7 @@ COMMON_DEF = ("TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in
 
 def _sens(r: dict) -> dict:
     """Sensitivity row: anchor + headline window + per-lead (no curves)."""
-    keep = ("anchor_basis", "anchor_utc", "anchor_local", "anchor_label", "anchor_source",
+    keep = ("anchor_basis", "anchor_short", "anchor_utc", "anchor_local", "anchor_label", "anchor_source",
             "observed", "forecast_gfs", "by_lead")
     return {k: r[k] for k in keep}
 
@@ -338,9 +339,9 @@ def merge(data_root: Path, res: dict) -> None:
         on, *sens = ANCHORS[case]
         cog = data_root / case / "cog"
         lt = onset_lead_time(cog, case, on["utc"])
-        lt.update(anchor_basis="onset", anchor_local=on["local"], anchor_label=on["label"],
+        lt.update(anchor_basis="onset", anchor_short=on["short"], anchor_local=on["local"], anchor_label=on["label"],
                   anchor_source=on["source"], sensitivity=[
-                      {"anchor_basis": a["basis"], "anchor_local": a["local"],
+                      {"anchor_basis": a["basis"], "anchor_short": a["short"], "anchor_local": a["local"],
                        **{k: v for k, v in onset_lead_time(cog, case, a["utc"]).items()
                           if k not in ("issue_days", "definition")}} for a in sens])
         m["cases"][case]["forecast_lead_time_onset"] = lt
