@@ -386,7 +386,11 @@ export default function MapStage({
       {!comparing && (() => {
         // Lucas: the full sentence covered the map — a one-line chip, the
         // full sentence behind ⓘ (tap) and in the tooltip / screen readers.
-        const full = `${caption.text}${hourFrame && !issued ? ` · 72 h rain until ${hourLabel(hourFrame)}` : ""}${captionNote}`;
+        // lead-analysis: every 6-hourly frame carries a 'smooth by construction'
+        // note — shown with the full caption.
+        const hourNote = hourFrame && !issued && typeof (hourFrame as unknown as { note?: unknown }).note === "string"
+          ? ` — ${(hourFrame as unknown as { note: string }).note}` : "";
+        const full = `${caption.text}${hourFrame && !issued ? ` · 72 h rain until ${hourLabel(hourFrame)}` : ""}${captionNote}${hourNote}`;
         return (
           <div className="absolute z-10 flex max-w-[60%] flex-col items-start gap-1 max-[639px]:max-w-[calc(100%-120px)]" style={{ left: L(14), bottom: B(36) }}>
             {capOpen && (
@@ -395,7 +399,7 @@ export default function MapStage({
             <button type="button" data-caption title={full} aria-expanded={capOpen} onClick={() => setCapOpen((o) => !o)}
               className={`${chip} max-w-full truncate !py-0.5 text-left ${caption.forecast ? "border-2 border-dashed border-cc-forecast-ink" : ""}`}>
               <span className="sr-only">{full} </span>
-              <span aria-hidden="true">{shortCaption(caption.text, caption.forecast)}{captionNote.startsWith(" · next NISAR pass") ? captionNote : ""} ⓘ</span>
+              <span aria-hidden="true">{shortCaption(caption.text, caption.forecast)}{hourFrame && !issued ? ` · ${hourLabel(hourFrame).split(", ").pop()}` : ""}{captionNote.startsWith(" · next NISAR pass") ? captionNote : ""} ⓘ</span>
             </button>
           </div>
         );

@@ -25,3 +25,15 @@ test("setCompareDates moves the swipe dates (Radar card chips)", async () => {
   const s = reduce(initialState([b]), { type: "setCompareDates", before: "2026-09-18", after: "2026-11-05" }, [b]);
   expect(s.compareInit).toMatchObject({ before: "2026-09-18", after: "2026-11-05" });
 });
+
+test("6-hourly frames never stand in for a day's frame or create steps", async () => {
+  const { pickTpiFrame } = await import("@/lib/layers");
+  const { stepsFor } = await import("./steps");
+  const layers = [
+    { id: "tpi_flood_6h", date: "2026-09-30", datetime: "2026-09-30T06:00Z", png: "6h.png" },
+    { id: "tpi_flood", date: "2026-09-30", png: "daily.png" },
+  ];
+  expect(pickTpiFrame(layers as never, { date: "2026-09-30" }, "flood")?.png).toBe("daily.png");
+  const b = { id: "rs_uruguai_2026", mode: "replay", bbox: [0, 0, 1, 1], manifest: { layers } } as never;
+  expect(stepsFor(b).map((s) => s.layer?.png)).toEqual(["daily.png"]);
+});

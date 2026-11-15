@@ -38,6 +38,7 @@ const tpiFrames = (bundle: CcBundle): ManifestLayer[] =>
       l.id.startsWith("tpi_") &&
       l.png &&
       typeof l.date === "string" &&
+      !(l as unknown as { datetime?: unknown }).datetime && // 6-hourly: hour chips only
       // An issued GFS frame never creates a step of its own (L22): it
       // depicts the same day as the regular frame family.
       !isGfsFrame(l)

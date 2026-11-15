@@ -123,7 +123,7 @@ export default function TimelineBar({
             ))}
           </div>
         )}
-        {hours && (
+        {hours && hours.available.length > 0 && (
           <div role="group" aria-label="Hour (UTC)" className="flex items-center gap-1" data-hours>
             <button type="button" aria-pressed={hours.hour === null} onClick={() => hours.onHour(null)}
               className={`rounded-md px-2 py-1 text-xs font-semibold ${hours.hour === null ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>Day</button>

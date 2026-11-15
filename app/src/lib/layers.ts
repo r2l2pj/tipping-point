@@ -56,6 +56,9 @@ export function pickTpiFrame(
     (l) =>
       l.png &&
       l.date === day.date &&
+      // 6-hourly frames (lead-analysis 'datetime') are picked by the hour
+      // chips only, never as a day's frame.
+      !(l as unknown as { datetime?: unknown }).datetime &&
       !(isGfsFrame(l) && referenceDate && l.issued && l.issued > referenceDate)
   );
   const fam = (l: ManifestLayer) => !wanted || l.id.includes(wanted);
