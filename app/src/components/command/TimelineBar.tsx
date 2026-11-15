@@ -85,6 +85,11 @@ export default function TimelineBar({
     else if (end > box.scrollLeft + box.clientWidth) box.scrollLeft = end - box.clientWidth;
   }, [dayIndex, n]);
   const firstFc = steps.findIndex((s) => s.forecast);
+  // Landing on a marked day names it (lead-analysis timeline marks).
+  const dayMarks = marks.filter((m) => m.index === dayIndex);
+  const markLabels = dayMarks.map((m) => (
+    <span key={m.label} title={m.label} className={`min-w-0 truncate rounded px-1.5 py-0.5 text-white ${m.color === "red" ? "bg-[#bd0026]" : m.color === "blue" ? "bg-[#2166ac]" : "bg-[#b06f00]"}`}>{m.label}</span>
+  ));
   const chipText = mapFrame && isGfsFrame(mapFrame) ? forecastChip(mapFrame, undefined) : forecastTag;
   // Accessible name of a forecast step: that step's own frame source.
   const stepTag = (s: Step) =>
@@ -157,9 +162,21 @@ export default function TimelineBar({
             ))}
           </div>
         )}
+        {/* With a forecast chip above the steps, the day labels use the free
+            end of the controls row. */}
+        {firstFc >= 0 && dayMarks.length > 0 && (
+          <p className="m-0 ml-auto flex min-w-[140px] flex-1 justify-end gap-1 overflow-hidden text-xs font-semibold" data-mark-caption>{markLabels}</p>
+        )}
       </div>
 
-      <div ref={track} className="min-w-0 flex-[1_1_460px] overflow-x-auto">
+      <div className="relative min-w-0 flex-[1_1_460px]">
+      {/* Without a forecast chip, the band above the steps is free: the day
+          labels go there at full width. Either way they take no row of their
+          own, so the card keeps its height and the steps keep their width. */}
+      {firstFc < 0 && dayMarks.length > 0 && (
+        <p className="absolute inset-x-2 top-0 z-[1] m-0 flex gap-1 overflow-hidden text-[11px] font-semibold leading-[14px]" data-mark-caption>{markLabels}</p>
+      )}
+      <div ref={track} className="overflow-x-auto">
         {n === 0 ? (
           <p className="py-3 text-[13px] italic text-cc-faint" data-no-steps>{emptyText}</p>
         ) : (
@@ -205,21 +222,7 @@ export default function TimelineBar({
           </div>
         )}
       </div>
-      {/* Landing on a marked day names it (lead-analysis timeline marks). A
-          case with marks keeps one fixed row for them under the steps, so
-          the card does not grow and the steps do not get a scrollbar when
-          the selected day has labels. */}
-      {marks.length > 0 && (
-        <div className="-mt-1 flex h-[22px] w-full min-w-0 items-center px-2" data-mark-row>
-          {marks.some((m) => m.index === dayIndex) && (
-            <p className="m-0 flex min-w-0 gap-1 overflow-hidden text-xs font-semibold" data-mark-caption>
-              {marks.filter((m) => m.index === dayIndex).map((m) => (
-                <span key={m.label} title={m.label} className={`min-w-0 truncate rounded px-1.5 py-0.5 text-white ${m.color === "red" ? "bg-[#bd0026]" : m.color === "blue" ? "bg-[#2166ac]" : "bg-[#b06f00]"}`}>{m.label}</span>
-              ))}
-            </p>
-          )}
-        </div>
-      )}
+      </div>
       {children}
     </div>
   );
