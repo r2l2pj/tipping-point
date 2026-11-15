@@ -11,6 +11,10 @@ on:
     - cron: "41 1-22/3 * * *"
     - cron: "53 2-23/3 * * *"
   workflow_dispatch:
+    inputs:
+      max_age_s:
+        description: "dispatch if the last successful now run is older than this (s)"
+        default: "12600"
 
 permissions:
   actions: write
@@ -29,7 +33,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-          MAX_AGE_S: "12600"   # 3.5 h
+          MAX_AGE_S: ${{ inputs.max_age_s || '12600' }}   # 3.5 h
         run: |
           set -euo pipefail
           active=$(gh run list --workflow now.yml --limit 20 --json status \
