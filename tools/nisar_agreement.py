@@ -61,7 +61,16 @@ def load_water(path: Path) -> dict:
             "pass_ids": [str(x) for x in np.ravel(z["pass_ids"])] if "pass_ids" in z.files else [],
             "pass_dates": [str(x) for x in np.ravel(z["pass_dates"])] if "pass_dates" in z.files else [],
             "map_day": str(np.ravel(z["map_day"])[0]) if "map_day" in z.files else path.stem.split("_")[-1],
-            "floodplain": z["floodplain"].astype(bool) if "floodplain" in z.files else None}
+            "floodplain": (z["floodplain"].astype(bool) if "floodplain" in z.files
+                           and z["floodplain"].shape == z["water"].shape else None),
+            "transform": [float(x) for x in np.ravel(z["transform"])] if "transform" in z.files else None}
+
+
+def cell_km2(transform, shape) -> np.ndarray:
+    """Geodesic-ish cell area (km²) of an EPSG:4326 grid (a, b, c, d, e, f affine)."""
+    a, _b, _c, _d, e, f = transform[:6]
+    lat = f + (np.arange(shape[0]) + 0.5) * e
+    return (abs(a) * 111.32 * np.cos(np.deg2rad(lat)) * abs(e) * 110.574)[:, None] * np.ones((1, shape[1]))
 
 
 def agreement_day(w: dict, tpi_obs, fc: dict, t, floodplain, domain=None) -> dict:
@@ -72,8 +81,11 @@ def agreement_day(w: dict, tpi_obs, fc: dict, t, floodplain, domain=None) -> dic
     water = w["water"] & dom
     ref = np.flatnonzero(water.ravel())
     n = int(water.sum())
+    km2 = (round(float(cell_km2(w["transform"], water.shape)[water].sum()), 2)
+           if w.get("transform") else None)
     out = {"map_day": w["map_day"], "passes": w["pass_ids"], "pass_dates": w["pass_dates"],
-           "water_cells": n, "observed_cells": int(dom.sum()),
+           "pass_tracks": w.get("pass_tracks", []),
+           "water_cells": n, "water_km2": km2, "observed_cells": int(dom.sum()),
            "outside_floodplain_pct": (round(100 * float((~floodplain[water]).mean()), 1)
                                       if n and floodplain is not None else None)}
     if n == 0:
@@ -82,6 +94,15 @@ def agreement_day(w: dict, tpi_obs, fc: dict, t, floodplain, domain=None) -> dic
     out["forecast"] = {f"lead_{L}d": (score(a, t, ref, dom) | {"frames": info} if a is not None
                                       else {"null_reason": info}) for L, (a, info) in fc.items()}
     return out
+
+
+def _tracks(data: Path, case: str) -> dict:
+    """NISAR frame id -> track from the case png/_index.json (pass_tracks in the rows)."""
+    try:
+        ix = json.loads((data / case / "png" / "_index.json").read_text())
+    except (OSError, ValueError):
+        return {}
+    return {e["id"]: e.get("track") for e in ix.get("layers", []) if e.get("track")}
 
 
 def _gfs_valid_on(path: Path, day: dt.date, lead: int):
@@ -123,10 +144,12 @@ def case_wa(data: Path, masks: Path) -> list[dict]:
     t = rasterio.open(c / "wa_2025_t_flood_20251210.tif").read(1).astype(np.float64)
     fp = _floodplain_wa(t.shape)
     out = []
+    tracks = _tracks(data, "wa_2025")
     with rasterio.open(c / "wa_2025_tpi_flood_20251210.tif") as s:
         names = list(s.descriptions)
         for f in files:
             w = load_water(f)
+            w["pass_tracks"] = [tracks.get(i) for i in w["pass_ids"]]
             day = _day(w["map_day"])
             obs = s.read(names.index(_ymd(day)) + 1).astype(np.float64) if _ymd(day) in names else None
             fc = {L: _gfs_valid_on(c / f"wa_2025_tpi_gfs_{_ymd(day - dt.timedelta(days=L))}.tif", day, L)
@@ -147,8 +170,10 @@ def case_uru(data: Path, masks: Path) -> list[dict]:
         t = s.read(list(s.descriptions).index("t") + 1).astype(np.float64)
     fp = _floodplain_uru(tr, shape)
     out = []
+    tracks = _tracks(data, "rs_uruguai_2026")
     for f in mfiles:
         w = load_water(f)
+        w["pass_tracks"] = [tracks.get(i) for i in w["pass_ids"]]
         day = _day(w["map_day"])
         obs = None
         if _ymd(day) in files:
@@ -207,13 +232,68 @@ def flat_keys(days: list[dict]) -> dict:
     return out
 
 
+REFERENCE = ("NISAR water = HH < −18 dB (fixed) outside permanent water, single pass ≤ 12 d before "
+             "the map day (never later)")
+DEFINITION = ("hit = % of NISAR-water area the index WITHOUT NISAR flagged (High+ > 0.4 = alto_plus, "
+              "Critical > 0.6 = critico); area = % of the NISAR-observed land cells flagged; lift = hit/area; "
+              "ratio_vs_terrain = M1 (hit / hit of a same-area terrain-only map; > 1 = rain and soil add "
+              "to terrain). observed = TPI of the map day; forecast.lead_Ld = NOAA GFS run issued L days "
+              "before, valid on the map day")
+NOTE = ("candidate water, never confirmed; single-date dark radar also lights flooded fields "
+        "(rice, irrigation) and reservoirs — see outside_floodplain_pct (HAND > 5 m)")
+HEADLINE_KEYS = {"nisar_agreement_obs_hit_pct": ("observed", "hit_pct"),
+                 "nisar_agreement_obs_lift": ("observed", "lift"),
+                 "nisar_agreement_fc1d_hit_pct": ("lead_1d", "hit_pct"),
+                 "nisar_agreement_fc2d_hit_pct": ("lead_2d", "hit_pct"),
+                 "nisar_agreement_fc3d_hit_pct": ("lead_3d", "hit_pct")}
+
+
+def block(days: list[dict], headline_day: str) -> tuple[dict, dict, dict]:
+    """(cases.<case>.nisar_agreement, headline flat keys, _null_reasons) — t1b8's metrics schema.
+    passes[] = the rows whose map day IS a NISAR pass day (age 0); headline = the row of
+    `headline_day`. Flat keys are alto_plus (High+) from the headline row."""
+    hd = headline_day.replace("-", "")
+    head = next((d for d in days if d["map_day"].replace("-", "") == hd), None)
+    passes = [d for d in days if d.get("pass_dates")
+              and d["map_day"].replace("-", "") == max(x.replace("-", "") for x in d["pass_dates"])]
+    blk = {"reference": REFERENCE, "definition": DEFINITION, "note": NOTE,
+           "headline": head, "passes": passes, "days": days}
+    flat, why = {}, {}
+    for k, (src, f) in HEADLINE_KEYS.items():
+        x = None if head is None else (head.get("observed") if src == "observed"
+                                       else head.get("forecast", {}).get(src))
+        v = x.get("alto_plus", {}).get(f) if isinstance(x, dict) else None
+        flat[k] = v
+        if v is None:
+            why[k] = (f"no row for headline map day {headline_day}" if head is None else
+                      (x or {}).get("null_reason") or head.get("null_reason") or f"{src} {f} undefined")
+    for k, f in (("nisar_agreement_water_km2", "water_km2"),
+                 ("nisar_agreement_outside_floodplain_pct", "outside_floodplain_pct")):
+        flat[k] = None if head is None else head.get(f)
+        if flat[k] is None:
+            why[k] = "no headline row" if head is None else f"{f} undefined (no floodplain/transform)"
+    return blk, flat, why
+
+
+def write_metrics(case: str, days: list[dict], headline_day: str, path: Path) -> dict:
+    from tp.metrics import merge_metrics
+    blk, flat, why = block(days, headline_day)
+    merge_metrics(case, {"nisar_agreement": blk, **flat}, reasons=why, path=path)
+    return flat
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--case", default="all")
     ap.add_argument("--data", type=Path, default=REPO / "data")
     ap.add_argument("--masks", type=Path, default=Path.home() / ".cache/lead-analysis/l61")
     ap.add_argument("--out", type=Path, default=REPO / "ml/models/nisar_agreement.json")
+    ap.add_argument("--write", action="store_true",
+                    help="merge cases.<case>.nisar_agreement + headline flat keys into <data>/metrics.json")
+    ap.add_argument("--headline", help="headline map day YYYY-MM-DD (the headline NISAR pass day)")
     a = ap.parse_args(argv)
+    if a.write and (a.case not in ("wa_2025", "rs_uruguai_2026") or not a.headline):
+        ap.error("--write needs --case wa_2025|rs_uruguai_2026 and --headline")
     res = {"what": "TPI_flood vs single-pass NISAR water (HH < -18 dB, not permanent water): map-day TPI and "
                    "GFS runs issued 1-3 d before; High+ > 0.4, Critical > 0.6; NISAR water = candidates",
            "cases": {}}
@@ -225,6 +305,9 @@ def main(argv=None) -> int:
     if a.case in ("all", "now"):
         res["cases"]["now"] = case_now(a.data)
     a.out.write_text(json.dumps(res, indent=1, default=str))
+    if a.write and "days" in res["cases"].get(a.case, {}):
+        flat = write_metrics(a.case, res["cases"][a.case]["days"], a.headline, a.data / "metrics.json")
+        print("merged cases.%s.nisar_agreement into %s:" % (a.case, a.data / "metrics.json"), json.dumps(flat))
     for k, v in res["cases"].items():
         if "days" not in v:
             print(k, v.get("status"), v.get("null_reasons"))
