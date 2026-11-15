@@ -15,7 +15,7 @@ never globs. Which calendar days a frame labelled X actually covers (the
 observed series ends at X−1; forecast and Now frames end at X) is in
 [`docs/conventions-dates.md`](docs/conventions-dates.md).
 
-**Live demo:** [APP URL] · **App:** [r2l2pj/tipping-point-app](https://github.com/r2l2pj/tipping-point-app) · **License:** Apache-2.0 · **Team:** [TEAM NAME] — NASA Space Apps 2026, challenge #5 "Dancing with the SARs"
+**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **App:** [r2l2pj/tipping-point-app](https://github.com/r2l2pj/tipping-point-app) · **License:** Apache-2.0 · **Team:** [TEAM NAME] — NASA Space Apps 2026, challenge #5 "Dancing with the SARs"
 
 ## What it is
 
