@@ -449,3 +449,101 @@ def export_serving_v2(v1_static: Path, t_ml_tif: Path | None = None,
     (out_dir / "SHA256SUMS").write_text("".join(f"{v}  {k}\n" for k, v in shas.items()))
     log.info("serving v2: %s", shas)
     return shas
+
+
+# --------------------------------------------------------------------------- v2 card
+BUILTIN_EVENT_NAMES = {"rs_2024": "Rio Grande do Sul, Brazil (May 2024)",
+                       "wa_2025": "Western Washington, US (Dec 2025)"}
+
+
+def ml_card_v2(met: dict) -> dict:
+    """v1 ``ml_card`` shape + v2 keys. ``by_event`` = per held-out TEST event (not region).
+
+    New keys: version, t_ml_excludes_rs (L32), gfs_rows_with_run_only (L33), test_events,
+    generalise (per-event spread + LOEO range), by_lead (daily k table, when present).
+    """
+    from . import generalise as G
+    from .events import load_registry
+
+    card = ml_card(met)
+    hz = (met.get("3b") or {}).get("horizons") or {}
+    for h, d in hz.items():
+        for src in ("gfs", "perfect"):
+            blk = (d or {}).get(src)
+            if not isinstance(blk, dict) or "reason" in blk:
+                continue
+            for name, v in blk.items():
+                if isinstance(v, dict) and name in card["trigger"].get(h, {}).get(src, {}):
+                    card["trigger"][h][src][name]["by_event"] = {
+                        ev: _slim(m) for ev, m in (v.get("by_event") or {}).items()}
+    try:
+        reg = load_registry(S.TEST_EVENTS_FILE)
+    except Exception:  # noqa: BLE001 - names are cosmetic
+        reg = {}
+    events: dict[str, dict] = {}
+    for h in hz:
+        for src in ("perfect", "gfs"):
+            blk = (hz.get(h) or {}).get(src) or {}
+            ref = blk.get("xgb_rain_soil") or next((v for v in blk.values() if isinstance(v, dict)), {})
+            for ev, m in ((ref or {}).get("by_event") or {}).items():
+                e = events.setdefault(ev, {"id": ev, "name": (reg[ev].name if ev in reg else
+                                                             BUILTIN_EVENT_NAMES.get(ev, ev)),
+                                           "n_pos_24h": None, "sources": []})
+                if src not in e["sources"]:
+                    e["sources"].append(src)
+                if h == "24h" and src == "perfect":
+                    e["n_pos_24h"] = m.get("n_pos")
+    card.update({
+        "version": "v2",
+        "t_ml_excludes_rs": True,
+        "gfs_rows_with_run_only": True,
+        "test_events": sorted(events.values(), key=lambda e: e["id"]),
+        "generalise": {src: {h: {m: {k: r[k] for k in ("pooled", "events_n", "event_median",
+                                                         "event_min", "event_max", "worst_event",
+                                                         "loeo_min", "loeo_max")}
+                                 for m, r in ms.items()}
+                             for h, ms in G.summary(met, src, "pr_auc").items()}
+                       for src in ("gfs", "perfect")},
+        "low_skill_horizons": ["7d"],
+    })
+    card["split"]["3a"] = ("v2 (L32): TRAIN/VAL = GLC landslides in ~50 km blocks, S+SE Brazil, "
+                           "no RS 2024 points; TEST = held-out Brazilian event slides vs random land")
+    card["split"]["3b"] = ("TRAIN/VAL = dated GLC/COOLR landslides worldwide, split by event; "
+                           "TEST = held-out events (see test_events), never seen in training; "
+                           "GFS scored only on issue days with an archived run")
+    if met.get("by_lead"):
+        card["by_lead"] = _slim_by_lead(met["by_lead"])
+    return card
+
+
+def _slim_by_lead(bl: dict, scopes=("pooled", "pooled_clean3a")) -> dict:
+    """App-size by_lead: notes + the pooled scopes only, metric leaves cut to CARD_KEYS."""
+    def walk(v):
+        if isinstance(v, dict):
+            if "n_pos" in v:
+                return {k: v[k] for k in CARD_KEYS if k in v}
+            return {k: walk(x) for k, x in v.items()}
+        return v
+    out = {k: v for k, v in bl.items() if k != "scopes"}
+    sc = bl.get("scopes") or {}
+    out["scopes"] = {k: walk(sc[k]) for k in scopes if k in sc}
+    return out
+
+
+def export_card_v2() -> dict:
+    """data/ml/ml_card_v2.json + data/ml/model_metrics_v2.json (v1 files untouched)."""
+    met = json.loads((S.MODEL_DIR / "metrics_ml.json").read_text())
+    mldir = DATA_OUT / "ml"
+    mldir.mkdir(parents=True, exist_ok=True)
+    card = ml_card_v2(met)
+    (mldir / "ml_card_v2.json").write_text(json.dumps(card, indent=2, default=str))
+    (mldir / "model_metrics_v2.json").write_text(json.dumps(met, indent=2, default=str))
+    log.info("ml_card_v2: %d horizons, %d TEST events", len(card["trigger"]), len(card["test_events"]))
+    return card
+
+
+if __name__ == "__main__":
+    import sys
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
+    if sys.argv[1:] == ["card-v2"]:
+        export_card_v2()
