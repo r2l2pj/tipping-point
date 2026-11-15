@@ -219,3 +219,50 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+class _EarlyObs:
+    """Observed rain from IMERG Early (GPM_3IMERGDE cache); climatology stays IMERG Final
+    (POWER) — the live Now setup. Forecast days are overwritten by GFS in rain_series."""
+
+    def __init__(self, final):
+        from . import sources_dynamic as D
+        self.final = final
+        self.early = D.ImergDaily.load()
+
+    def daily(self, lon, lat, dates):
+        return self.early.daily(lon, lat, dates)
+
+    def __getattr__(self, name):
+        return getattr(self.final, name)
+
+
+def early_sensitivity(event: str = "rs_2024") -> dict:
+    """Lead 0-3 d on one event (positives + elsewhere-same-day rows, where Early is cached):
+    observed IMERG Final vs IMERG Early, same rows, same GFS, Final climatology."""
+    b = joblib.load(S.DATA_DIR / "models" / "bundle_3b.joblib")
+    e, d = b["entries"]["xgb_rain_soil"], b["daily"]["xgb_rain_soil"]
+    ml = {"model": e["model"], "cols": e["cols"], "cal": d["cal"], "thr": d["thr"]}
+    final = _rain()
+    early = _EarlyObs(final)
+    gfs = gfs_reader(gfs_jobs(load_rows("horizon_3b")))
+    hz = _load_table("horizon_3b_features")
+    te = hz[(hz.split == "test") & (hz.event_id == event)].copy()
+    el_all = elsewhere_issue_rows(_load_table("table_3b"))
+    el_all = el_all[el_all.event_id == event]
+    out = {}
+    for k in LEADS:
+        sub = target_rows(k, te, el_all)
+        sub = sub[sub.neg_set != "same_point"].reset_index(drop=True)
+        sub = sub[SC.source_mask(sub, "gfs", gfs, k + 1)].reset_index(drop=True)
+        y = sub.y.to_numpy()
+        thr = {"tpi_critical": 0.6, "tpi_high": 0.4, "ml_v2": ml["thr"], "rain_p99": 1.0}
+        row = {"n": len(sub), "n_pos": int(y.sum())}
+        for tag, rn in (("final", final), ("early", early)):
+            sc = score(sub, k, rn, gfs, ml)
+            row[tag] = {n: {kk: _m(y, np.asarray(sc[n], float), thr[n])[kk]
+                            for kk in ("recall", "precision", "pr_auc", "roc_auc")}
+                        for n in thr}
+        out[str(k)] = row
+        log.info("early sensitivity k=%d: %s", k, {t: row[t]["ml_v2"] for t in ("final", "early")})
+    return out
