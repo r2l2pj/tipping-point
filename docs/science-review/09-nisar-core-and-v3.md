@@ -185,6 +185,11 @@ Live Now additionally keeps only RS/SC/PR land. The live Southern Brazil pair (0
   rise passed p95 on Oct 23, 6 days before Oct 29.
 - **Negative controls:** the GFS forecast alone flagged neither rise, and local rain at Uruguaiana
   never reached its own p99.
+- **Robustness:**
+  - With Early scaled to Final (÷ 1.34), the Sep 30 signal is still ≥ p95, so the lead stays 5 d.
+    The second rise also gets 5 d.
+  - p99 flagged once, with 0 false-alarm issues.
+  - p95 had 1–6 false-alarm issues (Sep 18; Nov 1–6, before the Nov 12–13 near-flood-stage rise).
 - **Not served.** This is an evaluation, not a served product: the upstream-basin term (L35) is not
   in the live Now index or the replay TPI. It uses IMERG Early against a POWER/IMERG-Final
   climatology, the same product mix as §1.
@@ -196,7 +201,7 @@ cut because of OOM risk during the recording. When it is done after submission i
 
 ---
 
-## 4. ML v3 and lead time 0–3 d (lead-ml; `.crew/research/model-metrics.md`, data main b25cb05)
+## 4. ML v3 and lead time 0–3 d (lead-ml; `.crew/research/model-metrics.md`; re-scored v2 / lead03 numbers from data main d15d5a6 / 7ecde97)
 
 - **v2 (served `xgb_rain_soil`).**
   - Setup: NOAA GFS 00Z, held-out TEST events, rows with a finite forecast only (n 202,277).
