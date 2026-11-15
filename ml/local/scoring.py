@@ -83,7 +83,7 @@ def source_mask(df: pd.DataFrame, source: str, gfs_daily=None, H: int | None = N
     alone must not enter pooled GFS metrics)."""
     if source != "gfs":
         return np.ones(len(df), bool)
-    ok = (pd.to_datetime(df["issue_date"]) >= pd.Timestamp(S.GFS_ARCHIVE_START)).to_numpy()
+    ok = np.array(pd.to_datetime(df["issue_date"]) >= pd.Timestamp(S.GFS_ARCHIVE_START), dtype=bool)
     if gfs_daily is not None and H is not None and ok.any():
         sub = df[ok]
         fc = gfs_daily(sub["lon"].to_numpy(), sub["lat"].to_numpy(),
