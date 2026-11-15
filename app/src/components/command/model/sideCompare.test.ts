@@ -310,3 +310,23 @@ test("WA pair-only: nisar_ref (Nov 10) is a pass too; RS 2024 says NISAR came la
   const rs = { id: "rs_2024", mode: "replay", bbox: [0, 0, 1, 1], reference_date: "2024-05-01", manifest: { layers: [] } } as never;
   expect(noRadarText(rs)).toBe("NISAR launched Jul 2025 — no passes for this 2024 event; use Compare ⇆ on the map with Satellite for before/after");
 });
+
+test("NASA OPERA surface water in Compare where the case has it: WA validation image, Now DSWx polygons", async () => {
+  const { compareLayers, sidesCompare: sc } = await import("./sideCompare");
+  const wa = { id: "wa_2025", mode: "replay", bbox: [0, 0, 1, 1], manifest: { event: "wa_2025", layers: [
+    { id: "opera_validation", date: "2025-12-16", png: "wa_2025/png/opera_validation_20251216.png", bounds: [0, 0, 1, 1] },
+    { id: "nisar_pre", date: "2025-12-04", png: "pre.png" }, { id: "nisar_post", date: "2025-12-16", png: "post.png" },
+  ] } } as never;
+  expect(compareLayers(wa, [], "flood").map((l) => l.id)).toContain("opera");
+  const r = sc(wa, { L: { layer: "nisar", date: "2025-12-16", pol: "HH" }, R: { layer: "opera", date: "2025-12-16" } });
+  expect(r.pair?.after.label).toBe("NISAR vs NASA OPERA surface water — Dec 16");
+  expect(r.pair?.after.url).toContain("opera_validation_20251216.png");
+  const now = { id: "now", mode: "live", bbox: [0, 0, 1, 1], products: { flood_dswx: "response/flood_dswx.geojson" }, manifest: { event: "now", layers: [] } } as never;
+  const steps = [{ index: 0, date: "2026-11-15", forecast: false, top: "", sub: "" }] as never[];
+  expect(compareLayers(now, steps, "flood").map((l) => l.id)).toContain("opera");
+  const n = sc(now, { L: { layer: "opera", date: "2026-11-15" }, R: { layer: "satellite", date: "2026-11-14" } });
+  expect(n.pair?.before.geojson).toContain("flood_dswx.geojson");
+  expect(n.pair?.before.label).not.toMatch(/S1|Sentinel/);
+  const uyNone = { id: "rs_uruguai_2026", mode: "replay", bbox: [0, 0, 1, 1], manifest: { layers: [] } } as never;
+  expect(compareLayers(uyNone, [], "flood").map((l) => l.id)).not.toContain("opera");
+});

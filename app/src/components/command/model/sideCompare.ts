@@ -5,6 +5,7 @@
 // other day; never both sides identical.
 import {
   assetUrl,
+  geoUrl,
   horizonLabel,
   isHorizonKey,
   probFrame,
@@ -43,7 +44,7 @@ type BBox = [number, number, number, number];
 // Forecast issued k days before); 'rain' is the observed IMERG raster; 'ml'
 // the Now P(trigger) horizon frames; 'nisar' a pass (+ pol, + track in Now);
 // 'satellite' the NASA GIBS true-colour tiles of the day.
-export type CompareLayer = "flood" | "slide" | "rain" | "ml" | "nisar" | "satellite";
+export type CompareLayer = "flood" | "slide" | "rain" | "ml" | "nisar" | "satellite" | "opera";
 export const isRiskLayer = (l: CompareLayer): l is "flood" | "slide" => l === "flood" || l === "slide";
 
 export const COMPARE_LAYER_LABEL: Record<CompareLayer, string> = {
@@ -53,7 +54,22 @@ export const COMPARE_LAYER_LABEL: Record<CompareLayer, string> = {
   ml: "Landslide likelihood (ML)",
   nisar: "NISAR radar",
   satellite: "Satellite (NASA GIBS VIIRS)",
+  opera: "Surface water (NASA OPERA DSWx)",
 };
+
+// Conductor: NASA OPERA surface water where the case has it — WA's
+// NISAR-vs-OPERA validation image, Now's DSWx polygons (latest pass).
+const operaPng = (bundle: CcBundle) =>
+  (bundle.manifest?.layers ?? []).find((l) => l.id === "opera_validation" && !!l.png && typeof l.date === "string");
+const operaGeo = (bundle: CcBundle): string | undefined =>
+  bundle.mode === "live" && typeof (bundle.products ?? bundle.manifest?.products as Record<string, unknown> | undefined)?.flood_dswx === "string"
+    ? geoUrl(bundle, caseDirOf(bundle), "flood_dswx", "response/flood_dswx.geojson") : undefined;
+function operaDays(bundle: CcBundle, steps: readonly Step[]): { date: string; label: string }[] {
+  const png = operaPng(bundle);
+  if (png) return [{ date: (png.date as string).slice(0, 10), label: fmtDate(png.date as string) }];
+  const today = steps[0]?.date?.slice(0, 10);
+  return operaGeo(bundle) && today ? [{ date: today, label: "latest pass" }] : [];
+}
 
 export interface Side {
   layer: CompareLayer;
@@ -206,6 +222,8 @@ export function sideDays(
       return nisarSideDays(bundle, s.track);
     case "satellite":
       return satelliteDays(bundle, steps);
+    case "opera":
+      return operaDays(bundle, steps);
   }
 }
 
@@ -259,6 +277,8 @@ export function compareLayers(
   }
   const sat = satelliteDays(bundle, steps);
   if (sat.length) out.push({ id: "satellite", label: COMPARE_LAYER_LABEL.satellite, days: sat });
+  const opera = operaDays(bundle, steps);
+  if (opera.length) out.push({ id: "opera", label: COMPARE_LAYER_LABEL.opera, days: opera });
   return out;
 }
 
@@ -593,6 +613,16 @@ function sideResolved(
         label,
         missing: `No NISAR pass for ${fmtDate(day)}${s.track ? ` on track ${s.track}` : ""}`,
       };
+    }
+    case "opera": {
+      const png = operaPng(bundle);
+      if (png) {
+        const label = `NISAR vs NASA OPERA surface water — ${short(png.date as string)}`;
+        return { side: img(png, label), label, missing: "NASA OPERA surface water not published" };
+      }
+      const geo = operaGeo(bundle);
+      const label = "NASA OPERA surface water (DSWx) — latest pass";
+      return { side: geo ? { url: "", geojson: geo, label, bounds: bundle.bbox } : undefined, label, missing: "NASA OPERA surface water not published" };
     }
     case "satellite": {
       const tiles = gibsTiles(day);

@@ -232,14 +232,20 @@ function CompareMaps({
           maxzoom: side.tiles.maxzoom,
           attribution: side.tiles.attribution,
         });
-      } else {
+      } else if (side.url) {
         map.addSource("swipe-image", {
           type: "image",
           url: side.url,
           coordinates: boundsToImageCoordinates(side.bounds ?? pair.bounds),
         });
       }
-      map.addLayer({ id: "swipe-image", type: "raster", source: "swipe-image" });
+      if (side.tiles || side.url) map.addLayer({ id: "swipe-image", type: "raster", source: "swipe-image" });
+      // NASA OPERA surface water (DSWx) polygons as a side of their own.
+      if (side.geojson) {
+        map.addSource("swipe-geo", { type: "geojson", data: side.geojson });
+        map.addLayer({ id: "swipe-geo-fill", type: "fill", source: "swipe-geo", paint: { "fill-color": "#1f78b4", "fill-opacity": 0.55 } });
+        map.addLayer({ id: "swipe-geo-line", type: "line", source: "swipe-geo", paint: { "line-color": "#0b3d66", "line-width": 1 } });
+      }
       // Flooded area (radar) in its own colour above both radar images.
       if (pair.flood) {
         map.addSource("swipe-flood", { type: "geojson", data: pair.flood.url });

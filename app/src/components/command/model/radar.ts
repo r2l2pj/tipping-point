@@ -88,6 +88,8 @@ export interface CompareSide {
   url: string;
   label: string;
   bounds?: BBox;
+  // A vector side (NASA OPERA DSWx polygons in Now) drawn as a fill.
+  geojson?: string;
   // A raster-tile side (NASA GIBS satellite) instead of a PNG image — `url`
   // then holds the tile template so keys stay unique; never an image source.
   tiles?: RasterTiles;
