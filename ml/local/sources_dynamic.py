@@ -335,7 +335,7 @@ def _read_imerg_nc4(content: bytes, meta: dict,
 
 def _imerg_daily_url(day: dt.date, fname: str) -> str:
     return (f"{GESDISC}/{IMERG_DAILY_COLLECTION}/{day:%Y}/{day:%m}/"
-            f"{fname}.dap.nc4")
+            f"{fname}")  # _dap_get appends .dap.nc4
 
 
 def _imerg_monthly_url(day: dt.date, fname: str) -> str:
