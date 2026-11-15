@@ -4194,7 +4194,12 @@
           "label": "NISAR pass (track 172 D)",
           "kind": "nisar"
         }
-      ]
+      ],
+      "flood_warned_gfs_24h_lift_vs_terrain": 0.0,
+      "flood_warned_gfs_24h_critical_lift_vs_terrain": 0.0,
+      "flood_warned_gfs_24h_lift_terrain": 21.3,
+      "flood_nisar_event_lift_vs_terrain": 1.006,
+      "flood_nisar_event_critical_lift_vs_terrain": 0.778
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -4253,7 +4258,8 @@
         "landslide_ems_warned_gfs_24h_centroid_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
         "landslide_ems_warned_gfs_24h_centroid_critical_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
         "flood_ems_flagged_before_onset_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
-        "flood_ems_flagged_before_onset_critical_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)"
+        "flood_ems_flagged_before_onset_critical_lift": "undefined: the run flagged 0 % of the domain and 0 % of the damage (issue 2024-04-28)",
+        "flood_warned_gfs_24h_lift_vs_terrain": "the 24 h GFS run flags no EMS-AOI cell"
       },
       "lead_time_median_h": -21.0,
       "lead_time_iqr_h": [
@@ -14063,7 +14069,14 @@
         "served": true,
         "served_since": "2026-11-15 ~13:30 BRT (L46): canonical COGs/PNGs/metrics are v2; v1 values remain in before_after and in git history",
         "as_available_sensitivity": "v1 36.45 % / lift 8.8x used IMERG Early observed rain (as available in real time) with a Final-based climatology; Early was 1.34x Final over the Serra on 2024-04-27 (GES DISC V07B, box mean 26.0 vs 19.4 mm)"
-      }
+      },
+      "slide_warned_gfs_24h_lift_vs_terrain": 0.145,
+      "slide_warned_gfs_24h_critical_lift_vs_terrain": 0.076,
+      "slide_warned_gfs_24h_lift_terrain": 18.74,
+      "slide_warned_gfs_24h_critical_lift_terrain": 20.93,
+      "flood_warned_gfs_24h_lift_vs_terrain": null,
+      "flood_ems_event_lift_vs_terrain": 1.0,
+      "flood_ems_event_critical_lift_vs_terrain": 1.0
     },
     "rs_uruguai_2026": {
       "event": "rs_uruguai_2026",
@@ -19121,7 +19134,13 @@
             "corridor_critical_km2": 0.0
           }
         ]
-      }
+      },
+      "flood_nisar_sep30_lift_vs_terrain": 2.7,
+      "flood_nisar_sep30_critical_lift_vs_terrain": 6.221,
+      "flood_nisar_sep30_critical_lift_vs_terrain_note": "18 cells — small n"
     }
+  },
+  "definitions": {
+    "lift_vs_terrain": "TPI hit rate / hit rate of a terrain-only (T) map flagging the SAME cell count (ties in T averaged); >1 = rain + soil add to WHERE beyond terrain; source ml/models/lift_vs_terrain.json (tools/lift_vs_terrain.py, docs/lift-vs-terrain.md)"
   }
 }
