@@ -1,0 +1,78 @@
+{
+  "source": "nisar-gcov",
+  "collection": "NISAR_L2_GCOV_V1",
+  "generated_at": "2026-11-15T03:40:58Z",
+  "bbox": [
+    -58.0,
+    -34.0,
+    -48.0,
+    -22.5
+  ],
+  "latest_acquired": "2026-11-06T21:16:03Z",
+  "latency_h": 99.7,
+  "n_granules": 95,
+  "pairs": [
+    {
+      "pre": "NISAR_L2_PR_GCOV_034_024_D_101_2005_DHDH_M_20261025T211603_20261025T211633_P05036_N_F_J_001",
+      "post": "NISAR_L2_PR_GCOV_035_024_D_101_4005_DHDH_A_20261106T211603_20261106T211610_P05036_N_P_J_001",
+      "track": 24,
+      "look": "D",
+      "frame": 101,
+      "pre_acquired": "2026-10-25T21:16:03Z",
+      "post_acquired": "2026-11-06T21:16:03Z",
+      "post_available": "2026-11-11T00:58:14Z",
+      "term": "HHHH",
+      "grid": {
+        "epsg": 32723,
+        "left": 144000.0,
+        "top": 7388700.0,
+        "res": 100.0,
+        "width": 790,
+        "height": 3183
+      },
+      "io": {
+        "pre": {
+          "chunks": 256,
+          "requests": 32,
+          "bytes": 66304254,
+          "looks": 25
+        },
+        "post": {
+          "chunks": 1008,
+          "requests": 19,
+          "bytes": 54078337,
+          "looks": 100
+        }
+      },
+      "valid_km2": 1599.9,
+      "threshold_db": -15.0,
+      "threshold_method": "fallback",
+      "open_water_km2": 12.06,
+      "bright_km2": 0,
+      "receded_km2": 0.0,
+      "polygons": 16
+    }
+  ],
+  "flooded_km2": 12.06,
+  "open_water_km2": 12.06,
+  "bright_km2": 0.0,
+  "new_km2": 12.06,
+  "receded_km2": 0.0,
+  "people_flooded": 313,
+  "method": {
+    "algorithm": "tp.flood_mask.flood_mask (wa_2025): pre->post dB drop < -3.0 dB into water (Otsu, clamp -15.0 dB), pre-water excluded, HAND gate, bright-flood layer, MMU 3.0 ha",
+    "res_m": 100.0,
+    "multilook": "mean linear power per block",
+    "hand": "/home/lucascoelho/code/r2l2pj/tipping-point-data-wt/r2-nisar/data/static/south_brazil/terrain/hand_m.tif",
+    "people": "GPW v4.11 2020 count, pixel-centre sampled, area-weighted"
+  },
+  "_null_reasons": {},
+  "search_window": [
+    "2026-09-16T03:40:58Z",
+    "2026-11-15T03:40:58Z"
+  ],
+  "newest_available_acquired": "2026-11-06T21:16:03Z",
+  "newer_unpaired": [],
+  "n_polygons": 16,
+  "geojson": "flood_nisar.geojson"
+}

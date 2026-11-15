@@ -446,6 +446,225 @@ def execute_plan(
     return results
 
 
+# --- Now-domain production GCOV (unit R2, L27 response-first) --------------
+# Production GCOV has 4-6 d latency over the Now domain; the BETA collection
+# has nothing there. Search is plain anonymous CMR JSON (no asf_search), so
+# the response job needs no creds until it reads HDF5 bytes.
+
+PROD_GCOV_COLLECTION = "NISAR_L2_GCOV_V1"
+CMR_GRANULES_URL = "https://cmr.earthdata.nasa.gov/search/granules.umm_json"
+PAIR_MAX_GAP_DAYS = 36            # 3 x 12-day repeat cycles
+MIN_DOMAIN_OVERLAP_KM2 = 200.0    # a frame clipping the domain edge is not a pass
+
+# NISAR_L2_PR_GCOV_<cycle>_<track>_<A|D>_<frame>_<mode>_<pols>_<A|M>_<start>_
+#   <end>_<crid>_<N>_<F|P>_<J>_<ver>   (F = full frame, P = partial frame)
+PROD_GCOV_RE = re.compile(
+    r"NISAR_L2_\w+?_GCOV_(?P<cycle>\d+)_(?P<track>\d+)_(?P<look>[AD])_"
+    r"(?P<frame>\d+)_(?P<mode>\d+)_(?P<pols>[A-Z]+)_[A-Z]_"
+    r"(?P<start>\d{8}T\d{6})_(?P<end>\d{8}T\d{6})_\w+?_[A-Z]_"
+    r"(?P<coverage>[FP])_"
+)
+
+
+def _utc(text: str) -> datetime:
+    """'20261106T211603' or ISO-8601 (Z or offset) -> aware UTC datetime."""
+    text = str(text)
+    if re.fullmatch(r"\d{8}T\d{6}", text):
+        return datetime.strptime(text, "%Y%m%dT%H%M%S").replace(tzinfo=UTC)
+    return datetime.fromisoformat(text).astimezone(UTC)
+
+
+def _footprint(umm: dict):
+    """Shapely footprint from UMM GPolygons (None when absent)."""
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+
+    geom = ((umm.get("SpatialExtent") or {}).get("HorizontalSpatialDomain") or {}).get(
+        "Geometry") or {}
+    polys = []
+    for gp in geom.get("GPolygons") or []:
+        pts = ((gp.get("Boundary") or {}).get("Points")) or []
+        if len(pts) >= 3:
+            polys.append(Polygon([(p["Longitude"], p["Latitude"]) for p in pts]))
+    return unary_union(polys) if polys else None
+
+
+def _approx_km2(geom) -> float:
+    """Area of a lon/lat geometry in km^2 (local cos(lat) scaling)."""
+    if geom is None or geom.is_empty:
+        return 0.0
+    import math
+
+    lat = geom.centroid.y
+    return geom.area * 111.32 * 111.32 * math.cos(math.radians(lat))
+
+
+def cmr_gcov_granule(item: dict) -> dict | None:
+    """Normalize one CMR umm_json item to the dict the response job uses.
+
+    None when the GranuleUR does not parse as a production GCOV name.
+    """
+    umm = item.get("umm") or {}
+    meta = item.get("meta") or {}
+    gid = str(umm.get("GranuleUR") or meta.get("native-id") or "")
+    m = PROD_GCOV_RE.search(gid)
+    if not m:
+        return None
+    d = m.groupdict()
+    h5 = next(
+        (
+            u.get("URL") for u in umm.get("RelatedUrls") or []
+            if u.get("Type") == "GET DATA" and str(u.get("URL", "")).startswith("https")
+            and str(u.get("URL")).lower().endswith(".h5")
+        ),
+        None,
+    )
+    pdates = {p.get("Type"): p.get("Date") for p in umm.get("ProviderDates") or []}
+    available = pdates.get("Insert") or pdates.get("Create") or meta.get("revision-date")
+    return {
+        "granule_id": gid,
+        "cycle": int(d["cycle"]),
+        "track": int(d["track"]),
+        "look": d["look"],
+        "frame": int(d["frame"]),
+        "mode": d["mode"],
+        "pols": d["pols"],
+        "coverage": d["coverage"],
+        "start": _utc(d["start"]),
+        "end": _utc(d["end"]),
+        "available": _utc(available) if available else None,
+        "h5_url": h5,
+        "footprint": _footprint(umm),
+    }
+
+
+def search_gcov_domain(
+    bbox,
+    start: datetime | str,
+    end: datetime | str | None = None,
+    *,
+    collection: str = PROD_GCOV_COLLECTION,
+    get=None,
+    page_size: int = 500,
+) -> list[dict]:
+    """Every production GCOV granule intersecting `bbox` acquired in [start, end].
+
+    Anonymous CMR umm_json search, paged with CMR-Search-After. `get` is a
+    requests.get-compatible callable (tests inject a fake).
+    """
+    if get is None:
+        import requests
+
+        get = requests.get
+    w, s, e, n = bbox
+    t0 = start if isinstance(start, str) else start.strftime("%Y-%m-%dT%H:%M:%SZ")
+    t1 = "" if end is None else (end if isinstance(end, str) else end.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    params = {
+        "short_name": collection,
+        "bounding_box": f"{w},{s},{e},{n}",
+        "temporal": f"{t0},{t1}",
+        "page_size": page_size,
+        "sort_key": "-start_date",
+    }
+    out, headers = [], {}
+    while True:
+        r = get(CMR_GRANULES_URL, params=params, headers=headers, timeout=60)
+        r.raise_for_status()
+        items = (r.json() or {}).get("items") or []
+        out.extend(g for g in map(cmr_gcov_granule, items) if g is not None)
+        after = r.headers.get("CMR-Search-After")
+        if not items or not after or len(items) < page_size:
+            break
+        headers = {"CMR-Search-After": after}
+    return out
+
+
+def _domain_geom(bbox):
+    from shapely.geometry import box
+
+    return box(*bbox)
+
+
+def _overlap_km2(g: dict, domain) -> float:
+    fp = g.get("footprint")
+    if fp is None or domain is None:
+        return 0.0
+    return _approx_km2(fp.intersection(domain))
+
+
+def _best_per_frame(granules: list[dict], domain) -> dict[tuple, dict]:
+    """One granule per (track, look, frame, acquisition date).
+
+    Several products can exist for one frame/date (partial vs full frame,
+    20 vs 40 MHz mode): keep the full frame, then the larger domain overlap.
+    """
+    best: dict[tuple, dict] = {}
+    for g in granules:
+        key = (g["track"], g["look"], g["frame"], g["start"].date())
+        score = (g["coverage"] == "F", _overlap_km2(g, domain), g["granule_id"])
+        if key not in best or score > best[key][0]:
+            best[key] = (score, g)
+    return {k: v[1] for k, v in best.items()}
+
+
+def pair_latest_pass(
+    granules: list[dict],
+    bbox=None,
+    *,
+    max_gap_days: float = PAIR_MAX_GAP_DAYS,
+    min_overlap_km2: float = MIN_DOMAIN_OVERLAP_KM2,
+) -> dict:
+    """Pair the newest pass over the domain with its previous pass.
+
+    A pass is (cycle, track, look). Passes are tried newest first; for each
+    frame of the pass overlapping the domain by >= min_overlap_km2 the pre is
+    the most recent earlier granule on the SAME track + look + frame no more
+    than `max_gap_days` before it. The first pass with >= 1 pair wins; newer
+    passes that could not be paired are reported in "skipped".
+
+    Returns {"pass": {...} | None, "pairs": [{"pre", "post"}], "skipped": [...]}.
+    """
+    domain = _domain_geom(bbox) if bbox is not None else None
+    chosen = list(_best_per_frame(granules, domain).values())
+    passes: dict[tuple, list[dict]] = {}
+    for g in chosen:
+        passes.setdefault((g["cycle"], g["track"], g["look"]), []).append(g)
+    order = sorted(passes, key=lambda k: max(g["start"] for g in passes[k]), reverse=True)
+
+    skipped = []
+    for key in order:
+        frames = sorted(passes[key], key=lambda g: g["frame"])
+        pairs, reasons = [], []
+        for post in frames:
+            label = f"{post['track']:03d}{post['look']}_{post['frame']:03d}"
+            if domain is not None and _overlap_km2(post, domain) < min_overlap_km2:
+                reasons.append(f"{label}: domain overlap < {min_overlap_km2:g} km2")
+                continue
+            if not post.get("h5_url"):
+                reasons.append(f"{label}: no .h5 data link")
+                continue
+            earlier = [
+                g for g in chosen
+                if (g["track"], g["look"], g["frame"]) == (post["track"], post["look"], post["frame"])
+                and g["start"] < post["start"]
+                and (post["start"] - g["start"]).total_seconds() <= max_gap_days * 86400
+                and g.get("h5_url")
+            ]
+            if not earlier:
+                reasons.append(f"{label}: no earlier pass on the same track/frame within {max_gap_days:g} d")
+                continue
+            pairs.append({"pre": max(earlier, key=lambda g: g["start"]), "post": post})
+        info = {
+            "cycle": key[0], "track": key[1], "look": key[2],
+            "acquired": max(g["start"] for g in frames),
+            "frames": [g["frame"] for g in frames],
+        }
+        if pairs:
+            return {"pass": info, "pairs": pairs, "skipped": skipped}
+        skipped.append({**info, "reasons": reasons})
+    return {"pass": None, "pairs": [], "skipped": skipped}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="python -m pipeline.fetch.nisar", description=__doc__)
