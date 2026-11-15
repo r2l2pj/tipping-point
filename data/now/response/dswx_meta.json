@@ -1,19 +1,20 @@
 {
   "source": "opera-dswx-s1",
   "status": "candidate",
-  "generated_at": "2026-11-15T04:16:10Z",
+  "generated_at": "2026-11-15T04:18:24Z",
   "latest_acquired": "2026-11-14T09:06:12.000Z",
-  "latency_h": 6.8,
-  "n_granules": 2295,
+  "latency_h": null,
+  "n_granules": 0,
   "n_failed": 0,
   "n_granules_total": 2166,
-  "flooded_km2": 278.515,
-  "new_km2": 278.515,
-  "receded_km2": null,
-  "people_flooded": 1951.5,
-  "lower_confidence_km2": 236.003,
-  "lower_confidence_new_km2": 236.003,
-  "lower_confidence_people": 938.2,
+  "flooded_km2": 129.695,
+  "new_km2": 0.0,
+  "receded_km2": 0.0,
+  "people_flooded": 493.2,
+  "lower_confidence_km2": 158.25,
+  "lower_confidence_new_km2": 0.0,
+  "lower_confidence_people": 394.4,
+  "sub_mmu_km2": 226.574,
   "excluded_water_wetland_km2": 222.322,
   "outside_brazil_km2": 856.497,
   "raw_candidate_km2": 1593.338,
@@ -59,6 +60,6 @@
   "landcover_source": "MCD12Q1.061 2025 LC_Type1 (IGBP)",
   "brazil_outline_source": "IBGE malhas v3 paises/BR",
   "_null_reasons": {
-    "receded_km2": "first pass: no previous candidate mask to compare"
+    "latency_h": "no granules ingested this run"
   }
 }

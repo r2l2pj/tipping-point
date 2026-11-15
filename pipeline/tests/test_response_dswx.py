@@ -247,6 +247,16 @@ def test_landcover_exclusion_confidence_and_brazil_clip(tmp_path):
     assert by_conf == {"standard": "grassland", "lower": "cropland"}
     for f in fc["features"]:
         assert min(x for x, _ in f["geometry"]["coordinates"][0]) >= -49.95 - 1e-9
+    # headline == what the map draws (sum over mapped polygons per tier)
+    for conf, key in (("standard", "flooded_km2"), ("lower", "lower_confidence_km2")):
+        drawn = sum(f["properties"]["area_km2"] for f in fc["features"]
+                    if f["properties"]["confidence"] == conf)
+        assert meta[key] == pytest.approx(drawn, abs=1e-3)
+    std_people = [f["properties"]["people"] for f in fc["features"]
+                  if f["properties"]["confidence"] == "standard"]
+    if meta["people_flooded"] is not None:
+        assert meta["people_flooded"] == pytest.approx(sum(std_people), abs=0.2)
+    assert meta["sub_mmu_km2"] >= 0
 
 
 def test_missing_landcover_nulls_headline(tmp_path):

@@ -457,7 +457,10 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
   `latest_acquired`, `latency_h` (median CMR insert − acquisition of this
   run's granules), `n_granules` (this run), `n_failed`, `n_granules_total`,
   `flooded_km2`, `new_km2`, `people_flooded` (headline: Brazil, standard
-  confidence only), `receded_km2`, `lower_confidence_km2`,
+  confidence only, summed over the mapped polygons ≥ `params.min_area_km2`
+  so it equals what the map draws), `sub_mmu_km2` (in-Brazil candidate
+  pixels in smaller clusters: not mapped, not in any headline),
+  `receded_km2`, `lower_confidence_km2` (also polygon sums),
   `lower_confidence_new_km2`, `lower_confidence_people`,
   `excluded_water_wetland_km2`, `outside_brazil_km2`, `raw_candidate_km2`
   (before land cover / Brazil filtering),

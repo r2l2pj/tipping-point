@@ -31,7 +31,8 @@ Method
   EXCLUDED (Ibera, river margins, reservoirs); candidates outside the IBGE
   Brazil outline are dropped from polygons/headline (outside_brazil_km2);
   cropland 12/14 (e.g. RS rice paddies flooded for planting) is kept as
-  confidence "lower". Headline flooded_km2/people_flooded = standard only.
+  confidence "lower". Headline flooded_km2/people_flooded = standard only, summed over the
+  mapped polygons (>= min_area_km2); smaller clusters -> sub_mmu_km2.
   Missing land cover or outline -> headline null + reason (unfiltered water
   is never published).
 * change: "new" = candidate now and not in the previous run's candidate
@@ -474,8 +475,20 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
     if not feats:
         text = json.dumps({"type": "FeatureCollection", "features": []}) + "\n"
     _atomic_write(out_path, text)
+    # headline totals from the MAPPED polygons (>= min_area), so the numbers
+    # match what the map draws; sub-MMU specks are reported separately
+    totals = {k: {"km2": 0.0, "people": 0.0} for k in ("standard", "std_new", "lower", "lower_new")}
+    for f in feats:
+        p = f["properties"]
+        tier = "standard" if p["confidence"] == "standard" else "lower"
+        keys = [tier] + ([("std_new" if tier == "standard" else "lower_new")] if p["change"] == "new" else [])
+        for k in keys:
+            totals[k]["km2"] += p["area_km2"]
+            totals[k]["people"] += p["people"] or 0.0
     return {"features": len(feats), "bytes": len(text.encode()), "simplify_m": simplify_m,
-            "min_area_km2": min_area_km2}
+            "min_area_km2": min_area_km2,
+            "totals": {k: {"km2": round(v["km2"], 3), "people": round(v["people"], 1)}
+                       for k, v in totals.items()}}
 
 
 def _atomic_write(path: Path, text: str) -> None:
@@ -607,26 +620,28 @@ def run(
         if r:
             reasons[k] = r
 
-    def ppl(m, pop=pop):
-        return None if pop is None else round(float(pop[m].sum()), 1)
-
     valid = state.bootstrap.get("ok", False) and state.last_acquired is not None
     flood_path = out_dir / "flood_dswx.geojson"
     stat_keys = ("flooded_km2", "new_km2", "receded_km2", "people_flooded", "lower_confidence_km2",
                  "lower_confidence_new_km2", "lower_confidence_people", "excluded_water_wetland_km2",
-                 "outside_brazil_km2")
+                 "outside_brazil_km2", "sub_mmu_km2")
     if valid and lc is not None and br is not None:
         prev = state.prev_flood.astype(bool) if state.has_prev else np.zeros(grid.shape, bool)
         masks = apply_context(masks, lc, excl, br, prev)
         del excl, br
         poly = polygonize(state, masks, pop, lc, flood_path, min_area_km2, simplify_m)
+        tot = poly["totals"]
         stats = {
-            "flooded_km2": km2(masks["standard"]), "new_km2": km2(masks["std_new"]),
+            "flooded_km2": tot["standard"]["km2"], "new_km2": tot["std_new"]["km2"],
             "receded_km2": km2(masks["receded"]) if state.has_prev else None,
-            "people_flooded": ppl(masks["standard"]),
-            "lower_confidence_km2": km2(masks["lower"]),
-            "lower_confidence_new_km2": km2(masks["lower_new"]),
-            "lower_confidence_people": ppl(masks["lower"]),
+            "people_flooded": tot["standard"]["people"],
+            "lower_confidence_km2": tot["lower"]["km2"],
+            "lower_confidence_new_km2": tot["lower_new"]["km2"],
+            "lower_confidence_people": tot["lower"]["people"],
+            # in-Brazil candidate pixels in clusters < min_area_km2: not mapped,
+            # not in the headline
+            "sub_mmu_km2": round(max(0.0, km2(masks["candidate"]) - tot["standard"]["km2"]
+                                     - tot["lower"]["km2"]), 3),
             "excluded_water_wetland_km2": km2(masks["excluded"]),
             "outside_brazil_km2": km2(masks["outside"]),
         }
