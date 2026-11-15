@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0b0e14;
+  --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Priority-zone map markers — dark card + pin, per mockup. */
+.tp-zone-marker {
+  cursor: default;
+}
+.tp-zone-card {
+  position: relative;
+  min-width: 132px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(13, 17, 23, 0.92);
+  padding: 6px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.tp-zone-card::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid rgba(13, 17, 23, 0.92);
+}
+.tp-zone-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* Viz rule 9: every over-map text is >= 12 px with >= 4.5:1 contrast. */
+.tp-zone-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e8eaed;
+  white-space: nowrap;
+}
+.tp-zone-badge {
+  border-radius: 3px;
+  background: #bd0026;
+  padding: 1px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+.tp-zone-sub {
+  margin-top: 1px;
+  font-size: 12px;
+  color: #a1a1aa;
+}
+
+/* MapLibre popup on TPI click. */
+.tp-popup .maplibregl-popup-content {
+  background: rgba(13, 17, 23, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.tp-popup .maplibregl-popup-tip {
+  border-top-color: rgba(13, 17, 23, 0.95);
+}
+.tp-popup-body {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d4d4d8;
+}
+.tp-popup-body strong {
+  color: #fff;
+}
+.tp-popup-body span {
+  color: #a1a1aa;
+}
+.tp-popup-body a {
+  color: #7eb6e8;
+}
+
+/* "Forecast" label pinned over forecast frames (v4: predicted data is
+   always hatched and labelled, never confused with observed). */
+.tp-forecast-label {
+  border: 1px dashed rgba(255, 255, 255, 0.55);
+  border-radius: 4px;
+  background: rgba(13, 17, 23, 0.85);
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #e8eaed;
+  pointer-events: none;
+}
+
+/* Thin scrollbars for the side panel. */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 4px;
+}
+
+/* Transient chip while a geojson layer is being fetched (lazy loading —
+   payload ruling). Bottom-left, above map controls. */
+.tp-loading-chip {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 5;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  background: rgba(13, 17, 23, 0.85);
+  padding: 2px 8px;
+  font-size: 12px;
+  color: #a1a1aa;
+  pointer-events: none;
+}
+
+/* --- Command Center (light chrome, dark map) -------------------------------
+   Semantic tokens scoped to the new screen root, so the old screen keeps its
+   look until the switch. Utilities: bg-cc-surface, text-cc-muted, ... */
+.cc-root {
+  --cc-bg: #f4f5f1;
+  --cc-surface: #ffffff;
+  --cc-header: #fbfbf9;
+  --cc-well: #f6f8f4;
+  --cc-ink: #16242b;
+  --cc-muted: #44535a;
+  --cc-faint: #5f6d73;
+  --cc-line: #dfe3dc;
+  --cc-line-strong: #cfd6cf;
+  --cc-rule: #e9ece6;
+  --cc-accent: #17473f;
+  --cc-accent-soft: #e8f1ee;
+  --cc-accent-line: #b9d2ca;
+  --cc-map: #0d1f26;
+  --cc-focus: #2f8fdd;
+  --cc-forecast: #e6e6f5;
+  --cc-forecast-ink: #2c2a66;
+  --cc-warn: #8a4b00;
+  --cc-warn-soft: #fff4e0;
+  --cc-danger: #9b0020;
+  --cc-danger-soft: #fdecee;
+  background: var(--cc-bg);
+  color: var(--cc-ink);
+  font-family: var(--cc-font-body), Inter, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+@theme inline {
+  --color-cc-bg: var(--cc-bg);
+  --color-cc-surface: var(--cc-surface);
+  --color-cc-header: var(--cc-header);
+  --color-cc-well: var(--cc-well);
+  --color-cc-ink: var(--cc-ink);
+  --color-cc-muted: var(--cc-muted);
+  --color-cc-faint: var(--cc-faint);
+  --color-cc-line: var(--cc-line);
+  --color-cc-line-strong: var(--cc-line-strong);
+  --color-cc-rule: var(--cc-rule);
+  --color-cc-accent: var(--cc-accent);
+  --color-cc-accent-soft: var(--cc-accent-soft);
+  --color-cc-accent-line: var(--cc-accent-line);
+  --color-cc-map: var(--cc-map);
+  --color-cc-focus: var(--cc-focus);
+  --color-cc-forecast: var(--cc-forecast);
+  --color-cc-forecast-ink: var(--cc-forecast-ink);
+  --color-cc-warn: var(--cc-warn);
+  --color-cc-warn-soft: var(--cc-warn-soft);
+  --color-cc-danger: var(--cc-danger);
+  --color-cc-danger-soft: var(--cc-danger-soft);
+  --font-cc-display: var(--cc-font-display), var(--cc-font-body), Inter, system-ui, sans-serif;
+}
+.cc-root button:focus-visible,
+.cc-root select:focus-visible,
+.cc-root a:focus-visible,
+.cc-root [role="slider"]:focus-visible {
+  outline: 3px solid var(--cc-focus);
+  outline-offset: 2px;
+}
+.cc-root ::-webkit-scrollbar-thumb {
+  background: #c3cbc4;
+}
+/* The screen has its own zoom and recenter buttons: hide the MapLibre
+   navigation control so the controls are not doubled. The scale stays. */
+.cc-root .maplibregl-ctrl-top-right .maplibregl-ctrl-group {
+  display: none;
+}
+.cc-root .tp-loading-chip {
+  left: calc(var(--cc-il, 0px) + 14px);
+  bottom: calc(var(--cc-ib, 0px) + 74px);
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.95);
+  color: #16242b;
+  font-weight: 600;
+}
+/* Viz rule 9 (over-map text >= 12px): MapLibre draws the scale label at
+   10px. */
+.cc-root .maplibregl-ctrl-scale {
+  font-size: 12px;
+}
+/* MapLibre controls stay inside the part of the map that no card covers. */
+.cc-root .maplibregl-ctrl-bottom-left {
+  left: calc(var(--cc-il, 0px) + 6px);
+  bottom: calc(var(--cc-ib, 0px) + 4px);
+}
+.cc-root .maplibregl-ctrl-bottom-right {
+  right: var(--cc-ir, 0px);
+  bottom: var(--cc-ib, 0px);
+}
+/* Numbered pins of the priority areas. Built from text nodes. */
+.cc-pin {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2.5px solid #ffffff;
+  border-radius: 50%;
+  background: #bd0026;
+  color: #ffffff;
+  font: 700 13px/1 var(--cc-font-body), Inter, system-ui, sans-serif;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+.cc-pin[data-class="High"] {
+  background: #fd8d3c;
+  color: #16242b;
+}
+.cc-pin[data-class="Moderate"] {
+  background: #fecc5c;
+  color: #16242b;
+}
+.cc-pin[data-class="Low"] {
+  background: #ffffb2;
+  color: #16242b;
+}
+.cc-pin[aria-pressed="true"] {
+  width: 34px;
+  height: 34px;
+  box-shadow: 0 0 0 3px #16242b, 0 0 0 6px #ffffff;
+  z-index: 3;
+}
+.cc-pin:focus-visible {
+  outline: 3px solid #2f8fdd;
+  outline-offset: 2px;
+}
+.cc-callout-marker {
+  z-index: 4;
+}

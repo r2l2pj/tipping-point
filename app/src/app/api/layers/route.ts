@@ -1,0 +1,67 @@
+// Live GEE layer metadata: GET /api/layers?case=now[&layer=tpi_slide]
+// → { case, canonical, layers: [{id, dates, data_date?, updated_at?}] }.
+// 400 when `case` is missing; 503 when no service-account key is configured;
+// 502 on unexpected ee init/compute failures. `canonical` echoes the resolved
+// case id so hyphen aliases are visible; `layer=` probes a single layer.
+import { credentialEnv, geeEnabled } from "@/lib/ee";
+import { cachedJson, noStoreJson } from "@/lib/http-cache";
+import {
+  getLayerMeta,
+  LayersCredsError,
+  LayersUnavailableError,
+} from "@/lib/ee-layers";
+
+export const maxDuration = 60;
+
+export async function GET(request: Request) {
+  const params = new URL(request.url).searchParams;
+  const caseId = params.get("case");
+  const layer = params.get("layer");
+
+  if (!caseId) {
+    return noStoreJson(
+      { error: "missing required param: case" },
+      { status: 400 }
+    );
+  }
+  if (!geeEnabled() || !credentialEnv()) {
+    return noStoreJson(
+      {
+        error: "gee unavailable",
+        reason: geeEnabled()
+          ? "no service-account key (set GCP_SA_KEY)"
+          : "runtime GEE disabled (GEE_ENABLED unset)",
+      },
+      { status: 503 }
+    );
+  }
+
+  try {
+    const result = await getLayerMeta(caseId, { layer: layer ?? undefined });
+    return cachedJson(
+      {
+        case: caseId,
+        canonical: result.case,
+        layers: result.layers,
+      },
+      caseId
+    );
+  } catch (err) {
+    if (
+      err instanceof LayersCredsError ||
+      err instanceof LayersUnavailableError
+    ) {
+      return noStoreJson(
+        { error: "gee unavailable", reason: err.message },
+        { status: 503 }
+      );
+    }
+    return noStoreJson(
+      {
+        error: "gee layers failed",
+        reason: err instanceof Error ? err.message : String(err),
+      },
+      { status: 502 }
+    );
+  }
+}

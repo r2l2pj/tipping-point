@@ -1,0 +1,1011 @@
+// Server-side loader for the v4 data contract (SCHEMA.md).
+// Remote read order (L26): explicit DATA_BASE_URL wins alone; otherwise the
+// public GitHub data branch (raw.githubusercontent, force-pushed each pipeline
+// run — the primary store) then the Neon Object Storage bucket
+// (NEON_S3_ENDPOINT) as fallback. The bundled public/data copy synced by
+// `bun run sync:data` is always the last resort.
+// Any remote miss falls back to the bundled copy and flags the bundle.
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { cacheLife } from "next/cache";
+import {
+  canonicalCaseId,
+  caseAlias,
+  flattenLandslideHit,
+  FORECAST_DAY_RE,
+  resolveAsset,
+  TPI_CUTS,
+  toMetricsView,
+  toNowView,
+  type MetricsView,
+  type NowAlertsFile,
+  type NowSummary,
+} from "./contract";
+import type { LayerMeta } from "./ee-layers";
+import {
+  DIST_GEOJSON,
+  DIST_META,
+  NISAR_META,
+  placesBySource,
+  RESPONSE_SUMMARY,
+  responseGeojsonPath,
+  toNowResponse,
+  toNowDist,
+  toResponseSources,
+} from "./response";
+import type {
+  AlertsFile,
+  CaseBundle,
+  EventManifest,
+  EventMetrics,
+  EventsIndex,
+  NisarPass,
+  RootManifest,
+  SeriesDaily,
+} from "./types";
+
+// Bundled-copy root (L14). DATA_FS_DIR overrides it; under `bun test` the
+// default is the fixture copy so the suite never reads the repo's
+// public/data mocks — production stays on public/data.
+const dataDir = () =>
+  process.env.DATA_FS_DIR ??
+  (process.env.NODE_ENV === "test"
+    ? path.join(process.cwd(), "test", "fixtures", "public-data")
+    : path.join(process.cwd(), "public", "data"));
+
+export interface LoadedCaseBundle extends CaseBundle {
+  // "Showing last saved data" trigger (L27 ruling): true only when the ROOT
+  // MANIFEST came from the bundled copy (no remote answered it), or when the
+  // opt-in GEE overlay was expected but degraded (every call failed, or the
+  // layer probe answered with nothing published). Individual file misses
+  // that fall through to another base or to disk do NOT set it. Data-age
+  // staleness (> 6 h, live case) is judged on the client.
+  fallback?: boolean;
+  // First remote base — the client builds lazy layer URLs from
+  // products[key] + this (bundled copy falls back to /data/<key>).
+  assetBase?: string;
+  // DEPRECATED: heavy geojson is never inlined — client lazy-loads the
+  // critical_areas URL. Always undefined now.
+  criticalAreas?: GeoJSON.FeatureCollection;
+  // Upcoming NISAR passes for the live bundle (hoisted by toNowView).
+  nisarPasses?: NisarPass[];
+  // Replay: data/<case>/forecast_lead_time.json, raw (read by the model).
+  forecastLeadTime?: unknown;
+  // Live GEE layer metadata (L8); present when the probe answered, even
+  // when the layers array is empty (GEE up, nothing published).
+  liveLayers?: LayerMeta[];
+  // 'gee' when at least one live call contributed content, 'static' when
+  // credentialed but nothing live applied, undefined when not credentialed.
+  dataSource?: "gee" | "static";
+  // Contract outputs that are absent (L14): 'metrics', 'series', and the
+  // product ids that were declared-but-missing. Sorted for determinism;
+  // components render "pending" markers off this list — the loader never
+  // fabricates values for files the real outputs haven't shipped.
+  pending: string[];
+  // numbers.data_date when live numbers applied. The front renders
+  // "Showing last saved data from <updated_at ?? dataDate>" on fallback.
+  dataDate?: string;
+  // Effective TPI class cuts: manifest case-node `tpi_cuts`, else the
+  // contract default (contract.TPI_CUTS). Components must use this — never
+  // hard-code the cuts (A10).
+  tpiCuts: readonly number[];
+}
+
+// Optional test/injection seam for the live GEE overlay (L8). When `gee` is
+// provided its functions are used as-is and the credential gate is skipped —
+// presence of an injected gee means "credentialed".
+export interface CaseBundleOpts {
+  gee?: {
+    numbers?: (q: { caseId: string; date: string }) => Promise<unknown>;
+    layers?: (caseId: string) => Promise<unknown>;
+  };
+}
+
+// products map values are strictly string | null; null = absent.
+type Products = Record<string, string | null | undefined>;
+
+// Priority zones inline-trimmed for the <300KB payload budget: top-20 by
+// properties.rank, polygon geometry replaced with the label-centroid Point
+// (label_lon/label_lat properties, first ring coordinate as fallback). The
+// client lazy-loads the full polygons from the layer URL.
+const trimZones = (
+  fc: GeoJSON.FeatureCollection | undefined,
+  n = 20
+): GeoJSON.FeatureCollection | undefined => {
+  if (!fc?.features?.length) return fc;
+  const ranked = [...fc.features]
+    .sort(
+      (a, b) =>
+        (num(a.properties?.rank) ?? Number.MAX_SAFE_INTEGER) -
+        (num(b.properties?.rank) ?? Number.MAX_SAFE_INTEGER)
+    )
+    .slice(0, n);
+  const firstCoord = (g: GeoJSON.Geometry | null): [number, number] => {
+    const c = (
+      g as GeoJSON.Polygon | GeoJSON.MultiPolygon | null
+    )?.coordinates?.[0]?.[0]?.[0] ?? (g as GeoJSON.Point | null)?.coordinates;
+    return Array.isArray(c) && c.length >= 2
+      ? [c[0] as number, c[1] as number]
+      : [0, 0];
+  };
+  return {
+    ...fc,
+    features: ranked.map((f) => ({
+      ...f,
+      geometry: {
+        type: "Point",
+        coordinates:
+          num(f.properties?.label_lon) !== undefined &&
+          num(f.properties?.label_lat) !== undefined
+            ? [f.properties!.label_lon as number, f.properties!.label_lat as number]
+            : firstCoord(f.geometry),
+      } as GeoJSON.Point,
+    })),
+  };
+};
+
+// --- live Now city labels ------------------------------------------------------
+// `now` publishes no `places` product, so the live map showed no city labels
+// while replays render theirs (MapLayers cityLabel reads bundle.places ->
+// source tp-places). The anchor cities of RS/SC/PR are matched by name
+// (accent/case-insensitive) against the municipal_boundaries polygons and
+// reduced to one representative Point each server-side, so the ~840KB
+// municipality file never reaches the browser. Features carry the same
+// {name, kind:"city"} shape replay places.geojson uses.
+const NOW_CITY_NAMES = [
+  "Porto Alegre", "Caxias do Sul", "Pelotas", "Santa Maria",
+  "Passo Fundo", "Rio Grande", "Uruguaiana", "Novo Hamburgo", // RS
+  "Florianópolis", "Joinville", "Blumenau", "Chapecó", "Criciúma",
+  "Lages", "Itajaí", // SC
+  "Curitiba", "Londrina", "Maringá", "Ponta Grossa", "Cascavel",
+  "Foz do Iguaçu", // PR
+] as const;
+
+// Accent/case-insensitive match key ("Foz do Iguacu" == "Foz do Iguaçu").
+const placeKey = (s: string): string =>
+  s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
+
+type Ring = GeoJSON.Position[];
+
+// Signed shoelace area of a ring.
+const ringArea = (ring: Ring): number => {
+  let a = 0;
+  for (let i = 0, n = ring.length; i < n; i++) {
+    const [x1, y1] = ring[i];
+    const [x2, y2] = ring[(i + 1) % n];
+    a += x1 * y2 - x2 * y1;
+  }
+  return a / 2;
+};
+
+// Area centroid of a ring; a degenerate zero-area ring falls back to its
+// vertex mean. Non-finite vertices -> undefined (caller skips the feature).
+const ringCentroid = (ring: Ring): [number, number] | undefined => {
+  const pts = ring.length > 1 ? ring.slice(0, -1) : ring;
+  if (!pts.length) return undefined;
+  let a = 0, cx = 0, cy = 0, mx = 0, my = 0;
+  for (let i = 0, n = pts.length; i < n; i++) {
+    const [x1, y1] = pts[i];
+    const [x2, y2] = pts[(i + 1) % n];
+    if (!Number.isFinite(x1) || !Number.isFinite(y1)) return undefined;
+    const w = x1 * y2 - x2 * y1;
+    a += w;
+    cx += (x1 + x2) * w;
+    cy += (y1 + y2) * w;
+    mx += x1;
+    my += y1;
+  }
+  return a === 0 ? [mx / pts.length, my / pts.length] : [cx / (3 * a), cy / (3 * a)];
+};
+
+const ringContains = (ring: Ring, lon: number, lat: number): boolean => {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi)
+      inside = !inside;
+  }
+  return inside;
+};
+
+const geomContains = (g: GeoJSON.Geometry, lon: number, lat: number): boolean => {
+  const polys =
+    g.type === "Polygon"
+      ? [g.coordinates]
+      : g.type === "MultiPolygon"
+        ? g.coordinates
+        : [];
+  return polys.some(
+    (rings) =>
+      rings.length > 0 &&
+      ringContains(rings[0], lon, lat) &&
+      !rings.slice(1).some((hole) => ringContains(hole, lon, lat))
+  );
+};
+
+// One anchor point inside a municipality polygon: the area centroid of the
+// largest exterior ring when it lands inside; concave municipalities (e.g.
+// Foz do Iguaçu) can hold their centroid outside, so the ring bbox is
+// scanned on a grid for the inside point nearest the centroid; the first
+// vertex (on the boundary) is the last resort so a name never emits a null
+// coordinate.
+export function representativePoint(
+  g: GeoJSON.Geometry | null | undefined
+): [number, number] | undefined {
+  if (!g) return undefined;
+  const exteriors = (
+    g?.type === "Polygon"
+      ? [g.coordinates[0]]
+      : g?.type === "MultiPolygon"
+        ? g.coordinates.map((p) => p[0])
+        : []
+  ).filter((r): r is Ring => Array.isArray(r) && r.length > 0);
+  if (!exteriors.length) return undefined;
+  const ring = exteriors.sort(
+    (a, b) => Math.abs(ringArea(b)) - Math.abs(ringArea(a))
+  )[0];
+  const c = ringCentroid(ring);
+  if (!c) return undefined;
+  if (geomContains(g, c[0], c[1])) return c;
+  let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+  for (const [x, y] of ring) {
+    if (x < minx) minx = x;
+    if (x > maxx) maxx = x;
+    if (y < miny) miny = y;
+    if (y > maxy) maxy = y;
+  }
+  const N = 64;
+  let best: [number, number] | undefined;
+  let bestD = Infinity;
+  for (let i = 0; i <= N; i++) {
+    for (let j = 0; j <= N; j++) {
+      const x = minx + ((maxx - minx) * i) / N;
+      const y = miny + ((maxy - miny) * j) / N;
+      const d = (x - c[0]) ** 2 + (y - c[1]) ** 2;
+      if (d < bestD && geomContains(g, x, y)) {
+        bestD = d;
+        best = [x, y];
+      }
+    }
+  }
+  return best ?? (ring[0] as [number, number]);
+}
+
+// City-label Points for the live Now map, cut from municipal_boundaries.
+// Display `name` is the data's own spelling (proper accents); kind:"city"
+// matches the replay places features so MapLayers renders them unchanged.
+// Names with no matching municipality are skipped; absent boundaries ->
+// undefined (no fabricated labels).
+export function nowCityPlaces(
+  boundaries: GeoJSON.FeatureCollection | undefined
+): GeoJSON.FeatureCollection | undefined {
+  const byName = new Map<string, { name: string; f: GeoJSON.Feature }>();
+  for (const f of boundaries?.features ?? []) {
+    const p = f.properties as Record<string, unknown> | null;
+    const name = p?.name ?? p?.nome ?? p?.NM_MUN;
+    if (typeof name !== "string" || !name) continue;
+    const k = placeKey(name);
+    if (!byName.has(k)) byName.set(k, { name, f });
+  }
+  const features: GeoJSON.Feature[] = [];
+  for (const wanted of NOW_CITY_NAMES) {
+    const hit = byName.get(placeKey(wanted));
+    const at = hit ? representativePoint(hit.f.geometry) : undefined;
+    if (!hit || !at) continue;
+    features.push({
+      type: "Feature",
+      properties: { name: hit.name, kind: "city" },
+      geometry: { type: "Point", coordinates: at },
+    });
+  }
+  return features.length
+    ? { type: "FeatureCollection", features }
+    : undefined;
+}
+
+interface ReadCtx {
+  bases: string[];
+  fellBack: boolean;
+  // Base that answered the most recent remote hit (undefined = disk). The
+  // case bundle pins browser asset URLs (PNG/COG) to the base that served
+  // its root manifest, so frames come from the same store as the manifest.
+  lastBase?: string;
+  // Remote-attempt budget (Cache Components forbids Date.now() during
+  // prerender, so the budget is counted, not timed): after this many misses
+  // no new remote request starts — the bundled copy answers instead.
+  remoteTries: number;
+}
+
+// L26: the public GitHub data branch is the PRIMARY store (branch name kept
+// as `fallback` to avoid churn).
+const GITHUB_DATA_BASE =
+  "https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data";
+// Public-read bucket URL — not a secret. Built-in default so the app works
+// on a host with no data env configured at all.
+const NEON_PUBLIC_BASE =
+  "https://br-lively-poetry-bdub0r34.storage.c-8.us-east-2.aws.neon.tech/tipping-point-data/data";
+
+// Max remote attempts per read context before short-circuiting to disk.
+// DATA_MAX_REMOTE_TRIES overrides; ~14 files × ≤3 bases fits in 60.
+const maxRemoteTries = () =>
+  Number(process.env.DATA_MAX_REMOTE_TRIES) || 60;
+
+// Remote bases in priority order (L26, supersedes L17). An explicit
+// DATA_BASE_URL is the sole remote source (override semantics — tests pin it
+// unreachable to force the bundled copy). Unset, the default is the GitHub
+// data branch, then the public Neon bucket (env endpoint if set, else the
+// built-in public URL); disk is always last.
+const remoteBases = (): string[] => {
+  const explicit = process.env.DATA_BASE_URL;
+  if (explicit) return [explicit.replace(/\/+$/, "")];
+  const neon = process.env.NEON_S3_ENDPOINT
+    ? `${process.env.NEON_S3_ENDPOINT.replace(/\/+$/, "")}/tipping-point-data/data`
+    : NEON_PUBLIC_BASE;
+  return [...new Set([GITHUB_DATA_BASE, neon])];
+};
+
+const newCtx = (): ReadCtx => ({
+  bases: remoteBases(),
+  fellBack: false,
+  remoteTries: 0,
+});
+
+// Data reads must run at request time, never inside the static prerender
+// shell — a build-time capture is what left production stuck on the PPR
+// fallback. `connection()` returns a pending promise during prerender (the
+// hole defers to request time, so the await stalls there by design), resolves
+// during a real request, and throws synchronously when no Next store exists
+// (bun test / scripts) — that throw is the only case the catch swallows.
+const requestTime = async () => {
+  try {
+    const { connection } = await import("next/server");
+    await connection();
+  } catch {
+    // no request store — tests and scripts run data reads eagerly
+  }
+};
+
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null;
+
+const num = (v: unknown): number | undefined =>
+  typeof v === "number" && Number.isFinite(v) ? v : undefined;
+
+// Remote fetch inside `use cache` so raw fallback branch reads share the "minutes"
+// profile; the directive is inert under `bun test`, where cacheLife has no
+// cache scope to configure. Never throws — any failure is a miss so readData
+// falls through to the bundled public/data copy.
+async function fetchJson<T>(url: string): Promise<T | undefined> {
+  "use cache";
+  try {
+    cacheLife("minutes");
+  } catch {
+    // outside a `use cache` scope (tests) there is no cache to configure
+  }
+  try {
+    // 4s cap: prerender/build must not stall on a dead remote host.
+    const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) return undefined;
+    return (await res.json()) as T;
+  } catch {
+    return undefined;
+  }
+}
+
+async function readFs<T>(key: string): Promise<T | undefined> {
+  try {
+    const raw = await readFile(
+      path.join(/*turbopackIgnore: true*/ dataDir(), key),
+      "utf-8"
+    );
+    return JSON.parse(raw) as T;
+  } catch {
+    return undefined;
+  }
+}
+
+export const isEmptySeedManifest = (p: string, v: unknown): boolean =>
+  /(^|\/)manifest\.json$/.test(p) &&
+  isRecord(v) &&
+  v.updated_at === null &&
+  Array.isArray(v.layers) &&
+  v.layers.length === 0;
+
+// One logical file: each remote base in order (GitHub data branch, then
+// Neon — or the DATA_BASE_URL override alone), then the last-resort bundled
+// copy under public/data. `p` is
+// data-root-relative ("rs_2024/geojson/...") or dir-relative ("geojson/..."),
+// per resolveAsset.
+async function readData<T>(
+  ctx: ReadCtx,
+  dir: string,
+  p: string
+): Promise<T | undefined> {
+  // Try each remote base in order (absolute p resolves identically on every
+  // base — dedupe so it isn't fetched once per base). Once the attempt
+  // budget is spent no new remote request starts — straight to disk.
+  const seen = new Set<string>();
+  for (const base of ctx.bases) {
+    const url = resolveAsset(base, dir, p);
+    if (url === undefined) return undefined;
+    if (seen.has(url)) continue;
+    seen.add(url);
+    if (ctx.remoteTries >= maxRemoteTries()) {
+      ctx.fellBack = true;
+      break;
+    }
+    ctx.remoteTries++;
+    const remote = await fetchJson<T>(url).catch(() => undefined);
+    // G6 (lead-live): a storage copy that never got published is the empty
+    // seed manifest (updated_at null, layers []) — a miss, so the next base
+    // or the bundled copy serves instead of a "no data" page.
+    if (remote !== undefined && !isEmptySeedManifest(p, remote)) {
+      ctx.lastBase = base;
+      return remote;
+    }
+  }
+  ctx.lastBase = undefined;
+  const key = resolveAsset("", dir, p);
+  const stored =
+    key === undefined || /^https?:\/\//i.test(key)
+      ? undefined
+      : await readFs<T>(key);
+  // "Fell back" means a substitute copy served a file the first remote did
+  // not. A file that is in no place at all (an optional file the case never
+  // publishes, such as series/swot.json) is absent or pending, not a
+  // fallback: it must not label the whole bundle "last saved data".
+  if (stored !== undefined) ctx.fellBack = true;
+  return stored;
+}
+
+// products map first (null -> absent), fixed filename fallback.
+const loadProduct = <T>(
+  ctx: ReadCtx,
+  dir: string,
+  products: Products | undefined,
+  key: string,
+  fixed: string
+): Promise<T | undefined> => {
+  const declared = products?.[key];
+  if (declared === null) return Promise.resolve(undefined);
+  return readData<T>(ctx, dir, declared ?? fixed);
+};
+
+const must = async <T>(
+  pending: Promise<T | undefined>,
+  what: string
+): Promise<T> => {
+  const v = await pending;
+  if (v === undefined) throw new Error(`data: ${what} not found`);
+  return v;
+};
+
+// Dirs on disk are the canonical underscore case keys (L4); the hyphen
+// event id only names events.json entries and payload `event` fields.
+// Legacy synced data may still live under the hyphen dir — try both.
+const dirsFor = (id: string): string[] => {
+  const canonical = canonicalCaseId(id);
+  return [...new Set([canonical, caseAlias(canonical)].filter(Boolean))] as string[];
+};
+
+const firstOf = async <T>(
+  ctx: ReadCtx,
+  dirs: string[],
+  rel: string
+): Promise<T | undefined> => {
+  for (const dir of dirs) {
+    const v = await readData<T>(ctx, dir, rel);
+    if (v !== undefined) return v;
+  }
+  return undefined;
+};
+
+// metrics ref: "metrics.json#<case>" indexes the root metrics file; a bare
+// path points at a flat per-case metrics.json (legacy shape).
+async function loadMetrics(
+  ctx: ReadCtx,
+  ref: string | undefined,
+  dirs: string[]
+): Promise<EventMetrics | undefined> {
+  if (ref) {
+    const [p, frag] = ref.split("#", 2);
+    const doc = await readData<Record<string, unknown>>(ctx, "", p);
+    if (doc !== undefined) {
+      if (!frag) return doc as unknown as EventMetrics;
+      const cases = isRecord(doc.cases) ? doc.cases : undefined;
+      const node = cases?.[frag];
+      if (isRecord(node)) return node as unknown as EventMetrics;
+      // fragment missing -> try legacy per-case reads below
+    }
+  }
+  return firstOf<EventMetrics>(ctx, dirs, "metrics.json");
+}
+
+export const getEventsIndex = async () => {
+  await requestTime();
+  return must(readData<EventsIndex>(newCtx(), "", "events.json"), "events.json");
+};
+
+// v4 contract: a single root manifest.json maps every case (incl. `now`) to
+// { event_id, mode, bounds, layers[], metrics, products, data_dates }.
+export const getRootManifest = async () => {
+  await requestTime();
+  return readData<RootManifest>(newCtx(), "", "manifest.json");
+};
+
+export const getManifest = async (id: string) => {
+  await requestTime();
+  return must(
+    firstOf<EventManifest>(newCtx(), dirsFor(id), "manifest.json"),
+    `${id}/manifest.json`
+  );
+};
+
+export const getMetrics = async (id: string) => {
+  await requestTime();
+  const ctx = newCtx();
+  const dirs = dirsFor(id);
+  const root = await readData<RootManifest>(ctx, "", "manifest.json");
+  const entry = root?.cases?.[dirs[0]] ?? root?.cases?.[id];
+  // L14: absent metrics return undefined (pending), they do not throw.
+  return loadMetrics(ctx, entry?.metrics ?? `metrics.json#${dirs[0]}`, dirs);
+};
+
+export const getSeries = async (id: string) => {
+  await requestTime();
+  return firstOf<SeriesDaily>(newCtx(), dirsFor(id), "series/imerg_smap_daily.json");
+};
+
+// L14: absent alerts.json -> undefined; the /alerts page renders pending.
+export const getAlerts = async () => {
+  await requestTime();
+  return readData<AlertsFile>(newCtx(), "", "alerts.json");
+};
+
+// lead-ml exports (global, not per case; main 1fe4aba): the TEST card, the
+// trigger-model feature importance and the T_ML layer descriptor. Read on
+// the server; the Command Center builds a small per-case view from them.
+// `base` is the remote that answered, for absolute asset URLs.
+export const getMlArtifacts = async (): Promise<{
+  card?: unknown;
+  importance?: unknown;
+  tml?: unknown;
+  base?: string;
+}> => {
+  await requestTime();
+  const ctx = newCtx();
+  // lead-ml v2 (version 'v2', more TEST events, T_ML without RS) lands at
+  // ml/ml_card_v2.json; until then the v1 card shows, labelled provisional.
+  const [card, importance, tml] = await Promise.all([
+    readData<unknown>(newCtx(), "", "ml/ml_card_v2.json")
+      .then((v2) => v2 ?? readData<unknown>(ctx, "", "ml/ml_card.json")),
+    readData<unknown>(ctx, "", "ml/feature_importance_3b.json"),
+    // T_ML v2 (retrained without RS, L32) next to the v2 card; else v1.
+    readData<unknown>(newCtx(), "", "ml/t_ml_v2.json")
+      .then((v2) => v2 ?? readData<unknown>(ctx, "", "ml/t_ml.json")),
+  ]);
+  return { card, importance, tml, base: ctx.lastBase ?? ctx.bases[0] };
+};
+
+// A small per-case JSON product (path relative to the data root, as the
+// manifest's products map gives it), e.g. wa_2025/nisar_timeseries.json.
+// `dir`: the case folder a case-relative path resolves under ("now" for
+// the live manifest's "response/…" products).
+export const getDataJson = async (p: string, dir = ""): Promise<unknown> => {
+  await requestTime();
+  return readData<unknown>(newCtx(), dir, p);
+};
+
+// One case = one entry in the root manifest's `cases` map (canonical
+// underscore keys; caseAlias maps the hyphen event ids used by events.json),
+// backed by a directory under public/data/<case-key>. Legacy per-case
+// manifest.json files still resolve when the root manifest doesn't list the
+// case — hyphen-named legacy dirs are tried after the canonical one.
+export async function getCaseBundle(
+  id: string,
+  title: string,
+  bbox?: [number, number, number, number],
+  reference_date?: string,
+  opts?: CaseBundleOpts
+): Promise<LoadedCaseBundle> {
+  await requestTime();
+  const ctx = newCtx();
+  const dirs = dirsFor(id);
+  const canonical = dirs[0];
+
+  const root = await readData<RootManifest>(ctx, "", "manifest.json");
+  // L14: the root manifest is the one file a bundle cannot be built
+  // without — everything else absent degrades to `pending`, never throws.
+  if (root === undefined) throw new Error("data: manifest.json not found");
+  // Browser asset base: the remote that served the root manifest (GitHub
+  // normally, Neon when GitHub missed); first base when disk answered.
+  const assetBase = ctx.lastBase ?? ctx.bases[0];
+  const manifestFromDisk = ctx.lastBase === undefined;
+  const entry = root?.cases?.[canonical] ?? root?.cases?.[id];
+  // missing pieces the merge falls back on.
+  const needPerCase =
+    !entry || !entry.layers || !entry.products || !entry.data_dates;
+  const perCase = needPerCase
+    ? await firstOf<EventManifest>(ctx, dirs, "manifest.json")
+    : undefined;
+
+  // The `now` node arrives verbatim (schema tipping-point/now@2) — normalize
+  // it; replay nodes keep the merged manifest view.
+  const now =
+    canonical === "now" ? toNowView(entry ?? perCase) : undefined;
+
+  const manifest: EventManifest | undefined = now
+    ? {
+        event: "now",
+        mode: "live",
+        bounds: now.bounds ?? perCase?.bounds,
+        updated_at: now.updated_at ?? root?.updated_at,
+        data_dates: now.data_dates as EventManifest["data_dates"],
+        layers: now.layers,
+        products: now.products,
+        forecast_source: now.forecast_source,
+        tpi_cuts: entry?.tpi_cuts ?? perCase?.tpi_cuts,
+      }
+    : entry
+      ? {
+          event: entry.event_id ?? perCase?.event ?? canonical,
+          event_id: entry.event_id,
+          mode: entry.mode ?? perCase?.mode,
+          bounds: entry.bounds ?? perCase?.bounds,
+          updated_at:
+            entry.updated_at ?? root?.updated_at ?? perCase?.updated_at,
+          data_dates: entry.data_dates ?? perCase?.data_dates,
+          layers: entry.layers ?? perCase?.layers ?? [],
+          products: entry.products ?? perCase?.products,
+          forecast_source:
+            entry.forecast_source ?? perCase?.forecast_source,
+          tpi_cuts: entry.tpi_cuts ?? perCase?.tpi_cuts,
+        }
+      : perCase;
+
+  // In remote mode layer png/cog paths resolve to the base that served the
+  // root manifest (the browser cannot fall back across bases); on disk they
+  // stay data-root-relative (/data/... via resolveDataUrl).
+  if (assetBase !== undefined && manifest?.layers) {
+    manifest.layers = manifest.layers.map((l) => ({
+      ...l,
+      png: resolveAsset(assetBase, canonical, l.png) ?? l.png,
+      cog: resolveAsset(assetBase, canonical, l.cog) ?? l.cog,
+    }));
+  }
+
+  // Load decisions use the raw products map so explicit nulls mean "absent"
+  // (toNowView exposes a strings-only map on the bundle manifest).
+  const rawProducts = (
+    now ? (entry ?? perCase)?.products : manifest?.products
+  ) as Products | undefined;
+  const geo = (key: string, fixed: string) =>
+    loadProduct<GeoJSON.FeatureCollection>(ctx, canonical, rawProducts, key, fixed);
+
+  // --- live GEE overlay (L8) ------------------------------------------------
+  // Injected gee (tests) skips the credential gate; otherwise the helpers load
+  // via dynamic import so this module has no static edge to ee-* (they import
+  // getRootManifest from here) and ee stays off the no-creds path entirely.
+  let gee = opts?.gee;
+  if (!gee && (process.env.GCP_SA_KEY || process.env.GEE_SERVICE_ACCOUNT_KEY)) {
+    const [eeMod, numbersMod, layersMod] = await Promise.all([
+      import("./ee"),
+      import("./ee-numbers"),
+      import("./ee-layers"),
+    ]);
+    if (eeMod.geeEnabled() && eeMod.credentialEnv()) {
+      gee = {
+        numbers: (q) => numbersMod.getNumbers(q),
+        layers: (c) => layersMod.getLayerMeta(c),
+      };
+    }
+  }
+  const credentialed = Boolean(gee);
+
+  // Numbers query date: replay cases use the reference date; the live `now`
+  // case wants the latest observed data date — the d0 layer date, else
+  // data_dates.observed, else the reference date. The live calls are kicked
+  // once referenceDate is derived below (it can come from the series file).
+  const d0Date = now?.layers.find(
+    (l) => /_d0$/.test(l.id) && typeof l.date === "string"
+  )?.date;
+  const observedDate =
+    now?.data_dates && typeof now.data_dates.observed === "string"
+      ? now.data_dates.observed
+      : undefined;
+
+  const [
+    metrics,
+    series,
+    swot,
+    zonesRaw,
+    places,
+    summary,
+    nowAlerts,
+    responseRaw,
+    forecastLeadTime,
+    responseSummaryRaw,
+    distRaw,
+  ] = await Promise.all([
+    loadMetrics(ctx, entry?.metrics ?? `metrics.json#${canonical}`, dirs),
+    loadProduct<SeriesDaily>(
+      ctx,
+      canonical,
+      rawProducts,
+      "imerg_smap_daily",
+      "series/imerg_smap_daily.json"
+    ),
+    // lead-analysis declares the WA series as products.swot_series.
+    loadProduct<unknown>(ctx, canonical,
+      typeof rawProducts?.swot_series === "string" && rawProducts?.swot === undefined
+        ? { ...rawProducts, swot: rawProducts.swot_series } : rawProducts,
+      "swot", "series/swot.json"),
+    geo("priority_zones", "geojson/priority_zones.geojson"),
+    geo("places", "geojson/places.geojson"),
+    now
+      ? loadProduct<NowSummary>(ctx, canonical, rawProducts, "summary", "summary.json")
+      : undefined,
+    now
+      ? loadProduct<NowAlertsFile>(ctx, canonical, rawProducts, "alerts", "alerts.json")
+      : undefined,
+    // Radar flood response (lead-live R2). Read server-side by its fixed
+    // name until the products map declares it; absent -> no radar numbers.
+    now
+      ? loadProduct<unknown>(ctx, canonical, rawProducts, "nisar_meta", NISAR_META)
+      : undefined,
+    // Replay lead time of the NOAA GFS forecast replay (lead-analysis).
+    now
+      ? undefined
+      : loadProduct<unknown>(ctx, canonical, rawProducts, "forecast_lead_time", "forecast_lead_time.json"),
+    now
+      ? loadProduct<unknown>(ctx, canonical, rawProducts, "response_summary", RESPONSE_SUMMARY)
+      : undefined,
+    now
+      ? loadProduct<unknown>(ctx, canonical, rawProducts, "dist_meta", DIST_META)
+      : undefined,
+  ]);
+  const dist = now ? toNowDist(distRaw) : undefined;
+
+  // The response polygons ride the flood_confirmed slot the map and the
+  // radar card already read, at the declared path (no request when absent).
+  // Its pass pair fills nisar_pre/nisar_post unless the manifest has them.
+  const response = now ? toNowResponse(responseRaw) : undefined;
+  let bundleProducts = manifest?.products;
+  let bundleDates = manifest?.data_dates;
+  // Now scar candidates ride the landslide_candidates slot the map and the
+  // card already read (declared landslide_dist, else the fixed file name).
+  if (dist && typeof bundleProducts?.landslide_candidates !== "string") {
+    const path = typeof rawProducts?.landslide_dist === "string" ? rawProducts.landslide_dist : DIST_GEOJSON;
+    bundleProducts = { ...bundleProducts, landslide_candidates: path };
+  }
+  if (response) {
+    const floodPath = responseGeojsonPath(rawProducts, response);
+    if (floodPath && typeof bundleProducts?.flood_confirmed !== "string") {
+      bundleProducts = { ...bundleProducts, flood_confirmed: floodPath };
+    }
+    if (response.pre_acquired && response.post_acquired &&
+        typeof bundleDates?.nisar_pre !== "string" && typeof bundleDates?.nisar_post !== "string") {
+      bundleDates = { ...bundleDates, nisar_pre: response.pre_acquired, nisar_post: response.post_acquired };
+    }
+  }
+
+  // A10: bbox and reference_date come from the contract, not caller literals.
+  // bbox = manifest `bounds` ?? caller arg ?? events.json entry `bbox`;
+  // `bounds` is a required contract field, so a case with no bounds anywhere
+  // is a contract violation and throws (same spirit as `must` on required
+  // files). reference_date chain: explicit arg ?? manifest.updated_at (first
+  // 10 chars) ?? data_dates.observed ?? latest non-forecast layer.date ??
+  // series.reference_date ?? events.json entry.
+  const latestObservedLayerDate = (manifest?.layers ?? [])
+    .filter(
+      (l) =>
+        typeof l.date === "string" &&
+        !(l.forecast === true ||
+          (l.forecast === undefined && FORECAST_DAY_RE.test(l.id)))
+    )
+    .map((l) => l.date as string)
+    .sort()
+    .pop();
+  const dataDateObserved =
+    typeof manifest?.data_dates?.observed === "string"
+      ? manifest.data_dates.observed.slice(0, 10)
+      : undefined;
+  let resolvedBbox = manifest?.bounds ?? bbox;
+  let referenceDate =
+    reference_date ??
+    manifest?.updated_at?.slice(0, 10) ??
+    dataDateObserved ??
+    latestObservedLayerDate ??
+    series?.reference_date;
+  if (resolvedBbox === undefined || referenceDate === undefined) {
+    const index = await readData<EventsIndex>(ctx, "", "events.json");
+    const eventId = manifest?.event_id ?? manifest?.event;
+    const event = index?.events.find(
+      (e) => e.id === eventId || e.id === id
+    );
+    resolvedBbox ??= event?.bbox;
+    referenceDate ??= event?.reference_date;
+  }
+  if (resolvedBbox === undefined)
+    throw new Error(`data: bounds for ${id} not found`);
+
+  // L14: absent contract outputs surface as pending markers. `metrics` and
+  // `series` are named entries; products declared in the map (non-null path)
+  // but missing from storage list their product id. Keys declared `null`
+  // mean "absent by contract" — not pending. L14: no fabricated timeline —
+  // an absent series file stays undefined for every case, `now` included.
+  const effectiveSeries = series;
+  // Priority zones ship inline but trimmed: top-20 by properties.rank,
+  // polygon geometry swapped for the label-centroid Point (the client
+  // lazy-loads the full polygons via products[] + assetBase). Every other
+  // heavy geojson (permanent_water, flood_confirmed, landslide_candidates,
+  // landslide_catalog, municipal_boundaries, critical_areas) is NOT loaded
+  // server-side — the client fetches its URL lazily, and it is not pending.
+  // Sole exception: for `now`, municipal_boundaries is read once to cut the
+  // ~20 city-label Points below (the polygons themselves stay out of the
+  // bundle), and it is still not pending when absent:
+  // pending stays for products-map null / a file that is truly missing.
+  const zones = trimZones(zonesRaw);
+  // The live Now case publishes no `places` product: the ~20 anchor city
+  // labels are cut from municipal_boundaries server-side so only small
+  // Points ride the bundle. A real places.geojson wins when published.
+  const effectivePlaces =
+    places ??
+    (now
+      ? nowCityPlaces(
+          await geo(
+            "municipal_boundaries",
+            "geojson/municipal_boundaries.geojson"
+          )
+        )
+      : undefined);
+  const pending = new Set<string>();
+  if (metrics === undefined) pending.add("metrics");
+  if (effectiveSeries === undefined) pending.add("series");
+  const declaredMissing: Record<string, unknown> = {
+    imerg_smap_daily: series,
+    swot,
+    priority_zones: zones,
+    places: effectivePlaces,
+    ...(now ? { summary, alerts: nowAlerts } : {}),
+  };
+  for (const [key, value] of Object.entries(declaredMissing)) {
+    if (typeof rawProducts?.[key] === "string" && value === undefined)
+      pending.add(key);
+  }
+
+  const numbersDate =
+    canonical === "now"
+      ? (d0Date ?? observedDate ?? referenceDate)
+      : referenceDate;
+
+  // Skip the overlay where it can never add content: an empty `now` node
+  // (no layers, no products, no data_dates) has no live assets to overlay.
+  const liveEligible =
+    canonical !== "now" ||
+    Boolean(
+      now?.layers.length ||
+        Object.keys(now?.products ?? {}).length ||
+        (now?.data_dates && Object.values(now.data_dates).some(Boolean))
+    );
+
+  // One slow/failed call must not hang the other — the helpers carry their
+  // own internal timeouts, and the whole overlay is capped at
+  // GEE_OVERLAY_TIMEOUT_MS (default 1.2 s) so a hung GEE roundtrip can never
+  // stall the page stream.
+  const livePending =
+    gee && liveEligible
+      ? Promise.allSettled([
+          numbersDate !== undefined
+            ? gee.numbers?.({ caseId: canonical, date: numbersDate })
+            : undefined,
+          gee.layers?.(canonical),
+        ])
+      : undefined;
+
+  const bundle: LoadedCaseBundle = {
+    id,
+    title,
+    mode: manifest?.mode ?? (now ? "live" : "replay"),
+    bbox: resolvedBbox,
+    reference_date: referenceDate,
+    updated_at: manifest?.updated_at,
+    data_dates: bundleDates,
+    manifest,
+    metrics,
+    // Nested landslide_hit -> flat event-day landslide_hit_pct (the day
+    // matching referenceDate, else the last per_day entry).
+    metricsView: flattenLandslideHit(toMetricsView(metrics), referenceDate),
+    summary,
+    nowAlerts,
+    response,
+    ...(now
+      ? { responseSources: toResponseSources(responseSummaryRaw), observedPlaces: placesBySource(zonesRaw), dist }
+      : {}),
+    forecastLeadTime,
+    nisarPasses: now?.nisar_passes,
+    swot,
+    products: bundleProducts,
+    series: effectiveSeries,
+    pending: [...pending].sort(),
+    tpiCuts: manifest?.tpi_cuts ?? TPI_CUTS,
+    zones,
+    places: effectivePlaces,
+    assetBase,
+    fallback: ctx.fellBack,
+  };
+
+  // Apply whatever the live GEE calls returned (L8). Numbers overlay the
+  // metricsView/summary fields; layer meta lands on liveLayers. An answered
+  // but EMPTY layers array means GEE is up yet nothing is published —
+  // degraded, not content.
+  const overlayTimeoutMs =
+    Number(process.env.GEE_OVERLAY_TIMEOUT_MS) || 1200;
+  const [numbersSettled, layersSettled] = livePending
+    ? await Promise.race([
+        livePending,
+        new Promise<[]>(
+          (resolve) => setTimeout(() => resolve([]), overlayTimeoutMs)
+        ),
+      ])
+    : [];
+  const numbers =
+    numbersSettled?.status === "fulfilled" && isRecord(numbersSettled.value)
+      ? numbersSettled.value
+      : undefined;
+  const layerResult =
+    layersSettled?.status === "fulfilled" && isRecord(layersSettled.value)
+      ? layersSettled.value
+      : undefined;
+  const liveLayers = Array.isArray(layerResult?.layers)
+    ? (layerResult.layers as LayerMeta[])
+    : undefined;
+  const layersEmpty = liveLayers !== undefined && liveLayers.length === 0;
+  if (liveLayers) bundle.liveLayers = liveLayers;
+
+  let numbersApplied = false;
+  if (numbers) {
+    const mv: MetricsView = { ...(bundle.metricsView ?? {}) };
+    const peopleExposed = num(numbers.people_exposed);
+    const floodedKm2 = num(numbers.flooded_km2);
+    const peopleFlooded = num(numbers.people_flooded);
+    const km2Critical = num(numbers.km2_critical);
+    if (peopleExposed !== undefined) mv.people_critical = peopleExposed;
+    if (floodedKm2 !== undefined) {
+      mv.flooded_km2 = floodedKm2;
+      // The live flood asset is NISAR GCOV per contract.
+      mv.flood_source = "nisar";
+    }
+    if (peopleFlooded !== undefined) mv.people_flooded = peopleFlooded;
+    bundle.metricsView = mv;
+    if (bundle.summary) {
+      if (km2Critical !== undefined)
+        bundle.summary = {
+          ...bundle.summary,
+          critical_km2: { ...bundle.summary.critical_km2, any: km2Critical },
+        };
+      if (peopleExposed !== undefined)
+        bundle.summary = {
+          ...bundle.summary,
+          people_exposed: peopleExposed,
+          people_critical: peopleExposed,
+        };
+    }
+    if (typeof numbers.data_date === "string")
+      bundle.dataDate = numbers.data_date;
+    numbersApplied = true;
+  }
+
+  const anyContent = numbersApplied || Boolean(liveLayers?.length);
+  const attempted = Boolean(gee?.numbers || gee?.layers);
+  if (credentialed) bundle.dataSource = anyContent ? "gee" : "static";
+  // Credentialed-but-degraded (all live calls failed, or the probe answered
+  // with zero published layers) counts as stale: the user sees last-good
+  // static although live was expected. No creds -> not stale, just offline.
+  bundle.fallback =
+    manifestFromDisk ||
+    (credentialed && (layersEmpty || (attempted && !anyContent)));
+
+  return bundle;
+}
