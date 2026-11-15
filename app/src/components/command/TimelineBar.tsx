@@ -89,8 +89,11 @@ export default function TimelineBar({
   return (
     <div className="relative" data-timeline>
       {/* Landing on a marked day names it (lead-analysis timeline marks). */}
-      {dayMarks.length > 0 && (
-        <p className="m-0 mb-1 flex gap-1 overflow-hidden text-xs font-semibold" data-mark-caption>
+      {/* A case with marks keeps this row on every day. It has no background,
+          so an empty row shows only the map, and the bar and the map chips
+          above it do not jump when a marked day is selected. */}
+      {marks.length > 0 && (
+        <p className="m-0 mb-1 flex h-5 gap-1 overflow-hidden text-xs font-semibold" data-mark-caption>
           {dayMarks.map((m) => (
             <span key={m.label} title={m.label} className={`truncate rounded px-1.5 py-0.5 text-white shadow ${MARK_BG(m.color)}`}>{m.label}</span>
           ))}
