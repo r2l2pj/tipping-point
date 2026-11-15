@@ -1,62 +1,101 @@
-# ml-combine — trigger-model combinations on TEST (unit/ml-combine)
+# L25 — live GFS fetcher from NOAA AWS (no GEE)
 
-## What I changed
+Branch: `unit/gfsaws`. No push/merge.
 
-New files only — no edits to lead-ml's code:
+## What changed
 
-- `ml/local/combine.py` — evaluates combinations of the trained 3b trigger
-  models + TPI rule on TEST, no retraining. Members vote/blend at their own
-  VAL-F1 thresholds on VAL-calibrated scores (from `bundle_3b.joblib
-  horizon_cal`), exactly as `trainer.evaluate_3b` scores them. Per horizon
-  (24h/48h/72h/7d/14d, TEST = RS 2024 + WA 2025, GFS 00Z):
-  - singles: `xgb_all`, `rf_all`, `rule_tpi`, served `xgb_rain_soil`
-    (reference rows; **asserted equal to `ml/models/metrics_ml.json`**
-    before combinations are computed — key list in `ASSERT_KEYS`, tol 1e-6)
-  - combos `xgb+rf`, `xgb+tpi`, `rf+tpi`, `xgb+rf+tpi` as **and** / **or**
-    (vote count ≥ k / ≥ 1), **majority** (≥ 2 of 3, trio only; score = vote
-    count, so PR-AUC/ROC still exist) and **blend**: weighted mean of
-    calibrated scores (`rule_tpi` = its 0..1 TPI value, identity calibrator);
-    weights on a 0.05 simplex grid + threshold chosen to maximise **VAL F1**
-    (ties → VAL PR-AUC → class margin). VAL is scored with `source="perfect"`
-    — the same perfect-forecast proxy the training-time horizon calibration
-    used (no GFS exists for VAL).
-- `ml/tests/test_local_combine.py` — offline synthetic tests: weight-grid
-  simplex, vote counts + NaN, and/or/majority confusion, blend prefers the
-  informative member, the metrics_ml.json assert passes/fails correctly.
-- `ml/models/combined_metrics.json` — full results (per horizon × combo ×
-  rule: n, n_pos, base_rate, P/R/F1/acc, confusion, PR-/ROC-AUC; blend rows
-  carry weights + val_f1/val_pr_auc).
-- `~/code/r2l2pj/.crew/research/ml-combined.md` — markdown tables (outside
-  this worktree, delivered to the conductor).
+- `live/fetch.py` — new `fetch_gfs_daily(bounds, issued=None) ->
+  (daily xarray(time,lat,lon) 3 steps D+1..D+3, issued_iso)`, mirroring
+  `fetch_geosfp_daily`'s contract; `fetch_geosfp_daily` kept untouched as
+  the named fallback. New module-private helpers:
+  - `_gfs_key` — `gfs.YYYYMMDD/HH/atmos/gfs.tHHz.pgrb2.<res>.fFFF`
+  - `_gfs_head_ok` / `_gfs_get_text` / `_gfs_get_range` — HTTP layer
+    (anonymous GET/HEAD/Range against
+    `https://noaa-gfs-bdp-pds.s3.amazonaws.com`)
+  - `_gfs_apcp_range` — parses the sibling `.idx`, returns the byte range
+    of the *trailing 6h* APCP message (`(fh-6)-(fh) hour acc fcst`),
+    rejecting the since-issuance message (`0-N day acc fcst`)
+  - `_gfs_decode_message` — writes the byte-ranged GRIB2 message to a temp
+    file, opens with cfgrib/eccodes (`tp`), returns (arr, lats asc,
+    lons asc in -180..180)
+  - `_gfs_apcp_grid` — 0p25 with 0p50 fallback (+interp) if an hour's idx
+    or APCP message is missing at 0.25 deg
+  - `_gfs_candidates` / `_gfs_pick_run` — prefer issued-day 00Z, else
+    newest cycle at/before issued end-of-day whose `f072.idx` HEADs 200
+    (probes back 4 days, 16 candidates)
+  - `_gfs_day_label` — a bucket ending at valid time `t` belongs to the
+    day `(label-1, label]`, so a 00Z run issued on D gives D+1 = fh 6..24,
+    matching `pipeline/fetch/gfs.py::day_sum` exactly (verified against
+    its unit tests, incl. non-00Z cycles)
+- `live/tests/test_fetch_gfs.py` — 10 offline tests: key layout, idx
+  range selection (recorded `.idx` fixtures), day-boundary labelling,
+  real-message decode (recorded APCP bytes), run-pick preferences/
+  fallback/raise, full fetch bucketing+subset, partial-day 06Z run.
+- `live/tests/fixtures/` — `gfs_f006.idx`, `gfs_f024.idx` (recorded idx
+  text), `gfs_f006_apcp.grib` (367 KB, one real byte-ranged APCP message
+  from `gfs.20240429/00`).
+- `pyproject.toml` / `uv.lock` — `cfgrib>=0.9.15.1` +
+  `eccodes==2.42.0` (pinned: last release shipping manylinux wheels with
+  the bundled C library; 2.50.1 is bindings-only and raised
+  "Cannot find the ecCodes library").
 
-## Commands run
+## Commands and results
 
-```bash
-uv run pytest ml/tests/test_local_combine.py -x -q     # 5 passed (uv binary:
-   ~/.local/share/mise/installs/uv/0.13.8/...          #  mise shim had no default set)
-uv run ruff check ml/local/combine.py ml/tests/test_local_combine.py  # clean
-ML_DATA_DIR=~/.cache/tipping-point-ml uv run python -m ml.local.combine \
-    --source gfs --md ~/code/r2l2pj/.crew/research/ml-combined.md
-# -> ml/models/combined_metrics.json; ~53 min (GFS reads + per-day RF/XGB predict)
-```
+- `uv add cfgrib` then `uv add "eccodes==2.42.0"` (uv at
+  `~/.local/share/mise/installs/uv/0.13.8/uv-x86_64-unknown-linux-gnu/uv`;
+  the mise shim is broken in this shell) — resolved, installed.
+- Reachability verified: `gfs.20240429/00/atmos/gfs.t00z.pgrb2.0p25.f006.idx`
+  and `f072.idx` both 200; Range GET of the APCP message returns a
+  self-contained `GRIB` blob that cfgrib decodes (721x1440 `tp`).
+- `.venv/bin/pytest live/tests/test_fetch_gfs.py -x -q` -> **10 passed**.
+- `.venv/bin/pytest live/tests -x -q` -> 91 passed, **1 pre-existing
+  failure** `test_publish_fallback.py::test_oversized_and_stale_files` —
+  caused by the uncommitted L26 edit to `live/publish_fallback.py`
+  already in the worktree (not mine); confirmed unrelated.
+- `.venv/bin/ruff check live/fetch.py live/tests/test_fetch_gfs.py` ->
+  clean.
 
-## Results
+## Real verification vs `rs_2024_gfs_20240429.tif`
 
-- The singles assert held on all 5 horizons — recomputed TEST metrics equal
-  `metrics_ml.json` (e.g. xgb_all 24h: P 0.984 / R 0.411 / F1 0.579,
-  PR-AUC 0.752 / ROC 0.934).
-- Blends are the only combos that matter: vote-AND trades recall for
-  precision past xgb_all alone; vote-OR recalls more at lower precision;
-  neither beats the best single's F1 at 24–72h. The VAL-fit **blend** does,
-  modestly: 24h `xgb+rf` blend F1 **0.659** vs xgb_all 0.579 (R 0.493 vs
-  0.411, P 0.993), PR-AUC 0.762 vs 0.752. 72h blend 0.576 vs 0.575 F1,
-  PR-AUC 0.668 vs 0.665 — flat. At 7d/14d blends edge the singles' PR-AUC
-  (0.865→xgb_all 0.860; 0.977→0.969) with similar F1.
-- Blend weights are sane: VAL drops `rule_tpi` to 0–0.2 weight everywhere;
-  xgb+rf sit ~0.4/0.6–0.5/0.5.
-- Headline conclusion stands: no combination beats the best single model by
-  enough to change the served choice; blends are a marginal F1/PR gain at
-  short horizons.
+`fetch_gfs_daily((-52.5,-30.5,-50.5,-29.0), 2024-04-29)` -> issued
+`2024-04-29T00:00:00Z`, steps `2024-04-30/05-01/05-02`, grid 9x7 at exact
+0.25 deg centres.
 
-Memory stayed under the 8 GB cap (single process, the same footprint as
-`evaluate_3b` — no OOM).
+**Result: bit-exact match (0.00 mm on all 63 cells, all 3 bands) — but
+only when the tif rows are read one grid row north of their stamped
+transform.** Direct same-label comparison fails (d1 max diff 7.19 mm,
+mean 2.26). Sampling our d1 field at `tif_lat + 0.25` gives max diff
+**0.0** for d1, d2, d3; the same +0.25-row rule reproduces
+`rs_2024_gfs_20240428.tif` d1 exactly too, so it is systematic, not a
+fluke.
+
+Comparison table (d1, tif row at stated lat L vs AWS field at L+0.25):
+
+| lon | lat (tif-stated) | aws mm | gee mm | diff |
+|-----|------------------|--------|--------|------|
+| -51.50 | -29.50 | 10.625 | 10.625 | 0.00000 |
+| -52.50 | -30.50 | 17.625 | 17.625 | 0.00000 |
+| -50.50 | -29.00 | 4.375  | 4.375  | 0.00000 |
+| -51.00 | -30.00 | 13.500 | 13.500 | 0.00000 |
+
+Diagnosis: our georeference is provably correct — eccodes reports
+`La1=90, La2=-90, Dj=0.25, jScansPositively=0` on the message itself, so
+our lat values are the true NCEP grid centres. The GEE tif payload rows
+instead hold data one row north of the transform written by
+`write_cog`'s `expected_transform` snap (the pipeline already documents
+GEE stamping WKT-crs downloads "one row too far north"; the recompute
+apparently leaves the payload one row south of its true position).
+Everything else — run choice, day bucketing, cell values, units — is
+identical to the GEE replay, so `fetch_gfs_daily` is verified correct
+and the residual is the tif's geotransform quirk, not a data
+difference. Also verified: PRATE*21600 gives the same field, and
+neighbouring cycles (28/18Z, 29/06Z, 29/12Z) do not match, ruling out a
+run-selection discrepancy.
+
+## Notes for lead-live
+
+- Non-00Z fallback runs can only partially cover D+1 (e.g. a D 18Z run
+  contributes just the (D 18:00, D+1 00:00] bucket) — same caveat the
+  GEE path has; `RuntimeError` if no probed cycle covers to D+3.
+- Each fetch pulls 12 Range requests (~370 KB each) + 12 idx files —
+  ~5 MB total per call, no full ~300 MB files.
