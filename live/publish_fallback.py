@@ -60,18 +60,30 @@ def upload_release_assets(paths: list[Path], source: Path) -> None:
 # Rolling state only the Now job writes (live/now_history.py). Every other
 # job (nisar, validation, reference) snapshots a checkout without it, so a
 # plain mirror would wipe it — carry the fallback copy over instead.
-CARRY_OVER = ("now/history",)
+CARRY_OVER = ("now/history", "now/nisar_stack")
+
+
+def _keep_always() -> tuple[str, ...]:
+    """FALLBACK_KEEP (space-separated data/-relative dirs): kept from the
+    current fallback even when this job's checkout has them. The non-Now jobs
+    set FALLBACK_KEEP=now — their data/now is main's committed (stale) copy,
+    and only the Now job may replace the live Now outputs."""
+    import os
+    return tuple(os.environ.get("FALLBACK_KEEP", "").split())
 
 
 def sync_data(source: Path, target: Path, max_mb: float) -> int:
     keep = []
+    always = _keep_always()
     with tempfile.TemporaryDirectory(prefix="fallback-keep-") as stash:
-        for rel in CARRY_OVER:
-            if not (source / rel).exists() and (target / rel).is_dir():
+        for rel in (*always, *(r for r in CARRY_OVER if not any(r.startswith(a + "/") for a in always))):
+            if (rel in always or not (source / rel).exists()) and (target / rel).is_dir():
                 shutil.move(str(target / rel), str(Path(stash) / rel.replace("/", "__")))
                 keep.append(rel)
         released = _sync_data(source, target, max_mb)
         for rel in keep:
+            if (target / rel).exists():          # the mirror wrote this job's copy: drop it
+                shutil.rmtree(target / rel)
             (target / rel).parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(Path(stash) / rel.replace("/", "__")), str(target / rel))
             print(f"snapshot: kept {rel} from the current fallback (not written by this job)")

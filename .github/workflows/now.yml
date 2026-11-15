@@ -229,6 +229,24 @@ jobs:
             uv run python -m live.nisar_next --now-dir data/now
           else echo "::notice::live/nisar_next.py not on this branch yet"; fi
 
+      # Now NISAR frame stack (2026-11-15): one gray HH/HV mosaic per recent
+      # GCOV pass (newest 3 per track), so the app can compare two passes of
+      # the same track in Now. Incremental: the stack is restored from the
+      # fallback branch and only new passes are read (<= 10 granules/run,
+      # ~20 s each per polarization). Best-effort.
+      - name: NISAR frame stack (recent passes, best-effort)
+        continue-on-error: true
+        timeout-minutes: 12
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+          PYTHONPATH: ".:pipeline"
+        run: |
+          if git fetch -q --depth=1 origin fallback; then
+            git archive FETCH_HEAD data/now/nisar_stack | tar -x \
+              || echo "::notice::no NISAR stack on fallback yet - starts here"
+          fi
+          uv run python -m live.nisar_stack --now-dir data/now
+
       # 'search for city': one compact record per IBGE municipality (TPI d0..d3,
       # P(trigger) max/p90, alert, people in High+), after P(trigger) + alerts.
       - name: Places summary (search for city, best-effort)

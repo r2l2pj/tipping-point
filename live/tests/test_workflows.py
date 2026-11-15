@@ -90,6 +90,8 @@ def test_fallback_publish_and_permissions(name, cron, job):
     else:
         # Only publish when the job actually wrote data/ artifacts (S1).
         assert publish[0].get("if") == "steps.data_changed.outputs.changed == 'true'"
+        # live Now outputs belong to the Now job (stale main copy never wins)
+        assert (publish[0].get("env") or {}).get("FALLBACK_KEEP") == "now"
         detect = [s for s in steps if s.get("id") == "data_changed"]
         assert len(detect) == 1
         assert "git status --porcelain -- data/" in detect[0]["run"]

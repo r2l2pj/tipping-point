@@ -20,6 +20,7 @@ from pathlib import Path
 # product key -> path relative to data/now/ (contract agreed with lead-app
 # t17n and lead-analysis t17p, 2026-11-15)
 OPTIONAL_PRODUCTS = {
+    "nisar_stack": "nisar_stack/layers.json",
     "priority_zones": "geojson/priority_zones.geojson",
     "municipal_boundaries": "geojson/municipal_boundaries.geojson",
     "permanent_water": "geojson/permanent_water.geojson",
@@ -163,6 +164,16 @@ def merge_nisar_layers(manifest: dict, out_dir: Path) -> None:
             layers += [l for l in nl if (out_dir / l["png"]).is_file()]
         except ValueError as exc:
             print(f"[now_manifest] bad nisar_layers.json: {exc}",
+                  file=sys.stderr)
+    # rolling per-pass frame stack (live/nisar_stack.py): pick two passes of
+    # the same track to compare in Now
+    stack = out_dir / "nisar_stack" / "layers.json"
+    if stack.is_file():
+        try:
+            sl = json.loads(stack.read_text()).get("layers", [])
+            layers += [l for l in sl if (out_dir / l["png"]).is_file()]
+        except ValueError as exc:
+            print(f"[now_manifest] bad nisar_stack/layers.json: {exc}",
                   file=sys.stderr)
     manifest["layers"] = layers
 

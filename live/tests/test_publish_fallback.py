@@ -253,3 +253,22 @@ def test_now_history_carried_over_when_job_has_none(tmp_path):
     publish.sync_data(source, target, 50)
     assert (target / "now" / "history" / "index.json").read_text() == '{"runs": [2]}'
     assert not (target / "now" / "history" / "20261115T191917Z").exists()
+
+
+def test_fallback_keep_now_for_non_now_jobs(tmp_path, monkeypatch):
+    """nisar/validation/reference set FALLBACK_KEEP=now: their checkout's
+    data/now (main's stale copy) never replaces the live Now outputs."""
+    source, target = tmp_path / "src", tmp_path / "dst"
+    (source / "now").mkdir(parents=True)
+    (source / "now" / "manifest.json").write_text('{"stale": true}')
+    (source / "wa_2025").mkdir()
+    (source / "wa_2025" / "x.json").write_text("new")
+    (target / "now" / "nisar_stack" / "png").mkdir(parents=True)
+    (target / "now" / "manifest.json").write_text('{"live": true}')
+    (target / "now" / "nisar_stack" / "png" / "a.png").write_bytes(b"png")
+    monkeypatch.setenv("FALLBACK_KEEP", "now")
+    publish.sync_data(source, target, 50)
+    assert (target / "now" / "manifest.json").read_text() == '{"live": true}'
+    assert (target / "now" / "nisar_stack" / "png" / "a.png").exists()
+    assert not (target / "now" / "now").exists()
+    assert (target / "wa_2025" / "x.json").read_text() == "new"

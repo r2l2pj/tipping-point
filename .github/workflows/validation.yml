@@ -71,4 +71,7 @@ jobs:
 
       - name: Publish data/ to fallback branch
         if: steps.data_changed.outputs.changed == 'true'
+        env:
+          # live Now outputs belong to the Now job: keep fallback's data/now
+          FALLBACK_KEEP: now
         run: uv run python live/publish_fallback.py
