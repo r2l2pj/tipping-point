@@ -316,22 +316,27 @@ describe("radar card", () => {
     expect(card.compare).toEqual({ kind: "radar", reason: "images not published yet" });
   });
 
-  test("RS scar candidates: count, area, people and the inventory check from metrics scar_*", () => {
+  test("RS scar candidates: count, area, people and the 100 m test vs the EU emergency mapping with its lift (L59)", () => {
     const card = radarCard(bundle({ id: "rs_2024", metricsView: mv({ scar_candidates_n: 2849, scar_candidates_km2: 20.02,
-      scar_people: 522.3, scar_hit_500m_pct: 46.13, scar_precision_500m_pct: 55.07, scar_inventory_n: 16027 }) }));
+      scar_people: 522.3, scar_hit_500m_pct: 46.13, scar_precision_500m_pct: 55.07, scar_inventory_n: 16027,
+      scar_hit_100m_pct: 17.45, scar_ems_hit_100m_pct: 27.36, scar_ems_lift_100m: 3.28 }) }));
     expect(card.candidates.value).toBe("2,849");
     expect(card.candidates.lines).toEqual([
       "Scar candidates: 20.0 km², 522 people (estimate)",
-      "46% of the 16,027 mapped landslides lie within 500 m of a candidate; 55% of candidates within 500 m of one.",
+      "27% of the landslides in the independent EU emergency mapping lie within 100 m of a scar candidate — 3.3× what random steep-slope points get.",
     ]);
+    expect(JSON.stringify(card.candidates)).not.toMatch(/500 m|46%/);
+    // Without the EU emergency test: our own inventory's 100 m share.
+    const own = radarCard(bundle({ id: "rs_2024", metricsView: mv({ scar_candidates_n: 2849, scar_hit_100m_pct: 17.45, scar_inventory_n: 16027 }) }));
+    expect(own.candidates.lines).toContain("17% of the 16,027 mapped landslides lie within 100 m of a scar candidate.");
     expect(JSON.stringify(card.candidates)).not.toMatch(/(?<!never )confirmed/);
   });
 
-  test("WA (15 mapped landslides): the 500 m share leaves the card for Details", () => {
-    const m = { scar_candidates_n: 176, scar_candidates_km2: 1.2, scar_people: 14, scar_hit_500m_pct: 0, scar_precision_500m_pct: 0, scar_inventory_n: 15 };
+  test("WA (15 mapped landslides): the 100 m share leaves the card for Details", () => {
+    const m = { scar_candidates_n: 176, scar_candidates_km2: 1.2, scar_people: 14, scar_hit_500m_pct: 0, scar_hit_100m_pct: 0, scar_precision_500m_pct: 0, scar_inventory_n: 15 };
     const card = radarCard(bundle({ metricsView: mv(m) }));
     expect(card.candidates.lines).toEqual(["Scar candidates: 1.2 km², 14 people (estimate)"]);
-    expect(evidence(bundle({ metricsView: mv(m) })).scarHit).toBe("Scar candidates vs the 15 mapped landslides: 0% within 500 m — too few points to judge.");
+    expect(evidence(bundle({ metricsView: mv(m) })).scarHit).toBe("Scar candidates vs the 15 mapped landslides: 0% within 100 m — too few points to judge.");
   });
 
   test("Now scar candidates: meta figures, publication lag and the harvest/fire caveat", () => {

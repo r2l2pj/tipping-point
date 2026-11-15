@@ -135,6 +135,9 @@ describe("live summary v3 (lead-analysis 022dbd6: strict critical, alert_km2)", 
     const t = peopleTile(liveBundle({ summary } as never));
     expect(t.value).toContain("9,000");
     expect(t.note).toBe("in High or Critical areas, today or tomorrow");
+    // L59 C5: one basis, the Critical share under it, colours by class.
+    expect(t.critical).toBe("1,200");
+    expect(t.color).toBe("#b4500f");
   });
 });
 

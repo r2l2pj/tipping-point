@@ -25,10 +25,24 @@ const scarFigures = (km2: (v: unknown) => string, area: unknown, ppl: string | u
   return parts.length ? `Scar candidates: ${parts.join(", ")}` : "";
 };
 
-// WA-size inventories (< 30 points): the 500 m share, for Details only.
+// WA-size inventories (< 30 points): the 100 m share (L59), Details only.
 export function scarHitDetail(m: Record<string, unknown>): string | undefined {
-  if (!finite(m.scar_inventory_n) || m.scar_inventory_n >= 30 || !finite(m.scar_hit_500m_pct)) return undefined;
-  return `Scar candidates vs the ${m.scar_inventory_n} mapped landslides: ${Math.round(m.scar_hit_500m_pct)}% within 500 m — too few points to judge.`;
+  if (!finite(m.scar_inventory_n) || m.scar_inventory_n >= 30 || !finite(m.scar_hit_100m_pct)) return undefined;
+  return `Scar candidates vs the ${m.scar_inventory_n} mapped landslides: ${Math.round(m.scar_hit_100m_pct)}% within 100 m — too few points to judge.`;
+}
+
+// L59 (C2): the scar line is the 100 m test against the independent EU
+// emergency landslide mapping, with its lift over random steep-slope points
+// (lead-analysis scar_ems_hit_100m_pct / scar_ems_lift_100m); without it,
+// our own inventory's 100 m share. The old 500 m sentence is gone.
+export function scarLine(m: Record<string, unknown>): string {
+  if (finite(m.scar_ems_hit_100m_pct) && finite(m.scar_ems_lift_100m)) {
+    return `${Math.round(m.scar_ems_hit_100m_pct)}% of the landslides in the independent EU emergency mapping lie within 100 m of a scar candidate — ${m.scar_ems_lift_100m.toFixed(1)}× what random steep-slope points get.`;
+  }
+  if (finite(m.scar_hit_100m_pct) && finite(m.scar_inventory_n) && m.scar_inventory_n >= 30) {
+    return `${Math.round(m.scar_hit_100m_pct)}% of the ${m.scar_inventory_n.toLocaleString("en-US")} mapped landslides lie within 100 m of a scar candidate.`;
+  }
+  return "";
 }
 
 // Figures and context lines of the candidates block: the Now meta
@@ -48,10 +62,6 @@ function candidatesBlock(bundle: CcBundle): { value: string; lines: string[] } {
   }
   const m = (bundle.metricsView ?? {}) as Record<string, unknown>;
   if (finite(m.scar_candidates_n)) {
-    const pct = (v: unknown) => (finite(v) ? `${Math.round(v)}%` : undefined);
-    const inv = finite(m.scar_inventory_n) ? m.scar_inventory_n.toLocaleString("en-US") : undefined;
-    const hit = pct(m.scar_hit_500m_pct);
-    const prec = pct(m.scar_precision_500m_pct);
     return {
       value: m.scar_candidates_n.toLocaleString("en-US"),
       lines: [
@@ -59,8 +69,7 @@ function candidatesBlock(bundle: CcBundle): { value: string; lines: string[] } {
         scarFigures(fmtKm2, m.scar_candidates_km2, people(m.scar_people)),
         // Under 30 mapped landslides (WA: 15) the share is too thin for the
         // main card: it moves to Details (scarHitDetail).
-        hit && inv && finite(m.scar_inventory_n) && m.scar_inventory_n >= 30
-          ? `${hit} of the ${inv} mapped landslides lie within 500 m of a candidate${prec ? `; ${prec} of candidates within 500 m of one` : ""}.` : "",
+        scarLine(m),
       ].filter(Boolean),
     };
   }
