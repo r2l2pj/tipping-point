@@ -1,20 +1,26 @@
 {
   "source": "opera-dswx-s1",
   "status": "candidate",
-  "generated_at": "2026-11-15T03:49:35Z",
+  "generated_at": "2026-11-15T04:16:10Z",
   "latest_acquired": "2026-11-14T09:06:12.000Z",
-  "latency_h": null,
-  "n_granules": 0,
+  "latency_h": 6.8,
+  "n_granules": 2295,
   "n_failed": 0,
-  "n_granules_total": 1098,
-  "flooded_km2": 1544.138,
-  "new_km2": 0.0,
-  "receded_km2": 0.0,
-  "people_flooded": 9029.1,
-  "unbaselined_water_km2": 1413.447,
+  "n_granules_total": 2166,
+  "flooded_km2": 278.515,
+  "new_km2": 278.515,
+  "receded_km2": null,
+  "people_flooded": 1951.5,
+  "lower_confidence_km2": 236.003,
+  "lower_confidence_new_km2": 236.003,
+  "lower_confidence_people": 938.2,
+  "excluded_water_wetland_km2": 222.322,
+  "outside_brazil_km2": 856.497,
+  "raw_candidate_km2": 1593.338,
+  "unbaselined_water_km2": 19.219,
   "observed_km2": 875708.172,
   "coverage_pct": 70.03,
-  "features": 948,
+  "features": 382,
   "grid": {
     "crs": "EPSG:4326",
     "res_deg": 0.0025,
@@ -31,7 +37,7 @@
   },
   "params": {
     "window_h": 144,
-    "min_obs": 2,
+    "min_obs": 3,
     "base_max": 0.2,
     "min_area_km2": 0.25,
     "simplify_m": 150.0,
@@ -40,17 +46,19 @@
       2,
       3
     ],
-    "bootstrap_days": 30
+    "bootstrap_days": 60
   },
   "bootstrap": {
     "ok": true,
-    "start": "2026-10-16T03:43:04Z",
-    "end": "2026-11-15T03:43:04Z",
-    "n_granules": 1167,
+    "start": "2026-09-16T04:04:33Z",
+    "end": "2026-11-15T04:04:33Z",
+    "n_granules": 2295,
     "n_failed": 0
   },
-  "people_source": "/home/lucascoelho/code/r2l2pj/tipping-point-data/data/static/south_brazil/static/gpw_pop.tif",
+  "people_source": "GPW v4.11 Population Count 2020, 30 arc-sec (CIESIN/SEDAC, doi:10.7927/H4JW8BX5)",
+  "landcover_source": "MCD12Q1.061 2025 LC_Type1 (IGBP)",
+  "brazil_outline_source": "IBGE malhas v3 paises/BR",
   "_null_reasons": {
-    "latency_h": "no granules ingested this run"
+    "receded_km2": "first pass: no previous candidate mask to compare"
   }
 }
