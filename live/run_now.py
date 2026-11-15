@@ -182,6 +182,51 @@ CLIM_SOURCE_OK = "imerg-final-0p1"
 SMAP_FILL_KM = 9.0
 
 
+GSW_OCCURRENCE = (Path(__file__).resolve().parents[1] / "data" / "now" / "static"
+                  / "jrc_gsw" / "gsw_occurrence_2021.tif")
+PERMANENT_WATER_OCC_PCT = 50       # external review 2026-11-15: no TPI over lakes/lagoons
+
+
+def now_water_mask(bounds, height: int, width: int,
+                   occ_path: Path = GSW_OCCURRENCE,
+                   occ_min: float = PERMANENT_WATER_OCC_PCT) -> tuple[np.ndarray | None, str]:
+    """Permanent water on the dst grid: JRC GSW occurrence (cell mean) >= occ_min %
+    OR MCD12Q1 IGBP 17. TPI is undefined there (nodata). (None, reason) when
+    neither input is available — then nothing is masked."""
+    import rasterio
+    from rasterio.warp import Resampling, reproject
+
+    tr = dst_transform(tuple(bounds))
+    water = np.zeros((height, width), bool)
+    used = []
+    try:
+        if Path(occ_path).exists():
+            occ = np.full((height, width), np.nan, np.float32)
+            with rasterio.open(occ_path) as ds:
+                src = ds.read(1).astype(np.float32)
+                if ds.nodata is not None:
+                    src[src == ds.nodata] = np.nan
+                reproject(src, occ, src_transform=ds.transform, src_crs=ds.crs,
+                          src_nodata=np.nan, dst_transform=tr, dst_crs="EPSG:4326",
+                          dst_nodata=np.nan, resampling=Resampling.average)
+            water |= np.nan_to_num(occ, nan=0.0) >= occ_min
+            used.append(f"JRC GSW occurrence >= {occ_min:g} %")
+        from live.now_geojson import IGBP_WATER, LC_TYPE1
+        if LC_TYPE1.exists():
+            lc = np.zeros((height, width), dtype="uint8")
+            with rasterio.open(LC_TYPE1) as ds:
+                reproject(rasterio.band(ds, 1), lc, dst_transform=tr,
+                          dst_crs="EPSG:4326", resampling=Resampling.mode)
+            water |= lc == IGBP_WATER
+            used.append("MCD12Q1 IGBP 17")
+    except Exception as exc:  # noqa: BLE001 - masking is additive, never fatal
+        print(f"[now] water mask failed: {exc!r}", file=sys.stderr)
+        return None, f"water mask failed: {exc!r}"
+    if not used:
+        return None, "no JRC GSW / MCD12Q1 raster available — TPI not water-masked"
+    return water, " OR ".join(used)
+
+
 def now_land_mask(bounds, height: int, width: int) -> np.ndarray | None:
     """Land on the dst grid: inside the IBGE Brazil outline and NOT MCD12Q1
     IGBP 17 (permanent water: ocean, lagoons). None if either input is
@@ -374,6 +419,7 @@ def run(args) -> dict:
     obs_through = max((d for d in series if d < today), default=None)
     t_slide, t_flood = static["t_slide"], static["t_flood"]
 
+    water, water_basis = now_water_mask(tuple(args.bounds), lats.size, lons.size)
     days, slides, floods, slide_tpi, flood_tpi = [], [], [], [], []
     r_zero_violations = 0   # pixels with R == 0 but TPI > 0 (must stay 0)
     for k in range(FORECAST_DAYS + 1):
@@ -385,6 +431,9 @@ def run(args) -> dict:
                 f"{[str(day - dt.timedelta(days=j)) for j in (2, 1, 0)]} "
                 f"(obs through {obs_through}, fc {_dates(fc_daily_da)})")
         out = tpi.tpi(rain3, sm, _clim_for_day(static, day), t_slide, t_flood)
+        if water is not None:            # permanent water: TPI undefined (nodata)
+            out["tpi_slide"] = np.where(water, np.nan, out["tpi_slide"])
+            out["tpi_flood"] = np.where(water, np.nan, out["tpi_flood"])
         r0 = out["r"] == 0
         r_zero_violations += int(np.count_nonzero(
             r0 & ((np.nan_to_num(out["tpi_slide"]) > 0)
@@ -484,6 +533,8 @@ def run(args) -> dict:
         "alert_km2_def": "today, class Alto or Crítico (TPI > 0.4) = 'High or above'; "
                          "any = slide OR flood; any_today_or_d1 adds D+1; Brazilian land only",
         "stats_domain": stats_domain,
+        "water_mask": water_basis,
+        "water_masked_km2": None if water is None else float((area_km2 * water).sum()),
         "stats_domain_km2": float((area_km2 * dom).sum()),
         "nodata_km2": {"slide": float((area_km2 * (~np.isfinite(slide_tpi[0]) & dom)).sum()),
                         "flood": float((area_km2 * (~np.isfinite(flood_tpi[0]) & dom)).sum())},
