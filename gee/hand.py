@@ -170,6 +170,7 @@ def run(case_id: str, metrics_path: Path | None = None, merge: bool = True) -> d
         "hand_validation_iou": best.get("iou"),
         "hand_validation_r": best.get("r"),
         "hand_validation_radius_m": radius,
+        "hand_best_radius_m": radius,  # legacy alias kept for the app contract
         "hand_validation_radii": {str(r): stats[r]["iou"] for r in RADII_M},
         "hand_validation_by_radius": {str(r): stats[r] for r in RADII_M},
         "hand_validation_definition": DEFINITION,

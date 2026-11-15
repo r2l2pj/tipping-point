@@ -2141,7 +2141,8 @@
           "low_proxy_pct": 7.622166251224516,
           "low_merit_pct": 31.738832650237352
         }
-      }
+      },
+      "hand_best_radius_m": 1000
     }
   }
 }
