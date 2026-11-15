@@ -1,0 +1,37 @@
+# Eastern San Francisco Bay region, California — Jan–Feb 2017 storm-season landslides.
+# Inventory: Corbett & Collins 2023, USGS data release doi:10.5066/P98MVEGI
+# (map SIM 3503, doi:10.3133/sim3503): 8,928 landslides manually mapped on
+# 0.25 m Google Earth imagery of 11 Mar 2017 over ~1,050 km² bounded by the
+# Carquinez Strait, SF Bay, and the I-680 corridor; attributed to strong winter
+# storms in January and February 2017. No per-slide date -> dating=fixed.
+# First documented damage (onset): 9 Jan 2017 — mudslide closed Highway 1 at
+# Pacifica ~3 a.m., SR-84 (Niles Canyon) closed, Hwy 101 flooded
+# (https://www.nbcbayarea.com/news/local/weekend-storms-shut-down-highways-in-bay-area/45821/).
+# Worst documented storm day: 7 Feb 2017 — massive slide closed Hwy 17,
+# Napa County's largest mudslide, >=9 highway closures
+# (https://www.cbsnews.com/sanfrancisco/news/slide-shuts-down-hwy-17-storm-causes-numerous-other-closures/).
+# Source layer: Slide_Source_Area_2017.shp — 4,025 source-area polygons, the
+# subset of the 8,928 affected-area polygons (Slide_Source_Runout_Area_2017)
+# whose source zone was separable (FGDC metadata); loader takes the
+# representative point of each polygon. A per-slide headscarp-top point layer
+# (Landslide_Location_Points_2017, 8,928 pts) also exists if full coverage is
+# preferred.
+# Canonical file URL (www.sciencebase.gov is behind a Cloudflare challenge on
+# this host — file fetched via the archived download-all bundle
+# https://web.archive.org/web/20250202144826/https://www.sciencebase.gov/catalog/file/get/607e0f8ad34e8564d67e3b5a):
+# https://www.sciencebase.gov/catalog/item/607e0f8ad34e8564d67e3b5a
+events:
+  - event_id: bayarea_2017
+    name: "Eastern San Francisco Bay region CA, Jan-Feb 2017 storm landslides (USGS SIM 3503 source areas)"
+    country: US
+    date: 2017-02-07            # worst documented storm day (Hwy 17 slide; ~9 highway closures)
+    trigger_window: [2017-01-07, 2017-02-21]   # documented storm pulses: Jan 7-9, Feb 6-8, Feb 19-21
+    inventory_window: [2017-01-01, 2017-02-28]  # whole Jan-Feb 2017 season kept out of same-point negative dates
+    dating: fixed               # no per-slide date in the inventory
+    format: vector              # extracted shapefile (NAD83/UTM 10N -> reprojected to 4326)
+    source: "~/.cache/tipping-point-ml/events/bayarea_2017/Slide_Source_Area_2017/Slide_Source_Area_2017.shp"
+    max_points: 3000
+    citation: "Corbett, S.C., and Collins, B.D., 2023, Mapped polygons of landslides triggered by the 2016-2017 storm season, eastern San Francisco Bay region, California: U.S. Geological Survey data release doi:10.5066/P98MVEGI; map SIM 3503 doi:10.3133/sim3503"
+    license: "USGS public domain (USGS-authored data)"
+    notes: "proposed_split: train. GLC leak check (inventory.csv, +-/3 d of trigger_window, 100 km): 67 GLC points = this event (e.g. glc_10183 2017-01-09 @0.5 km, glc_10198 2017-02-07 @9.1 km) -> must be dropped from 3b TRAIN/VAL by the leak filter. 4,025 source-area polygons -> 2,767 points after 90 m dedupe; release totals 8,928 slides (affected-area layer Slide_Source_Runout_Area_2017, or headscarp-top points Landslide_Location_Points_2017) if full coverage is preferred."
+    enabled: false

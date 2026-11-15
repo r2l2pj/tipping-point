@@ -91,8 +91,22 @@ def sites(seed: int = S.SEED) -> pd.DataFrame:
                               n_event_sites=len(g))[["lon", "lat", "event_id", "split", "kind",
                                                      "w0", "w1", "onset", "n_event_sites"]
                                                     + [c for c in S.SOIL_TEXTURE + ["slope"] if c in g]])
-    parts += extra_sites(rng)
-    s = pd.concat(parts, ignore_index=True)
+    extra = extra_sites(rng)
+    s = pd.concat(parts + extra, ignore_index=True)
+    # GLC reports of the same slides as an extra inventory (100 km, window +- 3 d) -> drop
+    from . import labels as L
+    drop = np.zeros(len(s), bool)
+    for e in extra:
+        g = (s.kind == "glc").to_numpy()
+        near = np.zeros(len(s), bool)
+        near[g] = L.min_dist_km(s.lon[g].to_numpy(), s.lat[g].to_numpy(),
+                                e.lon.to_numpy(), e.lat.to_numpy()) <= 100
+        when = ((s.onset >= e.w0.iloc[0] - pd.Timedelta(days=3))
+                & (s.onset <= e.w1.iloc[0] + pd.Timedelta(days=3))).to_numpy()
+        drop |= near & when
+    if drop.any():
+        log.info("v3: dropped %d GLC sites duplicating extra inventories", int(drop.sum()))
+    s = s[~drop].reset_index(drop=True)
     log.info("v3 sites: %s", s.groupby(["split", "kind"]).size().to_dict())
     return s
 
