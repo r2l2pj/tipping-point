@@ -153,8 +153,8 @@ Export.image.toAsset({
   description: 'rs_2024_t_flood',
   assetId: CASE_ASSETS + '/t_flood', region: aoi, scale: 1000});
 
-// E TAMBÉM com os nomes antigos — o gee/08_simular_table.js (Telegram
-// /simular) e o gee/09_impact.js leem ESTES assets planos, não os COGs.
+// E TAMBÉM com os nomes antigos — o gee/09_impact.js lê ESTES assets planos,
+// não os COGs.
 Export.image.toAsset({
   image: series.select('TPI_slide').toBands().rename(bandNames).toFloat().clip(aoi)
     .set('data_date', lastDay).set('updated_at', updated_at),

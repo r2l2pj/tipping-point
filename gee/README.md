@@ -73,7 +73,7 @@ Related non-module entry points: `tools/ingest_assets.py --case <id>`
 ## JS scripts — run order (Code Editor)
 
 1. `01` TPI index (RS) — exports the Drive COG **and** the
-   `tpi_slide_series` asset that `08`/Telegram `/simular` read. Both required.
+   `tpi_slide_series` asset that `09` reads. Both required.
 2. `09` impact — needs `01`'s asset (and `07`'s for WA); for
    people_flooded/flooded_km2 also upload `flood_nisar` and set
    `HAS_NISAR_FLOOD=true`.
@@ -81,8 +81,7 @@ Related non-module entry points: `tools/ingest_assets.py --case <id>`
 4. `06` ML feature table — needs `05` + `rs2024_initiation` (`ml/labels.py`).
 5. `02` lead time — needs `01`'s series + `rs2024_initiation`.
 6. `07` TPI index (WA).
-7. `08` simular table → CSV feeds `tools/build_simular.py`.
-8. `03` RF susceptibility, `04` HAND validation — independent drafts.
+7. `03` RF susceptibility, `04` HAND validation — independent drafts.
 
 AOIs/dates must stay in sync with `../events/*.json` — JS can't read files;
 keep the pasted values in sync by hand.

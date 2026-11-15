@@ -15,10 +15,12 @@ def test_no_gcs_bucket_constant():
 
 def test_env_example_lists_current_vars():
     text = (cfg.REPO_ROOT / ".env.example").read_text()
-    for var in ("EARTHDATA_TOKEN", "DATABASE_URL", "GEE_PROJECT",
+    for var in ("EARTHDATA_TOKEN", "GEE_PROJECT",
                 "GOOGLE_APPLICATION_CREDENTIALS", "GCP_SA_KEY"):
         assert var in text, var
     assert "EDL_USER" not in text and "EDL_PASS" not in text
+    # L55: no messaging channel, no subscriber DB
+    assert "TELEGRAM" not in text and "DATABASE_URL" not in text
     assigned = [line.split("=", 1)[1] for line in text.splitlines()
                 if "=" in line and not line.startswith("#")]
     assert all(v == "" for v in assigned)
