@@ -202,7 +202,7 @@
         "definition": "share of the NISAR-mapped new-flood-candidate AREA (GCOV, post 2025-12-16) with TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in the frames available 24-48 h before the anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, frames depicting dates <= the anchor day); each damage location takes the ~90 m TPI cell that contains it",
         "confirmed_flood_km2": 27.921,
         "mapped_flood_km2": 27.921,
-        "confirmed_flood_km2_label": "27.9 km² of NISAR-mapped flood-candidate pixels on the ~12 m flood raster (the denominator); the canonical flooded_km2 27.99 km² is the polygon set within the swath",
+        "confirmed_flood_km2_label": "27.9 km² of NISAR-mapped flood-candidate pixels on the ~12 m flood raster (the denominator); the canonical flooded area (km²) 27.99 km² is the polygon set within the swath",
         "canonical_flooded_km2": 27.99,
         "anchor_basis": "onset",
         "anchor_short": "heavy rain began",
@@ -791,7 +791,7 @@
           ]
         }
       },
-      "flood_warned_denominator_label": "27.9 km² of NISAR-mapped flood-candidate pixels on the ~12 m flood raster (the denominator); the canonical flooded_km2 27.99 km² is the polygon set within the swath",
+      "flood_warned_denominator_label": "27.9 km² of NISAR-mapped flood-candidate pixels on the ~12 m flood raster (the denominator); the canonical flooded area (km²) 27.99 km² is the polygon set within the swath",
       "flood_warned_smap_latency": {
         "definition": "onset-anchored warned% of the issued-GFS frames re-scored with soil wetness S from the band dated I-k (I = issue day) instead of I-1: TPI_k = TPI * (S_{I-k}/S_{I-1})^(1/3), R and T unchanged. Live SMAP L4 is 2-5 days old at issue time, so k = 3..5 is the as-available range; k = 1 is the published replay (no latency).",
         "rows": [
