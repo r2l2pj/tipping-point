@@ -3,7 +3,7 @@
 import { PASSES_SHOWN, type RadarCard as RadarModel } from "./model/radar";
 import { fmtBrt, fmtDate } from "./model/format";
 import { CHANGE_OPACITY_MIN, NISAR_CHANGE_LABEL } from "./model/nisarChange";
-import NisarSeriesChart from "./NisarSeriesChart";
+import NisarSeriesChart, { NisarFrames } from "./NisarSeriesChart";
 import { Icon, ICON } from "./ui";
 import { isMissingText } from "./model/sparse";
 import { layerKey } from "./model/uniqueLayers";
@@ -224,30 +224,48 @@ export default function RadarCard({
           <Icon d={ICON.warn} size={14} className="mt-px shrink-0" /> <span>{l}</span>
         </p>
       ))}
-      <details className="mt-1.5 text-xs" data-radar-notes>
-        <summary className="cursor-pointer font-semibold">About these numbers</summary>
-        <ul className="m-0 mt-1 list-disc pl-4 text-cc-muted">
-          {notes.map((l) => <li key={l}>{l}</li>)}
-        </ul>
-      </details>
-
+      {/* lead-ux diet: the honesty text as badges + ONE ⓘ line (the full
+          notes and "what the radar sees" fold behind it). */}
       {radar.pair && (
-        <div className="mt-1.5 rounded-md bg-cc-well px-2 py-1 text-xs" data-radar-sees>
-          <p className="m-0 font-semibold">What the radar sees</p>
-          {RADAR_SEES.map((l) => <p key={l} className="m-0 text-cc-muted">{l}</p>)}
-          {radar.hypothesisLine && <p className="m-0 mt-0.5 font-semibold" data-radar-test>{radar.hypothesisLine}</p>}
+        <div className="mt-1.5 flex flex-wrap items-center gap-1 text-[11px] font-semibold" data-radar-badges>
+          <span className="rounded-full border border-cc-line-strong px-2 py-0.5">Candidates, never confirmed</span>
+          {radar.provisional && <span className="rounded-full border border-cc-line-strong px-2 py-0.5">Provisional NISAR product</span>}
         </div>
       )}
+      <details className="mt-1 text-xs" data-radar-notes>
+        <summary className="cursor-pointer text-cc-muted">ⓘ Dark radar = smooth surface, likely water; flooded towns and forests can look bright, so this map may miss them.</summary>
+        {radar.pair && (
+          <div className="mt-1 rounded-md bg-cc-well px-2 py-1" data-radar-sees>
+            <p className="m-0 font-semibold">What the radar sees</p>
+            {RADAR_SEES.map((l) => <p key={l} className="m-0 text-cc-muted">{l}</p>)}
+            {radar.hypothesisLine && <p className="m-0 mt-0.5 font-semibold" data-radar-test>{radar.hypothesisLine}</p>}
+          </div>
+        )}
+        {notes.length > 0 && (
+          <ul className="m-0 mt-1 list-disc pl-4 text-cc-muted">
+            {notes.map((l) => <li key={l}>{l}</li>)}
+          </ul>
+        )}
+      </details>
       {radar.nextLook && (
         <div className="mt-1.5 text-xs" data-next-look>
           <p className="m-0 font-semibold">{radar.nextLook}</p>
           {radar.framing && <p className="m-0 text-cc-muted">{radar.framing}</p>}
         </div>
       )}
-      {radar.series && <NisarSeriesChart s={radar.series} />}
+      {radar.series && radar.series.frames.length > 0 && (
+        <details className="mt-1.5 text-xs" data-nisar-frames-wrap>
+          <summary className="cursor-pointer font-semibold">Passes ({radar.series.frames.length})</summary>
+          <NisarFrames s={radar.series} />
+        </details>
+      )}
+      {(radar.series || radar.extras.length > 0) && (
+        <details className="mt-1.5 text-xs" data-more-nisar>
+          <summary className="cursor-pointer font-semibold">More NISAR</summary>
+          {radar.series && <NisarSeriesChart s={radar.series} />}
       {radar.extras.length > 0 && (
         <div className="mt-2 border-t border-cc-rule pt-1.5 text-xs" data-nisar-extras>
-          <p className="m-0 font-semibold">More NISAR products</p>
+          <p className="m-0 font-semibold">NISAR products</p>
           {radar.extras.map((x, i) => (
             <figure key={layerKey(x, i)} className="m-0 mt-1.5">
               <figcaption className="font-medium">{x.label}{x.date ? ` · ${x.date}` : ""}</figcaption>
@@ -265,6 +283,8 @@ export default function RadarCard({
             </figure>
           ))}
         </div>
+      )}
+        </details>
       )}
       {radar.pair && (
         <details className="mt-1.5 text-xs" data-nisar-why>

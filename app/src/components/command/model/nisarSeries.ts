@@ -19,7 +19,7 @@ export interface NisarSeriesRaw {
   roles?: Record<string, string>;
   units?: string;
   areas: Record<string, { label?: string; hh_db?: (number | null)[]; hv_db?: (number | null)[]; km2?: number }>;
-  frames?: { date: string; layer_id?: string; png?: string }[];
+  frames?: { date: string; layer_id?: string; png?: string; pol?: string }[];
   reading?: Record<string, string>;
   readingLine?: string;
   geometryNote?: string;
@@ -56,6 +56,7 @@ export function slimNisarSeries(raw: unknown): NisarSeriesRaw | undefined {
           date: String(f.date ?? ""),
           layer_id: typeof f.layer_id === "string" ? f.layer_id : undefined,
           png: typeof f.png === "string" ? f.png : undefined,
+          pol: typeof f.polarization === "string" ? f.polarization.toUpperCase() : undefined,
         }))
       : undefined,
     reading: isRecord(raw.reading) ? (raw.reading as Record<string, string>) : undefined,
@@ -97,7 +98,15 @@ export function nisarSeriesView(bundle: CcBundle): NisarSeriesView | undefined {
   if (!all.length) return undefined;
   const caseDir = canonicalCaseId(bundle.manifest?.event ?? bundle.id);
   const layers = bundle.manifest?.layers ?? [];
-  const frames = (s.frames ?? []).flatMap((f) => {
+  // lead-ux (bug): the series lists HH AND HV frames for the same dates —
+  // the card showed 8 thumbnails twice, unlabelled. One per date: HH, else
+  // the date's only frame.
+  const perDate = new Map<string, NonNullable<typeof s.frames>[number]>();
+  for (const f of s.frames ?? []) {
+    const cur = perDate.get(f.date);
+    if (!cur || (cur.pol === "HV" && f.pol !== "HV")) perDate.set(f.date, f);
+  }
+  const frames = [...perDate.values()].flatMap((f) => {
     const layer = f.layer_id ? layers.find((l) => l.id === f.layer_id) : undefined;
     const url = assetUrl(caseDir, layer?.png ?? f.png);
     return url ? [{ label: fmtDate(f.date), role: s.roles?.[f.date] && plainText(s.roles[f.date]), url }] : [];

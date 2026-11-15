@@ -50,19 +50,25 @@ export default function NisarSeriesChart({ s }: { s: NisarSeriesView }) {
         <p className="m-0 mt-0.5 text-cc-faint">Hollow points: passes from another orbit (different viewing angle) — compare their level with care.</p>
       )}
       {s.geometryNote && <p className="m-0 mt-0.5 text-cc-faint">{s.geometryNote}</p>}
-      {s.frames.length > 0 && (
-        <div className="mt-1.5 grid gap-1" data-nisar-frames style={{ gridTemplateColumns: `repeat(${Math.min(s.frames.length, 4)}, minmax(0, 1fr))` }}>
-          {s.frames.map((f) => (
-            <figure key={f.url} className="m-0">
-              {/* eslint-disable-next-line @next/next/no-img-element -- remote data PNG, no image optimizer */}
-              <img src={f.url} alt={`NISAR radar ${f.label}${f.role ? ` (${f.role})` : ""}`} loading="lazy"
-                className="aspect-square w-full rounded border border-cc-line bg-black object-cover" />
-              <figcaption className="text-[11px] leading-tight text-cc-muted">{f.label}{f.role ? ` · ${f.role}` : ""}</figcaption>
-            </figure>
-          ))}
-        </div>
-      )}
       {s.status && <p className="m-0 mt-1 text-cc-faint">{s.status}</p>}
+    </div>
+  );
+}
+
+// lead-ux: the pass thumbnails, one per date (HH), shown by the card inside
+// a collapsed 'Passes (N)'.
+export function NisarFrames({ s }: { s: NisarSeriesView }) {
+  if (!s.frames.length) return null;
+  return (
+    <div className="mt-1.5 grid gap-1" data-nisar-frames style={{ gridTemplateColumns: `repeat(${Math.min(s.frames.length, 4)}, minmax(0, 1fr))` }}>
+      {s.frames.map((f) => (
+        <figure key={f.url} className="m-0">
+          {/* eslint-disable-next-line @next/next/no-img-element -- remote data PNG, no image optimizer */}
+          <img src={f.url} alt={`NISAR radar HH ${f.label}${f.role ? ` (${f.role})` : ""}`} loading="lazy"
+            className="aspect-square w-full rounded border border-cc-line bg-black object-cover" />
+          <figcaption className="text-[11px] leading-tight text-cc-muted">{f.label}{f.role ? ` · ${f.role}` : ""}</figcaption>
+        </figure>
+      ))}
     </div>
   );
 }
