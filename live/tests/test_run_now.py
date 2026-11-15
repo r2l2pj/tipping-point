@@ -258,3 +258,34 @@ def test_frame_basis_labels_forecast_honestly():
     assert b3["basis"] == "forecast" and b3["obs_through"] is None
     bo = frame_basis(D - dt.timedelta(days=1), D, "2026-11-15T00:00:00Z")
     assert bo["basis"] == "observed" and bo["gfs_issued"] is None
+
+
+def test_certainty_capped_by_basis():
+    from live.run_now import certainty_for
+    assert certainty_for("observed") == "high"
+    assert certainty_for("observed+forecast") == "medium"
+    assert certainty_for("forecast") == "low"
+
+
+def test_fill_smap_gaps_within_one_cell_only():
+    from live.run_now import fill_smap_gaps
+    # SMAP sources every 0.09 deg (~9-10 km) along one row; the middle one is a gap
+    src_lons = np.array([-52.0, -51.91, -51.82, -51.73, -51.64])
+    src_lats = np.full(5, -30.0)
+    src_vals = np.array([0.5, 0.6, np.nan, 0.8, 0.9])
+    dst_lons = np.arange(-52.0, -51.6, 0.01)
+    dst_lats = np.array([-30.0])
+    sm = np.full((1, dst_lons.size), 0.7)
+    sm[0, 15:25] = np.nan                       # pixels nearest the gap source
+    sm[0, 39] = np.nan                          # far east, nearest valid ~4 km
+    land = np.ones(sm.shape, dtype=bool)
+    land[0, 24] = False                         # a water pixel is never filled
+    out, filled = fill_smap_gaps(sm, src_lats, src_lons, src_vals, dst_lats, dst_lons,
+                                 allow=land)
+    assert filled[0, 15:24].all() and np.isfinite(out[0, 15:24]).all()
+    assert not filled[0, 24] and np.isnan(out[0, 24])
+    assert not fill_smap_gaps(sm, src_lats, src_lons, src_vals, dst_lats, dst_lons)[1].any()
+    assert set(np.round(out[0, 15:24], 2)) <= {0.6, 0.8}   # neighbours' values
+    far, filled2 = fill_smap_gaps(sm, src_lats, src_lons, src_vals, dst_lats, dst_lons,
+                                  max_km=1.0, allow=land)
+    assert not filled2[0, 18:22].any() and np.isnan(far[0, 18:22]).all()

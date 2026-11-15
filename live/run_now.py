@@ -179,6 +179,75 @@ def imerg_cogs_match_source(daily, paths: list[Path], tol_mm: float = 0.01) -> b
 CLIM_SOURCE_OK = "imerg-final-0p1"
 
 
+SMAP_FILL_KM = 9.0
+
+
+def now_land_mask(bounds, height: int, width: int) -> np.ndarray | None:
+    """Land on the dst grid: inside the IBGE Brazil outline and NOT MCD12Q1
+    IGBP 17 (permanent water: ocean, lagoons). None if either input is
+    missing — then nothing is gap-filled."""
+    try:
+        import json as _json
+
+        import rasterio
+        import rasterio.features
+        from rasterio.warp import Resampling, reproject
+        from shapely.geometry import shape
+
+        from live.now_geojson import BRAZIL_OUTLINE, IGBP_WATER, LC_TYPE1
+        if not (BRAZIL_OUTLINE.exists() and LC_TYPE1.exists()):
+            return None
+        tr = dst_transform(tuple(bounds))
+        geoms = [shape(f["geometry"]) for f in
+                 _json.loads(BRAZIL_OUTLINE.read_text())["features"]]
+        inside = rasterio.features.rasterize(
+            geoms, out_shape=(height, width), transform=tr, fill=0,
+            default_value=1, dtype="uint8").astype(bool)
+        lc = np.zeros((height, width), dtype="uint8")
+        with rasterio.open(LC_TYPE1) as ds:
+            reproject(rasterio.band(ds, 1), lc, dst_transform=tr,
+                      dst_crs="EPSG:4326", resampling=Resampling.mode)
+        return inside & (lc != IGBP_WATER)
+    except Exception as exc:  # no mask -> no fill (never fill the sea)
+        print(f"[now] land mask failed: {exc!r}", file=sys.stderr)
+        return None
+
+
+def fill_smap_gaps(sm, src_lats, src_lons, src_vals, dst_lats, dst_lons,
+                   max_km: float = SMAP_FILL_KM, allow: np.ndarray | None = None):
+    """Fill NaN dst pixels from the nearest valid SMAP source within max_km
+    (equirectangular km at the local latitude), only where `allow` (land)
+    is True; allow=None fills nothing. Returns (sm, filled_mask)."""
+    from scipy.spatial import cKDTree
+
+    sm = np.array(sm, dtype=np.float64, copy=True)
+    filled = np.zeros(sm.shape, dtype=bool)
+    if allow is None:
+        return sm, filled
+    gap = ~np.isfinite(sm) & allow
+    v = np.ravel(src_vals)
+    ok = np.isfinite(v)
+    if not gap.any() or not ok.any():
+        return sm, filled
+    la, lo = np.ravel(src_lats)[ok], np.ravel(src_lons)[ok]
+    lat0 = np.deg2rad(np.mean(dst_lats))
+    def xy(lat, lon):
+        return np.column_stack([lat * 111.195, lon * 111.195 * np.cos(lat0)])
+    tree = cKDTree(xy(la, lo))
+    gi, gj = np.nonzero(gap)
+    dist, idx = tree.query(xy(np.asarray(dst_lats)[gi], np.asarray(dst_lons)[gj]))
+    near = dist <= max_km
+    sm[gi[near], gj[near]] = v[ok][idx[near]]
+    filled[gi[near], gj[near]] = True
+    return sm, filled
+
+
+def certainty_for(basis: str) -> str:
+    """Alert certainty is capped by its rain basis (conductor 2026-11-15):
+    'high' only when the trigger is in observed data."""
+    return {"observed": "high", "observed+forecast": "medium"}.get(basis, "low")
+
+
 def frame_basis(day: dt.date, today: dt.date, gfs_issued: str | None) -> dict:
     """Honesty rule 2: what a 3-day frame ending on `day` is made of under
     L28b (observed IMERG strictly before `today`, NOAA GFS from `today`)."""
@@ -280,6 +349,13 @@ def run(args) -> dict:
         sm_lats, sm_lons, np.isfinite(sm_vals).astype(float), lats, lons,
         method="nearest")
     sm[sm_cover < 0.5] = np.nan
+    # L31: a dst pixel whose nearest SMAP source is a gap is filled from the
+    # nearest VALID SMAP cell if that cell is within one SMAP cell (~9 km);
+    # beyond that it stays nodata. Coastal/lagoon cells were the flood
+    # hotspots lost to the gap mask (lead-analysis, 2026-11-15).
+    land = now_land_mask(tuple(args.bounds), lats.size, lons.size)
+    sm, sm_filled = fill_smap_gaps(sm, sm_lats, sm_lons, sm_vals, lats, lons,
+                                   allow=land)
     fc_stack = np.stack(
         [regrid_da(fc_daily_da.isel(time=i), lats, lons)
          for i in range(fc_daily_da.sizes["time"])])
@@ -387,6 +463,10 @@ def run(args) -> dict:
                             "any = slide OR flood; any_today_or_d1 adds D+1",
         "nodata_km2": {"slide": float((area_km2 * ~valid_s0).sum()),
                         "flood": float((area_km2 * ~valid_f0).sum())},
+        "filled_km2": float((area_km2 * sm_filled).sum()),
+        "soil_fill_note": ("L31: S at pixels whose nearest SMAP L4 cell is a "
+                           "gap is taken from the nearest valid SMAP cell "
+                           "within 9 km (one SMAP cell); farther stays nodata"),
         "people_exposed": people_critical,
         "people_critical": people_critical,   # v4 metrics key (same value)
         "forecast_source": "noaa-gfs",        # v4 metrics key (D+1..D+3)
@@ -434,6 +514,7 @@ def run(args) -> dict:
         day = today if c.get("when") == "today" else today + dt.timedelta(days=1)
         fb = frame_basis(day, today, gfs_issued)
         c.update(fb)
+        c["certainty"] = certainty_for(fb["basis"])
         if fb["forecast_days"]:
             c["basis_note"] = (f"based on forecast rain (NOAA GFS, issued "
                                f"{fb['basis_label'].split('issued ')[-1].rstrip(')')})")
