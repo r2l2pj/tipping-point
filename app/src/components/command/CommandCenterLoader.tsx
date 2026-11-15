@@ -13,6 +13,7 @@ import CommandCenter from "./CommandCenter";
 import { alertsPaused, buildAlertList, capAlertList, observedRows, pausedAlertList, runVerified } from "./model/alerts";
 import { nisarPasses, PASSES_SHOWN } from "./model/radar";
 import type { CcBundle } from "./model/types";
+import { uniqueLayerIds } from "./model/uniqueLayers";
 
 const body = Inter({ variable: "--cc-font-body", subsets: ["latin"] });
 const display = Space_Grotesk({ variable: "--cc-font-display", subsets: ["latin"], weight: ["600", "700"] });
@@ -170,7 +171,7 @@ function toClientBundle(bundle: CcBundle, isLive: boolean): CcBundle {
     // Experimental layers (lead-analysis tpi_flood_upstream, kind
     // 'experimental') stay off the screen: not part of the live method, and
     // their ids would compete with the TPI frames of the same date.
-    ? { ...bundle.manifest, layers: bundle.manifest.layers
+    ? { ...bundle.manifest, layers: uniqueLayerIds(bundle.manifest.layers)
         .filter((l) => (l as unknown as { kind?: unknown }).kind !== "experimental" && !l.id.includes("_upstream"))
         .map(slimLayer) }
     : undefined;
