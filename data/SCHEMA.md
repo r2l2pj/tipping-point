@@ -428,6 +428,33 @@ sending and rate limiting.
 `prev_classes.npz` is internal state for upgrade detection between runs —
 not app-read.
 
+### `data/now/response/` — flood response (L27, R1: OPERA DSWx-S1)
+
+Written by `pipeline/scripts/13_response_dswx.py` (`tp/response_dswx.py`),
+order: `flood_dswx.geojson`, `dswx_state.npz`, `dswx_meta.json` LAST.
+Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
+
+- `response/flood_dswx.geojson` — EPSG:4326 FeatureCollection, ≤ 5 MB.
+  Polygons of flood **candidates** (new water vs the per-pixel DSWx-S1
+  baseline). Feature props: `source` `"opera-dswx-s1"`, `acquired` (UTC ISO,
+  newest obs in the polygon), `granules` (DSWx-S1 GranuleURs), `area_km2`,
+  `people` (GPW 2020 sum, or `null` when GPW is unavailable), `status`
+  `"candidate"` (never "confirmed"), `change` `"new"|"persisting"` (vs the
+  previous run's candidate mask).
+- `response/dswx_state.npz` — internal rolling state, not app-read. Grid
+  EPSG:4326 at 0.0025° over `domains.now.bbox` (4600×4000): `water_n`/`obs_n`
+  uint16 baseline counts (halved at 60 obs), `cur` uint8 latest obs (0 dry,
+  1 water, 255 none), `cur_t` uint16 hours since 2024-01-01Z, `cur_g` uint16
+  granule index into `gids`, `prev_flood` uint8, `meta` JSON string.
+- `response/dswx_meta.json` — `source`, `status`, `generated_at`,
+  `latest_acquired`, `latency_h` (median CMR insert − acquisition of this
+  run's granules), `n_granules` (this run), `n_failed`, `n_granules_total`,
+  `flooded_km2`, `new_km2`, `receded_km2`, `people_flooded`,
+  `unbaselined_water_km2` (water with < `min_obs` baseline obs — never a
+  candidate), `observed_km2`, `coverage_pct`, `features`, `grid`, `params`,
+  `bootstrap`, `people_source`, `_null_reasons` (every null key explained;
+  a failed baseline bootstrap nulls the km2/people keys and says so).
+
 ## GEE assets
 
 The rasters also live under the GEE asset namespace

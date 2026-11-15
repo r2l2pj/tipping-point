@@ -1,0 +1,56 @@
+{
+  "source": "opera-dswx-s1",
+  "status": "candidate",
+  "generated_at": "2026-11-15T03:49:35Z",
+  "latest_acquired": "2026-11-14T09:06:12.000Z",
+  "latency_h": null,
+  "n_granules": 0,
+  "n_failed": 0,
+  "n_granules_total": 1098,
+  "flooded_km2": 1544.138,
+  "new_km2": 0.0,
+  "receded_km2": 0.0,
+  "people_flooded": 9029.1,
+  "unbaselined_water_km2": 1413.447,
+  "observed_km2": 875708.172,
+  "coverage_pct": 70.03,
+  "features": 948,
+  "grid": {
+    "crs": "EPSG:4326",
+    "res_deg": 0.0025,
+    "shape": [
+      4600,
+      4000
+    ],
+    "bbox": [
+      -58.0,
+      -34.0,
+      -48.0,
+      -22.5
+    ]
+  },
+  "params": {
+    "window_h": 144,
+    "min_obs": 2,
+    "base_max": 0.2,
+    "min_area_km2": 0.25,
+    "simplify_m": 150.0,
+    "water_classes": [
+      1,
+      2,
+      3
+    ],
+    "bootstrap_days": 30
+  },
+  "bootstrap": {
+    "ok": true,
+    "start": "2026-10-16T03:43:04Z",
+    "end": "2026-11-15T03:43:04Z",
+    "n_granules": 1167,
+    "n_failed": 0
+  },
+  "people_source": "/home/lucascoelho/code/r2l2pj/tipping-point-data/data/static/south_brazil/static/gpw_pop.tif",
+  "_null_reasons": {
+    "latency_h": "no granules ingested this run"
+  }
+}
