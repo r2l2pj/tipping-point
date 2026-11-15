@@ -320,7 +320,9 @@ function CompareMaps({
     for (const [m, side] of [[maps.current.b, pair.before], [maps.current.a, pair.after]] as const) {
       const src = m?.getSource("swipe-image") as ImageSource | undefined;
       if (src && src.type === "image" && side.url && !side.tiles) {
-        try { src.updateImage({ url: side.url, coordinates: boundsToImageCoordinates(side.bounds ?? pair.bounds) }); } catch { /* keep the old image */ }
+        const coords = frameCoordinates(side);
+        if (!coords) { console.warn("compare: frame without bounds, not drawn", side.label); continue; }
+        try { src.updateImage({ url: side.url, coordinates: coords }); } catch { /* keep the old image */ }
       }
     }
   }, [pair, pair.before.url, pair.after.url]);
@@ -398,14 +400,16 @@ function CompareMaps({
           maxzoom: side.tiles.maxzoom,
           attribution: side.tiles.attribution,
         });
-      } else if (side.url) {
+      } else if (side.url && frameCoordinates(side)) {
         map.addSource("swipe-image", {
           type: "image",
           url: side.url,
-          coordinates: boundsToImageCoordinates(side.bounds ?? pair.bounds),
+          coordinates: frameCoordinates(side)!,
         });
+      } else if (side.url) {
+        console.warn("compare: frame without bounds, not drawn", side.label);
       }
-      if (side.tiles || side.url) map.addLayer({ id: "swipe-image", type: "raster", source: "swipe-image" });
+      if (map.getSource("swipe-image")) map.addLayer({ id: "swipe-image", type: "raster", source: "swipe-image" });
       // NASA OPERA surface water (DSWx) polygons as a side of their own.
       if (side.geojson) {
         map.addSource("swipe-geo", { type: "geojson", data: side.geojson });
@@ -470,8 +474,8 @@ function CompareMaps({
       <div className={tag} style={{ left: "calc(var(--cc-il, 0px) + 14px)", top: 58 }} data-swipe-tag="L">{pair.before.label}</div>
       <div className={tag} style={{ right: "calc(var(--cc-ir, 0px) + 68px)", top: 58 }} data-swipe-tag="R">{pair.after.label}</div>
       {pair.flood && (
-        <div data-swipe-legend className="pointer-events-none absolute bottom-12 z-10 flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-semibold text-cc-ink shadow"
-          style={{ left: "calc(var(--cc-il, 0px) + 56px)" }}>
+        <div data-swipe-legend className="pointer-events-none absolute z-10 flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-semibold text-cc-ink shadow"
+          style={{ left: "calc(var(--cc-il, 0px) + 56px)", bottom: "calc(var(--cc-ib, 0px) + 12px)" }}>
           <span className="inline-block h-3 w-4 rounded-sm border border-white" style={{ background: FLOODED_FILL, outline: "1px solid #5b6870" }} />
           {pair.flood.label}
         </div>
@@ -548,8 +552,10 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void 
       ctx.drawImage(im, 0, 0);
       return ctx.getImageData(0, 0, c.width, c.height);
     };
-    const bb = pair.before.bounds ?? pair.bounds, ab = pair.after.bounds ?? pair.bounds;
+    // Each frame on ITS OWN bounds (never pair.bounds: that is the camera).
+    const bb = pair.before.bounds, ab = pair.after.bounds;
     Promise.all([load(pair.before.url), load(pair.after.url)]).then(([b, a]) => {
+      if (!bb || !ab) { if (alive) setImg({ error: "A NISAR frame has no published bounds" }); return; }
       const before = pixels(b), after = pixels(a);
       const out = changeComposite(
         { data: before.data, width: before.width, height: before.height, bounds: bb as ChangeBBox, stretch: pair.before.stretch },
@@ -563,7 +569,7 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void 
       if (alive) setImg({ url: c.toDataURL("image/png"), bounds: ab as ChangeBBox, stats: `${after.width}x${after.height} opaque ${opaque}` });
     }).catch(() => { if (alive) setImg({ error: "Could not read the two radar images for the change view" }); });
     return () => { alive = false; };
-  }, [pair.before.url, pair.after.url, pair.before.bounds, pair.after.bounds, pair.bounds]);
+  }, [pair.before.url, pair.after.url, pair.before.bounds, pair.after.bounds]);
 
   useEffect(() => {
     if (!el.current || !img || "error" in img) return;
@@ -578,7 +584,8 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void 
         map.addLayer({ id: "change-flood-halo", type: "line", source: "change-flood", paint: { "line-color": FLOODED_HALO, "line-width": 3.5, "line-opacity": 0.55 } });
         map.addLayer({ id: "change-flood-line", type: "line", source: "change-flood", paint: { "line-color": FLOODED_OUTLINE, "line-width": 1.5 } });
       }
-      // pair.bounds: both frames, or the river window (Uruguaiana) set by MapStage.
+      // CAMERA only: pair.bounds (both frames, or the Uruguaiana river window
+      // set by MapStage). The image above sits on its own img.bounds.
       const fb = pair.bounds ?? img.bounds;
       map.fitBounds([[fb[0], fb[1]], [fb[2], fb[3]]], { padding: 60, duration: 0 });
     });
@@ -629,4 +636,12 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void 
       </button>}
     </div>
   );
+}
+
+// Image coordinates of a compare side: its OWN frame bounds, or nothing (a
+// frame without bounds is not drawn — never stretched into the pair's
+// camera box, e.g. the river window).
+export function frameCoordinates(side: { bounds?: readonly number[] }): ReturnType<typeof boundsToImageCoordinates> | undefined {
+  const b = side.bounds;
+  return b && b.length === 4 && b.every((v) => Number.isFinite(v)) ? boundsToImageCoordinates(b as [number, number, number, number]) : undefined;
 }

@@ -79,7 +79,6 @@ def _legacy(index: list[dict], day: str, pol: str, track: str) -> list[dict]:
 def run(case: str, start: dt.date, end: dt.date, res: float, deg: float,
         from_date: dt.date | None = None, to_date: dt.date | None = None,
         tracks: set | None = None) -> dict:
-    import shutil
 
     import yaml
     from shapely.geometry import box
@@ -122,17 +121,16 @@ def run(case: str, start: dt.date, end: dt.date, res: float, deg: float,
             if not old:
                 new.append(e)
                 continue
-            src = REPO / "data" / e["png"]
-            for o in old:          # new pixels IN PLACE, same id + png path
-                dst = REPO / "data" / o["png"]
-                if dst.resolve() != src.resolve():
-                    shutil.copyfile(src, dst)
-                o.update({k: e[k] for k in ("bounds", "legend", "track", "mode", "frames", "note",
+            # NEVER re-render in place (cached URLs): legacy ids keep their id and
+            # point at the new content-hashed file; the old file is removed if unused
+            for o in old:
+                stale = o["png"]
+                o.update({k: e[k] for k in ("png", "bounds", "legend", "track", "mode", "frames", "note",
                                             "grid", "stretch_db", "granules", "sensor", "source")})
                 o.setdefault("polarization", e["polarization"])
                 inplace.append(o["id"])
-            if all((REPO / "data" / o["png"]).resolve() != src.resolve() for o in old):
-                src.unlink()
+                if stale != o["png"] and not any(x.get("png") == stale for x in ix["layers"]):
+                    (REPO / "data" / stale).unlink(missing_ok=True)
         ix["layers"] = merge_index(ix["layers"], new)
         tmp = ipath.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(ix, indent=2, ensure_ascii=False) + "\n")

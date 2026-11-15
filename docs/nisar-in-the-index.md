@@ -70,7 +70,7 @@ Next to these: **`outside_floodplain_pct`**, the share of NISAR-water cells with
 
 **Status at writing.** No Now pass had been scored yet. The previous Now pair (024D_101, Oct 25 → Nov 6) was rejected because its water threshold fell back to the clamp. The first live mask comes from the Now run after main `de3a094` / `a487850`.
 
-## 3. The river's dance: NISAR water follows the river (Uruguaiana; Jhonatan, landed by lead-ml)
+## 3. The river's dance: NISAR water follows the river (Uruguaiana; Jhonata Vicente de Oliveira, landed by lead-ml)
 
 | | |
 |---|---|

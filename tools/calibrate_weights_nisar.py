@@ -1,4 +1,4 @@
-"""Calibrate the TPI_flood weights (wR, wS, wT) against NISAR flood maps. Author: Jhonatan (team).
+"""Calibrate the TPI_flood weights (wR, wS, wT) against NISAR flood maps. Author: Jhonata Vicente de Oliveira (team).
 
 Why: the TPI is R^wR · S^wS · T^wT with uniform weights (config.yaml tpi_weights) that were
 never fitted. NISAR new-water maps are an independent, cloud-free observation of where the

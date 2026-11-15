@@ -621,11 +621,14 @@ export function useMapLayers(
     rasterToggle("hand", SRC.hand, LYR.hand);
     rasterToggle("smap", SRC.smap, LYR.smap);
     const rf = options?.radarFrame;
-    if (rf) {
+    // A frame is drawn on ITS OWN bounds only (never the case box).
+    if (rf && rf.bounds) {
       // Below water, the NISAR candidate polygons and the change overlay —
       // those must stay readable on top of the radar image.
-      ensureImageLayer(map, SRC.nisar, LYR.nisar, rf.url, boundsToImageCoordinates(rf.bounds ?? bundle.bbox), strength ?? 0.9, LYR.waterFill);
+      ensureImageLayer(map, SRC.nisar, LYR.nisar, rf.url, boundsToImageCoordinates(rf.bounds), strength ?? 0.9, LYR.waterFill);
       vis(LYR.nisar, true);
+    } else if (rf) {
+      vis(LYR.nisar, false); // no published bounds: not drawn
     } else {
       rasterToggle("nisar", SRC.nisar, LYR.nisar);
     }
@@ -686,8 +689,8 @@ export function useMapLayers(
     // the flooded-area red at ~55 % — above the index and water, below the
     // NISAR flood polygons (red fill + white outline).
     const nw = options?.nisarWater;
-    if (nw) {
-      ensureImageLayer(map, SRC.nisarWater, LYR.nisarWater, nw.url, boundsToImageCoordinates(nw.bounds ?? bundle.bbox), 0.55, LYR.floodFill);
+    if (nw && nw.bounds) {
+      ensureImageLayer(map, SRC.nisarWater, LYR.nisarWater, nw.url, boundsToImageCoordinates(nw.bounds), 0.55, LYR.floodFill);
       vis(LYR.nisarWater, true);
     } else {
       vis(LYR.nisarWater, false);

@@ -46,6 +46,7 @@ def test_update_renders_rolls_and_respects_budget(tmp_path: Path):
     assert lay["id"] == "nisar_hh_20261106_024D" and lay["kind"] == "nisar_frame"
     assert lay["track"] == "024D" and lay["mode"] == "4005_DHDH_A" and lay["sensor"] == "NISAR"
     assert isinstance(lay["legend"], dict) and lay["legend"]["unit"] == "dB"
+    assert 0 < lay["coverage_pct"] <= 100
     assert (now / lay["png"]).is_file()
     w, s, e, n = lay["bounds"]
     assert w < e and s < n

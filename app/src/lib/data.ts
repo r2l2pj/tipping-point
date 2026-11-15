@@ -616,6 +616,15 @@ export async function getCaseBundle(
   // Browser asset base: the remote that served the root manifest (GitHub
   // normally); first base when the SQLite copy or disk answered.
   const assetBase = ctx.lastBase ?? ctx.bases[0];
+  // Lucas (NISAR frames 'stretched to fit'): lead-analysis re-renders PNGs IN
+  // PLACE (same names, new extent). A browser/CDN-cached PNG, or the client
+  // recolour cache, could pair the OLD pixels with the NEW manifest bounds.
+  // Every layer asset carries the manifest version, so a PNG is always the
+  // one published with the bounds it is drawn with.
+  // lead-analysis: root manifest 'version' changes on every build/publish.
+  const rootRec = root as unknown as Record<string, unknown> | undefined;
+  const assetVersion = typeof rootRec?.version === "string" ? rootRec.version
+    : typeof root?.updated_at === "string" ? root.updated_at : undefined;
   const manifestFromDisk = ctx.lastBase === undefined;
   const entry = root?.cases?.[canonical] ?? root?.cases?.[id];
   // missing pieces the merge falls back on.
@@ -665,9 +674,11 @@ export async function getCaseBundle(
   if (assetBase !== undefined && manifest?.layers) {
     manifest.layers = manifest.layers.map((l) => ({
       ...l,
-      png: resolveAsset(assetBase, canonical, l.png) ?? l.png,
-      cog: resolveAsset(assetBase, canonical, l.cog) ?? l.cog,
+      png: versioned(resolveAsset(assetBase, canonical, l.png) ?? l.png, assetVersion),
+      cog: versioned(resolveAsset(assetBase, canonical, l.cog) ?? l.cog, assetVersion),
     }));
+  } else if (manifest?.layers && assetVersion) {
+    manifest.layers = manifest.layers.map((l) => ({ ...l, png: versioned(l.png, assetVersion), cog: versioned(l.cog, assetVersion) }));
   }
 
   // Load decisions use the raw products map so explicit nulls mean "absent"
@@ -1017,4 +1028,10 @@ function withNisarAgreement(view: MetricsView | undefined, raw: unknown): Metric
   if (!isRecord(raw) || Array.isArray(raw)) return view;
   if (view && isRecord((view as Record<string, unknown>).nisar_agreement)) return view;
   return { ...(view ?? {}), nisar_agreement: raw } as MetricsView;
+}
+
+// '<url>?v=<manifest updated_at>' (keeps an existing query).
+function versioned(url: string | undefined, v: string | undefined): string | undefined {
+  if (!url || !v || /^data:|^blob:/.test(url)) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}v=${encodeURIComponent(v)}`;
 }

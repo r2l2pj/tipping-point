@@ -1,6 +1,6 @@
 """NISAR HH time series over the Uruguay River at Uruguaiana ("the river's dance").
 
-Author: Jhonatan (team) — original dance.py; adapted into the repo by lead-ml (paths, colours,
+Author: Jhonata Vicente de Oliveira (team) — original dance.py; adapted into the repo by lead-ml (paths, colours,
 honesty labels, outputs). Method unchanged:
   * reads the published HH dB COGs (60 m, UTM 21S), crops a fixed 30 x 30 km window,
   * maps open water per pass: HH below the per-scene Otsu threshold, clamped to [-20, -13] dB
@@ -33,7 +33,7 @@ SLIDE = ("2026-09-30", "2026-10-05", "2026-10-12", "2026-10-17", "2026-10-24", "
 PX_KM2 = 0.0036  # 60 m pixel
 INK, PAPER, MUTED = "#0F1E2A", "#F5F2EC", "#9aa4b2"
 RED, AMBER, EDGE = "#ff1f1f", "#f59e0b", "#33475a"
-CREDIT = "NASA NISAR (provisional GCOV) · HH · gauge: ANA 77150000 Uruguaiana · analysis: Jhonatan / Tipping Point"
+CREDIT = "NASA NISAR (provisional GCOV) · HH · gauge: ANA 77150000 Uruguaiana · analysis: Jhonata Vicente de Oliveira / Tipping Point"
 
 
 def compute() -> dict:
@@ -111,7 +111,7 @@ def compute() -> dict:
         "caption": ("The river's dance: 9 NISAR HH passes (Sep 18 - Nov 5 2026, mixed tracks 010D and 082D), "
                     f"30 x 30 km around Uruguaiana. New water (red) tracks the gauge: Pearson r = {r_p:.2f} "
                     f"(n = {len(rows)}). {note}. NISAR water = candidates (provisional GCOV)."),
-        "credit": CREDIT, "author": "Jhonatan (method), adapted by lead-ml", "passes": rows}}
+        "credit": CREDIT, "author": "Jhonata Vicente de Oliveira (method), adapted by lead-ml", "passes": rows}}
 
 
 def floodplain(shape, tr, crs) -> np.ndarray:
