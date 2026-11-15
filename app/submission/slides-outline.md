@@ -23,7 +23,7 @@
 - How: Tipping Point Index of NASA rain, soil (SMAP) and terrain (NASADEM), with NOAA GFS for the next days; builds on NASA's LHASA (doi:10.3389/feart.2021.640043; LHASA-F doi:10.3389/feart.2022.878996); an experimental XGBoost model sits beside it
 
 ## Slide 4 — The demo
-- **Uruguaiana, Oct–Nov 2026:** NISAR pass pair Oct 24 → Nov 5, 2026 (HH + HV) over the Uruguay River — flood candidates [TBD] km², about [TBD] people inside; Itaqui is outside the swath
+- **Uruguaiana, Oct 2026:** replay from Sep 28 (▶ Play): the region turns Critical on Sep 30; NISAR every 12 days on track 010D (provisional products) — before/after swipe Sep 30 → Oct 12 with the NISAR flood candidates (a teammate's polygons, 1.85 km², about 28 people inside); Itaqui is outside that swath
 - Ops dashboard `/` (**Command Center**): top-bar **Now / Replay** switch + **Past event** selector, timeline D-10 → EVENT → D+n, Play control; map control **Forecast issued this day: Off / +1 d / +2 d / +3 d** replays each day's GFS run
 - **Tipping point reached** (Situation overview) + ranked **Priority areas** (Critical and High)
 - Right panel: **Now on the ground** (NISAR radar card: "Check with NISAR radar →", **Before / after**), **Who is affected**, **Prediction**, **Replay check**; **Show details: validation and impact** opens **How early? (in replay)** / **Why radar** / **Impact**
