@@ -84,14 +84,34 @@ Docker or sudo access. In this repository, configure Actions secrets
 (the host key independently verified and pinned), and optionally
 `VPS_SSH_PORT`. Never put a private key in the repository, chat or logs.
 
-The fixed command confirms the SHA is the current `main`, builds from this
-monorepo's root Dockerfile, smoke-tests a candidate without the production
+The fixed command proves the SHA is a commit on `main`, checks out only
+`app/`, `Dockerfile` and `.dockerignore` of that commit (git 2.27 or newer on
+the host), builds the image, smoke-tests a candidate without the production
 volume, then replaces only `tipping-point-app`. It checks container and public
 health and attempts rollback on failure. Existing `tipping-point-route` owns
-the hostname throughout. Do not enable the repository variable until the
-host command, SSH identity, secrets, and a manual test are verified; after
-activation, verify the first real run and public HTTPS yourself. Running
-`app-ci` alone is **not** proof of automatic deployment.
+the hostname throughout.
+
+- A newer commit on `main` does not cancel a deploy: `main` also receives
+  commits that never run `app-ci`. The command skips only when the running
+  container was already built from the same or a newer commit.
+- The stopped `tipping-point-app-previous` container is kept for rollback and
+  removed by the next deploy, after the new image passed its smoke test. It
+  is removed only when it is stopped and mounts `tipping-point-data`.
+- Images of earlier deploys (`tipping-point-app:<commit>`) are removed after a
+  successful deploy, except the one the rollback container uses.
+- The command changes no other container, volume, network or route, and no
+  FE service.
+
+Once the variable is set, **every push to `main` that touches the app paths
+and passes `app-ci` is deployed**, reviewed or not. Protect `main` (pull
+request and review required) before enabling it if only reviewed commits may
+reach production.
+
+Do not enable the repository variable until the host command, SSH identity,
+secrets, and a manual test are verified; after activation, verify the first
+real run and public HTTPS yourself. Running `app-ci` alone is **not** proof of
+automatic deployment. After a change to `deploy/vps/deploy-app.sh` on `main`,
+install it on the host again: the host copy is not updated automatically.
 
 Podman works the same (`podman build --format docker …`: the default OCI
 format drops `HEALTHCHECK`).
