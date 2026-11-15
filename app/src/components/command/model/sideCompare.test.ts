@@ -14,6 +14,7 @@ import {
   parseSideSpec,
   presetSides,
   sameSide,
+  sideSummary,
   sideDays,
   sidesCompare,
   viewCompareLayer,
@@ -441,4 +442,13 @@ test("Compare: plain 'Flood risk' never shows the NISAR frame; 'Flood risk + NIS
   expect(parseSideSpec("flood_nisar:2026-09-30")).toEqual({ layer: "flood_nisar", date: "2026-09-30" });
   // A case without NISAR frames does not offer it.
   expect(compareLayers(both, steps, "flood").some((l) => l.id === "flood_nisar")).toBe(false);
+});
+
+// lead-ux (audit §4 #7): the slim bar's one-button side summaries.
+test("sideSummary: short layer name · what the side shows", () => {
+  expect(sideSummary({ layer: "flood", date: "2026-09-30", lead: 0 })).toBe("Flood risk · Sep 30");
+  expect(sideSummary({ layer: "slide", date: "2026-09-30", lead: 3 })).toBe("Landslide risk · NOAA Sep 27 → Sep 30 (+3 d)");
+  expect(sideSummary({ layer: "nisar", date: "2026-10-12", pol: "HV", track: "010D" })).toBe("NISAR HV · Oct 12 · 010D");
+  expect(sideSummary({ layer: "flood_nisar", date: "2026-10-12" })).toBe("Flood + NISAR · Oct 12");
+  expect(sideSummary({ layer: "ml", date: "2026-11-15", horizon: "72h" })).toMatch(/^Landslide ML · Nov 15 · next /);
 });

@@ -353,6 +353,30 @@ export function compareLayers(
   return out;
 }
 
+// lead-ux (audit §4 #7): the slim Compare bar shows each side as ONE
+// button — short layer name · what it shows. Pure, so the bar and its tests
+// read the same words.
+export const COMPARE_LAYER_SHORT: Record<CompareLayer, string> = {
+  flood: "Flood risk",
+  flood_nisar: "Flood + NISAR",
+  slide: "Landslide risk",
+  rain: "Rain",
+  ml: "Landslide ML",
+  nisar: "NISAR",
+  satellite: "Satellite",
+  opera: "OPERA water",
+};
+export function sideSummary(s: Side): string {
+  const name = COMPARE_LAYER_SHORT[s.layer];
+  const day = short(day10(s.date));
+  if (isRiskLayer(s.layer) && (s.lead ?? 0) > 0) {
+    return `${name} · NOAA ${short(issueDayOf(s))} → ${day} (+${s.lead} d)`;
+  }
+  if (s.layer === "nisar") return `${name} ${s.pol ?? "HH"} · ${day}${s.track ? ` · ${s.track}` : ""}`;
+  if (s.layer === "ml") return `${name} · ${day} · next ${horizonLabel(s.horizon ?? "24h")}`;
+  return `${name} · ${day}`;
+}
+
 // The layer the map is on → the compare's default layer: rain view → rain,
 // the ML likelihood view → ml, the radar flood view → nisar, else the
 // current hazard's TPI.
