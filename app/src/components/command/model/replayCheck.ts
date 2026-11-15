@@ -651,7 +651,8 @@ export function evidence(bundle: CcBundle, day?: DayPoint): Evidence {
       peopleOfDay !== undefined
         ? { label: "People in critical areas", value: fmtPeople(peopleOfDay), missing: false }
         : stat(bundle, "People in critical areas", "people_critical", fmtPeople),
-      stat(bundle, "People flooded", "people_flooded", fmtPeople),
+      // Exact count, the same text the Radar card shows for this number.
+      stat(bundle, "People flooded", "people_flooded", (v) => Math.round(Number(v)).toLocaleString("en-US")),
       stat(bundle, "Flooded area", "flooded_km2", fmtKm2),
       stat(bundle, "Night-light drop", "night_light_drop_pct", fmtPct),
     ],
