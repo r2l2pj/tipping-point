@@ -11,17 +11,17 @@
 | ID | Status | Owner | Where / proof |
 |---|---|---|---|
 | C1 | **Done** | lead-submission | `app/submission/NUMBERS.md`: every spoken or written number with its `metrics.json` key. RS peak 9,175 km² Critical / 1,627,862 people (May 3) added to the page and slide 6; forecast lift 2.71× (High+) and 1.64× (Critical) already in page, slides, deck and READMEs. The "175 km²" and "55,000" figures appear in no copy we ship (grep in NUMBERS.md) |
-| C2 | **Done** (copy) | lead-submission | No "46% within 500 m" in any copy; the scar row reads 3.3× chance at 100 m (`scar_ems_lift_100m` 3.28), 1.1× at 500 m. App radar card: lead-app |
+| C2 | **Done** | lead-submission (copy), lead-app (radar card) | No "46% within 500 m" in any copy; the scar row reads 3.3× chance at 100 m (`scar_ems_lift_100m` 3.28), 1.1× at 500 m; the app's radar card shows the 100 m line |
 | C3 | **Done** | lead-submission | "Rain warns. Radar sees through." in page, README, app, video v7, deck, slides; "Radar confirms" only in historical logs and the original plan |
 | C4 | **Done** | lead-submission | RS anchor is the onset: "the run issued 27 h before the first deaths (Apr 29, 2024 00:00 BRT)"; "three days before the peak" appears nowhere |
-| C5 | Assigned | lead-app | Now Overview: same definition on both cards ("High or above: N · Critical: M") |
+| C5 | **Done** | lead-app | Now Overview: one basis on both cards plus the Critical share, numbers coloured by the class they count |
 | C6 | **Done** | lead-submission | Both limitations in root `README.md` (Declared limitations), `app/README.md` (Limitations), `app/submission/project-page.md` (Limitations; FORM §5 pastes it), slides 6 and the deck |
-| M1 | Planned (after submission) | lead-analysis | `*_lift_vs_terrain` beside every `*_lift` |
-| M2 | Planned (after submission) | lead-analysis / lead-ml | rain vs snow (IMERG liquid fraction, MODIS snow) |
-| M3 | Planned (after submission) | lead-analysis | R beyond P99 |
-| M4 | Planned (after submission) | lead-analysis | class cut-offs re-calibrated |
-| M5 | Planned (after submission) | lead-analysis | HAND radius / coastal plain (see also `docs/t-flood-fix-eval.md`) |
-| M6 | Planned (after submission) | lead-analysis | S hard cut at 0.5 |
+| M1 | In progress | lead-ml (metrics via lead-analysis) | `*_lift_vs_terrain` for `slide_warned_gfs_24h` (+ Critical) and the flood checks (RS EMS, WA NISAR, Uruguaiana); A3 NASADEM check of WA Critical area above 1,000 m |
+| M2 | Evaluating (TPI v3 candidate, not served) | lead-analysis with lead-ml | rain vs snow (IMERG liquid fraction); re-scored on RS / WA / Uruguaiana against v2, adopted only if the acceptance criteria pass |
+| M3 | Evaluating (TPI v3 candidate, not served) | lead-analysis with lead-ml | R beyond P99 (to 2×P99); re-scored on RS / WA / Uruguaiana against v2, adopted only if the acceptance criteria pass |
+| M4 | Evaluating (TPI v3 candidate, not served) | lead-analysis with lead-ml | class cut-offs re-calibrated across cases; re-scored on RS / WA / Uruguaiana against v2, adopted only if the acceptance criteria pass |
+| M5 | Evaluating (TPI v3 candidate, not served) | lead-analysis with lead-ml | HAND 1,000 m + coastal wetland (see also `docs/t-flood-fix-eval.md`); re-scored on RS / WA / Uruguaiana against v2, adopted only if the acceptance criteria pass |
+| M6 | Evaluating (TPI v3 candidate, not served) | lead-analysis with lead-ml | S ramp from 0.3 instead of the hard cut at 0.5; re-scored on RS / WA / Uruguaiana against v2, adopted only if the acceptance criteria pass |
 
 ## Resumo
 
