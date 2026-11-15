@@ -76,7 +76,9 @@ def _legacy(index: list[dict], day: str, pol: str, track: str) -> list[dict]:
     return out
 
 
-def run(case: str, start: dt.date, end: dt.date, res: float, deg: float) -> dict:
+def run(case: str, start: dt.date, end: dt.date, res: float, deg: float,
+        from_date: dt.date | None = None, to_date: dt.date | None = None,
+        tracks: set | None = None) -> dict:
     import shutil
 
     import yaml
@@ -98,6 +100,12 @@ def run(case: str, start: dt.date, end: dt.date, res: float, deg: float) -> dict
     added, failed, inplace = [], [], []
     for key in sorted(plan, key=lambda k: (k[2], k[0])):
         t, lk, day = key
+        if from_date and day < from_date.isoformat():
+            continue
+        if to_date and day > to_date.isoformat():
+            continue
+        if tracks and ns.tag(t, lk) not in tracks:
+            continue
         trk = ns.tag(t, lk)
         try:
             ents = ns.render_pass(key, plan[key], bbox, token, pdir, f"{case}/png", res=res, deg=deg,
@@ -116,12 +124,15 @@ def run(case: str, start: dt.date, end: dt.date, res: float, deg: float) -> dict
                 continue
             src = REPO / "data" / e["png"]
             for o in old:          # new pixels IN PLACE, same id + png path
-                shutil.copyfile(src, REPO / "data" / o["png"])
+                dst = REPO / "data" / o["png"]
+                if dst.resolve() != src.resolve():
+                    shutil.copyfile(src, dst)
                 o.update({k: e[k] for k in ("bounds", "legend", "track", "mode", "frames", "note",
                                             "grid", "stretch_db", "granules", "sensor", "source")})
                 o.setdefault("polarization", e["polarization"])
                 inplace.append(o["id"])
-            src.unlink()
+            if all((REPO / "data" / o["png"]).resolve() != src.resolve() for o in old):
+                src.unlink()
         ix["layers"] = merge_index(ix["layers"], new)
         tmp = ipath.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(ix, indent=2, ensure_ascii=False) + "\n")
@@ -140,8 +151,13 @@ def main(argv=None) -> int:
     ap.add_argument("--end", type=dt.date.fromisoformat, required=True)
     ap.add_argument("--res", type=float, default=200.0)
     ap.add_argument("--deg", type=float, default=0.002)
+    ap.add_argument("--from-date", type=dt.date.fromisoformat, default=None,
+                    help="render only passes on/after this date (grids still from --start..--end)")
+    ap.add_argument("--to-date", type=dt.date.fromisoformat, default=None)
+    ap.add_argument("--tracks", default=None, help="comma list e.g. 010D,082D")
     a = ap.parse_args(argv)
-    out = run(a.case, a.start, a.end, a.res, a.deg)
+    out = run(a.case, a.start, a.end, a.res, a.deg, a.from_date, a.to_date,
+              set(a.tracks.split(",")) if a.tracks else None)
     Path(os.path.expanduser(f"~/.cache/lead-analysis/nisar-stack/{a.case}_result.json")).write_text(
         json.dumps(out, indent=1))
     return 0
