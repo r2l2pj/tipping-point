@@ -48,7 +48,7 @@ FETCH_MAX_GAP = 1 << 20              # coalesce chunk ranges closer than 1 MiB
 FETCH_MAX_SPAN = 16 << 20            # one HTTP range request <= 16 MiB
 FETCH_BATCH_BYTES = 96 << 20         # bytes in flight per batch (RAM bound)
 SOURCE = "nisar-gcov"
-GPW_REL = Path("data/static/south_brazil/static/gpw_pop.tif")
+GPW_REL = Path("data/now/static/gpw/gpw_popcount_2020_30sec.tif")
 NEON_BASE = (
     "https://br-lively-poetry-bdub0r34.storage.c-8.us-east-2.aws.neon.tech/"
     "tipping-point-data"
