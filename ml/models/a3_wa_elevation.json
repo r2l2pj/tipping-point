@@ -1,0 +1,266 @@
+{
+ "source": "NASADEM_HGT.001 (LP DAAC, local), mean onto the 90 m TPI grid",
+ "grid": "wa_2025_tpi_slide_20251210.tif",
+ "elev_valid_pct": 100.0,
+ "days": {
+  "20251210": {
+   "critico": {
+    "cut": 0.6,
+    "flagged_km2": 2150.6,
+    "above_1000m_pct": 40.7,
+    "median_elev_m": 919.0,
+    "by_elevation": {
+     "0-500m": {
+      "km2": 237.5,
+      "share_of_flagged_pct": 11.0,
+      "pct_of_band_flagged": 2.9
+     },
+     "500-1000m": {
+      "km2": 1037.0,
+      "share_of_flagged_pct": 48.2,
+      "pct_of_band_flagged": 42.4
+     },
+     "1000-1500m": {
+      "km2": 827.4,
+      "share_of_flagged_pct": 38.5,
+      "pct_of_band_flagged": 65.9
+     },
+     "1500-5000m": {
+      "km2": 48.7,
+      "share_of_flagged_pct": 2.3,
+      "pct_of_band_flagged": 80.3
+     }
+    },
+    "by_longitude": {
+     "puget_lowland_w_of_-122.0": {
+      "km2": 18.9,
+      "share_of_flagged_pct": 0.9
+     },
+     "foothills_-122.0_-121.7": {
+      "km2": 758.0,
+      "share_of_flagged_pct": 35.2
+     },
+     "high_cascades_e_of_-121.7": {
+      "km2": 1373.7,
+      "share_of_flagged_pct": 63.9
+     }
+    }
+   },
+   "alto_plus": {
+    "cut": 0.4,
+    "flagged_km2": 2773.7,
+    "above_1000m_pct": 36.5,
+    "median_elev_m": 876.0,
+    "by_elevation": {
+     "0-500m": {
+      "km2": 433.5,
+      "share_of_flagged_pct": 15.6,
+      "pct_of_band_flagged": 5.3
+     },
+     "500-1000m": {
+      "km2": 1327.3,
+      "share_of_flagged_pct": 47.9,
+      "pct_of_band_flagged": 54.3
+     },
+     "1000-1500m": {
+      "km2": 960.7,
+      "share_of_flagged_pct": 34.6,
+      "pct_of_band_flagged": 76.6
+     },
+     "1500-5000m": {
+      "km2": 52.2,
+      "share_of_flagged_pct": 1.9,
+      "pct_of_band_flagged": 86.1
+     }
+    },
+    "by_longitude": {
+     "puget_lowland_w_of_-122.0": {
+      "km2": 63.4,
+      "share_of_flagged_pct": 2.3
+     },
+     "foothills_-122.0_-121.7": {
+      "km2": 1116.2,
+      "share_of_flagged_pct": 40.2
+     },
+     "high_cascades_e_of_-121.7": {
+      "km2": 1594.2,
+      "share_of_flagged_pct": 57.5
+     }
+    }
+   }
+  },
+  "20251211": {
+   "critico": {
+    "cut": 0.6,
+    "flagged_km2": 2648.6,
+    "above_1000m_pct": 36.4,
+    "median_elev_m": 876.0,
+    "by_elevation": {
+     "0-500m": {
+      "km2": 409.1,
+      "share_of_flagged_pct": 15.4,
+      "pct_of_band_flagged": 5.0
+     },
+     "500-1000m": {
+      "km2": 1274.3,
+      "share_of_flagged_pct": 48.1,
+      "pct_of_band_flagged": 52.2
+     },
+     "1000-1500m": {
+      "km2": 916.0,
+      "share_of_flagged_pct": 34.6,
+      "pct_of_band_flagged": 73.0
+     },
+     "1500-5000m": {
+      "km2": 49.2,
+      "share_of_flagged_pct": 1.9,
+      "pct_of_band_flagged": 81.1
+     }
+    },
+    "by_longitude": {
+     "puget_lowland_w_of_-122.0": {
+      "km2": 124.7,
+      "share_of_flagged_pct": 4.7
+     },
+     "foothills_-122.0_-121.7": {
+      "km2": 1050.6,
+      "share_of_flagged_pct": 39.7
+     },
+     "high_cascades_e_of_-121.7": {
+      "km2": 1473.3,
+      "share_of_flagged_pct": 55.6
+     }
+    }
+   },
+   "alto_plus": {
+    "cut": 0.4,
+    "flagged_km2": 3157.1,
+    "above_1000m_pct": 33.3,
+    "median_elev_m": 839.0,
+    "by_elevation": {
+     "0-500m": {
+      "km2": 625.6,
+      "share_of_flagged_pct": 19.8,
+      "pct_of_band_flagged": 7.7
+     },
+     "500-1000m": {
+      "km2": 1481.7,
+      "share_of_flagged_pct": 46.9,
+      "pct_of_band_flagged": 60.6
+     },
+     "1000-1500m": {
+      "km2": 997.5,
+      "share_of_flagged_pct": 31.6,
+      "pct_of_band_flagged": 79.5
+     },
+     "1500-5000m": {
+      "km2": 52.4,
+      "share_of_flagged_pct": 1.7,
+      "pct_of_band_flagged": 86.3
+     }
+    },
+    "by_longitude": {
+     "puget_lowland_w_of_-122.0": {
+      "km2": 231.1,
+      "share_of_flagged_pct": 7.3
+     },
+     "foothills_-122.0_-121.7": {
+      "km2": 1301.6,
+      "share_of_flagged_pct": 41.2
+     },
+     "high_cascades_e_of_-121.7": {
+      "km2": 1624.5,
+      "share_of_flagged_pct": 51.5
+     }
+    }
+   }
+  },
+  "20251212": {
+   "critico": {
+    "cut": 0.6,
+    "flagged_km2": 2709.0,
+    "above_1000m_pct": 35.9,
+    "median_elev_m": 870.0,
+    "by_elevation": {
+     "0-500m": {
+      "km2": 441.5,
+      "share_of_flagged_pct": 16.3,
+      "pct_of_band_flagged": 5.4
+     },
+     "500-1000m": {
+      "km2": 1295.7,
+      "share_of_flagged_pct": 47.8,
+      "pct_of_band_flagged": 53.0
+     },
+     "1000-1500m": {
+      "km2": 922.6,
+      "share_of_flagged_pct": 34.1,
+      "pct_of_band_flagged": 73.5
+     },
+     "1500-5000m": {
+      "km2": 49.2,
+      "share_of_flagged_pct": 1.8,
+      "pct_of_band_flagged": 81.2
+     }
+    },
+    "by_longitude": {
+     "puget_lowland_w_of_-122.0": {
+      "km2": 143.7,
+      "share_of_flagged_pct": 5.3
+     },
+     "foothills_-122.0_-121.7": {
+      "km2": 1087.1,
+      "share_of_flagged_pct": 40.1
+     },
+     "high_cascades_e_of_-121.7": {
+      "km2": 1478.2,
+      "share_of_flagged_pct": 54.6
+     }
+    }
+   },
+   "alto_plus": {
+    "cut": 0.4,
+    "flagged_km2": 3189.9,
+    "above_1000m_pct": 33.0,
+    "median_elev_m": 835.0,
+    "by_elevation": {
+     "0-500m": {
+      "km2": 649.0,
+      "share_of_flagged_pct": 20.3,
+      "pct_of_band_flagged": 7.9
+     },
+     "500-1000m": {
+      "km2": 1489.1,
+      "share_of_flagged_pct": 46.7,
+      "pct_of_band_flagged": 60.9
+     },
+     "1000-1500m": {
+      "km2": 999.3,
+      "share_of_flagged_pct": 31.3,
+      "pct_of_band_flagged": 79.6
+     },
+     "1500-5000m": {
+      "km2": 52.4,
+      "share_of_flagged_pct": 1.6,
+      "pct_of_band_flagged": 86.3
+     }
+    },
+    "by_longitude": {
+     "puget_lowland_w_of_-122.0": {
+      "km2": 247.5,
+      "share_of_flagged_pct": 7.8
+     },
+     "foothills_-122.0_-121.7": {
+      "km2": 1316.8,
+      "share_of_flagged_pct": 41.3
+     },
+     "high_cascades_e_of_-121.7": {
+      "km2": 1625.6,
+      "share_of_flagged_pct": 51.0
+     }
+    }
+   }
+  }
+ },
+ "a3_confirmed": false
+}

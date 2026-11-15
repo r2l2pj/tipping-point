@@ -1,0 +1,236 @@
+{
+ "rs_inventory_slide": {
+  "frames": [
+   "issued 2024-04-28 d1_slide -> 2024-04-29"
+  ],
+  "reference": "16,027 RS 2024 inventory points",
+  "alto_plus": {
+   "cut": 0.4,
+   "n_ref": 16027,
+   "flagged_cells": 91069,
+   "area_share_pct": 2.13,
+   "hit_pct": 5.77,
+   "terrain_hit_pct": 39.92,
+   "lift": 2.71,
+   "lift_terrain": 18.74,
+   "ratio": 0.145,
+   "terrain_tie": {
+    "t_at_k": 0.88,
+    "tied_cells": 1,
+    "picked": 1
+   },
+   "lift_terrain_stable": 18.74,
+   "ratio_stable": 0.145
+  },
+  "critico": {
+   "cut": 0.6,
+   "n_ref": 16027,
+   "flagged_cells": 4841,
+   "area_share_pct": 0.113,
+   "hit_pct": 0.18,
+   "terrain_hit_pct": 2.37,
+   "lift": 1.6,
+   "lift_terrain": 20.93,
+   "ratio": 0.076,
+   "terrain_tie": {
+    "t_at_k": 1.0,
+    "tied_cells": 62906,
+    "picked": 4841
+   },
+   "lift_terrain_stable": 42.93,
+   "ratio_stable": 0.037
+  }
+ },
+ "rs_ems_flood_gfs24": {
+  "frames": [
+   "issued 2024-04-28 d1_flood -> 2024-04-29"
+  ],
+  "reference": "Copernicus EMS EMSR720 flood extent (cells)",
+  "alto_plus": {
+   "cut": 0.4,
+   "n_ref": 5156,
+   "flagged_cells": 0,
+   "area_share_pct": 0.0,
+   "hit_pct": 0.0,
+   "lift": null,
+   "lift_terrain": null,
+   "ratio": null,
+   "reason": "the TPI flagged no cell of the domain"
+  },
+  "critico": {
+   "cut": 0.6,
+   "n_ref": 5156,
+   "flagged_cells": 0,
+   "area_share_pct": 0.0,
+   "hit_pct": 0.0,
+   "lift": null,
+   "lift_terrain": null,
+   "ratio": null,
+   "reason": "the TPI flagged no cell of the domain"
+  }
+ },
+ "rs_ems_flood_event": {
+  "frames": "observed replay, max 2024-04-29..05-05",
+  "reference": "Copernicus EMS EMSR720 flood extent (cells)",
+  "alto_plus": {
+   "cut": 0.4,
+   "n_ref": 5156,
+   "flagged_cells": 1455,
+   "area_share_pct": 4.311,
+   "hit_pct": 22.56,
+   "terrain_hit_pct": 22.56,
+   "lift": 5.23,
+   "lift_terrain": 5.23,
+   "ratio": 1.0,
+   "terrain_tie": {
+    "t_at_k": 0.1,
+    "tied_cells": 263,
+    "picked": 263
+   },
+   "lift_terrain_stable": 5.23,
+   "ratio_stable": 1.0
+  },
+  "critico": {
+   "cut": 0.6,
+   "n_ref": 5156,
+   "flagged_cells": 964,
+   "area_share_pct": 2.856,
+   "hit_pct": 14.9,
+   "terrain_hit_pct": 14.9,
+   "lift": 5.21,
+   "lift_terrain": 5.21,
+   "ratio": 1.0,
+   "terrain_tie": {
+    "t_at_k": 0.3,
+    "tied_cells": 155,
+    "picked": 155
+   },
+   "lift_terrain_stable": 5.21,
+   "ratio_stable": 1.0
+  }
+ },
+ "wa_nisar_flood_gfs24": {
+  "frames": [
+   "issued 2025-12-07 d1_flood -> 2025-12-08"
+  ],
+  "reference": "NISAR flood candidates (12 m pixels, area-weighted)",
+  "alto_plus": {
+   "cut": 0.4,
+   "n_ref": 257820,
+   "flagged_cells": 3480,
+   "area_share_pct": 0.158,
+   "hit_pct": 0.0,
+   "terrain_hit_pct": 3.37,
+   "lift": 0.0,
+   "lift_terrain": 21.29,
+   "ratio": 0.0,
+   "terrain_tie": {
+    "t_at_k": 1.0,
+    "tied_cells": 85413,
+    "picked": 3480
+   },
+   "lift_terrain_stable": 16.51,
+   "ratio_stable": 0.0
+  },
+  "critico": {
+   "cut": 0.6,
+   "n_ref": 257820,
+   "flagged_cells": 196,
+   "area_share_pct": 0.009,
+   "hit_pct": 0.0,
+   "terrain_hit_pct": 0.19,
+   "lift": 0.0,
+   "lift_terrain": 21.29,
+   "ratio": 0.0,
+   "terrain_tie": {
+    "t_at_k": 1.0,
+    "tied_cells": 85413,
+    "picked": 196
+   },
+   "lift_terrain_stable": 0.0,
+   "ratio_stable": null
+  }
+ },
+ "wa_nisar_flood_event": {
+  "frames": "observed replay, max 2025-12-08..12",
+  "reference": "NISAR flood candidates (12 m pixels, area-weighted)",
+  "domain": "NISAR raster extent",
+  "alto_plus": {
+   "cut": 0.4,
+   "n_ref": 257820,
+   "flagged_cells": 201393,
+   "area_share_pct": 9.155,
+   "hit_pct": 98.81,
+   "terrain_hit_pct": 98.26,
+   "lift": 10.79,
+   "lift_terrain": 10.73,
+   "ratio": 1.006,
+   "terrain_tie": {
+    "t_at_k": 0.4,
+    "tied_cells": 15512,
+    "picked": 13139
+   },
+   "lift_terrain_stable": 10.74,
+   "ratio_stable": 1.005
+  },
+  "critico": {
+   "cut": 0.6,
+   "n_ref": 257820,
+   "flagged_cells": 136866,
+   "area_share_pct": 6.222,
+   "hit_pct": 73.58,
+   "terrain_hit_pct": 94.53,
+   "lift": 11.83,
+   "lift_terrain": 15.19,
+   "ratio": 0.778,
+   "terrain_tie": {
+    "t_at_k": 0.7,
+    "tied_cells": 20115,
+    "picked": 4158
+   },
+   "lift_terrain_stable": 15.17,
+   "ratio_stable": 0.78
+  }
+ },
+ "uru_nisar_flood_sep30": {
+  "frames": "observed replay 2026-09-30 (local rain)",
+  "reference": "7 NISAR new-water candidate polygons (0.01 deg cells they touch)",
+  "domain": "Uruguaiana-Itaqui corridor",
+  "alto_plus": {
+   "cut": 0.4,
+   "n_ref": 18,
+   "flagged_cells": 1870,
+   "area_share_pct": 30.108,
+   "hit_pct": 88.89,
+   "terrain_hit_pct": 32.92,
+   "lift": 2.95,
+   "lift_terrain": 1.09,
+   "ratio": 2.7,
+   "terrain_tie": {
+    "t_at_k": 1.0,
+    "tied_cells": 3156,
+    "picked": 1870
+   },
+   "lift_terrain_stable": 0.0,
+   "ratio_stable": null
+  },
+  "critico": {
+   "cut": 0.6,
+   "n_ref": 18,
+   "flagged_cells": 761,
+   "area_share_pct": 12.252,
+   "hit_pct": 83.33,
+   "terrain_hit_pct": 13.4,
+   "lift": 6.8,
+   "lift_terrain": 1.09,
+   "ratio": 6.221,
+   "terrain_tie": {
+    "t_at_k": 1.0,
+    "tied_cells": 3156,
+    "picked": 761
+   },
+   "lift_terrain_stable": 0.0,
+   "ratio_stable": null
+  }
+ }
+}
