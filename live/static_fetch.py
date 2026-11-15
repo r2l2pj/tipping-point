@@ -1,133 +1,106 @@
-"""Per-run static inputs for the local TPI path (L20).
+"""Per-run static inputs for the local TPI path (L20/L25).
 
-Instead of the monolithic static/sul_static.npz (a ~12 h GEE tile build),
-each run downloads only what it needs from the exported project assets:
+L25: no GEE at runtime. Climatology and terrain are read as COGs —
+first from the local data/static/ tree when present, else from the
+public Neon object-storage copy:
 
-  climatology — projects/<GEE_PROJECT>/assets/tipping-point/static/
-    south_brazil/clim_rain/doy_NNN: per-day-of-year image, bands
-    p90/p95/p99, int16 = mm*10 (3-day IMERG accumulation percentiles).
-  terrain — static/south_brazil/slope (deg) and hand (m), from which
-    t_slide/t_flood are derived with the same formulas build_static
-    applies in EE (slope.unitScale(15,30), hand.unitScale(5,15),
-    t_flood masked where slope > 5 deg).
+  data/static/south_brazil/clim/doy_NNN.tif   3-band float32: p90/p95/p99
+    (mm, 3-day IMERG accumulation percentiles) on the NOW_BOUNDS
+    1150x1000 EPSG:4326 dst grid.
+  data/static/south_brazil/terrain/{slope_deg,hand_m,t_slide,t_flood}.tif
+    float32 on the same grid; t_* are precomputed products, slope/hand
+    the raw rasters they derive from.
 
-Everything is cached under static/cache/ as .npy: climatology entries are
-per-doy (a run needs today + D+1..D+3 = 4 doys), terrain is one-off.
+The COGs are exported once from the GEE assets (allowed one-off under
+L25) and republished by lead-analysis; the Now job only ever reads them.
 """
 from __future__ import annotations
 
 import datetime as dt
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
 
-from live.build_static import _download_band, _ee_init
-from live.config import NOW_BOUNDS, STATIC_DIR
+from live.config import NOW_BOUNDS, REPO_ROOT
 
-CACHE_DIR = STATIC_DIR / "cache"
-CLIM_PARENT = "static/south_brazil/clim_rain"
-TERRAIN = ("slope", "hand")
+LOCAL_STATIC = REPO_ROOT / "data" / "static"
+NEON_PREFIX = "static/south_brazil"
 
 
-def _asset_root(ee) -> str:
-    import os
-    proj = os.environ.get("GEE_PROJECT", "").strip()
-    return f"projects/{proj}/assets/tipping-point"
+def _public_base() -> str:
+    endpoint = os.environ.get("NEON_S3_ENDPOINT", "").rstrip("/")
+    bucket = os.environ.get("NEON_S3_BUCKET", "")
+    return f"{endpoint}/{bucket}/data"
 
 
-def _cache(cache_dir: Path, name: str) -> Path:
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    return cache_dir / f"{name}.npy"
+def _read_cog(rel: str) -> np.ndarray | None:
+    """band-stack array from a static COG: local file first, Neon URL
+    fallback (GDAL range-reads only the bytes needed)."""
+    import rasterio
+
+    local = LOCAL_STATIC / "south_brazil" / rel
+    candidates = ([local] if local.exists() else []) + [
+        f"{_public_base()}/{NEON_PREFIX}/{rel}"]
+    for src in candidates:
+        try:
+            with rasterio.open(str(src)) as ds:
+                return ds.read().astype(np.float64)
+        except (rasterio.errors.RasterioIOError, OSError, RuntimeError):
+            continue
+    return None
 
 
-def _band_cached(ee, source, band: str, name: str,
-                 cache_dir: Path, scale_m: int = 1000) -> np.ndarray:
-    path = _cache(cache_dir, name)
-    if path.exists():
-        return np.load(path)
-    image = source if isinstance(source, ee.Image) else ee.Image(source)
-    arr = _download_band(ee, image, band, scale_m)
-    np.save(path, arr)
-    return arr
+def _clim_for_doy(doy: int) -> dict[str, np.ndarray] | None:
+    arr = _read_cog(f"clim/doy_{doy:03d}.tif")
+    if arr is None or arr.shape[0] < 3:
+        return None
+    return {"p90": arr[0], "p95": arr[1], "p99": arr[2]}
 
 
-def _terrain(ee, cache_dir: Path) -> tuple[np.ndarray, np.ndarray]:
-    """t_slide/t_flood derived from slope+hand, per build_static formulas."""
-    t_slide_p, t_flood_p = (_cache(cache_dir, "t_slide"),
-                            _cache(cache_dir, "t_flood"))
-    if t_slide_p.exists() and t_flood_p.exists():
-        return np.load(t_slide_p), np.load(t_flood_p)
-    root = _asset_root(ee)
-    try:
-        slope = _band_cached(ee, f"{root}/static/south_brazil/slope",
-                             "slope", "slope_deg", cache_dir)
-        hand = _band_cached(ee, f"{root}/static/south_brazil/hand",
-                            "hand", "hand_m", cache_dir)
-    except (RuntimeError, OSError, ValueError,
-            ee.ee_exception.EEException):
-        # exported slope/hand assets not written yet — compute the same
-        # rasters interactively from the NASADEM catalog (identical to
-        # build_static._terrain: slope = Terrain.slope(dem),
-        # hand = dem - focalMin(HAND_PROXY_RADIUS_M))
-        from live.config import HAND_PROXY_RADIUS_M
-        dem = ee.Image("NASA/NASADEM_HGT/001").select("elevation")
-        slope_img = ee.Terrain.slope(dem).rename("slope_deg")
-        hand_img = dem.subtract(
-            dem.focalMin(radius=HAND_PROXY_RADIUS_M, units="meters")
-        ).rename("hand_m")
-        slope = _band_cached(ee, slope_img, "slope_deg", "slope_deg",
-                             cache_dir)
-        hand = _band_cached(ee, hand_img, "hand_m", "hand_m", cache_dir)
+def _terrain() -> tuple[np.ndarray, np.ndarray] | None:
+    ts = _read_cog("terrain/t_slide.tif")
+    tf = _read_cog("terrain/t_flood.tif")
+    if ts is not None and tf is not None:
+        return ts[0], tf[0]
+    # derive from raw rasters (same formulas as the EE export)
+    slope = _read_cog("terrain/slope_deg.tif")
+    hand = _read_cog("terrain/hand_m.tif")
+    if slope is None or hand is None:
+        return None
+    slope, hand = slope[0], hand[0]
     t_slide = np.clip((slope - 15.0) / (30.0 - 15.0), 0.0, 1.0)
     t_flood = np.clip(1.0 - (hand - 5.0) / (15.0 - 5.0), 0.0, 1.0)
     t_flood[slope > 5.0] = 0.0
-    np.save(t_slide_p, t_slide)
-    np.save(t_flood_p, t_flood)
     return t_slide, t_flood
-
-
-def _clim_for_doy(ee, doy: int, cache_dir: Path,
-                  root: str) -> dict[str, np.ndarray]:
-    """p90/p95/p99 mm arrays for one doy (int16 mm*10 -> float mm)."""
-    out = {}
-    for band in ("p90", "p95", "p99"):
-        raw = _band_cached(
-            ee, f"{root}/{CLIM_PARENT}/doy_{doy:03d}", band,
-            f"doy_{doy:03d}_{band}", cache_dir)
-        out[band] = raw.astype(np.float64) / 10.0
-    return out
 
 
 def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
                 days: list[dt.date] | None = None,
-                cache_dir: Path = CACHE_DIR) -> dict:
+                cache_dir: Path | None = None) -> dict:
     """static inputs for the local TPI loop.
 
     days: the run's today + forecast days; their day-of-year values select
-    which climatology assets are fetched (each is cached, so a 3-hourly run
-    only downloads a doy once).
+    which climatology COGs are read. Missing doys fall back to the
+    nearest available one (clim_for_day).
     """
-    ee = _ee_init()
-    t_slide, t_flood = _terrain(ee, cache_dir)
+    terr = _terrain()
+    if terr is None:
+        sys.exit("no terrain COGs on Neon/local (data/static/south_brazil"
+                 "/terrain/) — export the static assets first")
     days = days or [dt.datetime.now(dt.UTC).date()]
     doys = sorted({d.timetuple().tm_yday for d in days})
-    root = _asset_root(ee)
-    clim = {}
-    missing = []
+    clim, missing = {}, []
     for doy in doys:
-        try:
-            clim[doy] = _clim_for_doy(ee, doy, cache_dir, root)
-        except (RuntimeError, OSError, ValueError,
-                ee.ee_exception.EEException) as exc:
-            missing.append((doy, exc))
+        c = _clim_for_doy(doy)
+        (clim.__setitem__(doy, c) if c is not None else missing.append(doy))
     if not clim:
-        sys.exit(f"no climatology assets for doys {doys}: {missing[-1][1]}")
+        sys.exit(f"no climatology COGs for doys {doys}")
     if missing:
-        print(f"[static_fetch] {len(missing)} doy(s) missing "
-              f"({[d for d, _ in missing]}) — nearest available will be used",
-              file=sys.stderr)
-    return {"t_slide": t_slide, "t_flood": t_flood, "clim": clim}
+        print(f"[static_fetch] {missing} doy(s) missing — nearest "
+              f"available will be used", file=sys.stderr)
+    return {"t_slide": terr[0], "t_flood": terr[1], "clim": clim}
 
 
 def clim_for_day(static: dict, day: dt.date) -> dict[str, np.ndarray]:
