@@ -505,6 +505,7 @@ def ml_card_v2(met: dict) -> dict:
                              for h, ms in G.summary(met, src, "pr_auc").items()}
                        for src in ("gfs", "perfect")},
         "low_skill_horizons": ["7d"],
+        "served": _served_v2(met),
     })
     card["split"]["3a"] = ("v2 (L32): TRAIN/VAL = GLC landslides in ~50 km blocks, S+SE Brazil, "
                            "no RS 2024 points; TEST = held-out Brazilian event slides vs random land")
@@ -531,6 +532,20 @@ def _slim_by_lead(bl: dict, scopes=("pooled", "pooled_clean3a")) -> dict:
     sc = bl.get("scopes") or {}
     out["scopes"] = {k: walk(sc[k]) for k in scopes if k in sc}
     return out
+
+
+def _served_v2(met: dict) -> dict:
+    """Which trigger is live vs which wins on VAL (PR-AUC, perfect-forecast VAL rows)."""
+    hv = (met.get("val_3b") or {}).get("horizon_val") or {}
+    best = {h: max((m for m in ("xgb_rain_soil", "direct_rain", "xgb_all", "rf_all")
+                    if isinstance(b.get(m), dict)), key=lambda m: b[m].get("pr_auc") or 0)
+            for h, b in hv.items() if isinstance(b, dict)}
+    return {"model": "xgb_rain_soil",
+            "val_best": best,
+            "note": ("Live layer = xgb_rain_soil (daily model, P_H = 1 - prod(1 - p_day)). "
+                     "On VAL direct_rain (one model per horizon) ranks slightly higher; the live "
+                     "service runs one daily model, so xgb_rain_soil stays served and both are "
+                     "reported on TEST.")}
 
 
 def export_card_v2() -> dict:
