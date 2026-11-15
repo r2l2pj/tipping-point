@@ -8,7 +8,7 @@
 - **Tipping Point** — *Rain warns. Radar sees through.*
 - NASA Space Apps 2026 · Challenge: Dancing with the SARs
 - One line: NISAR feeds the index: every pass updates the flood map through cloud
-- Team R2L2PJ · members `[names]` · Local Event `Florianópolis (Founder Haus, Jurerê)` (the guide requires the team name, the member names and the challenge on the slides)
+- Team R2L2PJ · members `Lucas Duarte Coelho da Silva, Pedro Eisenhardt Del Poente, Rafael Kirihara Falasca, Lucas Leandro Ramos, Pedro Mascarenhas de Barros, Jhonata Vicente de Oliveira` · Local Event `Florianópolis (Founder Haus, Jurerê)` (the guide requires the team name, the member names and the challenge on the slides)
 - *Visual:* our wordmark + tagline over a dark map (no NASA logos or insignia anywhere in the deck: guide rule); the header's "TIPPING POINT | Rain warns. Radar sees through." wordmark
 
 ## Slide 2 — The problem (main case: Uruguay River, Uruguaiana and Itaqui)
@@ -34,7 +34,7 @@
 ## Slide 5 — Did it work?
 - **NISAR, Washington Dec 2025:** "Clouds hid 93% of the area from optical satellites; NISAR radar mapped 28 km² of flood candidates through them" — home to about 950 people. C-band radar (NASA OPERA surface water, our reference) sees open flood through cloud too; NISAR's L-band also reaches water under vegetation
 - **Radar physics checked:** candidates stable Nov 10 → Dec 4 (−9.7 dB), then −6.5 dB by Dec 16; double-bounce hypothesis supported — 45% of the missed flood is in towns or forest (vs 5% of what we caught), recall 25% open land vs 3% towns, 1% forest
-- **NISAR checks the index:** of the 612 km² NISAR saw at Uruguaiana on Oct 12, the index without NISAR had flagged 9% as Critical 10 days earlier, on 4% of the land (2.2× chance, 1.7× terrain alone); High-or-above at chance; 0% on the pass day (rain leads the river); best day picked after the fact. Washington: 50% Critical on Dec 12, during the flood, but terrain alone does slightly better.
+- **NISAR checks the index:** of the 612 km² NISAR saw at Uruguaiana on Oct 12, the index without NISAR had flagged 9% as Critical 10 days earlier, on 4% of the land (2.2× chance, 1.7× terrain alone); High-or-above at chance; 0% on the pass day (rain leads the river); best day picked after the fact. Washington: 51% Critical on Dec 12, during the flood, but terrain alone does slightly better.
 - **Forecast, as issued:** Washington: the GFS run issued Dec 3, 2025 showed Critical landslide risk for Dec 6. Rio Grande do Sul: scored consistently, 5.8% of the 16,027 landslides were already High or Critical in the forecast issued 27 h before the first deaths, while it flagged only 2.1% of the area (2.7× better than chance, though terrain alone does better: slide 6); runs issued 51 and 75 h before: 0%; Washington's flooded places were not flagged ahead (upstream rain)
 - **Official warnings came first** in both replays; the index adds where and who. RS flood index vs independent EU emergency maps during the flood: F1 0.33 (Taquari valley)
 - *Visual:* NISAR before/after swipe still + a 4-row metrics table
