@@ -13577,8 +13577,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1595.81,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 619.57,
       "nisar_passes": [
         {
           "date": "2026-09-18",
@@ -13597,6 +13597,7 @@
         }
       ],
       "nisar_water_km2": 1583.087,
+      "nisar_raised_km2": 606.844,
       "nisar_outside_floodplain_pct": 61.7
     },
     {
@@ -13641,6 +13642,7 @@
         }
       ],
       "nisar_water_km2": 1583.087,
+      "nisar_raised_km2": 606.844,
       "nisar_outside_floodplain_pct": 61.7
     },
     {
@@ -13663,8 +13665,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1832.53,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 856.28,
       "nisar_passes": [
         {
           "date": "2026-09-18",
@@ -13683,6 +13685,7 @@
         }
       ],
       "nisar_water_km2": 1583.087,
+      "nisar_raised_km2": 606.844,
       "nisar_outside_floodplain_pct": 61.7
     },
     {
@@ -13727,6 +13730,7 @@
         }
       ],
       "nisar_water_km2": 1583.087,
+      "nisar_raised_km2": 606.844,
       "nisar_outside_floodplain_pct": 61.7
     },
     {
@@ -13749,8 +13753,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 14012.83,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 13440.05,
       "nisar_passes": [
         {
           "date": "2026-09-18",
@@ -13774,6 +13778,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -13823,6 +13828,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -13845,8 +13851,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 12629.27,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 12044.68,
       "nisar_passes": [
         {
           "date": "2026-09-22",
@@ -13865,6 +13871,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -13909,6 +13916,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -13931,8 +13939,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 4957.05,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 4246.43,
       "nisar_passes": [
         {
           "date": "2026-09-22",
@@ -13951,6 +13959,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -13995,6 +14004,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -14017,8 +14027,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1238.61,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 459.61,
       "nisar_passes": [
         {
           "date": "2026-09-22",
@@ -14037,6 +14047,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -14081,6 +14092,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -14103,8 +14115,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1238.61,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 459.61,
       "nisar_passes": [
         {
           "date": "2026-09-22",
@@ -14123,6 +14135,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -14167,6 +14180,7 @@
         }
       ],
       "nisar_water_km2": 1238.612,
+      "nisar_raised_km2": 459.615,
       "nisar_outside_floodplain_pct": 62.9
     },
     {
@@ -14189,8 +14203,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1096.91,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 781.25,
       "nisar_passes": [
         {
           "date": "2026-09-23",
@@ -14209,6 +14223,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14253,6 +14268,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14275,8 +14291,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1096.91,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 781.25,
       "nisar_passes": [
         {
           "date": "2026-09-30",
@@ -14290,6 +14306,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14329,6 +14346,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14351,8 +14369,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1096.91,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 781.25,
       "nisar_passes": [
         {
           "date": "2026-09-30",
@@ -14366,6 +14384,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14405,6 +14424,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14427,8 +14447,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1096.91,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 781.25,
       "nisar_passes": [
         {
           "date": "2026-09-30",
@@ -14442,6 +14462,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14481,6 +14502,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14503,8 +14525,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1162.37,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 846.7,
       "nisar_passes": [
         {
           "date": "2026-09-30",
@@ -14518,6 +14540,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14557,6 +14580,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14579,8 +14603,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1100.13,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 784.46,
       "nisar_passes": [
         {
           "date": "2026-09-30",
@@ -14594,6 +14618,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14633,6 +14658,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14655,8 +14681,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 4359.37,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 4051.21,
       "nisar_passes": [
         {
           "date": "2026-09-30",
@@ -14670,6 +14696,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14709,6 +14736,7 @@
         }
       ],
       "nisar_water_km2": 1096.911,
+      "nisar_raised_km2": 781.249,
       "nisar_outside_floodplain_pct": 28.8
     },
     {
@@ -14731,8 +14759,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1105.61,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 822.03,
       "nisar_passes": [
         {
           "date": "2026-09-30",
@@ -14751,6 +14779,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -14795,6 +14824,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -14817,8 +14847,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1258.53,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 974.95,
       "nisar_passes": [
         {
           "date": "2026-10-05",
@@ -14832,6 +14862,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -14871,6 +14902,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -14893,8 +14925,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1105.61,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 822.03,
       "nisar_passes": [
         {
           "date": "2026-10-05",
@@ -14908,6 +14940,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -14947,6 +14980,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -14969,8 +15003,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1105.61,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 822.03,
       "nisar_passes": [
         {
           "date": "2026-10-05",
@@ -14984,6 +15018,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -15023,6 +15058,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -15045,8 +15081,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1105.61,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 822.03,
       "nisar_passes": [
         {
           "date": "2026-10-05",
@@ -15060,6 +15096,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -15099,6 +15136,7 @@
         }
       ],
       "nisar_water_km2": 1105.613,
+      "nisar_raised_km2": 822.034,
       "nisar_outside_floodplain_pct": 25.6
     },
     {
@@ -15121,8 +15159,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1780.64,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1083.77,
       "nisar_passes": [
         {
           "date": "2026-10-05",
@@ -15141,6 +15179,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15185,6 +15224,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15207,8 +15247,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1780.64,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1083.77,
       "nisar_passes": [
         {
           "date": "2026-10-12",
@@ -15222,6 +15262,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15261,6 +15302,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15283,8 +15325,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1780.64,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1083.77,
       "nisar_passes": [
         {
           "date": "2026-10-12",
@@ -15298,6 +15340,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15337,6 +15380,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15359,8 +15403,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1780.64,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1083.77,
       "nisar_passes": [
         {
           "date": "2026-10-12",
@@ -15374,6 +15418,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15413,6 +15458,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15435,8 +15481,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1780.64,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1083.77,
       "nisar_passes": [
         {
           "date": "2026-10-12",
@@ -15450,6 +15496,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15489,6 +15536,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15511,8 +15559,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1780.64,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1083.77,
       "nisar_passes": [
         {
           "date": "2026-10-12",
@@ -15526,6 +15574,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15565,6 +15614,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15587,8 +15637,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1780.64,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1083.77,
       "nisar_passes": [
         {
           "date": "2026-10-12",
@@ -15602,6 +15652,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15641,6 +15692,7 @@
         }
       ],
       "nisar_water_km2": 1780.637,
+      "nisar_raised_km2": 1083.773,
       "nisar_outside_floodplain_pct": 39.1
     },
     {
@@ -15663,8 +15715,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 5064.21,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 4448.31,
       "nisar_passes": [
         {
           "date": "2026-10-12",
@@ -15683,6 +15735,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -15727,6 +15780,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -15749,8 +15803,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 12417.04,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 11851.55,
       "nisar_passes": [
         {
           "date": "2026-10-17",
@@ -15764,6 +15818,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -15803,6 +15858,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -15825,8 +15881,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1991.06,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1340.89,
       "nisar_passes": [
         {
           "date": "2026-10-17",
@@ -15840,6 +15896,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -15879,6 +15936,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -15901,8 +15959,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1956.71,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1306.54,
       "nisar_passes": [
         {
           "date": "2026-10-17",
@@ -15916,6 +15974,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -15955,6 +16014,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -15977,8 +16037,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 1956.71,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1306.54,
       "nisar_passes": [
         {
           "date": "2026-10-17",
@@ -15992,6 +16052,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -16031,6 +16092,7 @@
         }
       ],
       "nisar_water_km2": 1956.71,
+      "nisar_raised_km2": 1306.543,
       "nisar_outside_floodplain_pct": 33.2
     },
     {
@@ -16053,8 +16115,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 2344.38,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1461.3,
       "nisar_passes": [
         {
           "date": "2026-10-17",
@@ -16073,6 +16135,7 @@
         }
       ],
       "nisar_water_km2": 2344.381,
+      "nisar_raised_km2": 1461.3,
       "nisar_outside_floodplain_pct": 37.7
     },
     {
@@ -16117,6 +16180,7 @@
         }
       ],
       "nisar_water_km2": 2344.381,
+      "nisar_raised_km2": 1461.3,
       "nisar_outside_floodplain_pct": 37.7
     },
     {
@@ -16139,8 +16203,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 2344.38,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1461.3,
       "nisar_passes": [
         {
           "date": "2026-10-24",
@@ -16154,6 +16218,7 @@
         }
       ],
       "nisar_water_km2": 2344.381,
+      "nisar_raised_km2": 1461.3,
       "nisar_outside_floodplain_pct": 37.7
     },
     {
@@ -16193,6 +16258,7 @@
         }
       ],
       "nisar_water_km2": 2344.381,
+      "nisar_raised_km2": 1461.3,
       "nisar_outside_floodplain_pct": 37.7
     },
     {
@@ -16215,8 +16281,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 2344.38,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1461.3,
       "nisar_passes": [
         {
           "date": "2026-10-24",
@@ -16230,6 +16296,7 @@
         }
       ],
       "nisar_water_km2": 2344.381,
+      "nisar_raised_km2": 1461.3,
       "nisar_outside_floodplain_pct": 37.7
     },
     {
@@ -16269,6 +16336,7 @@
         }
       ],
       "nisar_water_km2": 2344.381,
+      "nisar_raised_km2": 1461.3,
       "nisar_outside_floodplain_pct": 37.7
     },
     {
@@ -16291,8 +16359,8 @@
         "Crítico"
       ],
       "label": "Flood risk with NISAR-observed water (candidate)",
-      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
-      "critical_km2": 2344.38,
+      "note": "Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain (mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not raise risk. Candidate water — never confirmed; no pass ≠ no risk.",
+      "critical_km2": 1461.3,
       "nisar_passes": [
         {
           "date": "2026-10-24",
@@ -16306,6 +16374,7 @@
         }
       ],
       "nisar_water_km2": 2344.381,
+      "nisar_raised_km2": 1461.3,
       "nisar_outside_floodplain_pct": 37.7
     },
     {
@@ -16345,6 +16414,7 @@
         }
       ],
       "nisar_water_km2": 2344.381,
+      "nisar_raised_km2": 1461.3,
       "nisar_outside_floodplain_pct": 37.7
     }
   ]
