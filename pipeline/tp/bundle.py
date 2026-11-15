@@ -16,6 +16,7 @@ EPSG:3857, palette RGBA) instead of re-implementing the render path.
 from __future__ import annotations
 
 import datetime as dt
+import functools
 import json
 import re
 import sys
@@ -67,7 +68,10 @@ MASK_PRODUCTS = {
         0.001, 10.0),
 }
 
-POP_PATTERNS = ("*_pop_*.tif", "*_gpw_*.tif", "*_population_*.tif")
+# Prefer the native 30 arc-sec GPW count grid (<case>_pop_gpw_native.tif);
+# the ~1 km GEE pop export is only a fallback (it under-counts ~13%).
+POP_PATTERNS = ("*_pop_gpw_native.tif", "*_pop_*.tif", "*_gpw_*.tif",
+                "*_population_*.tif")
 
 _FORECAST_RE = re.compile(r"_tpi_forecast_d(\d)_(\d{8})")
 _DATE_RE = re.compile(r"\d{8}")
@@ -309,8 +313,9 @@ def _critical_stats(bands_by_date: dict, pop_cog: Path | None,
     metrics scalar: area of pixels with TPI > TPI_THRESHOLD (strict — doc class table), per hazard,
     geodesic on the source lon/lat grid (per-row cos(lat) correction);
     critical_km2 is the slide∪flood union. people_critical = GPWv4 count
-    under the union via coverage-fraction reproject to the ~1 km GPW grid
-    (GPW -3.4e38 water/nodata values masked)."""
+    under the union via coverage-fraction reproject of the mask onto the
+    NATIVE 30 arc-sec GPW count grid (load_gpw_native already maps nodata
+    and negatives — GPW marks water/uninhabited -3.4e38 — to 0)."""
     import rasterio.warp
 
     stats = {}
@@ -340,18 +345,14 @@ def _critical_stats(bands_by_date: dict, pop_cog: Path | None,
                   for h, m in per_hazard.items()}
         n_people = None
         if pop_cog is not None and people:
-            with rasterio.open(pop_cog) as ps:
-                frac = np.zeros((ps.height, ps.width), dtype=np.float32)
-                rasterio.warp.reproject(
-                    mask.astype(np.float32), frac,
-                    src_transform=tr, src_crs=crs,
-                    dst_transform=ps.transform, dst_crs=ps.crs,
-                    resampling=rasterio.warp.Resampling.average)
-                parr = np.asarray(ps.read(1), dtype=np.float64)
-                # GPW marks water/uninhabited as -3.4e38 with no nodata tag
-                pvalid = _valid(parr, ps.nodata) & (parr >= 0)
-                n_people = int(round(float(
-                    (frac * np.where(pvalid, parr, 0.0)).sum())))
+            parr, ptr = _pop_grid(str(pop_cog))
+            frac = np.zeros(parr.shape, dtype=np.float32)
+            rasterio.warp.reproject(
+                mask.astype(np.float32), frac,
+                src_transform=tr, src_crs=crs,
+                dst_transform=ptr, dst_crs="EPSG:4326",
+                resampling=rasterio.warp.Resampling.average)
+            n_people = int(round(float((frac * parr).sum())))
         stats[day.isoformat()] = {
             "critical_km2": round(float((mask * px_km2[:, None]).sum()), 3),
             "critical_slide_km2": hz_km2.get("slide"),
@@ -360,16 +361,22 @@ def _critical_stats(bands_by_date: dict, pop_cog: Path | None,
     return stats
 
 
-def _pop_sum(pop_path: Path, geom: dict) -> float:
-    import rasterio.features
+@functools.lru_cache(maxsize=4)
+def _pop_grid(pop_path: str):
+    """(float64 count array >= 0, affine) of a native GPW count raster —
+    nodata and negatives already mapped to 0 by load_gpw_native."""
+    from tp.response_summary import load_gpw_native
+    return load_gpw_native(pop_path)
 
-    with rasterio.open(pop_path) as src:
-        mask = rasterio.features.geometry_mask(
-            [geom], out_shape=(src.height, src.width),
-            transform=src.transform, invert=True)
-        arr = np.asarray(src.read(1), dtype=np.float64)
-        vals = arr[mask & _valid(arr, src.nodata)]
-    return float(vals.sum())
+
+def _pop_sum(pop_path: Path, geom: dict) -> float:
+    """People inside `geom` (GeoJSON dict, EPSG:4326): count × area(cell ∩
+    polygon)/area(cell) summed on the native 30 arc-sec GPW grid — the same
+    exact-intersection method the Now response summary uses."""
+    from shapely.geometry import shape
+    from tp.response_summary import people_geom
+    v = people_geom(shape(geom), _pop_grid(str(pop_path)))
+    return float(v) if v is not None else 0.0
 
 
 def _stamp_status(path: Path, status: str) -> None:
@@ -625,7 +632,8 @@ def publish_case(event_id: str, dry_run: bool = False,
             [{"geometry": shape(z["geometry"]), "hazard": z["hazard"],
               "tpi": z["tpi"], "class": z["class"]} for z in zones],
             geometry="geometry", crs="EPSG:4326")
-        gdf["area_km2"] = gdf.to_crs(gdf.estimate_utm_crs()).area / 1e6
+        from tp.response_summary import geodesic_km2
+        gdf["area_km2"] = [geodesic_km2(g) for g in gdf["geometry"]]
         places = _load_places(gj_dir / "places.geojson")
         muni = _load_municipal(gj_dir / "municipal_boundaries.geojson")
         if not muni and not places:
@@ -639,7 +647,7 @@ def publish_case(event_id: str, dry_run: bool = False,
             if pop is None:
                 return None
             try:
-                return int(_pop_sum(pop, geom.__geo_interface__))
+                return int(round(_pop_sum(pop, geom.__geo_interface__)))
             except (OSError, ValueError) as e:
                 null("priority_zones.people", f"{pop.name}: {e}")
                 return None

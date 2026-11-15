@@ -43,11 +43,11 @@
       "official_warning_delta_h": -71.83333333333333,
       "first_critical_at": "2025-11-30",
       "official_warning_at": "2025-12-06T00:10:00Z",
-      "critical_km2": 4127.458,
+      "critical_km2": 4129.437,
       "critical_km2_date": "2025-12-12",
-      "people_critical": 229782,
-      "critical_slide_km2": 2662.718,
-      "critical_flood_km2": 1464.74,
+      "people_critical": 254263,
+      "critical_slide_km2": 2663.825,
+      "critical_flood_km2": 1465.612,
       "_null_reasons": {
         "lead_time_median_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
         "lead_time_iqr_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
@@ -76,7 +76,7 @@
       "night_light_drop_pct": 43.920046430346254,
       "ntl_mean_before": 0.7456146430292379,
       "ntl_mean_after": 0.4181403456193361,
-      "people_flooded": 1150.8775801961883,
+      "people_flooded": 949,
       "flood_source": "nisar",
       "cloud_pct": 92.89292282546754,
       "iou": 0.08159565666049996,
@@ -1696,7 +1696,14 @@
       "alarm_pod_before_onset_pct": 100.0,
       "alarm_lead_h_median": 56.0,
       "alarm_baseline_pct": 10.0,
-      "alarm_lift": 1.97
+      "alarm_lift": 1.97,
+      "withdrawn": {
+        "people_flooded": {
+          "value": 1150.8775801961883,
+          "reason": "GEE GPW path (~1 km resample, whole-cell sampling) — superseded by the native 30\" exact-fraction count (people audit, 2026-11-15)"
+        }
+      },
+      "people_flooded_method": "GPW v4.11 2020 population count (UNADJUSTED) on its native 30\" grid, each cell weighted by the exact fraction covered by the union of the 122 NISAR-mapped flood-candidate polygons (geojson/flood_confirmed.geojson, 28.56 km² as polygons vs 27.99 km² canonical raster area); tp.response_summary.people_geom"
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -1738,7 +1745,7 @@
       "official_warning_at": "2024-04-26T16:50:00Z",
       "critical_km2": 10870.642,
       "critical_km2_date": "2024-05-03",
-      "people_critical": 1488833,
+      "people_critical": 1681783,
       "critical_slide_km2": 3223.806,
       "critical_flood_km2": 7646.837,
       "_null_reasons": {

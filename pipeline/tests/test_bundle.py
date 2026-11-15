@@ -220,6 +220,44 @@ def test_dry_run_writes_nothing(tmp_path):
     assert json.loads(events.read_text())["events"][0]["layers"] == []
 
 
+def test_zone_people_native_area_fraction(tmp_path):
+    """B1 regression: zone + critical-area `people` weight each GPW cell by
+    area(cell ∩ polygon)/area(cell) on the native count grid — never the
+    whole cell; nodata (-3.4e38) and negatives count as 0. Fails on ANY
+    negative people in the published products."""
+    d = _data_dir(tmp_path)
+    tpi = _tpi()
+    tpi[2:4, 2:4] = 0.9        # exactly GPW cell (1,1) at res 0.02
+    tpi[10, 10] = 0.9          # quarter of cell (5,5): 40 -> 10
+    tpi[15, 15] = 0.9          # quarter of a -3.4e38 nodata cell -> 0
+    tpi[6, 6] = 0.9            # quarter of a -7 cell (no nodata tag) -> 0
+    _write_cog(d / "cog" / "rs_2024_tpi_slide_20240502.tif", [tpi], ["20240502"])
+    _write_places(d / "geojson", [(-51.96, -29.03, "Town")])
+    pop = np.zeros((10, 10), np.float32)
+    pop[1, 1] = 100.0
+    pop[5, 5] = 40.0
+    pop[7, 7] = -3.4e38
+    pop[3, 3] = -7.0
+    _write_cog(d / "cog" / "rs_2024_pop_gpw_native.tif", [pop],
+               res=0.02, nodata=-3.4e38)
+    (d / "series" / "rs_2024_rain_soil_20240502.json").write_text(
+        json.dumps({"imerg_mm": 1.0, "smap": 0.5}))
+
+    publish_case("rs-2024-05", data_dir=tmp_path / "data")
+
+    for name in ("priority_zones", "critical_areas"):
+        fc = json.loads((d / "geojson" / f"{name}.geojson").read_text())
+        people = [f["properties"]["people"] for f in fc["features"]]
+        assert all(p is not None and p >= 0 for p in people)   # never < 0, never -3.4e38
+        assert sorted(people, reverse=True) == [100, 10, 0, 0]
+    ser = json.loads((d / "series" / "imerg_smap_daily.json").read_text())
+    day = ser["days"][0]
+    assert day["people_critical"] == 110                       # 100 + 10 + 0 + 0
+    assert day["people_critical"] >= 0
+    met = json.loads((tmp_path / "data" / "metrics.json").read_text())
+    assert met["cases"]["rs_2024"]["people_critical"] == 110
+
+
 def test_critical_stats_matches_independent_count(tmp_path):
     """series days[].critical_* and the metrics scalar share ONE definition:
     pixel count with TPI > 0.6, geodesic px area, per hazard + union."""
