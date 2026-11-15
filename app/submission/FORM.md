@@ -51,9 +51,9 @@ Paste from `project-page.md` → "Detailed Project Description". Its sections ar
 
 ## 6. Use of Super Intelligence (SI)
 
-This field is for data collection only and is not shown to judges. Source: `ai-declaration.md` (awaiting Lucas).
+This field is for data collection only and is not shown to judges. Source: `ai-declaration.md`. One open item: the voiceover line.
 
-> Yes. We used AI coding assistants (Anthropic Claude via Claude Code, Cognition Devin, OpenAI Codex/GPT) under human direction. They helped write and review code for the data pipeline and the web app, and drafted documentation and submission text. The team wrote the idea and the method — the Tipping Point Index, the choice of NASA datasets, and the replay and radar flood-candidate design — in our own project document before any AI-assisted build, and every data source, threshold and reported number was reviewed by the team. The AI use is acknowledged in descriptive text in both repository READMEs ("Use of AI") and in commit metadata (Co-Authored-By trailers). No AI-generated images, video or audio appear in the project or the demo; the demo is a screen recording of the real app with a human voiceover `[if a synthetic voice is used instead: "The demo voiceover is AI-generated text-to-speech" + note in the video description and file metadata]`.
+> Yes. The team used AI assistants under human direction throughout the hackathon. Tools: Anthropic Claude (Claude Code, Claude Opus models) to plan, write and review code, documentation and submission text and to script the demo recording; Cognition Devin to implement scoped coding tasks; jcode with OpenAI GPT models for research (literature, datasets, official sources) and independent code and science reviews. What the humans did: the team wrote the idea and the method — the Tipping Point Index, the choice of NASA datasets, the replay and radar flood-candidate design — in our own project document (docs/PLAN.md) before any AI-assisted build; a team member directed every task, made every product and wording decision, and reviewed every data source, threshold and reported number (several numbers were withdrawn or corrected after those reviews). Acknowledgements: descriptive text in the repository README ("Use of AI") and commit metadata (Co-Authored-By trailers on AI-assisted commits). Images and video: the app screens and screenshots show real data; the demo video is a screen recording of the real app with text overlays and captions; two explanatory diagrams (what-nisar-sees, future-of-nisar) were drawn as SVG code by an AI assistant from our text and carry a visible "AI-assisted diagram" label; no AI-generated photographs or footage are used. Voiceover: [synthetic or recorded — Lucas]. If synthetic: "The demo voiceover is AI-generated text-to-speech", stated in the video description and in the file metadata.
 
 ## 7. NASA Data
 
@@ -85,7 +85,8 @@ Source: `nasa-data.md` (awaiting Lucas):
 >
 > **Related NASA work (cited, not reused):** LHASA v2 — Stanley, T. A., et al. (2021), *Frontiers in Earth Science*, doi:10.3389/feart.2021.640043; LHASA-F — Khan, S., et al. (2022), *Frontiers in Earth Science*, doi:10.3389/feart.2022.878996.
 >
-> **Uruguay River flood, Oct–Nov 2026 (press, not official):** Encontra Uruguaiana, "Cheia do Rio Uruguai mantém alerta na Fronteira Oeste" (Nov 13, 2026); Jornal do Comércio (Oct 2026); Correio da Manhã (Oct 2026). Official red alerts for Itaqui and Uruguaiana: Government of Rio Grande do Sul / Defesa Civil RS, Jul 26–29, 2026.
+> **Uruguay River flood, Oct 2026:** ANA (Agência Nacional de Águas e Saneamento Básico) river-gauge telemetry, Uruguaiana station 77150000 (flood stage 8.50 m; above it Oct 5–21, crest 10.02 m on Oct 16). Official red alerts for Itaqui and Uruguaiana: Government of Rio Grande do Sul / Defesa Civil RS, Jul 26–29, 2026.
+> **RS 2024 first deaths (onset, Apr 29, 2024):** MetSul technical report (laudo), https://metsul.com/wp-content/uploads/2024/06/metsul-laudo_V4_assinado.pdf.
 >
 > **Code and tools (open source):** Next.js, React, MapLibre GL, Recharts, Tailwind CSS, geotiff/georaster, the Google Earth Engine API, earthaccess, asf_search, xarray, rioxarray, rasterio, h5py, NumPy, SciPy, pandas, geopandas, scikit-image, scikit-learn, XGBoost, SHAP, cfgrib/ecCodes, Playwright (demo recording) and ffmpeg.
 >

@@ -358,11 +358,17 @@ Apache-2.0 (see `LICENSE`). Team [TEAM NAME], Local Event Florianópolis — NAS
 
 ## Use of AI
 
-Built with AI coding assistants (Anthropic Claude via Claude Code, Cognition
-Devin, OpenAI Codex/GPT) under human direction: they wrote and reviewed code
-and drafted docs. The idea, method and data choices come from the team's own
-project document (`docs/PLAN.md`); every source, threshold and reported number
-was reviewed by the team. AI-assisted commits carry a `Co-Authored-By` trailer.
+Built with AI assistants under human direction: Anthropic Claude (Claude Code,
+Claude Opus models) for planning, code, documentation, submission text and the
+demo-recording scripts; Cognition Devin for scoped coding tasks; jcode with
+OpenAI GPT models for research and independent code/science reviews. The idea,
+method and data choices come from the team's own project document
+(`docs/PLAN.md`); a team member directed every task and decision, and every
+source, threshold and reported number was reviewed by the team (several were
+withdrawn or corrected after review). AI-assisted commits carry a
+`Co-Authored-By` trailer. The app and the demo video show real app screens;
+two explanatory diagrams were drawn as SVG by an AI assistant and are labelled
+"AI-assisted diagram". Demo voiceover: [synthetic or recorded — Lucas].
 
 ## Rules
 
