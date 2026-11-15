@@ -202,6 +202,23 @@ def merge(data_root: Path, res: dict) -> None:
         blob[f"{key}_observed_pct"] = r["observed"]["alto_or_critico_pct"] if r["observed"] else None
         blob[f"{key}_basis"] = "forecast_gfs (issued 24-48 h before the anchor)"
     rsb = m["cases"]["rs_2024"]
+    # per-lead flat keys (headline candidate): issue lead 24/48/72 h before the anchor
+    r = res["rs_2024"]
+    obs = {c["hours_before_anchor"]: c for c in r["by_date_observed"]}
+    gfs = {g["hours_before_anchor"]: g for g in r["by_issue_gfs"]}
+    for h in (24, 48, 72):
+        o, g = obs.get(float(h)), gfs.get(float(h))
+        rsb[f"slide_warned_gfs_{h}h_pct"] = g["alto_or_critico_pct"] if g else None
+        rsb[f"slide_warned_gfs_{h}h_critical_pct"] = g["critico_pct"] if g else None
+        rsb[f"slide_warned_observed_{h}h_pct"] = o["alto_or_critico_pct"] if o else None
+        rsb[f"slide_warned_observed_{h}h_critical_pct"] = o["critico_pct"] if o else None
+    rsb["slide_warned_n"] = r["n_points"]
+    rsb["slide_warned_by_lead_definition"] = (
+        "slide_warned_{gfs|observed}_{24|48|72}h[_critical]_pct = % of the 16,027 RS 2024 inventory "
+        "landslide points whose ~90 m TPI_slide cell was Alto+ (>= 0.4) [Crítico > 0.6] in: gfs = the "
+        "NOAA GFS 00Z run issued 24/48/72 h before 2024-05-01 00Z (max over its d1..d3 frames depicting "
+        "dates <= 2024-05-01); observed = the observed TPI band dated 24/48/72 h before (rain ending that "
+        "day 00Z, latency ignored). Points on TPI no-data stay in the denominator.")
     rsb["flood_warned_pct"] = None
     rsb.setdefault("_null_reasons", {})["flood_warned_pct"] = (
         "no flood reference map for RS 2024: event predates NISAR, OPERA DSWx-HLS was 100 % cloud, "
