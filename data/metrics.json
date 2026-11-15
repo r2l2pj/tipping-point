@@ -13906,7 +13906,8 @@
       "version": "v0",
       "_null_reasons": {
         "critical_km2": "TPI replay for this case not yet computed (v1 in progress)",
-        "flood_warned_pct": "TPI replay not yet computed"
+        "flood_warned_pct": "TPI replay not yet computed",
+        "nisar_082d_candidates": "pairs Sep 23 -> Oct 5 / 17 / 29: per-scene threshold at the -15 dB clamp -> rejected by the R2 guard; field darkening 202 of 212 km2 (Oct 5) = rice-paddy irrigation signature, not river flood"
       },
       "nisar_pair": {
         "pre": "2026-09-30",
@@ -13915,6 +13916,18 @@
         "direction": "descending",
         "frame": 103,
         "collection": "NISAR_L2_GCOV_PROVISIONAL_V1"
+      },
+      "nisar_082d": {
+        "dates": [
+          "2026-09-23",
+          "2026-10-05",
+          "2026-10-17",
+          "2026-10-29"
+        ],
+        "track": "082 D f103",
+        "layers": "nisar_frame HH/HV",
+        "candidates": null,
+        "reason": "pairs Sep 23 -> Oct 5 / 17 / 29: per-scene threshold at the -15 dB clamp -> rejected by the R2 guard; field darkening 202 of 212 km2 (Oct 5) = rice-paddy irrigation signature, not river flood"
       }
     }
   }
