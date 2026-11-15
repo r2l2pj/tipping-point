@@ -1,0 +1,651 @@
+{
+ "candidate": "T = clip(1 - HAND/30 m) and 0 where 90 m slope > 5 deg",
+ "live": "T = 1 at HAND <= 5 m ramp to 0 at 15 m, 0 where slope > 5 deg",
+ "rs_2024": {
+  "reference": "Copernicus EMS EMSR720 flood extent, 5 Taquari AOIs",
+  "frames": "max TPI_flood over 20240429..20240505 (observed replay)",
+  "reproduction_mean_abs_err_vs_published": [
+   0.0107,
+   0.0036,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0007
+  ],
+  "t_zero_share_in_aois": {
+   "old": 0.932,
+   "new": 0.798
+  },
+  "aois": {
+   "old": {
+    "auc": 0.6071,
+    "truth_high_pct": 25.48,
+    "truth_crit_pct": 17.05,
+    "flagged_high_pct_of_area": 6.84,
+    "lift_high": 3.73,
+    "flagged_high_km2": 17.4
+   },
+   "new": {
+    "auc": 0.8474,
+    "truth_high_pct": 79.23,
+    "truth_crit_pct": 77.23,
+    "flagged_high_pct_of_area": 19.7,
+    "lift_high": 4.02,
+    "flagged_high_km2": 50.2
+   },
+   "control_live_formula_90m": {
+    "auc": 0.6445,
+    "truth_high_pct": 30.97,
+    "truth_crit_pct": 22.75,
+    "flagged_high_pct_of_area": 8.22,
+    "lift_high": 3.77,
+    "flagged_high_km2": 21.0
+   }
+  },
+  "case_wide_high_km2": {
+   "old": 8620.7,
+   "new": 11986.2,
+   "control": 8764.2
+  },
+  "case_wide_crit_km2": {
+   "old": 7972.1,
+   "new": 10948.7
+  }
+ },
+ "rs_uruguai_2026": {
+  "region": "Uruguaiana-Itaqui corridor (-57.25,-29.85,-56.45,-29.05)",
+  "replay": "observed IMERG replay (local rain only, no upstream term)",
+  "t_mean_region": {
+   "old": 0.741,
+   "new": 0.675
+  },
+  "nisar_polygons_lift": {
+   "20260930": {
+    "old": {
+     "auc": 0.9351,
+     "truth_high_pct": 94.12,
+     "truth_crit_pct": 88.24,
+     "flagged_high_pct_of_area": 30.11,
+     "lift_high": 3.13,
+     "flagged_high_km2": 1870.0
+    },
+    "new": {
+     "auc": 0.9622,
+     "truth_high_pct": 100.0,
+     "truth_crit_pct": 94.12,
+     "flagged_high_pct_of_area": 36.16,
+     "lift_high": 2.77,
+     "flagged_high_km2": 2246.0
+    },
+    "control": {
+     "auc": 0.9658,
+     "truth_high_pct": 94.12,
+     "truth_crit_pct": 88.24,
+     "flagged_high_pct_of_area": 22.52,
+     "lift_high": 4.18,
+     "flagged_high_km2": 1399.0
+    }
+   },
+   "20261012": {
+    "old": {
+     "auc": 0.5,
+     "truth_high_pct": 0.0,
+     "truth_crit_pct": 0.0,
+     "flagged_high_pct_of_area": 0.0,
+     "lift_high": null,
+     "flagged_high_km2": 0.0
+    },
+    "new": {
+     "auc": 0.5,
+     "truth_high_pct": 0.0,
+     "truth_crit_pct": 0.0,
+     "flagged_high_pct_of_area": 0.0,
+     "lift_high": null,
+     "flagged_high_km2": 0.0
+    },
+    "control": {
+     "auc": 0.5,
+     "truth_high_pct": 0.0,
+     "truth_crit_pct": 0.0,
+     "flagged_high_pct_of_area": 0.0,
+     "lift_high": null,
+     "flagged_high_km2": 0.0
+    }
+   }
+  },
+  "days_high_ge5pct_of_region": {
+   "old": 9,
+   "new": 9,
+   "control": 9
+  },
+  "daily": {
+   "20260928": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20260929": {
+    "old": {
+     "high_pct_region": 0.11,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.02,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20260930": {
+    "old": {
+     "high_pct_region": 30.11,
+     "crit_pct_region": 12.25
+    },
+    "new": {
+     "high_pct_region": 36.16,
+     "crit_pct_region": 10.53
+    },
+    "control": {
+     "high_pct_region": 22.52,
+     "crit_pct_region": 6.17
+    }
+   },
+   "20261001": {
+    "old": {
+     "high_pct_region": 26.26,
+     "crit_pct_region": 10.59
+    },
+    "new": {
+     "high_pct_region": 31.85,
+     "crit_pct_region": 8.29
+    },
+    "control": {
+     "high_pct_region": 19.24,
+     "crit_pct_region": 4.91
+    }
+   },
+   "20261002": {
+    "old": {
+     "high_pct_region": 9.15,
+     "crit_pct_region": 0.84
+    },
+    "new": {
+     "high_pct_region": 10.61,
+     "crit_pct_region": 0.02
+    },
+    "control": {
+     "high_pct_region": 5.01,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261003": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261004": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261005": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261006": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261007": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261008": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261009": {
+    "old": {
+     "high_pct_region": 25.45,
+     "crit_pct_region": 0.64
+    },
+    "new": {
+     "high_pct_region": 23.75,
+     "crit_pct_region": 0.11
+    },
+    "control": {
+     "high_pct_region": 22.61,
+     "crit_pct_region": 0.47
+    }
+   },
+   "20261010": {
+    "old": {
+     "high_pct_region": 16.08,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 14.2,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 13.72,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261011": {
+    "old": {
+     "high_pct_region": 44.5,
+     "crit_pct_region": 26.44
+    },
+    "new": {
+     "high_pct_region": 45.77,
+     "crit_pct_region": 21.77
+    },
+    "control": {
+     "high_pct_region": 40.67,
+     "crit_pct_region": 21.25
+    }
+   },
+   "20261012": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261013": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261014": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261015": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261016": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261017": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261018": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261019": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261020": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261021": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261022": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261023": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261024": {
+    "old": {
+     "high_pct_region": 30.45,
+     "crit_pct_region": 13.25
+    },
+    "new": {
+     "high_pct_region": 35.57,
+     "crit_pct_region": 10.67
+    },
+    "control": {
+     "high_pct_region": 23.33,
+     "crit_pct_region": 7.37
+    }
+   },
+   "20261025": {
+    "old": {
+     "high_pct_region": 61.52,
+     "crit_pct_region": 38.95
+    },
+    "new": {
+     "high_pct_region": 70.04,
+     "crit_pct_region": 36.07
+    },
+    "control": {
+     "high_pct_region": 53.16,
+     "crit_pct_region": 25.21
+    }
+   },
+   "20261026": {
+    "old": {
+     "high_pct_region": 9.27,
+     "crit_pct_region": 0.43
+    },
+    "new": {
+     "high_pct_region": 8.95,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 6.21,
+     "crit_pct_region": 0.14
+    }
+   },
+   "20261027": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261028": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261029": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261030": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261031": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   },
+   "20261101": {
+    "old": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "new": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    },
+    "control": {
+     "high_pct_region": 0.0,
+     "crit_pct_region": 0.0
+    }
+   }
+  }
+ },
+ "wa_2025": {
+  "reference": "NISAR GCOV flood candidates (post 2025-12-16), inside the NISAR raster extent",
+  "frames": "max TPI_flood over 20251208..20251212 (observed replay)",
+  "terrain_source": "MERIT Hydro hnd + NASADEM slope at 90 m via GEE (evaluation only)",
+  "t_zero_share": {
+   "old": 0.872,
+   "new": 0.678
+  },
+  "swath": {
+   "old": {
+    "auc": 0.9341,
+    "truth_high_pct": 97.44,
+    "truth_crit_pct": 67.72,
+    "flagged_high_pct_of_area": 10.62,
+    "lift_high": 9.18,
+    "flagged_high_km2": 1302.0
+   },
+   "new": {
+    "auc": 0.8273,
+    "truth_high_pct": 98.09,
+    "truth_crit_pct": 57.98,
+    "flagged_high_pct_of_area": 26.66,
+    "lift_high": 3.68,
+    "flagged_high_km2": 3271.6
+   },
+   "control_live_formula_90m": {
+    "auc": 0.8496,
+    "truth_high_pct": 98.09,
+    "truth_crit_pct": 70.06,
+    "flagged_high_pct_of_area": 21.93,
+    "lift_high": 4.47,
+    "flagged_high_km2": 2690.3
+   }
+  },
+  "note": "flood_warned (GFS forecast frames) not re-scored here: forecast R not stored per frame"
+ }
+}
