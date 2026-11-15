@@ -230,7 +230,7 @@ def task_rs2024() -> tuple[dict, dict, dict]:
                     for t in (stats.get("hls_times") or [])})
     flat["hls_scene_dates"] = dates
     flat["cloud_pct_source"] = (
-        f"HLS v2.0 Fmask (HLSL30 Landsat + HLSS30 Sentinel-2), cloud/adjacent/"
+        f"NASA HLS v2.0 Fmask (HLSL30 + HLSS30), cloud/adjacent/"
         f"shadow/snow bits 1-4; {flat['hls_scenes']} scenes on "
         f"{', '.join(dates) or 'none'} ({PEAK_RS[0]}..2024-05-03) over the AOI; "
         f"a pixel counts clear if clear in ANY scene")

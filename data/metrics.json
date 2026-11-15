@@ -5334,7 +5334,7 @@
       "slide_warned_observed_72h_critical_pct": 0.0,
       "slide_warned_n": 16027,
       "slide_warned_by_lead_definition": "slide_warned_{gfs|observed}_{24|48|72}h[_critical]_pct = % of the damage reference (% of inventory points) whose ~90 m TPI cell was Alto+ (> 0.4) [Crítico > 0.6] in: gfs = the NOAA GFS 00Z run issued on the UTC date of (onset - 24/48/72 h), i.e. at least that many hours before the event onset 2024-04-29 00:00 BRT (UTC-3) (max over its d1..d3 frames depicting dates <= the onset day); observed = the observed TPI band dated that day (rain ending that day 00Z, latency ignored). Onset = event onset: first deaths of the event (2 flood deaths, Paverama, 2024-04-29); heavy rain from 2024-04-27, stalled from 04-29. Locations on TPI no-data stay in the denominator. Sensitivity anchors in slide_warned.sensitivity.",
-      "cloud_pct_source": "HLS v2.0 Fmask (HLSL30 Landsat + HLSS30 Sentinel-2), cloud/adjacent/shadow/snow bits 1-4; 20 scenes on 2024-05-01, 2024-05-02, 2024-05-03 (2024-05-01..2024-05-03) over the AOI; a pixel counts clear if clear in ANY scene",
+      "cloud_pct_source": "NASA HLS v2.0 Fmask (HLSL30 + HLSS30), cloud/adjacent/shadow/snow bits 1-4; 20 scenes on 2024-05-01, 2024-05-02, 2024-05-03 (2024-05-01..2024-05-03) over the AOI; a pixel counts clear if clear in ANY scene",
       "hls_scene_dates": [
         "2024-05-01",
         "2024-05-02",
