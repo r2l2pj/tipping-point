@@ -298,3 +298,15 @@ test("Now: a rejected flood pair still offers NISAR Before / after once the Now 
   expect(withStack.compare.reason).toBeUndefined();
   expect(without.compare.reason === undefined || /no comparable/.test(without.compare.reason ?? "")).toBe(true);
 });
+
+test("WA pair-only: nisar_ref (Nov 10) is a pass too; RS 2024 says NISAR came later", async () => {
+  const { nisarPairDays, noRadarText } = await import("./radar");
+  const wa = { id: "wa_2025", mode: "replay", bbox: [0, 0, 1, 1], manifest: { event: "wa_2025", layers: [
+    { id: "nisar_ref", date: "2025-11-10", png: "ref.png" }, { id: "nisar_pre", date: "2025-12-04", png: "pre.png" }, { id: "nisar_post", date: "2025-12-16", png: "post.png" },
+  ] } } as never;
+  expect(nisarPairDays(wa)).toEqual(["2025-11-10", "2025-12-04", "2025-12-16"]);
+  const ref = sidesCompare(wa, { L: { layer: "nisar", date: "2025-11-10", pol: "HH" }, R: { layer: "nisar", date: "2025-12-16", pol: "HH" } });
+  expect(ref.pair?.before.url).toContain("ref.png");
+  const rs = { id: "rs_2024", mode: "replay", bbox: [0, 0, 1, 1], reference_date: "2024-05-01", manifest: { layers: [] } } as never;
+  expect(noRadarText(rs)).toBe("NISAR launched Jul 2025 — no passes for this 2024 event; use Compare ⇆ on the map with Satellite for before/after");
+});

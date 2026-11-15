@@ -515,11 +515,11 @@ function nisarFrameFor(
     (l) => l.date?.slice(0, 10) === day && !!l.png
   );
   const ids = want === "HV"
-    ? ["nisar_hv_pre", "nisar_hv_post"]
-    : ["nisar_pre", "nisar_post", "radar_pre", "radar_post"];
+    ? ["nisar_hv_pre", "nisar_hv_post", "nisar_hv_ref"]
+    : ["nisar_pre", "nisar_post", "nisar_ref", "radar_pre", "radar_post"];
   const alt = want === "HV"
-    ? ["nisar_pre", "nisar_post", "radar_pre", "radar_post"]
-    : ["nisar_hv_pre", "nisar_hv_post"];
+    ? ["nisar_pre", "nisar_post", "nisar_ref", "radar_pre", "radar_post"]
+    : ["nisar_hv_pre", "nisar_hv_post", "nisar_hv_ref"];
   const layer = ids.map((id) => cand.find((l) => l.id === id)).find(Boolean)
     ?? alt.map((id) => cand.find((l) => l.id === id)).find(Boolean);
   if (!layer) return { pol: want, name: "NISAR" };

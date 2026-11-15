@@ -219,10 +219,21 @@ export function nisarTracks(bundle: CcBundle): NisarTrackStack[] {
 
 // Dates of the fixed nisar_(hv_)pre/post (radar_) pair layers, for cases
 // without a nisar_frame stack (WA, Now before the stack contract).
+// Conductor: a replay that predates NISAR says so plainly, with what to
+// use instead (the map's Compare ⇆ with the satellite imagery).
+export function noRadarText(bundle: CcBundle): string {
+  const ref = (bundle.series?.reference_date ?? bundle.reference_date ?? "").slice(0, 10);
+  if (bundle.mode === "replay" && ref && ref < "2025-07-01") {
+    return `NISAR launched Jul 2025 — no passes for this ${ref.slice(0, 4)} event; use Compare ⇆ on the map with Satellite for before/after`;
+  }
+  return NO_RADAR_TEXT;
+}
+
 export function nisarPairDays(bundle: CcBundle): string[] {
   const days = (bundle.manifest?.layers ?? [])
     .filter(
-      (l) => /^(nisar|radar)_(hv_)?(pre|post)$/.test(l.id) && typeof l.date === "string" && !!l.png
+      // nisar_ref (WA Nov 10) is a pass too (conductor).
+      (l) => /^(nisar|radar)_(hv_)?(pre|post|ref)$/.test(l.id) && typeof l.date === "string" && !!l.png
     )
     .map((l) => (l.date as string).slice(0, 10));
   return [...new Set(days)].sort();
@@ -272,7 +283,7 @@ function pairFor(
 
 export function radarCompare(bundle: CcBundle): CompareOption {
   const stack = nisarStack(bundle);
-  if (availability(bundle, "radar").state === "not-applicable" && !stack) return { kind: "radar", reason: NO_RADAR_TEXT };
+  if (availability(bundle, "radar").state === "not-applicable" && !stack) return { kind: "radar", reason: noRadarText(bundle) };
   const n = radarSensor(bundle).name;
   const hv = pairFor(bundle, "radar", "nisar_hv_pre", "nisar_hv_post", n,
     { before: `${n} before (HV)`, after: `${n} after (HV)` }).pair;
@@ -525,7 +536,7 @@ function baseRadarCard(bundle: CcBundle): RadarCard {
       ? (radarSensor(bundle).nisar
           ? "NISAR radar images available" // conductor (v6): plain headline, no product code
           : `Radar pair available — sensor ${radarSensor(bundle).note}`)
-      : bundle.mode === "live" ? AWAITING_PAIR_TEXT : `${NO_RADAR_TEXT}.`,
+      : bundle.mode === "live" ? AWAITING_PAIR_TEXT : `${noRadarText(bundle)}.`,
     dates: pre && post ? `${fmtDate(pre)} → ${fmtDate(post)}` : undefined,
     preIso: pre ? pre.slice(0, 10) : undefined,
     postIso: post ? post.slice(0, 10) : undefined,
