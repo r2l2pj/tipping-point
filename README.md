@@ -10,7 +10,9 @@ Produces the artifacts in `data/` consumed by
 [`r2l2pj/tipping-point-app`](https://github.com/r2l2pj/tipping-point-app).
 The contract between this repo and the app is
 [`data/SCHEMA.md`](data/SCHEMA.md) — read it first; the app never computes and
-never globs.
+never globs. Which calendar days a frame labelled X actually covers (the
+observed series ends at X−1; forecast and Now frames end at X) is in
+[`docs/conventions-dates.md`](docs/conventions-dates.md).
 
 ## Quickstart
 

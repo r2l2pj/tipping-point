@@ -41,7 +41,7 @@
         }
       ],
       "official_warning_delta_h": -71.83333333333333,
-      "first_critical_at": "2025-12-09",
+      "first_critical_at": "2025-11-30",
       "official_warning_at": "2025-12-06T00:10:00Z",
       "critical_km2": 4127.458,
       "critical_km2_date": "2025-12-12",
@@ -59,7 +59,8 @@
         "rf_auc": "cases.* rf_auc is the per-case key written only for rs_2024 by ml.local export from the 3a susceptibility TEST on S+SE Brazil blocks (metrics_ml.json 3a.models.rf_all.test.roc_auc); WA 2025 is not a 3a evaluation case — it is a held-out 3b trigger TEST event (ml/models/split_3b_events.csv: wa_2025,8,test,True), so no per-case RF AUC exists; its RandomForest TEST numbers live at metrics_ml.json by_lead.scopes.wa_2025.<lead 0-13>.{both|same_point|elsewhere}.rf_all and 3b.horizons.<24h|48h|72h|7d|14d>.{gfs|perfect}.rf_all.by_region.north_america (values there are being re-scored by ML v2, L33 — quote them from that file, not from here), surfaced as data/ml/ml_card.json trigger.<h>.<src>.rf_all.by_event.wa_2025.",
         "rule_auc": "cases.* rule_auc is the per-case key written only for rs_2024 by ml.local export from the 3a slope-rule TEST on S+SE Brazil blocks (metrics_ml.json 3a.models.rule_slope.test.roc_auc); WA 2025 is a held-out 3b TEST event, so no per-case rule AUC exists; the TPI>0.6 rule's WA TEST metrics live at metrics_ml.json by_lead.scopes.wa_2025.<lead 0-13>.{both|same_point|elsewhere}.rule_tpi and 3b.horizons.<24h|48h|72h|7d|14d>.{gfs|perfect}.rule_tpi.by_region.north_america (values there are being re-scored by ML v2, L33 — quote them from that file, not from here), surfaced as data/ml/ml_card.json trigger.<h>.<src>.rule_tpi.by_event.wa_2025.",
         "lead_time_mean_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
-        "feature_importance": "cases.* feature_importance is the served 3a T_ML model's gain share written only for rs_2024 by ml.local export (bundle_3a -> data/ml/feature_importance.json); WA 2025 is a held-out 3b TEST event, and importance is a property of the trained models, not a per-event metric — the 3b trigger model's importance lives at metrics_ml.json 3b.importance (gain_share / gain_share_feature / permutation_pr_auc_drop_test, exported to data/ml/feature_importance_3b.json)."
+        "feature_importance": "cases.* feature_importance is the served 3a T_ML model's gain share written only for rs_2024 by ml.local export (bundle_3a -> data/ml/feature_importance.json); WA 2025 is a held-out 3b TEST event, and importance is a property of the trained models, not a per-event metric — the 3b trigger model's importance lives at metrics_ml.json 3b.importance (gain_share / gain_share_feature / permutation_pr_auc_drop_test, exported to data/ml/feature_importance_3b.json).",
+        "lead_time_asavail": "as-available replay was never produced for wa_2025 (A5 run was rs_2024 only); not re-anchored to the L37 onset yet"
       },
       "lead_time_median_h": null,
       "lead_time_iqr_h": null,
@@ -867,7 +868,14 @@
         "fp": 22.579,
         "observed_px": 9766.461,
         "tp": 5.5805
-      }
+      },
+      "lead_time_anchor_basis": "onset",
+      "lead_time_anchor_utc": "2025-12-08T08:00:00+00:00",
+      "official_warning_delta_reference_utc": "2025-12-09T00:00:00+00:00",
+      "official_warning_delta_warning_utc": "2025-12-06T00:10:00Z",
+      "official_warning_delta_basis": "official_warning_at - first_critical_time: how long before the first observed TPI_slide >= 0.6 pixel anywhere in the AOI the published official warning was issued. Warning instant = official_warning_at (INMET 2024-04-26T16:50Z for RS; the earlier Canoas municipal notice 2024-04-25T20:40Z in events/rs-2024-05.json is not used here). NWS 2025-12-06 00:10Z for WA.",
+      "lead_time_anchor_source": "L37 onset: heavy rain began 2025-12-08 00:00 PST = 08:00Z; Skagit County EOC fully activated 21:00 PST. Source: WA EMD SEOC sitrep 25-4783 (2025-12-10) https://content.govdelivery.com/attachments/WAMILITARY/2025/12/11/file_attachments/3490229/SEOC_Sitrep-25-4783_12102025.pdf",
+      "first_critical_at_basis": "first date whose slide-union-flood per-day max TPI > 0.6 (bundle tpi_max over all *_tpi_{slide,flood}_* bands); differs from lead_time first_critical_time, which is the first TPI_slide-only pixel >= 0.6"
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -904,8 +912,8 @@
         ],
         "note": "TPI_slide sampled at the 16,027 RS landslide inventory points; at 1 km scale slope flattening kept the same series below 0.6."
       },
-      "official_warning_delta_h": -51.327777777777776,
-      "first_critical_at": "2024-05-02",
+      "official_warning_delta_h": -31.166666666666668,
+      "first_critical_at": "2024-04-28",
       "official_warning_at": "2024-04-26T16:50:00Z",
       "critical_km2": 10870.642,
       "critical_km2_date": "2024-05-03",
@@ -922,24 +930,24 @@
         "f1": "no NISAR water mask: event predates NISAR launch (Jul 2025), so NISAR-vs-OPERA F1 is undefined",
         "flood_warned_pct": "no flood reference map for RS 2024: event predates NISAR, OPERA DSWx-HLS was 100 % cloud, OPERA DSWx-S1 has no granules for 2024-05-01..20 (CMR) and the S1 RTC route is pending the ASF OPERA RTC-S1 EULA"
       },
-      "lead_time_median_h": -57.0,
+      "lead_time_median_h": -21.0,
       "lead_time_iqr_h": [
-        -57.0,
-        -57.0
+        -21.0,
+        -21.0
       ],
       "lead_time_n": 5678,
-      "warned_before_pct": 0.0,
-      "warned_24h_pct": 0.0,
+      "warned_before_pct": 0.7396970764353645,
+      "warned_24h_pct": 0.28178936245156744,
       "lead_time_hist": [
         31,
         0,
         0,
         0,
-        1070,
+        1065,
         0,
         0,
         0,
-        4530,
+        4540,
         0,
         0,
         0,
@@ -947,10 +955,10 @@
         0,
         0,
         0,
-        21
+        16
       ],
       "lead_time_hist_bin_h": 6,
-      "lead_time_hist_from_h": -108.0,
+      "lead_time_hist_from_h": -72.0,
       "never_critical_pct": null,
       "n_clusters": 5678,
       "metrics": {
@@ -973,20 +981,20 @@
       "hls_scenes": 20,
       "lead_time_asavail": {
         "basis": "as-available",
-        "lead_time_median_h": -33.0,
+        "lead_time_median_h": 3.0,
         "lead_time_iqr_h": [
-          -33.0,
-          -33.0
+          3.0,
+          3.0
         ],
-        "lead_time_n": 5609,
-        "warned_before_pct": 2.8703868782314137,
-        "warned_24h_pct": 0.0,
+        "lead_time_n": 5612,
+        "warned_before_pct": 76.60370634354953,
+        "warned_24h_pct": 4.597291518175338,
         "lead_time_hist": [
-          12,
+          9,
           0,
           0,
           0,
-          255,
+          256,
           0,
           0,
           0,
@@ -994,7 +1002,7 @@
           0,
           0,
           0,
-          397,
+          399,
           0,
           0,
           0,
@@ -1002,33 +1010,48 @@
           0,
           0,
           0,
-          4039,
+          4041,
           0,
           0,
           0,
-          96,
+          97,
           0,
           0,
           0,
           161
         ],
         "lead_time_hist_bin_h": 6,
-        "lead_time_hist_from_h": -156.0,
+        "lead_time_hist_from_h": -120.0,
         "never_critical_pct": null,
         "mode": "cluster_lead_vs_damage_anchor",
-        "n_clusters": 5609,
+        "n_clusters": 5612,
         "threshold_tpi": 0.6,
         "first_critical_time": "2024-04-27 00:00:00+00:00",
-        "event_lead_h": 15.0,
-        "official_warning_delta_h": -27.32777777777778,
-        "damage_anchor": {
-          "at": "2024-04-27",
-          "source": "MetSul meteorological report commissioned by Canoas city government"
-        },
+        "event_lead_h": 51.0,
+        "official_warning_delta_h": -7.166666666666667,
         "n_landslide_points": 0,
+        "lead_time_mean_h": -8.24,
+        "anchor_utc": "2024-04-29T03:00:00+00:00",
+        "anchor_basis": "onset",
+        "anchor_source": "L37 onset: first deaths of the event (2 flood deaths, Paverama) on 2024-04-29 00:00 BRT = 03:00Z. Sources: MetSul laudo https://metsul.com/wp-content/uploads/2024/06/metsul-laudo_V4_assinado.pdf ; Jornal do Comercio 2024-04-29 ; SGB https://rigeo.sgb.gov.br/bitstream/doc/25165/1/guimaraes_et_al_evento_catastrofico_serra_rs.pdf",
+        "official_warning_delta_warning_utc": "2024-04-26T16:50:00Z",
+        "official_warning_delta_reference_utc": "2024-04-27T00:00:00+00:00",
+        "official_warning_delta_basis": "official_warning_at - first_critical_time: how long before the first observed TPI_slide >= 0.6 pixel anywhere in the AOI the published official warning was issued. Warning instant = official_warning_at (INMET 2024-04-26T16:50Z for RS; the earlier Canoas municipal notice 2024-04-25T20:40Z in events/rs-2024-05.json is not used here). NWS 2025-12-06 00:10Z for WA.",
+        "damage_anchor": {
+          "at": "2024-04-29T03:00:00+00:00",
+          "source": "L37 onset: first deaths of the event (2 flood deaths, Paverama) on 2024-04-29 00:00 BRT = 03:00Z. Sources: MetSul laudo https://metsul.com/wp-content/uploads/2024/06/metsul-laudo_V4_assinado.pdf ; Jornal do Comercio 2024-04-29 ; SGB https://rigeo.sgb.gov.br/bitstream/doc/25165/1/guimaraes_et_al_evento_catastrofico_serra_rs.pdf",
+          "basis": "onset"
+        },
         "_null_reasons": {
           "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog has 16,027 points but none are dated",
           "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson has 16,027 points but none are dated: point-level lead times are undefined; fell back to cluster-lead vs damage_anchor"
+        },
+        "withdrawn": {
+          "damage_anchor": {
+            "at": "2024-04-27",
+            "source": "MetSul meteorological report commissioned by Canoas city government",
+            "note": "pre-L37 date-only anchor (noon-local convention); superseded by the L37 onset"
+          }
         }
       },
       "forecast_lead_time": {
@@ -1061,7 +1084,7 @@
       "iou": null,
       "f1": null,
       "gpw_year": 2020,
-      "lead_time_mean_h": -61.5,
+      "lead_time_mean_h": -25.52,
       "feature_importance": {
         "elevation": 0.15393507929886147,
         "slope": 0.027691253806432888,
@@ -1925,7 +1948,7 @@
       "gpw_product": "GPW v4.11 population count (CIESIN/NASA SEDAC), 30 arc-sec",
       "population_total": 5298955,
       "population_total_scope": "sum of the case GPW COG over the case AOI",
-      "lead_time_mean_note": "exact from lead_time_hist: daily 00Z crossings vs the fixed anchor put each occupied 6-h bin on a single lead value",
+      "lead_time_mean_note": "exact from lead_time_hist: daily 00Z crossings vs the fixed onset anchor put each occupied 6-h bin on a single lead value",
       "imerg_vs_gauge": {
         "source": "GES DISC OPeNDAP IMERG Final daily subset at station cells + INMET historical archive hourly gauges (validation-only, L19)",
         "imerg_product": "GPM_3IMERGDF V07 daily Final (3B-DAY.MS.MRG.3IMERG.*.V07B)",
@@ -2718,7 +2741,14 @@
           "value": "ml/ml_card.json (every model / horizon / forecast source / event)",
           "reason": "L32: T_ML v1 leaked RS 2024 points into TEST; superseded by ML v2"
         }
-      }
+      },
+      "lead_time_anchor_basis": "onset",
+      "lead_time_anchor_utc": "2024-04-29T03:00:00+00:00",
+      "official_warning_delta_reference_utc": "2024-04-28T00:00:00+00:00",
+      "official_warning_delta_warning_utc": "2024-04-26T16:50:00Z",
+      "official_warning_delta_basis": "official_warning_at - first_critical_time: how long before the first observed TPI_slide >= 0.6 pixel anywhere in the AOI the published official warning was issued. Warning instant = official_warning_at (INMET 2024-04-26T16:50Z for RS; the earlier Canoas municipal notice 2024-04-25T20:40Z in events/rs-2024-05.json is not used here). NWS 2025-12-06 00:10Z for WA.",
+      "lead_time_anchor_source": "L37 onset: first deaths of the event (2 flood deaths, Paverama) on 2024-04-29 00:00 BRT = 03:00Z. Sources: MetSul laudo https://metsul.com/wp-content/uploads/2024/06/metsul-laudo_V4_assinado.pdf ; Jornal do Comercio 2024-04-29 ; SGB https://rigeo.sgb.gov.br/bitstream/doc/25165/1/guimaraes_et_al_evento_catastrofico_serra_rs.pdf",
+      "first_critical_at_basis": "first date whose slide-union-flood per-day max TPI > 0.6 (bundle tpi_max over all *_tpi_{slide,flood}_* bands); differs from lead_time first_critical_time, which is the first TPI_slide-only pixel >= 0.6"
     }
   }
 }
