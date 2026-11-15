@@ -116,3 +116,20 @@ def test_r_zero_forces_tpi_zero():
     out = t.tpi(rain3, np.full((1, 3), 0.95), clim, np.ones((1, 3)), np.ones((1, 3)))
     assert (out["r"] == 0).all()
     assert (out["tpi_slide"] == 0).all() and (out["tpi_flood"] == 0).all()
+
+
+def test_frame_rain3_l28b_alignment():
+    """Frame D+k = 3 days ending D+k; obs only < D, forecast >= D (L28b).
+    A partial observed day D must never enter (it shrank the 2026-11-15
+    05:47Z Now window to ~2 days and zeroed TPI)."""
+    import datetime as dt
+    import numpy as np
+    from live.tpi import frame_rain3
+    D = dt.date(2026, 11, 15)
+    obs = {D - dt.timedelta(days=j): np.full((2, 2), 10.0 * j) for j in (1, 2, 3)}
+    fc = {D + dt.timedelta(days=j): np.full((2, 2), 1.0 + j) for j in range(4)}
+    series = {**obs, **fc}
+    assert frame_rain3(series, D)[0, 0] == 20.0 + 10.0 + 1.0     # obs D-2, D-1 + fc D
+    assert frame_rain3(series, D + dt.timedelta(days=1))[0, 0] == 10.0 + 1.0 + 2.0
+    assert frame_rain3(series, D + dt.timedelta(days=3))[0, 0] == 2.0 + 3.0 + 4.0
+    assert frame_rain3({k: v for k, v in series.items() if k != D}, D) is None

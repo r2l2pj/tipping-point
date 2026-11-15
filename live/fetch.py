@@ -457,14 +457,13 @@ def _gfs_apcp_grid(day: dt.date, hh: int, fh: int):
 
 
 def _gfs_candidates(issued: dt.date) -> list[tuple[dt.date, int]]:
-    """Cycles to probe, preferred first: issued 00Z, then newest cycles
-    at/before issued end-of-day (18,12,06,00 descending per day)."""
+    """Cycles to probe, preferred first: issued 00Z, then the newest cycles
+    BEFORE it (18,12,06,00 of the previous days). A cycle later than D 00Z
+    cannot cover all of day D, which the forecast frames need (L28b)."""
     cands = [(issued, 0)]
-    for back in range(_GFS_TRIES // 4 + 1):
+    for back in range(1, _GFS_TRIES // 4 + 2):
         for hh in (18, 12, 6, 0):
-            d = issued - dt.timedelta(days=back)
-            if (d, hh) != (issued, 0):
-                cands.append((d, hh))
+            cands.append((issued - dt.timedelta(days=back), hh))
     return cands[:_GFS_TRIES]
 
 
@@ -498,13 +497,15 @@ def _gfs_day_label(valid: dt.datetime) -> dt.date:
 
 
 def fetch_gfs_daily(bounds, issued: dt.date | None = None):
-    """GFS forecast daily precipitation (mm/day) for D+1..D+3.
+    """GFS forecast daily precipitation (mm/day) for D..D+3 (L28b).
 
     Source: public NOAA AWS bucket noaa-gfs-bdp-pds (no auth, no GEE). APCP
     in pgrb2 is a TRAILING accumulation, so a UTC calendar-day total is the
     sum of the 6h bucket messages ending inside that day — for a 00Z run
-    issued on D that is fh 30..48 for day D+1, 54..72 for D+2, 78..96 for
-    D+3 (buckets ending D+1 00:00..06:00 belong to day D, per L28b). Each
+    issued on D that is fh 6..24 for day D, 30..48 for D+1, 54..72 for D+2,
+    78..96 for D+3 (buckets ending D+1 00:00..06:00 belong to day D, per
+    L28b). Day D is forecast, never observed: the Now job uses IMERG only
+    through D-1. Each
     message is pulled with an HTTP Range read via the sibling
     '.idx' file, decoded with rasterio/GDAL GRIB (kg m-2 == mm), and subset to
     the 0.25 deg cell centres inside `bounds`.
@@ -512,13 +513,13 @@ def fetch_gfs_daily(bounds, issued: dt.date | None = None):
     Run selection: prefers the 00Z cycle of `issued`, else the newest cycle
     at/before issued end-of-day whose index reaches the last needed fh.
     Returns
-    (daily_xarray(time,lat,lon) with 3 steps, issued_iso). Named fallback:
+    (daily_xarray(time,lat,lon) with 4 steps D..D+3, issued_iso). Named fallback:
     fetch_geosfp_daily.
     """
     import xarray as xr
 
     issued = issued or dt.date.today()
-    days = [issued + dt.timedelta(days=k) for k in (1, 2, 3)]
+    days = [issued + dt.timedelta(days=k) for k in (0, 1, 2, 3)]
     cday, chh = _gfs_pick_run(issued)
     cycle0 = dt.datetime.combine(cday, dt.time(chh))
 
@@ -527,7 +528,7 @@ def fetch_gfs_daily(bounds, issued: dt.date | None = None):
         lab = _gfs_day_label(cycle0 + dt.timedelta(hours=fh))
         if lab in wanted:
             wanted[lab].append(fh)
-    if not all(wanted[d] for d in days):
+    if not all(len(wanted[d]) == 4 for d in days):   # 4 x 6 h = whole day
         raise RuntimeError(
             f"GFS cycle {cday}t{chh:02d}z cannot cover {days[0]}..{days[-1]}")
 

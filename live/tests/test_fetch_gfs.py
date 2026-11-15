@@ -112,16 +112,19 @@ def test_fetch_gfs_daily_buckets_and_subset(monkeypatch):
 
     assert issued_iso == "2024-04-29T00:00:00Z"
     assert daily.dims == ("time", "lat", "lon")
-    assert daily.sizes["time"] == 3
+    assert daily.sizes["time"] == 4
     got = [str(t)[:10] for t in np.datetime_as_string(daily.time.values)]
-    assert got == ["2024-04-30", "2024-05-01", "2024-05-02"]
-    # L28b alignment: day D+1 = buckets ending inside Apr30 = fh 30..48 of
-    # the Apr29 00Z run; observed-day buckets (fh 6..24) are never read.
-    assert calls[:4] == [30, 36, 42, 48]
-    assert min(calls) > 24   # no look-ahead / no double-count of day D
+    assert got == ["2024-04-29", "2024-04-30", "2024-05-01", "2024-05-02"]
+    # L28b alignment: day D = buckets ending inside Apr29 = fh 6..24 of the
+    # Apr29 00Z run (forecast; the Now job observes only through D-1);
+    # D+1 = fh 30..48; D+3 = fh 78..96. Each bucket read exactly once.
+    assert calls[:4] == [6, 12, 18, 24]
+    assert sorted(calls) == list(range(6, 97, 6))
     np.testing.assert_allclose(daily.isel(time=0).values,
+                               sum(fh / 6.0 for fh in (6, 12, 18, 24)))
+    np.testing.assert_allclose(daily.isel(time=1).values,
                                sum(fh / 6.0 for fh in (30, 36, 42, 48)))
-    np.testing.assert_allclose(daily.isel(time=2).values,
+    np.testing.assert_allclose(daily.isel(time=3).values,
                                sum(fh / 6.0 for fh in (78, 84, 90, 96)))
     # subset snapped to cell centres inside bounds (GEE-identical)
     np.testing.assert_allclose(daily.lon.values,
@@ -131,15 +134,21 @@ def test_fetch_gfs_daily_buckets_and_subset(monkeypatch):
 
 
 def test_fetch_gfs_daily_later_cycle_day_alignment(monkeypatch):
-    # 06Z run on `issued`: calendar day D+1 = buckets ending Apr30
-    # 06:00..May1 00:00 -> fh 24,30,36,42 (a complete day, still with no
-    # overlap of the observed day D = buckets ending fh 6..18).
-    monkeypatch.setattr(fetch, "_gfs_pick_run", lambda issued: (ISSUED, 6))
+    # previous-day 18Z run (fallback when D 00Z is not out yet): day D =
+    # buckets ending Apr29 06:00..Apr30 00:00 -> fh 12,18,24,30.
+    prev = ISSUED - dt.timedelta(days=1)
+    monkeypatch.setattr(fetch, "_gfs_pick_run", lambda issued: (prev, 18))
     calls = []
     monkeypatch.setattr(fetch, "_gfs_apcp_grid",
                         lambda day, hh, fh: calls.append(fh)
                         or _fake_grid(1.0))
     daily, issued_iso = fetch.fetch_gfs_daily(BOUNDS, ISSUED)
-    assert issued_iso == "2024-04-29T06:00:00Z"
-    assert calls[:4] == [24, 30, 36, 42]
+    assert issued_iso == f"{prev}T18:00:00Z"
+    assert calls[:4] == [12, 18, 24, 30]
     np.testing.assert_allclose(daily.isel(time=0).values, 4.0)
+
+
+def test_gfs_candidates_never_later_than_issue_00z():
+    cands = fetch._gfs_candidates(ISSUED)
+    assert cands[0] == (ISSUED, 0)
+    assert all(d < ISSUED for d, _ in cands[1:])   # later cycles miss part of D

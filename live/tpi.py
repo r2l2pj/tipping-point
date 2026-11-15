@@ -109,6 +109,17 @@ def projected_rain3(obs_recent: np.ndarray, fc_daily: np.ndarray, k: int) -> np.
     return total
 
 
+def frame_rain3(series: dict, day) -> np.ndarray | None:
+    """L28b frame: 3-day accumulation ENDING on `day` = sum of the daily
+    arrays for day-2, day-1, day from a date-keyed series (observed IMERG
+    for dates < D, GFS forecast for dates >= D). None if a day is missing."""
+    import datetime as _dt
+    need = [day - _dt.timedelta(days=j) for j in (2, 1, 0)]
+    if not all(d in series for d in need):
+        return None
+    return sum(np.asarray(series[d], dtype=np.float64) for d in need)
+
+
 def accumulate3(daily: np.ndarray) -> np.ndarray:
     """Rolling 3-day sums of a (n_days, H, W) daily accumulation stack."""
     daily = np.asarray(daily, dtype=np.float64)

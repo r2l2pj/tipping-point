@@ -259,17 +259,31 @@ def run(args) -> dict:
     sm[sm_cover < 0.5] = np.nan
     fc_stack = np.stack(
         [regrid_da(fc_daily_da.isel(time=i), lats, lons)
-         for i in range(fc_daily_da.sizes["time"])])[:FORECAST_DAYS]
+         for i in range(fc_daily_da.sizes["time"])])
 
-    # ---- TPI today + D+1..D+3 ----------------------------------------------
-    rain3_today = tpi.accumulate3(obs_stack)[-1]
+    # ---- L28b alignment: observed IMERG through D-1 ONLY (a partial
+    # current day would shrink the window), GFS forecast for D..D+3;
+    # frame D+k = 3-day accumulation ending on day D+k --------------------
+    def _dates(da):
+        return [dt.date.fromisoformat(str(np.datetime_as_string(t, unit="D")))
+                for t in da.time.values]
+    series = {d: obs_stack[i] for i, d in enumerate(_dates(imerg_daily))
+              if d < today}
+    series.update({d: fc_stack[i] for i, d in enumerate(_dates(fc_daily_da))
+                   if d >= today})
+    obs_through = max((d for d in series if d < today), default=None)
     t_slide, t_flood = static["t_slide"], static["t_flood"]
 
     days, slides, floods, slide_tpi, flood_tpi = [], [], [], [], []
     r_zero_violations = 0   # pixels with R == 0 but TPI > 0 (must stay 0)
     for k in range(FORECAST_DAYS + 1):
         day = today + dt.timedelta(days=k)
-        rain3 = rain3_today if k == 0 else tpi.projected_rain3(obs_stack[-3:], fc_stack, k)
+        rain3 = tpi.frame_rain3(series, day)
+        if rain3 is None:
+            raise SystemExit(
+                f"[now] frame {day}: missing daily input among "
+                f"{[str(day - dt.timedelta(days=j)) for j in (2, 1, 0)]} "
+                f"(obs through {obs_through}, fc {_dates(fc_daily_da)})")
         out = tpi.tpi(rain3, sm, _clim_for_day(static, day), t_slide, t_flood)
         r0 = out["r"] == 0
         r_zero_violations += int(np.count_nonzero(
@@ -409,6 +423,7 @@ def run(args) -> dict:
     manifest = build_manifest(
         tuple(args.bounds), updated_at,
         {"imerg": imerg_date, "smap": smap_date, "gfs_issued": gfs_issued,
+         "imerg_obs_through": str(obs_through), "forecast_from": str(today),
          "clim_doy_used": static.get("clim_doy_used")},
         layers, nisar)
     # never advertise a 404: drop optional products not on disk; files/

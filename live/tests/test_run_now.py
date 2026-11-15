@@ -73,7 +73,7 @@ def fake_now(tmp_path, monkeypatch):
         live.fetch, "fetch_smap_l4",
         lambda bounds, days_back=10: (sm_lats, sm_lons, sm_vals, "SPL4SMGP-test"))
 
-    fc_times = np.arange("2026-11-15", "2026-11-19", dtype="datetime64[D]")
+    fc_times = np.arange("2026-11-14", "2026-11-18", dtype="datetime64[D]")  # D..D+3
     monkeypatch.setattr(
         live.fetch, "fetch_gfs_daily",
         lambda bounds, issued=None: (
