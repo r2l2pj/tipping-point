@@ -208,9 +208,21 @@ def render_pass(key, gs, bbox, token, pdir: Path, rel_dir: str, *, read=_read_db
                      "of the SAME track. Not a flood map."),
             "grid": {"deg": deg, "bounds_4326": list(fixed) if fixed else None},
             "stretch_db": {"db_min": DB_MIN, "db_max": DB_MAX},
-            "granules": [g["granule_id"] for g in gs]})
+            "granules": [g["granule_id"] for g in gs],
+            "coverage_pct": coverage_pct(gs, bbox)})
         print(f"nisar_stack: {pid} {pol} {len(parts)} frame(s) {len(png) // 1024} KB", flush=True)
     return out
+
+
+def coverage_pct(gs: list[dict], bbox) -> float:
+    """Share (%) of the bbox covered by the pass's granule footprints."""
+    from shapely import wkt
+    from shapely.geometry import box
+    from shapely.ops import unary_union
+    b = box(*bbox)
+    u = unary_union([wkt.loads(g["footprint"]) if isinstance(g["footprint"], str) else g["footprint"]
+                     for g in gs])
+    return round(100 * u.intersection(b).area / b.area, 1)
 
 
 def _checkpoint(lpath: Path, layers: list[dict]) -> None:
@@ -250,6 +262,10 @@ def update(now_dir: Path, bbox, granules: list[dict], token, *, keep: int = KEEP
              if (lay.get("grid") or {}).get("bounds_4326") != list(grids.get(lay["track"], ()))
              or (lay.get("legend") or {}).get("db_min") != DB_MIN}
     old = [lay for lay in old if lay["pass"] not in stale]
+    by_pass = {f"{tag(t, lk)}_{day}": gs for (t, lk, day), gs in want.items()}
+    for lay in old:                     # back-fill coverage on already rendered passes
+        if lay.get("coverage_pct") is None and lay["pass"] in by_pass:
+            lay["coverage_pct"] = coverage_pct(by_pass[lay["pass"]], bbox)
     done = {lay["pass"] for lay in old}
     budget, new, skipped = max_granules, [], []
     for key in sorted(want, key=lambda k: k[2], reverse=True):      # newest first
