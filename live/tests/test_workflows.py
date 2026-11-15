@@ -173,3 +173,14 @@ def test_now_publish_has_drop_guard_allowlist_only_for_r2():
     assert step["env"]["FALLBACK_ALLOW_DROP"].split() == [
         "data/now/response/flood_nisar.geojson"]
     assert "continue-on-error" not in step       # a refused publish fails the run
+
+
+def test_now_watchdog_runs_hourly_and_is_idempotent():
+    """GitHub drops scheduled runs here: the watchdog gets hourly slots and only
+    dispatches when no now run is active and the last success is >= 3.5 h old."""
+    wf = yaml.safe_load((WORKFLOWS / "now-watchdog.yml").read_text())
+    on = wf.get("on", wf.get(True))
+    crons = {c["cron"] for c in on["schedule"]}
+    assert crons == {"41 * * * *", "53 * * * *"}
+    run = wf["jobs"]["watchdog"]["steps"][2]["run"]
+    assert "queued" in run and "MAX_AGE_S" in run and "gh workflow run now.yml" in run

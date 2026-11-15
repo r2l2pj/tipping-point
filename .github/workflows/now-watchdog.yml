@@ -11,8 +11,13 @@ name: now-watchdog
 
 on:
   schedule:
-    - cron: "41 1-22/3 * * *"
-    - cron: "53 2-23/3 * * *"
+    # Hourly at two odd minutes (was every 3 h): GitHub drops/delays this
+    # repo's schedules heavily (2026-11-15: now.yml fired 2 of ~7 slots, daily
+    # jobs ran ~7.5 h late). The run is idempotent (no-op when a now run is
+    # queued/running or the last success is < 3.5 h old), so more slots only
+    # raise the chance that one fires per 3 h window. ~30 s each.
+    - cron: "41 * * * *"
+    - cron: "53 * * * *"
   workflow_dispatch:
     inputs:
       max_age_s:
