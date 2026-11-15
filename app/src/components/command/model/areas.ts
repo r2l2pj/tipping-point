@@ -27,7 +27,7 @@ export interface PriorityArea {
 
 export const LIST_COLLAPSED = 5;
 
-// Jhonatan: a count is read against its area. Impossible counts (negative,
+// Jhonata: a count is read against its area. Impossible counts (negative,
 // fill, above world population, or denser than any real place) are not shown.
 export const MAX_DENSITY_PER_KM2 = 60_000;
 function peopleOk(p: Record<string, unknown>): boolean {

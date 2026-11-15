@@ -1,4 +1,4 @@
-// Lucas: Jhonatan's strip shows FULL squares — his window is the 30 × 30 km
+// Lucas: Jhonata's strip shows FULL squares — his window is the 30 × 30 km
 // box around Uruguaiana (river_dance.json box_utm21s), inside every NISAR
 // track's swath; the case box is ~10× wider and 010D (east edge ≈ −56.7°)
 // cannot fill it. The NISAR views of Uruguaiana fit the map to this window.
@@ -38,7 +38,7 @@ export function utmBoxToLonLat(box: readonly number[], zone: number, south: bool
   return [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[1]))];
 }
 
-// Jhonatan's window (UTM 21S 476000,6700000 → 506000,6730000) when the data
+// Jhonata's window (UTM 21S 476000,6700000 → 506000,6730000) when the data
 // does not carry it.
 export const URUGUAIANA_RIVER_BOX_UTM21S = [476000, 6700000, 506000, 6730000] as const;
 

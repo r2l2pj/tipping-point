@@ -589,7 +589,7 @@ export function useMapLayers(
     // Overlay strength: the screen's opacity control when given, else the
     // fixed defaults. Forecast frames stay fainter than observed ones.
     const strength = options?.opacity;
-    const tpiOpacity = strength ?? 0.9;
+    const tpiOpacity = options?.tpiOpacity ?? strength ?? 0.9;
     const tpiOn = (layers.tpiFlood || layers.tpiSlide) && plan.tpi;
     const usePng = tpiOn && !!activePng;
 
@@ -624,7 +624,9 @@ export function useMapLayers(
     if (rf && rf.bounds) {
       // Below water, the NISAR candidate polygons and the change overlay —
       // those must stay readable on top of the radar image.
-      ensureImageLayer(map, SRC.nisar, LYR.nisar, rf.url, boundsToImageCoordinates(rf.bounds), strength ?? 0.9, LYR.waterFill);
+      ensureImageLayer(map, SRC.nisar, LYR.nisar, rf.url, boundsToImageCoordinates(rf.bounds), strength ?? 0.9, LYR.floodFill);
+      // Above the TPI raster (NISAR on top), below the NISAR polygons / water.
+      try { if (map.getLayer(LYR.nisar) && map.getLayer(LYR.floodFill)) map.moveLayer(LYR.nisar, LYR.floodFill); } catch { /* order is cosmetic */ }
       vis(LYR.nisar, true);
     } else if (rf) {
       vis(LYR.nisar, false); // no published bounds: not drawn
@@ -938,7 +940,7 @@ export function useMapLayers(
       console.warn("MapLayers update failed (map kept alive)", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity, options?.radarFrame?.url, options?.nisarWater?.url]);
+  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity, options?.radarFrame?.url, options?.nisarWater?.url, options?.tpiOpacity]);
 
   // Priority-zone pins — top 20 by rank (matches the side list), anchored
   // at the polygon label point (real files are Polygons, not Points).

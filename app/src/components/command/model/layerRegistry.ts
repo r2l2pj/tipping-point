@@ -17,12 +17,13 @@ import { fmtDataStamp, fmtDate } from "./format";
 import { NISAR_CHANGE_LABEL, nisarChangeFrames, nisarChangeAvailable, nisarChangeUnavailableReason, resolveChangePair, type NisarChangeSel } from "./nisarChange";
 import type { MapOverlays } from "./overlays";
 import { CANDIDATES_LABEL, floodLabels } from "./radar";
+import { radarPasses } from "./radarFrame";
 import { floodPostDate, frameBasis, partlyForecastText } from "./steps";
 import { HAZARD_LABEL, RISK_PAUSED_SHORT, type CcBundle, type Hazard } from "./types";
 
 export type LayerId =
   | "tpi" | "imerg" | "smap" | "tml" | "ptrigger"
-  | "flood" | "candidates" | "nisarChange"
+  | "flood" | "candidates" | "nisarChange" | "nisar"
   | "catalog" | "opera" | "ems" | "hand";
 
 export type LayerGroup = "Analysis" | "Observations" | "Replay evidence";
@@ -88,6 +89,7 @@ const DEFS: Def[] = [
   { id: "smap", group: "Analysis", short: "Soil moisture" },
   { id: "tml", group: "Analysis", short: "Modeled landslide hazard" },
   { id: "ptrigger", group: "Analysis", short: "Rain-triggered landslide likelihood" },
+  { id: "nisar", group: "Observations", short: "NISAR radar image" },
   { id: "flood", group: "Observations", short: "Flood" },
   { id: "nisarChange", group: "Observations", short: "NISAR change" },
   { id: "candidates", group: "Observations", short: "Scar candidates" },
@@ -141,6 +143,9 @@ export function layerAvailable(bundle: CcBundle, id: LayerId, hazard: Hazard): b
       );
     case "opera":
       return !!pngLayer(bundle, "opera_validation");
+    case "nisar":
+      // Lucas: the NISAR radar image of the day (Water in red by default).
+      return radarPasses(bundle).length > 0;
     case "nisarChange":
       // Two same-track, same-pol NISAR frame passes with a fixed stretch.
       return nisarChangeAvailable(bundle);
@@ -197,6 +202,7 @@ export function layerRows(
     ptrigger: probLayerTitle(probHorizon),
     flood: floodLabels(bundle).layer,
     nisarChange: NISAR_CHANGE_LABEL,
+    nisar: "NISAR radar image (newest pass on/before the day)",
     candidates: CANDIDATES_LABEL,
     catalog: "Landslide catalog",
     opera: "NISAR vs OPERA flood check",
@@ -230,6 +236,7 @@ export function layerRows(
       : nisarChangeUnavailableReason(bundle) ?? ("reason" in changeSpec ? changeSpec.reason : NO_MAP_LAYER_TEXT),
     candidates: missingText(availability(bundle, "landslide_candidates")),
     catalog: missingText(availability(bundle, "landslide_catalog")),
+    nisar: NO_MAP_LAYER_TEXT,
   };
   return DEFS.filter((d) => d.group !== "Replay evidence" || bundle.mode === "replay").map((d) => {
     // The change layer paints only when the selected pair composites — a

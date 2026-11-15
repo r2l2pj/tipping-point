@@ -1,4 +1,4 @@
-// Jhonatan's river's dance (schema ~/code/r2l2pj/dance.json, lead-ml).
+// Jhonata's river's dance (schema ~/code/r2l2pj/dance.json, lead-ml).
 // @ts-expect-error -- bun:test resolves under `bun test`
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";

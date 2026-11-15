@@ -1,5 +1,5 @@
 "use client";
-// Jhonatan's "river's dance": NISAR new-water area per pass (red bars) with
+// Jhonata's "river's dance": NISAR new-water area per pass (red bars) with
 // the Uruguay River stage at Uruguaiana (line) and the flood stage (dashed).
 // A bar is a button: it jumps the map to that pass (Radar — NISAR view).
 import { fmtDate } from "./model/format";

@@ -113,7 +113,7 @@ export interface ComparePair {
   // L42: the HV polarization pair (lead-analysis nisar_hv_pre/post); the
   // swipe offers an HH | HV switch only when it exists.
   hv?: { before: CompareSide; after: CompareSide };
-  // Jhonatan: the radar flood polygons over the swipe, in their own colour.
+  // Jhonata: the radar flood polygons over the swipe, in their own colour.
   flood?: { url: string; label: string };
   // Uruguay (L-freeze-1500): NISAR frames on several dates (manifest layers
   // kind 'nisar_frame' {id, date, polarization, png, bounds}) — the swipe
@@ -324,7 +324,7 @@ export const nightLightsCompare = (bundle: CcBundle): CompareOption =>
 // `flood_source`, never a fixed "NISAR".
 export const RESPONSE_AREA_LABEL = "Flooded area (NISAR radar, candidates)";
 export const RESPONSE_LAYER_LABEL = "Flooded area (NISAR radar, candidates)";
-// Jhonatan (team science): observed water has its own colour — saturated
+// Jhonata (team science): observed water has its own colour — saturated
 // cyan fill + white outline above the radar/TPI images; "Flood risk" stays
 // the TPI (prediction) only.
 // Lucas: the NISAR flooded area is RED — brighter than the TPI 'Critical'

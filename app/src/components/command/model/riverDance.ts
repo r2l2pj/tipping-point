@@ -1,4 +1,4 @@
-// Jhonatan's "river's dance" (lead-ml series/river_dance.json): NISAR
+// Jhonata's "river's dance" (lead-ml series/river_dance.json): NISAR
 // new-water area per pass vs the Uruguay River stage at the Uruguaiana gauge
 // (9 passes, Pearson r ≈ 0.92). Slimmed on the server; the card draws it.
 export interface DancePass { date: string; track?: string; stageM: number | null; newWaterKm2: number | null }

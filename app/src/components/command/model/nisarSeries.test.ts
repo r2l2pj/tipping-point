@@ -267,7 +267,9 @@ test("radar-only replay (Uruguay v0) opens with the flooded-area layer on", asyn
   const uy = bundle({ id: "rs_uruguai_2026", data_dates: {}, series: undefined, products: { flood_confirmed: "rs_uruguai_2026/geojson/flood_confirmed.geojson" },
     metricsView: { flooded_km2: 1.817, flood_source: "radar" } as never,
     manifest: { event: "rs_uruguai_2026", layers: [L("radar_post", "2026-10-12"), L("radar_pre", "2026-09-30")] } } as never);
-  expect(initialState([uy]).layers).toEqual(["flood"]);
+  expect(initialState([uy], "rs_uruguai_2026").layers).toEqual(["flood"]); // a ?case= link keeps its defaults
+  // L64 landing ('/'): the NISAR image of the day is on
+  expect(initialState([uy]).layers).toContain("nisar");
 });
 
 test("replay radar card shows people in the flooded area when published (Uruguay v0: 28)", () => {

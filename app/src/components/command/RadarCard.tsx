@@ -39,7 +39,7 @@ export default function RadarCard({
   dance,
 }: {
   radar: RadarModel;
-  // Jhonatan's river's dance (Uruguaiana): bars jump the map to a pass.
+  // Jhonata's river's dance (Uruguaiana): bars jump the map to a pass.
   dance?: { d: RiverDance; selected?: string; onPass: (date: string, track?: string) => void };
   hideMissing?: boolean; // featured replay: no "pending" scar block (conductor, v6)
   // Lucas: the NISAR dates of the open swipe, as chips (no slider).

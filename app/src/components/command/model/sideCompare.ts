@@ -771,7 +771,7 @@ export function sidesCompare(
   if (!l.side && !r.side) return { kind, reason: missing.L ?? missing.R, missing };
   const empty = (x: typeof l, other: CompareSide): CompareSide => ({ url: "", label: x.label, bounds: other.bounds });
   const left = l.side ?? empty(l, r.side!), right = r.side ?? empty(r, l.side!);
-  // Jhonatan: the radar flood candidates over the swipe when a NISAR side
+  // Jhonata: the radar flood candidates over the swipe when a NISAR side
   // is on (their own colour).
   const floodUrl = [sides.L, sides.R].some((s) => s.layer === "nisar")
     ? productUrl(bundle, "flood_confirmed")

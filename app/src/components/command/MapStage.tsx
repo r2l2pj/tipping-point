@@ -137,12 +137,12 @@ export default function MapStage({
     setSeenReq(passReq.n);
     setRPick((p) => ({ date: passReq.date, track: passReq.track ?? "", pol: p.pol, ...(passReq.forDay ? { forDay: passReq.forDay } : {}) }));
   }
-  const radarOn = !comparePair && activeView(state.layers) === "radar" && radarPassList.length > 0;
+  const radarOn = !comparePair && (state.layers.includes("nisar") || activeView(state.layers) === "radar") && radarPassList.length > 0;
   const rFrame = useMemo(
     () => (radarOn ? radarFrame(radarPassList, step?.date, rPick) : undefined),
     [radarOn, radarPassList, step?.date, rPick]
   );
-  // Lucas: Jhonatan's 30 × 30 km river window (Uruguaiana): every NISAR pass
+  // Lucas: Jhonata's 30 × 30 km river window (Uruguaiana): every NISAR pass
   // fills it. The Radar — NISAR view fits it when it opens and on every
   // river's-dance click; the user stays free to zoom out.
   const riverWin = useMemo(() => riverWindow(bundle), [bundle]);
@@ -158,9 +158,15 @@ export default function MapStage({
   }, [map]);
   useEffect(() => {
     if (!map || !radarOn || !riverWin) return;
-    map.fitBounds([[riverWin[0], riverWin[1]], [riverWin[2], riverWin[3]]], {
+    const fit = () => map.fitBounds([[riverWin[0], riverWin[1]], [riverWin[2], riverWin[3]]], {
       padding: { top: 70, bottom: insets.bottom + 30, left: insets.left + 30, right: insets.right + 30 }, duration: 600,
     });
+    // L64 landing: on a fresh page the map's own initial fit (the case box)
+    // runs after this effect — fit once the map has settled.
+    let t: ReturnType<typeof setTimeout> | undefined;
+    if (map.loaded() && !map.isMoving()) fit();
+    else map.once("idle", () => { t = setTimeout(fit, 50); });
+    return () => { if (t) clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fit on entering the view and on a dance click only
   }, [map, radarOn, riverWin, passReq?.n]);
   // The swath-edge note only when the visible map runs past the frame's
@@ -217,8 +223,10 @@ export default function MapStage({
       changeOpacity: state.changeOpacity,
       radarFrame: rFrame && radarUrl ? { url: radarUrl, bounds: rFrame.bounds } : undefined,
       nisarWater: fnWaterShown,
+      // Lucas: NISAR is the star — the risk index sits under it, more transparent.
+      tpiOpacity: radarOn && state.layers.includes("tpi") ? 0.35 : undefined,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl, fnFrame, fnWaterShown]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl, fnFrame, fnWaterShown, radarOn]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 

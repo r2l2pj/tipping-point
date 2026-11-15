@@ -26,7 +26,9 @@ export function viewLayers(bundle: CcBundle, hazard: Hazard, id: ViewId): LayerI
     case "rain":
       return ok(["imerg"]);
     case "radar":
-      return ok(["flood"]);
+      // Lucas: the NISAR image on top, the flood index under it; cases
+      // without NISAR frames keep the flood polygons.
+      return ok(["tpi", "nisar"]).includes("nisar") ? ok(["tpi", "nisar"]) : ok(["flood"]);
     case "satellite":
       return [];
   }
@@ -34,6 +36,7 @@ export function viewLayers(bundle: CcBundle, hazard: Hazard, id: ViewId): LayerI
 
 export function activeView(layers: readonly LayerId[]): ViewId | undefined {
   // Now opens with the risk map plus the radar candidates: that is "Risk".
+  if (layers.includes("nisar")) return "radar";
   if (layers.includes("imerg")) return "rain";
   if (layers.includes("tpi") || layers.includes("ptrigger")) return "risk";
   if (layers.includes("flood")) return "radar";

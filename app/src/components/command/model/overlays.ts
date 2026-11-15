@@ -48,6 +48,8 @@ export interface MapLayerOptions {
   radarFrame?: { url: string; bounds?: [number, number, number, number] };
   // L61: NISAR-observed water (candidate) drawn over the flood + NISAR frame.
   nisarWater?: { url: string; bounds?: [number, number, number, number] };
+  // Opacity of the TPI raster when it sits under the NISAR image (0.35).
+  tpiOpacity?: number;
 }
 
 export interface OverlayVisibility {

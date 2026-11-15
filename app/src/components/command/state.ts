@@ -173,6 +173,8 @@ export function linkParams(
 // loaded it is listed first and the screen opens on it (a ?case= link still
 // wins). Without it: Now when a live case is loaded, else the first case.
 export const FEATURED_CASE = "rs_uruguai_2026";
+// L64: the landing day — the Oct 12 NISAR pass during the flood (river 9.8 m).
+export const FEATURED_LANDING_DAY = "2026-10-12";
 export const isFeatured = (c: CcBundle): boolean =>
   canonicalCaseId(c.manifest?.event ?? c.id) === FEATURED_CASE || canonicalCaseId(c.id) === FEATURED_CASE;
 export function featuredFirst<T extends CcBundle>(cases: readonly T[]): T[] {
@@ -214,19 +216,25 @@ export function initialState(
         c.id === initialCase || canonicalCaseId(c.id) === want ||
         canonicalCaseId(c.manifest?.event ?? c.id) === want)
     : undefined;
-  // Prod regression (Lucas): '/' opens the live Now forecast; the featured
-  // Uruguay case stays first in the Replay list and the tour (and its own
-  // ?case= link / map chip).
-  const first = linked ?? cases.find((c) => c.mode === "live") ?? cases.find(isFeatured) ?? cases[0];
+  // L64 (Lucas, final landing): '/' opens Uruguaiana — the NISAR radar
+  // image ('Water in red') of Oct 12 (a pass during the flood, river 9.8 m)
+  // on top of the flood index; the live Now stays one click away ('← Now',
+  // the case picker, ?case=now).
+  const featured = cases.find(isFeatured);
+  const landing = !initialCase && !!featured;
+  const first = linked ?? featured ?? cases.find((c) => c.mode === "live") ?? cases[0];
   const hazard = hazardFor(first, "slide");
+  const landingDay = landing && initialDay === undefined ? FEATURED_LANDING_DAY : initialDay;
+  const landingLayers = (b: CcBundle, h: Hazard): LayerId[] | undefined =>
+    landing && !link.layers && !link.compare && !link.view ? keepAvailable(b, ["tpi", "nisar"], h) : undefined;
   const st: ScreenState = {
     activeId: first?.id ?? "",
     lastReplayId: first?.mode === "replay" ? first.id : null,
-    dayIndex: linkedDay(first, initialDay) ?? defaultStepIndex(stepsFor(first), first),
+    dayIndex: linkedDay(first, landingDay) ?? defaultStepIndex(stepsFor(first), first),
     playing: false,
     hazard,
     layers: first
-      ? (linkLayers(first, link, hazard) ?? withRadarDefault(first, keepAvailable(first, Number(link.lead) > 0 ? ["tpi"] : defaultLayersFor(first, hazard), hazard), hazard))
+      ? (linkLayers(first, link, hazard) ?? landingLayers(first, hazard) ?? withRadarDefault(first, keepAvailable(first, Number(link.lead) > 0 ? ["tpi"] : defaultLayersFor(first, hazard), hazard), hazard))
       : [],
     fitTo: first ? linkFit(first, link) : undefined,
     basemap: parseBasemap(link.basemap) ?? (first && isFeatured(first) ? FEATURED_BASEMAP : "dark"),

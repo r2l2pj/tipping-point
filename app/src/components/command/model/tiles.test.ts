@@ -180,7 +180,7 @@ describe("people audit (conductor): at-risk part label + impossible values", () 
   });
 });
 
-describe("Jhonatan: people read against their area", () => {
+describe("Jhonata: people read against their area", () => {
   test("replay zone: '7,700 people in 12.0 km² (estimate)'; density > 60,000/km² renders '—'", async () => {
     const { renderToStaticMarkup } = await import("react-dom/server");
     const { createElement } = await import("react");

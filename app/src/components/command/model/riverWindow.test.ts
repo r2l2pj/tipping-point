@@ -1,4 +1,4 @@
-// Lucas: Jhonatan's 30 × 30 km river window (UTM 21S) → lon/lat.
+// Lucas: Jhonata's 30 × 30 km river window (UTM 21S) → lon/lat.
 // @ts-expect-error -- bun:test resolves under `bun test`
 import { expect, test } from "bun:test";
 import { riverWindow, utmBoxToLonLat, utmToLonLat, zoomedOut } from "./riverWindow";

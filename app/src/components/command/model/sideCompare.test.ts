@@ -117,7 +117,7 @@ test("rain / satellite / ml / nisar labels", () => {
   expect(ni.pair?.before.label).toBe("NISAR HH — Sep 30, 2026 (track 010D)");
   expect(ni.pair?.after.label).toBe("NISAR HH — Oct 12, 2026 (track 010D)");
   expect(ni.pair?.before.url).toContain("nisar_hh_20260930_010D.png");
-  // Jhonatan: the radar flood candidates ride over a NISAR swipe.
+  // Jhonata: the radar flood candidates ride over a NISAR swipe.
   expect(ni.pair?.flood).toBeUndefined(); // this fixture has no flood_confirmed product — ok
 
   const ml = sidesCompare({ ...uy, mode: "live", manifest: { event: "now", layers: [

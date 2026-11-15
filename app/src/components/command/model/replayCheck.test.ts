@@ -447,7 +447,7 @@ describe("radar card", () => {
     expect(p.hv!.after.label).toBe("NISAR radar after (HV) — Dec 16, 2025");
   });
 
-  test("Jhonatan: the swipe carries the radar flood polygons in their own colour", () => {
+  test("Jhonata: the swipe carries the radar flood polygons in their own colour", () => {
     const b = bundle({ products: { flood_confirmed: "wa_2025/geojson/flood_confirmed.geojson" }, manifest: manifest([
       { id: "nisar_pre", date: "2025-12-04", png: "wa_2025/png/nisar_pre.png", bounds: [-122, 47, -121, 48] },
       { id: "nisar_post", date: "2025-12-16", png: "wa_2025/png/nisar_post.png", bounds: [-122, 47, -121, 48] },
