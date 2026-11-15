@@ -5,7 +5,7 @@ From the external review (`.crew/review/10-correcoes-revisao-externa.md`), items
 | | |
 |---|---|
 | **Inputs** | lead-analysis `~/.cache/lead-analysis/v3/<case>/{frames,components}.npz` (tool `tools/tpi_v3_frames.py`) |
-| **Scoring tools** | `tools/tpi_v3_ablation.py`, `tools/m4_cut_calibration.py`, `tools/calibrate_weights_nisar.py` (Jhonatan), `tools/nisar_weight_calibration.py` |
+| **Scoring tools** | `tools/tpi_v3_ablation.py`, `tools/m4_cut_calibration.py`, `tools/calibrate_weights_nisar.py` (Jhonata Vicente de Oliveira), `tools/nisar_weight_calibration.py` |
 | **Numbers** | `ml/models/{tpi_v3_ablation,m4_cuts_v2_v3,tpi_weights_nisar,nisar_weight_calibration}.json` |
 
 ## Metrics
@@ -84,7 +84,7 @@ Flood cuts applied to Uruguaiana: the area-only cuts from RS or WA catch 0–28 
 
 ## 3. NISAR calibrates the flood weights (option 1)
 
-Jhonatan's `tools/calibrate_weights_nisar.py` is the method of record.
+Jhonata's `tools/calibrate_weights_nisar.py` is the method of record.
 
 - **Index:** TPI_flood = R^wR · S^wS · T^wT, with weights summing to 1, a 0.05 step and each weight ≥ 0.1 (120 triples plus uniform).
 - **Frames:** max over the event days.

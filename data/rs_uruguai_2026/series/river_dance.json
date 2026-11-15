@@ -28,8 +28,8 @@
  "new_water_reference": "water of the pass minus the persistent river and any pixel that is water in >= 7 of the 9 passes; inside a 3 km corridor around the river; pixels valid in all passes",
  "threshold_note": "water = HH < -15 dB (scene threshold fell back to -15 dB on all passes)",
  "caption": "The river's dance: 9 NISAR HH passes (Sep 18 - Nov 5 2026, mixed tracks 010D and 082D), 30 x 30 km around Uruguaiana. New water (red) tracks the gauge: Pearson r = 0.92 (n = 9). water = HH < -15 dB (scene threshold fell back to -15 dB on all passes). NISAR water = candidates (provisional GCOV).",
- "credit": "NASA NISAR (provisional GCOV) \u00b7 HH \u00b7 gauge: ANA 77150000 Uruguaiana \u00b7 analysis: Jhonatan / Tipping Point",
- "author": "Jhonatan (method), adapted by lead-ml",
+ "credit": "NASA NISAR (provisional GCOV) \u00b7 HH \u00b7 gauge: ANA 77150000 Uruguaiana \u00b7 analysis: Jhonata Vicente de Oliveira / Tipping Point",
+ "author": "Jhonata Vicente de Oliveira (method), adapted by lead-ml",
  "passes": [
   {
    "date": "2026-09-18",
