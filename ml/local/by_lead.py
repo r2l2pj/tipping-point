@@ -4,7 +4,7 @@ For lead k = 0..13 days, forecasts are issued on D-k (NOAA GFS 00Z run of
 D-k, L28b day labels) and scored on the SHORTEST horizon whose window
 [D-k, D-k+H-1] still reaches the event day D::
 
-    k = 0 -> 24h · 1-2 -> 72h · 3-6 -> 7d   (v2 horizons; 48h/14d dropped)
+    k = 0 -> 24h · 1 -> 48h · 2 -> 72h · 3-6 -> 7d   (v2 horizons; 14d dropped)
 
 Event day D: RS 2024 = 2024-05-01 (fixed, never rain-dated; settings.RS2024_DATE);
 WA 2025 = each point's reported date. Rows per k:

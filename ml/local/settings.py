@@ -144,8 +144,8 @@ SPLIT_FRACS = {"train": 0.6, "val": 0.2, "test": 0.2}  # by positive count
 # --- Horizons (3b) --------------------------------------------------------------
 # Issue time = 00 UTC of day D. Horizon window = UTC days D .. D+H-1.
 # Observed rain = IMERG days <= D-1; forecast rain = GFS 00Z run of D.
-# 48 h and 14 d dropped (Lucas, 2026-11-15 v2): 24 h, 72 h, 7 d only.
-HORIZONS: dict[str, int] = {"24h": 1, "72h": 3, "7d": 7}
+# 14 d dropped (Lucas, 2026-11-15 v2): 24 h, 48 h, 72 h, 7 d.
+HORIZONS: dict[str, int] = {"24h": 1, "48h": 2, "72h": 3, "7d": 7}
 GFS_MAX_LEAD_DAYS = 16     # GFS runs to 384 h
 
 # --- Features -------------------------------------------------------------------
@@ -186,6 +186,13 @@ MONOTONE = {
     "rain_24h": 1, "rain_72h": 1, "rain_7d": 1, "rain_24h_rel": 1, "rain_72h_rel": 1,
     "sm_surface": 1, "sm_rootzone": 1, "sm_profile_wetness": 1,
 }
+# Direct per-horizon models (v2, Lucas "one model per category"): features at issue
+# day D from observed rain before D + the forecast window [D, D+H-1] (perfect forecast
+# = observed IMERG in TRAIN/VAL; GFS at TEST/serving) + soil texture. No SMAP: TRAIN
+# issue-day soil would need ~2k more granule reads, and soil added ~0 over rain.
+DIRECT_RAIN = ["ante_24h", "ante_72h", "ante_7d", "ante_72h_rel", "fc_sum", "fc_max24",
+               "fc_max72", "fc_max24_rel", "fc_max72_rel"]
+MONOTONE.update({c: 1 for c in DIRECT_RAIN})
 
 # --- Models -------------------------------------------------------------------
 RF_PARAMS = {"n_estimators": 200, "min_samples_leaf": 5, "n_jobs": -1}  # PLAN: smileRandomForest(200)

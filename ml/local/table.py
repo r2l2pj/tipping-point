@@ -302,7 +302,7 @@ LOOKBACK_DAYS = 20  # issue days L-20 .. L per positive (>= the 14 d horizon)
 
 
 def horizon_rows(rows: pd.DataFrame, horizons=S.HORIZONS,
-                 lookback: int = LOOKBACK_DAYS) -> pd.DataFrame:
+                 lookback: int = LOOKBACK_DAYS, splits=("val", "test")) -> pd.DataFrame:
     """One shared set of issue-day rows for VAL + TEST, labels per horizon.
 
     Positive point with event window [L0, L1] (``S.LABEL_WINDOWS``, else the
@@ -312,7 +312,7 @@ def horizon_rows(rows: pd.DataFrame, horizons=S.HORIZONS,
     the 30-day gap). Same rows for every horizon, so the base rate grows with
     the window exactly as it does operationally.
     """
-    keep = rows[rows["split"].isin(["val", "test"])]
+    keep = rows[rows["split"].isin(list(splits))]
     pos = keep[keep.label == 1].copy()
     d = pd.to_datetime(pos["date"])
     w0 = d.copy()

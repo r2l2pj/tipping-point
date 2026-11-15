@@ -953,7 +953,7 @@ def test_trigger_model_monotone_with_crossing_calibrators(tmp_path):
 def test_by_lead_horizon_mapping():
     from ml.local.by_lead import horizon_for_lead
     got = {k: horizon_for_lead(k) for k in range(7)}
-    assert got[0] == "24h" and got[1] == got[2] == "72h"
+    assert got[0] == "24h" and got[1] == "48h" and got[2] == "72h"
     assert all(got[k] == "7d" for k in range(3, 7))
     import pytest
     with pytest.raises(ValueError):

@@ -206,6 +206,7 @@ def train_3b(*, balanced: bool = False) -> dict:
     entries["climatology"] = {"kind": "xgb", "model": M.fit_xgb(tr, va, clim_cols), "cols": clim_cols}
     entries["nowcast_xgb_all"] = {"kind": "nowcast", "model": entries["xgb_all"]["model"], "cols": cols_all}
     entries["rule_tpi"] = {"kind": "tpi", "model": None, "cols": []}
+    entries["direct_rain"] = train_direct(tab, _rain())
 
     # daily (target-day) calibration on VAL
     yv = va.label.to_numpy()
@@ -235,6 +236,33 @@ def train_3b(*, balanced: bool = False) -> dict:
     save_p_trigger(entries, hz_cal, S.SERVE_TRIGGER, len(tr), len(va))
     return {"daily_val": {k: v["val"] for k, v in daily.items()},
             "horizon_val": {h: {k: v["val"] for k, v in d.items()} for h, d in hz_cal.items()}}
+
+
+def train_direct(tab: pd.DataFrame, rain) -> dict:
+    """One XGBoost per horizon on issue-day rows (v2): TRAIN issue rows built from the
+    TRAIN daily rows exactly like VAL/TEST (``horizon_rows``), VAL issue rows for
+    early stopping; observed IMERG stands in for the forecast (as for calibration)."""
+    from .table import horizon_rows
+    tr = horizon_rows(tab[tab.split == "train"], splits=("train",))
+    hz = _load_table("horizon_3b_features")
+    va = hz[hz.split == "val"]
+    cols = _present(S.SOIL_TEXTURE, tab) + S.DIRECT_RAIN
+    models = {}
+    for h, H in S.HORIZONS.items():
+        parts = []
+        for df in (tr, va):
+            df = df.reset_index(drop=True)
+            lon, lat = df.lon.to_numpy(), df.lat.to_numpy()
+            r = SC.rain_series(rain, lon, lat, df.issue_date.to_numpy(), H, source="perfect")
+            f = SC.direct_feats(r, H, rain.p99_daily(lon, lat), rain.p99_3day(lon, lat))
+            d = pd.concat([df.drop(columns=[c for c in S.DIRECT_RAIN if c in df]), f], axis=1)
+            d["label"] = d[f"label_{h}"].to_numpy()
+            parts.append(d)
+        models[h] = M.fit_xgb(parts[0], parts[1], cols)
+        log.info("direct %s: train %d rows (%d pos), val %d (%d pos), best_iter %s", h,
+                 len(parts[0]), int(parts[0].label.sum()), len(parts[1]), int(parts[1].label.sum()),
+                 getattr(models[h], "best_iteration", None))
+    return {"kind": "direct", "models": models, "cols": cols}
 
 
 def by_neg_type(df: pd.DataFrame, p: np.ndarray, thr: float) -> dict:
@@ -287,7 +315,9 @@ def evaluate_3b(*, gfs: bool = True) -> dict:
             res["horizons"][hname] = {"reason": "no TEST or VAL issue rows"}
             continue
         res["horizons"][hname] = {}
+        ht_all = ht
         for src in sources:
+            ht = ht_all[SC.source_mask(ht_all, src)].reset_index(drop=True)
             try:
                 sc = SC.horizon_scores(ht, H, b["entries"], rain, source=src,
                                        gfs_daily=_gfs() if src == "gfs" else None)
@@ -302,11 +332,18 @@ def evaluate_3b(*, gfs: bool = True) -> dict:
                 pc = c["cal"](p)
                 y = ht[f"label_{hname}"].to_numpy()
                 reg = ht.region.to_numpy()
+                evs = ht.event_id.astype(str).to_numpy()
                 block[name] = {"test": _raw(SC.metrics(y, pc, c["thr"]), y, p),
                                "by_region": {r: _raw(SC.metrics(y[reg == r], pc[reg == r], c["thr"]),
                                                      y[reg == r], p[reg == r])
-                                             for r in sorted(set(reg))}}
+                                             for r in sorted(set(reg))},
+                               "by_event": {ev: _raw(SC.metrics(y[evs == ev], pc[evs == ev], c["thr"]),
+                                                     y[evs == ev], p[evs == ev])
+                                            for ev in S.TRIGGER_TEST_EVENTS if (evs == ev).any()}}
+            res.setdefault("horizon_rows", {}).setdefault(hname, {})[src] = {
+                "n": len(ht), "n_dropped_no_gfs_run": int(len(ht_all) - len(ht))}
             res["horizons"][hname][src] = block
+        ht = ht_all
     return res
 
 

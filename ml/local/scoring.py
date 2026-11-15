@@ -72,6 +72,15 @@ def tpi_score(rain_72h, p90, p95, p99, sm_wetness, slope) -> np.ndarray:
 
 
 # --------------------------------------------------------------------- horizons
+def source_mask(df: pd.DataFrame, source: str) -> np.ndarray:
+    """Rows that can be scored with ``source``: GFS only where the issue day has an
+    archived run (>= S.GFS_ARCHIVE_START). Before v2 the GFS TEST also scored rows
+    without a run (NaN forecast rain -> confident 'no'), 40 % of RS same-point negatives."""
+    if source != "gfs":
+        return np.ones(len(df), bool)
+    return (pd.to_datetime(df["issue_date"]) >= pd.Timestamp(S.GFS_ARCHIVE_START)).to_numpy()
+
+
 def rain_series(rain, lon, lat, issue, H: int, *, source: str = "perfect",
                 gfs_daily=None) -> np.ndarray:
     """(n, OFF + H) daily rain for days D-7 .. D+H-1 (column OFF = day D)."""
@@ -103,6 +112,22 @@ def rain_feats_at(r: np.ndarray, k: int, p99d, p99_3) -> pd.DataFrame:
         })
 
 
+def direct_feats(r: np.ndarray, H: int, p99d, p99_3) -> pd.DataFrame:
+    """Direct per-horizon features from the series of ``rain_series`` (column OFF = D):
+    antecedent observed rain (D-7..D-1) + forecast window D..D+H-1."""
+    ante = r[:, OFF - 7:OFF]
+    a72 = r[:, OFF - 3:OFF].sum(axis=1)
+    fc = r[:, OFF:OFF + H]
+    run3 = np.column_stack([r[:, OFF + k - 2:OFF + k + 1].sum(axis=1) for k in range(H)])
+    fmax24, fmax72 = fc.max(axis=1), run3.max(axis=1)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return pd.DataFrame({
+            "ante_24h": r[:, OFF - 1], "ante_72h": a72, "ante_7d": ante.sum(axis=1),
+            "ante_72h_rel": a72 / p99_3, "fc_sum": fc.sum(axis=1), "fc_max24": fmax24,
+            "fc_max72": fmax72, "fc_max24_rel": fmax24 / p99d, "fc_max72_rel": fmax72 / p99_3,
+        })
+
+
 def doy_at(issue, k: int) -> pd.DataFrame:
     t = pd.to_datetime(np.asarray(issue).astype("datetime64[D]") + np.timedelta64(k, "D"))
     ang = 2 * np.pi * t.day_of_year.to_numpy() / 365.25
@@ -127,6 +152,12 @@ def horizon_scores(hz: pd.DataFrame, H: int, entries: dict, rain, *, source: str
     out: dict[str, np.ndarray] = {}
     for name, e in entries.items():
         kind = e["kind"]
+        if kind == "direct":   # one model per horizon (v2)
+            hname = {v: k for k, v in S.HORIZONS.items()}[H]
+            feats = pd.concat([base.drop(columns=[c for c in S.DIRECT_RAIN if c in base]),
+                               direct_feats(r, H, p99d, p99_3)], axis=1)
+            out[name] = predict(e["models"][hname], feats, e["cols"])
+            continue
         if kind == "nowcast":
             feats = pd.concat([base.drop(columns=[c for c in S.RAIN if c in base]),
                                rain_feats_at(r, -1, p99d, p99_3), doy_at(issue, -1)], axis=1)
