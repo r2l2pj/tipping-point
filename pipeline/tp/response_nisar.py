@@ -534,6 +534,7 @@ def candidate_features(mask: np.ndarray, grid: TargetGrid, bbox, gpw, props: dic
 # edge outside RS/SC/PR — was published as flood candidates)
 # --------------------------------------------------------------------------
 EDGE_BUFFER_M = 2000.0
+CLAMP_DB = -15.0      # flood_mask fallback / upper clamp: a threshold here is not a per-scene calibration
 DEFAULT_UFS = ("RS", "SC", "PR")
 
 
@@ -750,9 +751,13 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
         det = detect(data["pre"], data["post"], grid, hand_path)
         # flood_mask emits 'adaptive' when the per-scene Otsu fired and
         # 'fallback' for the fixed -15 dB clamp: reject only the fallback
-        if require_otsu and det["stats"].get("threshold_method") not in ("adaptive", "otsu"):
-            why = (f"water threshold fell back to {det['stats'].get('threshold_db')} dB "
-                   f"({det['stats'].get('threshold_method')}): per-scene calibration failed, "
+        thr = det["stats"].get("threshold_db")
+        at_clamp = thr is not None and thr >= CLAMP_DB - 1e-6   # Otsu landed on the clamp
+        if require_otsu and (det["stats"].get("threshold_method") not in ("adaptive", "otsu")
+                             or at_clamp):
+            why = (f"water threshold fell back to {thr} dB "
+                   f"({det['stats'].get('threshold_method')}"
+                   f"{', at the clamp' if at_clamp else ''}): per-scene calibration failed, "
                    "pair not used")
             reasons[f"pair {label}"] = why
             meta["rejected_pairs"].append(

@@ -412,3 +412,20 @@ def test_guard_rejects_fallback_threshold(synthetic, tmp_path, monkeypatch):
                            gpw_src=synthetic["gpw"], now=datetime(2026, 11, 15, 3, 0, tzinfo=UTC),
                            log=lambda m: None, edge_buffer_m=0.0, require_otsu=True)
     assert meta["status"] == "no_usable_pair" and "fell back" in meta["rejected_pairs"][0]["reason"]
+
+
+def test_guard_rejects_adaptive_at_clamp(synthetic, tmp_path, monkeypatch):
+    real = rn.detect
+
+    def fake(*a, **k):
+        d = real(*a, **k)
+        d["stats"]["threshold_method"] = "adaptive"
+        d["stats"]["threshold_db"] = -15.0
+        return d
+    monkeypatch.setattr(rn, "detect", fake)
+    meta = rn.run_response(synthetic["bbox"], tmp_path / "c",
+                           search=lambda bb, s, e: synthetic["granules"],
+                           pair=lambda gs, bb: fn.pair_latest_pass(gs, bb, min_overlap_km2=1.0),
+                           gpw_src=synthetic["gpw"], now=datetime(2026, 11, 15, 3, 0, tzinfo=UTC),
+                           log=lambda m: None, edge_buffer_m=0.0, require_otsu=True)
+    assert meta["status"] == "no_usable_pair" and "at the clamp" in meta["rejected_pairs"][0]["reason"]
