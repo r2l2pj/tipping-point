@@ -632,6 +632,14 @@ def run(args) -> dict:
             flood=np.maximum(floods[0], floods[1]),
             active_state=np.array(__import__("json").dumps(new_active_state)))
 
+    # 'search for city' (live/places.py): d0..d3 TPI for the per-municipality
+    # summary — internal state, not app-facing (.npz is not published)
+    files["places_tpi.npz"] = render.npz_bytes(
+        slide=np.stack(slide_tpi).astype(np.float16),
+        flood=np.stack(flood_tpi).astype(np.float16),
+        dates=np.array([d.isoformat() for d in days]),
+        bounds=np.array(tuple(args.bounds), dtype=np.float64))
+
     # ---- write everything, manifest LAST ------------------------------------
     updated_at = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")
     manifest = build_manifest(

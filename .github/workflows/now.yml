@@ -230,6 +230,14 @@ jobs:
             uv run python -m live.nisar_next --now-dir data/now
           else echo "::notice::live/nisar_next.py not on this branch yet"; fi
 
+      # 'search for city': one compact record per IBGE municipality (TPI d0..d3,
+      # P(trigger) max/p90, alert, people in High+), after P(trigger) + alerts.
+      - name: Places summary (search for city, best-effort)
+        continue-on-error: true
+        env:
+          PYTHONPATH: ".:pipeline"
+        run: uv run python -m live.places --now-dir data/now
+
       - name: Finalize now manifest (merge response node, drop absent products)
         env:
           NOW_P_TRIGGER: ${{ vars.NOW_P_TRIGGER }}

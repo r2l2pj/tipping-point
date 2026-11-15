@@ -668,6 +668,35 @@ everything else. Overwritten every 3 h by `live/run_now.py` via
 Paths inside this file are relative to `data/now/`. Layers are
 `tpi_{slide,flood}_d0` (today) plus `_d1..d3` with `forecast: true`.
 
+### `data/now/places.json` — "search for city"
+
+Written every Now run by `live/places.py` (CI step after P(trigger) and alerts;
+`products.places` in the Now manifest). One record per IBGE municipality in
+`geojson/municipal_boundaries.geojson` (RS, SC, PR + the SP/MS municipalities
+inside the bbox), sorted by uf then name, minified JSON (~0.6 MB):
+
+```json
+{ "schema": "tipping-point/places@1", "generated_at": "...", "now_updated_at": "...",
+  "dates": {"d0": "YYYY-MM-DD", "d1": "...", "d2": "...", "d3": "..."},
+  "classes": ["Baixo", "Moderado", "Alto", "Crítico"], "people_method": "...",
+  "places": [{"id": "<IBGE code>", "name": "...", "uf": "RS",
+              "centroid": [lon, lat], "bbox": [w, s, e, n],        // 4 dp
+              "pop": 0,                                            // GPW v4.11 2020 (unadjusted), native 30", cell centres
+              "flood": {"cls": [d0..d3 0-3|null], "max": [d0..d3 TPI|null]},
+              "slide": {"cls": [...], "max": [...]},
+              "p_trigger": {"24h": {"max": 0.0, "p90": 0.0} | null, "48h": ..., "72h": ..., "7d": ...},
+              "alert": false, "alert_level": "Alto"|"Crítico"|null,
+              "alert_hazard": "flood"|"landslide"|"flood+landslide"|null,
+              "people_high": 0}]}                                   // High+ (TPI > 0.4), slide or flood, today or D+1
+```
+
+TPI per day = max over the municipality's 0.01° cells (a municipality smaller
+than a cell takes the cell under its representative point); class = class of
+that max. P(trigger) = max and p90 of the municipality's cells (null outside
+Brazilian land / when the product is absent). `people_high` = High+ covered
+fraction of each native 30" GPW cell × its count. d0..d3 come from the
+internal `places_tpi.npz` written by `run_now` (not published).
+
 ### `data/now/summary.json`
 
 ```json

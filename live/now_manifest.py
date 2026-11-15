@@ -32,6 +32,7 @@ OPTIONAL_PRODUCTS = {
     "dist_meta": "response/dist_meta.json",
     "nisar_timeseries": "response/nisar_timeseries.json",
     "nisar_next_passes": "nisar_next_passes.json",
+    "places": "places.json",
 }
 FRAGMENT = "response/manifest_node.json"
 MERGE_KEYS = ("data_dates", "products", "_null_reasons")
