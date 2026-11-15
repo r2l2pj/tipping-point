@@ -46,7 +46,10 @@ export function nisarMosaics(bundle: CcBundle): NisarMosaic[] {
       const r = p as Record<string, unknown>;
       return typeof r?.date === "string" && typeof r.track === "string"
         ? [{ date: d10(r.date), track: r.track, ...(typeof r.share_pct === "number" ? { share: r.share_pct } : {}) }] : [];
-    }).sort((a, b) => a.date.localeCompare(b.date));
+    })
+      // a pass with a 0 % share contributed no pixel (lead-analysis lists it): not named
+      .filter((p) => p.share === undefined || p.share > 0)
+      .sort((a, b) => a.date.localeCompare(b.date));
     const start = win[0] || passes[0]?.date || ref, end = win[1] || passes[passes.length - 1]?.date || ref;
     if (!ref && !start) continue;
     const b = Array.isArray(l.bounds) && l.bounds.length === 4 ? (l.bounds as BBox) : undefined;

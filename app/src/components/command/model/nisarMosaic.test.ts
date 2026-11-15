@@ -36,6 +36,12 @@ test("mosaicFor: the window containing the day, else the latest window started b
   expect(mosaicFor(m, "2026-09-20", "HV")!.pol).toBe("HH"); // Sep 18–23 has no HV
 });
 
+test("a pass with a 0 % share is not named", () => {
+  const z = { id: "x", manifest: { event: "rs_uruguai_2026", layers: [{ ...mos("2026-10-12", ["2026-10-09", "2026-10-17"], [["2026-10-12", "010D"]]),
+    passes: [{ date: "2026-10-12", track: "010D", share_pct: 40.2 }, { date: "2026-10-17", track: "082D", share_pct: 0 }] }] } } as unknown as CcBundle;
+  expect(mosaicChip(nisarMosaics(z)[0])).toBe("NISAR mosaic Oct 9–17 · 010D");
+});
+
 test("chip: 'NISAR mosaic Oct 9–17 · 010D + 060A + 082D + 132A'", () => {
   const m = nisarMosaics(uy);
   expect(mosaicChip(mosaicFor(m, "2026-10-12")!)).toBe("NISAR mosaic Oct 9–17 · 010D + 060A + 082D + 132A");
