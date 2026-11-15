@@ -196,7 +196,14 @@ Live Now additionally keeps only RS/SC/PR land. The live Southern Brazil pair (0
   climatology, the same product mix as §1.
 - **Pitch wording:** "tested retrospectively", never "the live index uses upstream rain".
 
-**TPI-flood replay (run 15:15, `tools/rs_uruguai_tpi_flood_replay.py`, clim_imerg_0p1).** Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) read Critical over the Uruguay River corridor in the bands of Sep 30 – Oct 2 (rain Sep 28–30; up to 813 km² Critical), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 9 & 11 before the Oct 16 crest. The NOAA GFS run of Sep 29 showed High for Sep 30, the Sep 30 run Critical for Oct 1, the Oct 2 run High for Oct 3–5. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof).
+**TPI-flood replay (run 15:15, `tools/rs_uruguai_tpi_flood_replay.py`, clim_imerg_0p1).** Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) read Critical over the Uruguay River corridor in the bands of Sep 30 – Oct 2 (rain Sep 28–30; up to 813 km² Critical), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 9 & 11 before the Oct 16 crest. The NOAA GFS run of Sep 29 showed High for Sep 30, the Sep 30 run Critical for Oct 1, the Oct 2 run High for Oct 3–5. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof). **Robustness checks (15:20):**
+- With the rain scaled Early→Final (÷ 1.34), the corridor is still Critical on Sep 30 and Oct 1
+  (139 / 118 km²).
+- Sep 15 → Oct 31: 8 Critical days, none without flood stage within 10 d. That test is lenient,
+  because the river stayed above flood stage most of October.
+- Spatially weak: 41 % of the Critical km²-days fall outside the HAND ≤ 5 m corridor, which is
+  50.8 % of the AOI. Lift is 1.16.
+- So the local index flagged the right days, not specifically the right places.
 
 ---
 

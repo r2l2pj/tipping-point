@@ -15055,6 +15055,30 @@
         ],
         "label": "experimental, post-event test, not in the live index",
         "source": "lead-ml"
+      },
+      "tpi_replay_robustness": {
+        "early_to_final_scaling": "rain ÷1.34 (Early→Final, RS 2024 test): corridor still Critical Sep 30 / Oct 1 (139 / 118 km²; unscaled 367 / 315), Oct 2 High (5 km²), Sep 29 none",
+        "specificity": {
+          "window": "2026-09-15..2026-10-31",
+          "critical_days": [
+            "2026-09-30",
+            "2026-10-01",
+            "2026-10-02",
+            "2026-10-09",
+            "2026-10-11",
+            "2026-10-24",
+            "2026-10-25",
+            "2026-10-26"
+          ],
+          "critical_days_without_flood_stage_within_10d": 0,
+          "note": "lenient test: flood stage held Oct 5-21 and Oct 29-31",
+          "critical_km2_days": 6877,
+          "outside_corridor_km2_days": 2811,
+          "corridor_share_of_aoi_pct": 50.8,
+          "critical_share_in_corridor_pct": 59.1,
+          "lift": 1.16
+        },
+        "reading": "right days (rain episodes ahead of the rises; none in the dry Sep 15-29), not specifically the right places (lift 1.16 over the floodplain)"
       }
     }
   }
