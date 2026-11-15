@@ -95,17 +95,10 @@ def test_fallback_publish_and_permissions(name, cron, job):
             detect = [s for s in steps if s.get("id") == "data_changed"]
             assert len(detect) == 1
             assert "git status --porcelain -- data/" in detect[0]["run"]
-    # L26: for the now job the GitHub fallback branch is the primary
-    # publish (before Neon); Neon is best-effort secondary elsewhere.
-    neon = [s for s in steps if "publish_s3.sh" in s.get("run", "")]
-    assert len(neon) == 1
-    assert _run_idx(steps, f"live/jobs.py {job}") < _run_idx(steps, "publish_s3.sh")
-    if publish:
-        if job == "now":
-            assert _run_idx(steps, "publish_fallback.py") < _run_idx(steps, "publish_s3.sh")
-            assert neon[0].get("continue-on-error") is True
-        else:
-            assert _run_idx(steps, "publish_s3.sh") < _run_idx(steps, "publish_fallback.py")
+    # L53/L55: Neon storage is gone — the GitHub fallback branch is the only
+    # data host, published after the job.
+    assert not [s for s in steps if "publish_s3.sh" in s.get("run", "")]
+    assert not any("NEON" in k for s in steps for k in (s.get("env") or {}))
 
 
 def test_now_cron():

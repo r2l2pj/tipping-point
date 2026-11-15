@@ -23,7 +23,8 @@ VALUES = (-58.0, -34.0, -48.0, -22.5)   # west, south, east, north
 # outputs legitimately carry the bounds value in the published contract.
 SCAN_SUFFIXES = {".py", ".js", ".ts", ".yml", ".yaml", ".md"}
 SKIP_DIRS = {".git", ".venv", "node_modules", ".herdr", "tests", "__pycache__",
-             "data", "fixtures", "__fixtures__"}
+             "data", "fixtures", "__fixtures__",
+             "app"}   # L53 monorepo: the Next.js app has its own copies (lead-ml dry run)
 
 # Pre-existing copies outside test/report files (see docstring). Each entry
 # must disappear as its owning unit migrates; nothing may be ADDED here.

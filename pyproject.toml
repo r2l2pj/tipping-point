@@ -43,4 +43,5 @@ packages = ["pipeline/tp"]
 
 [tool.ruff]
 line-length = 110
+extend-exclude = ["app"]   # L53 monorepo: the Next.js app is not Python
 target-version = "py311"

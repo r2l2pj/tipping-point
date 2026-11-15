@@ -54,3 +54,12 @@ data/static/south_brazil/clim/clim_imerg_0p1.tif
 # L35 upstream-basin rain cubes + IMERG per-day cache (large, re-downloadable)
 intermediate/
 data/now/history/
+
+# L53 monorepo: the Next.js app under app/ (its own app/.gitignore also applies)
+app/node_modules/
+app/.next/
+app/.data/
+app/*.tsbuildinfo
+app/next-env.d.ts
+app/.env*
+!app/.env.example

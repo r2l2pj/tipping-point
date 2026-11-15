@@ -2,7 +2,7 @@ name: modo-agora
 
 # Modo Agora — refreshes data/now every 3 h (L20/L25: local TPI from
 # IMERG Early + SMAP L4 + GFS, no GEE at runtime; L26: GitHub 'fallback'
-# branch is the primary data host, Neon best-effort secondary).
+# branch is the data host; Neon storage removed in L53).
 # On failure the previous fallback snapshot stays live.
 
 on:
@@ -276,7 +276,7 @@ jobs:
 
       # L26: GitHub 'fallback' branch is the primary data host (one
       # force-pushed orphan snapshot per run, app-facing files only,
-      # >50 MB -> release asset). Neon publish is best-effort secondary.
+      # >50 MB -> release asset). Only data host (Neon removed, L53).
       # Guard (conductor 2026-11-15, fallback race): the publish FAILS and
       # logs DROPPED paths if the snapshot would remove an app-facing file
       # that both the current fallback and main HEAD have. Exception: the
@@ -288,12 +288,3 @@ jobs:
           FALLBACK_ALLOW_DROP: data/now/response/flood_nisar.geojson
         run: uv run python live/publish_fallback.py
 
-      - name: Publish data/ to Neon storage
-        continue-on-error: true
-        env:
-          NEON_S3_ENDPOINT: ${{ secrets.NEON_S3_ENDPOINT }}
-          NEON_S3_ACCESS_KEY_ID: ${{ secrets.NEON_S3_ACCESS_KEY_ID }}
-          NEON_S3_SECRET_ACCESS_KEY: ${{ secrets.NEON_S3_SECRET_ACCESS_KEY }}
-          NEON_S3_REGION: ${{ secrets.NEON_S3_REGION }}
-          NEON_S3_BUCKET: ${{ secrets.NEON_S3_BUCKET }}
-        run: bash live/publish_s3.sh

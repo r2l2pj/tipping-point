@@ -69,15 +69,6 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish data/ to Neon storage
-        if: steps.data_changed.outputs.changed == 'true'
-        env:
-          NEON_S3_ENDPOINT: ${{ secrets.NEON_S3_ENDPOINT }}
-          NEON_S3_ACCESS_KEY_ID: ${{ secrets.NEON_S3_ACCESS_KEY_ID }}
-          NEON_S3_SECRET_ACCESS_KEY: ${{ secrets.NEON_S3_SECRET_ACCESS_KEY }}
-          NEON_S3_REGION: ${{ secrets.NEON_S3_REGION }}
-          NEON_S3_BUCKET: ${{ secrets.NEON_S3_BUCKET }}
-        run: bash live/publish_s3.sh
 
       - name: Publish data/ to fallback branch
         if: steps.data_changed.outputs.changed == 'true'
