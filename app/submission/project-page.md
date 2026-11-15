@@ -128,7 +128,7 @@ Other limits:
 ### Try it (no login)
 - Live view: https://tippingpoint.l17s.dev · public alerts: https://tippingpoint.l17s.dev/alerts
 - Rio Grande do Sul replay: https://tippingpoint.l17s.dev/?case=rs_2024 (press Play)
-- Washington forecast as issued: https://tippingpoint.l17s.dev/?case=wa_2025&day=-7, then **Forecast issued this day: +3 d**
+- Washington forecast as issued: https://tippingpoint.l17s.dev/?case=wa_2025&day=-4, then **Landslide** (Layers column), **Forecast**, **3 days before**
 - NISAR before/after: in the Washington replay, open the **NISAR radar** card and click **Before / after**
 - Code (open source): https://github.com/r2l2pj/tipping-point (pipeline at the root, web app in `app/`)
 
