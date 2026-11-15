@@ -11,6 +11,7 @@ import {
   isHorizonKey,
   probFrame,
   probHorizonsAvailable,
+  tpiFamily,
   type ProbHorizon,
 } from "@/lib/layers";
 import type { ManifestLayer } from "@/lib/types";
@@ -49,11 +50,15 @@ type BBox = [number, number, number, number];
 // Forecast issued k days before); 'rain' is the observed IMERG raster; 'ml'
 // the Now P(trigger) horizon frames; 'nisar' a pass (+ pol, + track in Now);
 // 'satellite' the NASA GIBS true-colour tiles of the day.
-export type CompareLayer = "flood" | "slide" | "rain" | "ml" | "nisar" | "satellite" | "opera";
+// 'flood_nisar' (conductor, L61): the flood index with NISAR-observed water —
+// its own explicit option, observed frames only; the default stays the plain
+// 'flood' so forecast vs observed compares like with like.
+export type CompareLayer = "flood" | "flood_nisar" | "slide" | "rain" | "ml" | "nisar" | "satellite" | "opera";
 export const isRiskLayer = (l: CompareLayer): l is "flood" | "slide" => l === "flood" || l === "slide";
 
 export const COMPARE_LAYER_LABEL: Record<CompareLayer, string> = {
   flood: "Flood risk (TPI)",
+  flood_nisar: "Flood risk + NISAR (TPI)",
   slide: "Landslide risk (TPI)",
   rain: "Rain (NASA GPM IMERG)",
   ml: "Landslide likelihood (ML)",
@@ -127,9 +132,18 @@ const unionBounds = (a?: BBox, b?: BBox): BBox | undefined =>
 // nothing — frameFor/pickTpiFrame fall back to any frame of the day (the
 // flood one for a landslide side, or one of a flood-only case like
 // Uruguaiana), which put the wrong hazard (or a blank) on a side.
-export function riskFrame(bundle: CcBundle, day: string | undefined, hz: Hazard) {
-  const f = frameFor(bundle, day, hz);
-  return f && f.hazard === hz && f.layer.id.startsWith(`tpi_${hz}`) ? f : undefined;
+// Exact id family (conductor): tpi_flood never matches tpi_flood_nisar.
+export function riskFrame(bundle: CcBundle, day: string | undefined, fam: Hazard | "flood_nisar") {
+  const f = frameFor(bundle, day, fam);
+  return f && f.family === fam ? f : undefined;
+}
+
+// Days with a flood + NISAR frame (replay: tpi_flood_nisar per observed day;
+// Now: tpi_flood_nisar_d0..d3).
+function floodNisarDays(bundle: CcBundle, steps: readonly Step[]): { date: string; label: string }[] {
+  return steps
+    .filter((s) => riskFrame(bundle, s.date, "flood_nisar"))
+    .map((s) => ({ date: day10(s.date), label: fmtDate(s.date) }));
 }
 
 function riskDays(bundle: CcBundle, steps: readonly Step[], hz: Hazard): { date: string; label: string }[] {
@@ -261,6 +275,8 @@ export function sideDays(
     case "flood":
     case "slide":
       return (s.lead ?? 0) > 0 ? issueDays(bundle, steps, s.layer, s.lead!) : riskDays(bundle, steps, s.layer);
+    case "flood_nisar":
+      return floodNisarDays(bundle, steps);
     case "rain":
       return rainDays(bundle);
     case "ml":
@@ -306,6 +322,8 @@ export function compareLayers(
       out.push({ id: hz, label: COMPARE_LAYER_LABEL[hz], days: [], disabled: hazardMissingText(hz) });
     }
   }
+  const fn = floodNisarDays(bundle, steps);
+  if (fn.length) out.push({ id: "flood_nisar", label: COMPARE_LAYER_LABEL.flood_nisar, days: fn });
   const rain = rainDays(bundle);
   if (rain.length) out.push({ id: "rain", label: COMPARE_LAYER_LABEL.rain, days: rain });
   if (live) {
@@ -505,6 +523,9 @@ export function presetSides(
 // spec (L=…&R=…). Unknown extras fail the whole spec → defaults.
 const LAYER_ALIASES: Record<string, CompareLayer> = {
   flood: "flood",
+  flood_nisar: "flood_nisar",
+  floodnisar: "flood_nisar",
+  "flood+nisar": "flood_nisar",
   slide: "slide",
   rain: "rain",
   imerg: "rain",
@@ -657,6 +678,15 @@ function sideResolved(
           : f?.forecast ? " (NOAA GFS forecast)" : ""}`
         : `Observed ${short(day)} (NASA IMERG + SMAP)${tag}`;
       return { side: img(f?.layer, label), label, missing: `No ${hz === "slide" ? "landslide" : "flood"} index frame for ${fmtDate(day)}` };
+    }
+    case "flood_nisar": {
+      const f = riskFrame(bundle, day, "flood_nisar");
+      const passes = (f?.layer as { nisar_passes?: unknown } | undefined)?.nisar_passes;
+      const last = Array.isArray(passes)
+        ? passes.map((p) => (p as { date?: unknown })?.date).filter((d): d is string => typeof d === "string").sort().pop()
+        : undefined;
+      const label = `${bundle.mode === "live" ? "" : "Observed "}${short(day)} · Flood TPI + NISAR water${last ? ` (pass ${short(last)})` : ""}`;
+      return { side: img(f?.layer, label), label, missing: `No flood + NISAR frame for ${fmtDate(day)}` };
     }
     case "rain": {
       const l = imergLayerFor(bundle, day);
