@@ -83,7 +83,8 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | `[TBD uy_m1]` | uy lift ÷ terrain-only lift (M1 ratio) | `[TBD key]` | R A |
 | `[TBD uy_outside_fp]` | % of NISAR water off the low floodplain (HAND > 5 m) — rice caveat | `nisar_outside_floodplain_pct` (per layer) | R A P S |
 | `[TBD wa_high]` / `[TBD wa_lift]` | Washington, same | `[TBD key]` | R A P S K |
-| `[TBD now_status]` | Now: latest NISAR pass used, or "no water seen yet" | `now/summary.json` `[TBD key]` | P |
+| Now (live, Nov 15 run 43773444922): 227.31 km² NISAR water on land, pass Nov 5 (010D; Nov 3–5 used), age 10 d; index hit 0% (High+ and Critical), lift undefined | `data/now/nisar_agreement.json` (fallback) `water_km2`, `pass_dates`, `pass_age_days`, `observed.alto_plus.hit_pct` / `observed.critico.hit_pct`; `summary.nisar_water` | P |
+| Now: 88.8% of that water outside HAND ≤ 5 m | `[TBD now_fp_key]` (lead-analysis; `outside_floodplain_pct` is null in the file) | P |
 | block | `nisar_agreement` in metrics.json (lead-analysis, ~21:00); sub-keys filled by hand per row | — | R A |
 
 ### L61 'What we learned about NISAR' (verified by lead-analysis)
@@ -116,7 +117,7 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 
 ## Retired — never say
 
-36% / 8.8× (v1 RS forecast) as a headline · "46% of landslides within 500 m" · "175 km² Critical three days before" · "55,000 people exposed" · "three days before the peak" · 1,681,783 / 254,263 / 1,488,833 / 229,782 people · 1.85 km² (on-grid area; use 1.8 km² = `flooded_km2`) · "GFS under-forecast the RS peak by about half" on slides/deck (the README keeps it with its source numbers, row above) · "people are lower bounds (~12% low)" (old resample; counts are now native-grid) · "most of the WA Critical area is high/snow terrain" (A3 not confirmed: about 40%) · the 2.7× RS lift as evidence that rain locates slides.
+36% / 8.8× (v1 RS forecast) as a headline · "4,093 km²" live NISAR water (sea-pixel bug, fixed 2ad4b2f) · "46% of landslides within 500 m" · "175 km² Critical three days before" · "55,000 people exposed" · "three days before the peak" · 1,681,783 / 254,263 / 1,488,833 / 229,782 people · 1.85 km² (on-grid area; use 1.8 km² = `flooded_km2`) · "GFS under-forecast the RS peak by about half" on slides/deck (the README keeps it with its source numbers, row above) · "people are lower bounds (~12% low)" (old resample; counts are now native-grid) · "most of the WA Critical area is high/snow terrain" (A3 not confirmed: about 40%) · the 2.7× RS lift as evidence that rain locates slides.
 
 ## Grep proof (run after any copy change)
 
