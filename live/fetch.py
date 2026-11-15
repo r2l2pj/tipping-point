@@ -468,38 +468,50 @@ def _gfs_candidates(issued: dt.date) -> list[tuple[dt.date, int]]:
     return cands[:_GFS_TRIES]
 
 
+def _gfs_last_fh(issued: dt.date, cday: dt.date, chh: int) -> int:
+    """Forecast hour of the last 6h bucket needed to cover day issued+3:
+    the bucket ending at (issued+4) 00:00 UTC."""
+    cycle0 = dt.datetime.combine(cday, dt.time(chh))
+    end = dt.datetime.combine(issued + dt.timedelta(days=4), dt.time())
+    return int((end - cycle0).total_seconds() // 3600)
+
+
 def _gfs_pick_run(issued: dt.date) -> tuple[dt.date, int]:
-    """Newest preferred cycle whose 0p25 f072 index exists (the D+3 reach)."""
+    """Newest preferred cycle whose index reaches the last needed fh (the
+    bucket ending D+4 00:00 UTC — the tail of calendar day D+3)."""
     seen = []
     for d, hh in _gfs_candidates(issued):
-        url = f"{_GFS_BASE}/{_gfs_key(d, hh, 72)}.idx"
+        last = _gfs_last_fh(issued, d, hh)
+        url = f"{_GFS_BASE}/{_gfs_key(d, hh, last)}.idx"
         if _gfs_head_ok(url):
             return d, hh
         seen.append(f"{d}t{hh:02d}z")
     raise RuntimeError(
-        f"no GFS cycle at/before {issued} has pgrb2.0p25.f072 ({'; '.join(seen)})")
+        f"no GFS cycle at/before {issued} covers D+3 ({'; '.join(seen)})")
 
 
 def _gfs_day_label(valid: dt.datetime) -> dt.date:
-    """Calendar-day label for a bucket ending at `valid`: the bucket belongs
-    to the day whose 24h window (label-1d 00:00, label 00:00] contains it,
-    matching the GEE NOAA/GFS0P25 daily sum (d1 = fh 6..24 for a 00Z run)."""
-    return (valid - dt.timedelta(microseconds=1)).date() + dt.timedelta(days=1)
+    """Calendar-day label for a trailing-6h bucket ending at `valid`: the
+    bucket belongs to the UTC day it covers, i.e. the date of `valid`
+    (L28b — a bucket ending D+1 00:00 covers D 18:00..24:00 = day D)."""
+    return (valid - dt.timedelta(microseconds=1)).date()
 
 
 def fetch_gfs_daily(bounds, issued: dt.date | None = None):
     """GFS forecast daily precipitation (mm/day) for D+1..D+3.
 
     Source: public NOAA AWS bucket noaa-gfs-bdp-pds (no auth, no GEE). APCP
-    in pgrb2 is a TRAILING accumulation, so a UTC day total is the sum of the
-    'N-6..N hour acc fcst' bucket messages ending in (day-1, day] — for a
-    00Z run issued on D that is fh 6..24 for D+1, 30..48 for D+2, 54..72 for
-    D+3. Each message is pulled with an HTTP Range read via the sibling
+    in pgrb2 is a TRAILING accumulation, so a UTC calendar-day total is the
+    sum of the 6h bucket messages ending inside that day — for a 00Z run
+    issued on D that is fh 30..48 for day D+1, 54..72 for D+2, 78..96 for
+    D+3 (buckets ending D+1 00:00..06:00 belong to day D, per L28b). Each
+    message is pulled with an HTTP Range read via the sibling
     '.idx' file, decoded with cfgrib/eccodes (kg m-2 == mm), and subset to
     the 0.25 deg cell centres inside `bounds`.
 
     Run selection: prefers the 00Z cycle of `issued`, else the newest cycle
-    at/before issued end-of-day whose f072 index exists. Returns
+    at/before issued end-of-day whose index reaches the last needed fh.
+    Returns
     (daily_xarray(time,lat,lon) with 3 steps, issued_iso). Named fallback:
     fetch_geosfp_daily.
     """
@@ -511,7 +523,7 @@ def fetch_gfs_daily(bounds, issued: dt.date | None = None):
     cycle0 = dt.datetime.combine(cday, dt.time(chh))
 
     wanted: dict[dt.date, list[int]] = {d: [] for d in days}
-    for fh in range(6, 127, 6):
+    for fh in range(6, _gfs_last_fh(issued, cday, chh) + 6, 6):
         lab = _gfs_day_label(cycle0 + dt.timedelta(hours=fh))
         if lab in wanted:
             wanted[lab].append(fh)

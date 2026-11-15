@@ -40,13 +40,15 @@ def test_apcp_range_picks_trailing_not_since_issuance():
 
 def test_gfs_day_label_midnight_boundary():
     base = dt.datetime(2024, 4, 29)
-    # bucket ending exactly at Apr30 00:00 belongs to Apr30
+    # L28b: bucket ending exactly at Apr30 00:00 covers Apr29 18:00..24:00
     assert fetch._gfs_day_label(base + dt.timedelta(hours=24)) == \
-        dt.date(2024, 4, 30)
-    # Apr29 06:00 (fh6) also belongs to Apr30 -> GEE d1 = fh 6..24
-    assert fetch._gfs_day_label(base + dt.timedelta(hours=6)) == \
-        dt.date(2024, 4, 30)
+        dt.date(2024, 4, 29)
+    # bucket ending Apr30 06:00 covers Apr30 00:00..06:00
     assert fetch._gfs_day_label(base + dt.timedelta(hours=30)) == \
+        dt.date(2024, 4, 30)
+    assert fetch._gfs_day_label(base + dt.timedelta(hours=48)) == \
+        dt.date(2024, 4, 30)
+    assert fetch._gfs_day_label(base + dt.timedelta(hours=54)) == \
         dt.date(2024, 5, 1)
 
 
@@ -72,7 +74,8 @@ def test_pick_run_prefers_issued_00z(monkeypatch):
 
 def test_pick_run_falls_back_to_newest_available(monkeypatch):
     # issued 00Z + issued-day cycles are not yet published; yesterday 18Z is
-    ok = {fetch._gfs_key(ISSUED - dt.timedelta(days=1), 18, 72)}
+    # (its last needed fh = bucket ending issued+4 00:00 -> fh102)
+    ok = {fetch._gfs_key(ISSUED - dt.timedelta(days=1), 18, 102)}
     monkeypatch.setattr(
         fetch, "_gfs_head_ok", lambda url: any(k in url for k in ok))
     assert fetch._gfs_pick_run(ISSUED) == \
@@ -81,7 +84,7 @@ def test_pick_run_falls_back_to_newest_available(monkeypatch):
 
 def test_pick_run_raises_when_nothing_archived(monkeypatch):
     monkeypatch.setattr(fetch, "_gfs_head_ok", lambda url: False)
-    with pytest.raises(RuntimeError, match="f072"):
+    with pytest.raises(RuntimeError, match="covers D\\+3"):
         fetch._gfs_pick_run(ISSUED)
 
 
@@ -110,11 +113,14 @@ def test_fetch_gfs_daily_buckets_and_subset(monkeypatch):
     assert daily.sizes["time"] == 3
     got = [str(t)[:10] for t in np.datetime_as_string(daily.time.values)]
     assert got == ["2024-04-30", "2024-05-01", "2024-05-02"]
-    # d1 = fh 6,12,18,24 -> 1+2+3+4 = 10 mm
-    assert calls[:4] == [6, 12, 18, 24]
-    np.testing.assert_allclose(daily.isel(time=0).values, 10.0)
+    # L28b alignment: day D+1 = buckets ending inside Apr30 = fh 30..48 of
+    # the Apr29 00Z run; observed-day buckets (fh 6..24) are never read.
+    assert calls[:4] == [30, 36, 42, 48]
+    assert min(calls) > 24   # no look-ahead / no double-count of day D
+    np.testing.assert_allclose(daily.isel(time=0).values,
+                               sum(fh / 6.0 for fh in (30, 36, 42, 48)))
     np.testing.assert_allclose(daily.isel(time=2).values,
-                               sum(fh / 6.0 for fh in (54, 60, 66, 72)))
+                               sum(fh / 6.0 for fh in (78, 84, 90, 96)))
     # subset snapped to cell centres inside bounds (GEE-identical)
     np.testing.assert_allclose(daily.lon.values,
                                np.arange(-52.5, -50.49, 0.25))
@@ -122,9 +128,10 @@ def test_fetch_gfs_daily_buckets_and_subset(monkeypatch):
                                np.arange(-30.5, -28.99, 0.25))
 
 
-def test_fetch_gfs_daily_fills_partial_day_from_later_cycle(monkeypatch):
-    # 06Z run on `issued`: D+1 window (D, D+1] gets buckets ending
-    # D 12:00, D 18:00, D+1 00:00 -> fh 6,12,18 only
+def test_fetch_gfs_daily_later_cycle_day_alignment(monkeypatch):
+    # 06Z run on `issued`: calendar day D+1 = buckets ending Apr30
+    # 06:00..May1 00:00 -> fh 24,30,36,42 (a complete day, still with no
+    # overlap of the observed day D = buckets ending fh 6..18).
     monkeypatch.setattr(fetch, "_gfs_pick_run", lambda issued: (ISSUED, 6))
     calls = []
     monkeypatch.setattr(fetch, "_gfs_apcp_grid",
@@ -132,5 +139,5 @@ def test_fetch_gfs_daily_fills_partial_day_from_later_cycle(monkeypatch):
                         or _fake_grid(1.0))
     daily, issued_iso = fetch.fetch_gfs_daily(BOUNDS, ISSUED)
     assert issued_iso == "2024-04-29T06:00:00Z"
-    assert calls[:3] == [6, 12, 18]
-    np.testing.assert_allclose(daily.isel(time=0).values, 3.0)
+    assert calls[:4] == [24, 30, 36, 42]
+    np.testing.assert_allclose(daily.isel(time=0).values, 4.0)
