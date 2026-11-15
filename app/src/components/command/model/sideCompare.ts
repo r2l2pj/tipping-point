@@ -268,8 +268,10 @@ export function viewCompareLayer(
   const avail = new Set(compareLayers(bundle, steps, hazard).map((l) => l.id));
   if (on.includes("imerg") && avail.has("rain")) return "rain";
   if (on.includes("ptrigger") && avail.has("ml")) return "ml";
-  if (on.includes("flood") && avail.has("nisar")) return "nisar";
+  // The risk index wins when it is on (the NISAR outlines are drawn over it);
+  // a radar-only view compares NISAR passes.
   if (on.includes("tpi") && avail.has(hazard)) return hazard;
+  if (on.includes("flood") && avail.has("nisar")) return "nisar";
   if (avail.has(hazard)) return hazard;
   return [...avail][0];
 }

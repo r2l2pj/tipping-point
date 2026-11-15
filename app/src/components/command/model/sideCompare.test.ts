@@ -53,8 +53,9 @@ test("defaults: right = selected day; left = 3 days earlier; same layer as the m
     L: { layer: "flood", date: "2026-09-30", lead: 3 },
     R: { layer: "flood", date: "2026-09-30", lead: 0 },
   });
-  // The map's own view seeds the layer: nisar view → the pass pair.
-  const n = defaultSides(uy, steps, 4, "flood", 0, { layer: viewCompareLayer(uy, steps, ["tpi", "flood"], "flood") })!;
+  // The map's own view seeds the layer: a radar-only view → the pass pair
+  // (index + outlines compares the index — see the test below).
+  const n = defaultSides(uy, steps, 4, "flood", 0, { layer: viewCompareLayer(uy, steps, ["flood"], "flood") })!;
   expect(n.L.layer).toBe("nisar");
   expect(nisarDefaults(["2026-09-18", "2026-09-30", "2026-10-12", "2026-10-24", "2026-11-05"], "2026-09-30")).toEqual({ before: "2026-09-30", after: "2026-10-12" });
 });
@@ -236,4 +237,16 @@ test("isRiskLayer guards the lead chips", () => {
   expect(isRiskLayer("flood")).toBe(true);
   expect(isRiskLayer("slide")).toBe(true);
   expect(isRiskLayer("nisar")).toBe(false);
+});
+
+test("Compare opens on the map's own layer: risk index over NISAR outlines → the index; radar-only → NISAR", async () => {
+  const { viewCompareLayer } = await import("./sideCompare");
+  const uyB = { id: "rs_uruguai_2026", mode: "replay", bbox: [0, 0, 1, 1], manifest: { event: "rs_uruguai_2026", layers: [
+    { id: "tpi_flood", date: "2026-09-30", png: "a.png" }, { id: "tpi_flood", date: "2026-10-12", png: "b.png" },
+    { id: "nisar_hh_20260930", kind: "nisar_frame", date: "2026-09-30", polarization: "HH", png: "n1.png" },
+    { id: "nisar_hh_20261012", kind: "nisar_frame", date: "2026-10-12", polarization: "HH", png: "n2.png" },
+  ] } } as never;
+  const st = ["2026-09-30", "2026-10-12"].map((date, index) => ({ index, date, forecast: false, top: date, sub: "" })) as never[];
+  expect(viewCompareLayer(uyB, st, ["tpi", "flood"], "flood")).toBe("flood");
+  expect(viewCompareLayer(uyB, st, ["flood"], "flood")).toBe("nisar");
 });
