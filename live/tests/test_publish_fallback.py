@@ -146,6 +146,7 @@ def test_static_inputs_never_published(tmp_path):
     from live.publish_fallback import _app_facing
     src = tmp_path / "data"
     assert not _app_facing(src / "static/south_brazil/clim/doy_319.tif", src)
+    assert not _app_facing(src / "static/south_brazil/clim/clim_imerg_0p1.tif", src)
     assert not _app_facing(src / "now/static/gpw/gpw_popcount_2020_30sec.tif", src)
     assert _app_facing(src / "now/cog/tpi_slide_today.tif", src)
     assert _app_facing(src / "now/response/flood_nisar.geojson", src)

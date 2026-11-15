@@ -75,7 +75,8 @@ def parse_args(argv=None):
     return p.parse_args(argv)
 
 
-def _load_static(static_dir: Path, days: list[dt.date] | None = None):
+def _load_static(static_dir: Path, days: list[dt.date] | None = None,
+                 bounds: tuple[float, ...] = NOW_BOUNDS):
     """Static inputs: full sul_static.npz when present (legacy), else L20 —
     fetch only the needed climatology doys + terrain from the GEE assets,
     cached under static/cache/."""
@@ -83,7 +84,7 @@ def _load_static(static_dir: Path, days: list[dt.date] | None = None):
     if path.exists():
         return dict(np.load(path))
     from live import static_fetch
-    return static_fetch.load_static(days=days)
+    return static_fetch.load_static(bounds=bounds, days=days)
 
 
 def _clim_for_month(static: dict[str, np.ndarray], month: int) -> dict[str, np.ndarray]:
@@ -214,7 +215,8 @@ def run(args) -> dict:
     static = _load_static(
         args.static_dir,
         days=[args.date + dt.timedelta(days=k)
-              for k in range(FORECAST_DAYS + 1)])
+              for k in range(FORECAST_DAYS + 1)],
+        bounds=tuple(args.bounds))
     lats, lons = dst_lats_lons(tuple(args.bounds))
     transform = dst_transform(tuple(args.bounds))
     today = args.date
@@ -350,7 +352,8 @@ def run(args) -> dict:
         "classes_km2": classes_km2,
         "data_dates": {"imerg": imerg_date, "smap": smap_date,
                         "gfs_issued": gfs_issued,
-                        "clim_doy_used": static.get("clim_doy_used")},
+                        "clim_doy_used": static.get("clim_doy_used"),
+                        "clim_source": static.get("clim_source")},
     }
     files["summary.json"] = summary
 

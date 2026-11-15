@@ -114,6 +114,15 @@ jobs:
           key: prev-classes-v2-${{ github.run_id }}
           restore-keys: prev-classes-v2-
 
+      # L30-clim: whole-year IMERG 0.1 deg climatology (~20-25 MB, static-v1
+      # Release asset). static_fetch downloads it into this path on a miss;
+      # actions/cache keeps it so CI fetches it at most once per key.
+      - name: Cache climatology (clim_imerg_0p1.tif)
+        uses: actions/cache@v4
+        with:
+          path: data/static/south_brazil/clim/clim_imerg_0p1.tif
+          key: clim-imerg-0p1-v1
+
       # L20: local TPI path — run_now --local fetches IMERG Early / SMAP L4 /
       # GEOS-FP, computes TPI in numpy against per-doy climatology + terrain
       # pulled from the GEE assets, writes data/now directly. No EE raster
