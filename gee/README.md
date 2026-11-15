@@ -73,7 +73,7 @@ Related non-module entry points: `tools/ingest_assets.py --case <id>`
 ## JS scripts — run order (Code Editor)
 
 1. `01` TPI index (RS) — exports the Drive COG **and** the
-   `tpi_slide_series` asset that `08`/Telegram `/simular` read. Both required.
+   `tpi_slide_series` asset that `08` reads (the Telegram `/simular` reader was removed, L55). Both required.
 2. `09` impact — needs `01`'s asset (and `07`'s for WA); for
    people_flooded/flooded_km2 also upload `flood_nisar` and set
    `HAS_NISAR_FLOOD=true`.

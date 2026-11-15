@@ -1,5 +1,8 @@
 # 01 — Product, scope and architecture
 
+> **L55 (2026-11-15): Telegram is removed for good** — no bot, no subscriber store, no Neon Postgres. Telegram/subscriber/`DATABASE_URL` items below are historical. Alerts are the in-app Public Alerts page only.
+
+
 Section 1 of the science review. Audience: the team's geoscientist. It describes what Tipping Point
 does as of **2026-11-15 ~12:30 UTC (09:30 BRT)**, what it does not do, and where each claim lives in
 the code.

@@ -14,7 +14,7 @@ The bbox edit is one line, but the domain also needs **static inputs that cover 
 | Municipalities (`municipalities_now.geojson`, IBGE) | Brazil only | Needs a boundary source for the new country (GADM / national agency). Without it alerts have no municipality and `municipalities_loaded` fails |
 | Land mask `data/now/static/brazil_outline.geojson` | IBGE outline | A country outline for the new domain |
 | P(trigger) (`live/p_trigger.py`) | Brazilian land only, a product-scope decision | Lead-ml decides whether labels and an audience exist for the new domain. Until then, keep `NOW_P_TRIGGER` off there |
-| Telegram text | pt-BR, "SMS 40199" (Brazilian Defesa Civil) | Each country needs its own civil-protection contact line |
+| Public alert text | pt-BR, "SMS 40199" (Brazilian Defesa Civil) | Each country needs its own civil-protection contact line |
 
 ## Limits
 
