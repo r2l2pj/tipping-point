@@ -410,8 +410,9 @@ export function reduce(
       // Lucas (BUG): with Compare ⇆ open, every risk side (TPI flood /
       // landslide, observed or forecast) follows the hazard switch and keeps
       // its date and lead; NISAR / rain / satellite / ML sides stay.
+      // Flood + NISAR is a flood layer: Landslide maps it to the plain slide index.
       const follow = (x: Side): Side =>
-        isRiskLayer(x.layer) && x.layer !== action.hazard
+        (isRiskLayer(x.layer) || (x.layer === "flood_nisar" && action.hazard === "slide")) && x.layer !== action.hazard
           ? normSide(bundle, stepsFor(bundle), action.hazard, { ...x, layer: action.hazard })
           : x;
       const compareSides = state.compareSides

@@ -423,6 +423,7 @@ export interface RadarCard {
   compare: CompareOption;
   series?: NisarSeriesView; // L42, WA replay
   hypothesisLine?: string; // L42: lead-analysis double-bounce test, when supported
+  provisional?: boolean; // the NISAR product is provisional (sensor field)
   nextLook?: string; // L43 live: "Next NISAR look: …"
   framing?: string; // L43 live framing line (with nextLook)
   extras: NisarExtra[]; // manifest layers kind 'nisar_extra'
@@ -545,6 +546,7 @@ function baseRadarCard(bundle: CcBundle): RadarCard {
   return {
     pair,
     nisar: radarSensor(bundle).nisar,
+    provisional: radarSensor(bundle).note === "provisional",
     headline: pair
       ? (radarSensor(bundle).nisar
           ? "NISAR radar images available" // conductor (v6): plain headline, no product code

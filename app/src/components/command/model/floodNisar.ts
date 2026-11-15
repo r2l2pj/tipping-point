@@ -13,19 +13,22 @@
 // - agreement: metrics cases[<case>].nisar_agreement (Now:
 //   now/nisar_agreement.json) = {water_km2, observed:{alto_plus:{hit_pct}},
 //   forecast:{lead_1d|lead_2d|lead_3d:{alto_plus:{hit_pct}}}, ...} + flat keys.
+import { pickTpiFrame, tpiFamily } from "@/lib/layers";
 import type { ManifestLayer } from "@/lib/types";
 import { fmtDate, fmtKm2 } from "./format";
 import type { CcBundle } from "./types";
 
 export const FLOOD_NISAR_LABEL = "Flood risk with NISAR-observed water (candidate)";
-export const NISAR_WATER_LABEL = "Observed by NISAR (candidate water)";
-export const NISAR_WATER_COLOR = "#08519c";
+// Lucas: NISAR water is RED everywhere (the published mask is blue #08519c;
+// the map repaints it #ff1f1f at ~55 %, like the candidate polygons).
+export const NISAR_WATER_LABEL = "NISAR-observed water (candidate)";
 
 type L = ManifestLayer & Record<string, unknown>;
 const layersOf = (b: CcBundle) => (b.manifest?.layers ?? []) as L[];
 const day10 = (d: unknown) => (typeof d === "string" ? d.slice(0, 10) : "");
 
-export const isFloodNisarId = (id: string): boolean => /^tpi_flood_nisar(_d\d)?$/.test(id);
+// lead-app2 d45c783: the risk frame families are matched by EXACT id family.
+export const isFloodNisarId = (id: string): boolean => tpiFamily(id) === "flood_nisar";
 
 export const hasFloodNisar = (bundle: CcBundle): boolean =>
   layersOf(bundle).some((l) => isFloodNisarId(l.id) && !!l.png);
@@ -33,7 +36,10 @@ export const hasFloodNisar = (bundle: CcBundle): boolean =>
 // The flood + NISAR frame of the day (only days with a usable pass have one).
 export function floodNisarFrame(bundle: CcBundle, day: string | undefined): ManifestLayer | undefined {
   if (!day) return undefined;
-  return layersOf(bundle).find((l) => isFloodNisarId(l.id) && !!l.png && day10(l.date) === day.slice(0, 10));
+  // The shared picker, family 'flood_nisar': exact family, never a fallback.
+  const l = pickTpiFrame(bundle.manifest?.layers, { date: day.slice(0, 10) }, "flood_nisar",
+    bundle.series?.reference_date ?? bundle.reference_date);
+  return l && isFloodNisarId(l.id) ? l : undefined;
 }
 
 // The pass the frame used (the latest ≤ day, at most 12 days old).

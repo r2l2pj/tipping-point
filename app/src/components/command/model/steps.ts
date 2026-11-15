@@ -9,6 +9,8 @@ import {
   isForecastLayer,
   isGfsFrame,
   pickTpiFrame,
+  tpiFamily,
+  type TpiFamily,
 } from "@/lib/layers";
 import type { DayPoint, ManifestLayer } from "@/lib/types";
 import { fmtDate, fmtDayShort } from "./format";
@@ -35,8 +37,8 @@ export interface Step {
 const tpiFrames = (bundle: CcBundle): ManifestLayer[] =>
   (bundle.manifest?.layers ?? []).filter(
     (l) =>
-      l.id.startsWith("tpi_") &&
-      !l.id.startsWith("tpi_flood_nisar") && // L61: same days as tpi_flood
+      // Exact family; L61 flood + NISAR frames depict the same days as tpi_flood.
+      (tpiFamily(l.id) === "flood" || tpiFamily(l.id) === "slide") &&
       l.png &&
       typeof l.date === "string" &&
       !(l as unknown as { datetime?: unknown }).datetime && // 6-hourly: hour chips only
@@ -231,6 +233,7 @@ export interface Frame {
   layer: ManifestLayer;
   hazard: Hazard;
   forecast: boolean;
+  family?: TpiFamily; // exact id family (flood_nisar = flood + NISAR water)
 }
 
 // The TPI frame the map hook draws for a date and a hazard choice — the
@@ -243,7 +246,7 @@ export interface Frame {
 export function frameFor(
   bundle: CcBundle,
   date: string | undefined,
-  wanted: Hazard
+  wanted: Hazard | TpiFamily
 ): Frame | undefined {
   if (!date) return undefined;
   const layer = pickTpiFrame(
@@ -252,11 +255,13 @@ export function frameFor(
     wanted,
     bundle.series?.reference_date ?? bundle.reference_date
   );
-  if (!layer || !layer.id.startsWith("tpi_")) return undefined;
+  const family = tpiFamily(layer?.id);
+  if (!layer || !family) return undefined;
   return {
     layer,
-    hazard: layer.id.includes("flood") ? "flood" : "slide",
+    hazard: family === "slide" ? "slide" : "flood",
     forecast: isForecastLayer(layer),
+    family,
   };
 }
 
@@ -322,7 +327,7 @@ export const hazardMissingText = (h: Hazard): string =>
 
 export const caseHasHazard = (bundle: CcBundle, hazard: Hazard): boolean =>
   (bundle.manifest?.layers ?? []).some(
-    (l) => l.id.startsWith(`tpi_${hazard}`) && (l.png || l.cog)
+    (l) => tpiFamily(l.id) === hazard && (l.png || l.cog)
   );
 
 // Caption chip of the map: what is drawn, for which step. Says so when the

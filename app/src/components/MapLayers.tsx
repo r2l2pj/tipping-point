@@ -681,11 +681,12 @@ export function useMapLayers(
     // an image source on the after-frame bounds — above the risk raster and
     // water, below the flood (NISAR candidate) polygons. Its own opacity
     // slider, independent of the data-raster strength.
-    // L61: NISAR-observed water (candidate) over the flood + NISAR frame —
-    // above the index and water, below the NISAR flood polygons.
+    // L61: NISAR-observed water (candidate) over the flood + NISAR frame, in
+    // the flooded-area red at ~55 % — above the index and water, below the
+    // NISAR flood polygons (red fill + white outline).
     const nw = options?.nisarWater;
     if (nw) {
-      ensureImageLayer(map, SRC.nisarWater, LYR.nisarWater, nw.url, boundsToImageCoordinates(nw.bounds ?? bundle.bbox), 0.9, LYR.floodFill);
+      ensureImageLayer(map, SRC.nisarWater, LYR.nisarWater, nw.url, boundsToImageCoordinates(nw.bounds ?? bundle.bbox), 0.55, LYR.floodFill);
       vis(LYR.nisarWater, true);
     } else {
       vis(LYR.nisarWater, false);

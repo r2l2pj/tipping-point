@@ -2,7 +2,7 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
-import NisarSeriesChart from "../NisarSeriesChart";
+import NisarSeriesChart, { NisarFrames } from "../NisarSeriesChart";
 import { bundle, liveBundle, manifest } from "./fixtures";
 import { radarCompare } from "./radar";
 import { hypothesisLine, nisarSeriesView, slimHypothesis, slimNisarSeries } from "./nisarSeries";
@@ -52,7 +52,17 @@ describe("NISAR time series (L42)", () => {
     expect(html).toContain("NISAR time series");
     expect(html).toContain("Candidates darkened by ~7 dB");
     expect(html).toContain("candidates, never confirmed");
-    expect(html.match(/<img /g)).toHaveLength(3);
+    // lead-ux: the thumbnails moved out of the chart (card: 'Passes (N)').
+    expect(html.match(/<img /g)).toBeNull();
+    const strip = renderToStaticMarkup(createElement(NisarFrames, { s: card.series! }));
+    expect(strip.match(/<img /g)).toHaveLength(3);
+    // HH + HV frames of the same dates: one thumbnail per date (HH).
+    const dup = slimNisarSeries({ ...raw, frames: [
+      { date: "2025-12-04", png: "a_hh.png", polarization: "HH" }, { date: "2025-12-04", png: "a_hv.png", polarization: "HV" },
+      { date: "2025-12-16", png: "b_hv.png", polarization: "HV" }, { date: "2025-12-16", png: "b_hh.png", polarization: "HH" },
+    ] });
+    const dv = radarCard({ ...b, nisarSeries: dup } as never).series!;
+    expect(dv.frames.map((f) => f.url.split("/").pop())).toEqual(["a_hh.png", "b_hh.png"]);
     expect(radarCard(bundle()).series).toBeUndefined();
     expect(slimNisarSeries({ dates: ["x"] })).toBeUndefined();
   });
@@ -171,7 +181,8 @@ describe("More NISAR products (kind 'nisar_extra')", () => {
     expect(card.extras[0].url).toBe("/data/wa_2025/png/nisar_coh_loss.png");
     const html = renderToStaticMarkup(createElement(RadarCardC, { radar: card, floodOn: false, compareOpen: false,
       onConfirm: () => {}, onShowFlood: () => {}, onCompare: () => {} } as never));
-    expect(html).toContain("More NISAR products");
+    expect(html).toContain("More NISAR"); // lead-ux: collapsed
+    expect(html).toContain("NISAR products");
     expect(html).toContain("NISAR coherence loss (Dec 4 → Dec 16)");
     expect(html).toContain("NASA/JPL-Caltech NISAR");
     expect(radarCard(bundle()).extras).toEqual([]);

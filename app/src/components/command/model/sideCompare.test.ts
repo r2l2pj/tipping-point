@@ -408,3 +408,37 @@ test("forecast side: the picker lists ISSUE days (● = NOAA run), date = X + le
   // normSide keeps a forecast side on its issue day + lead.
   expect(normSide(both, steps, "slide", { layer: "slide", date: "2026-09-28", lead: 1 })).toEqual({ layer: "slide", date: "2026-09-28", lead: 1 });
 });
+
+// --- conductor (L61): 'Flood risk' vs 'Flood risk + NISAR' -------------------
+
+const withNisar = {
+  ...(both as unknown as Record<string, unknown>),
+  manifest: {
+    event: "wa_2025",
+    layers: [
+      // flood + NISAR listed first: exact-family matching, not order.
+      { id: "tpi_flood_nisar", date: "2026-09-30", png: "tpi_flood_nisar_2026-09-30.png", bounds: [0, 0, 1, 1],
+        nisar_passes: [{ date: "2026-09-27", track: "172D", id: "x" }] },
+      ...(both as unknown as { manifest: { layers: unknown[] } }).manifest.layers,
+    ],
+  },
+} as never;
+
+test("Compare: plain 'Flood risk' never shows the NISAR frame; 'Flood risk + NISAR' is its own option", () => {
+  const plain = sidesCompare(withNisar, { L: { layer: "flood", date: "2026-09-30", lead: 3 }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
+  expect(plain.pair?.after.url).toContain("tpi_flood_2026-09-30.png");
+  const fn = sidesCompare(withNisar, { L: { layer: "flood", date: "2026-09-30", lead: 0 }, R: { layer: "flood_nisar", date: "2026-09-30" } });
+  expect(fn.pair?.after.url).toContain("tpi_flood_nisar_2026-09-30.png");
+  expect(fn.pair?.after.label).toBe("Observed Sep 30 · Flood TPI + NISAR water (pass Sep 27)");
+  expect(fn.pair?.before.url).toContain("tpi_flood_2026-09-30.png");
+  const lay = compareLayers(withNisar, steps, "flood");
+  expect(lay.find((l) => l.id === "flood_nisar")?.days.map((d) => d.date)).toEqual(["2026-09-30"]);
+  // The default stays the plain index (like-with-like forecast vs observed).
+  expect(defaultSides(withNisar, steps, 4, "flood", 3)).toEqual({
+    L: { layer: "flood", date: "2026-09-30", lead: 3 },
+    R: { layer: "flood", date: "2026-09-30", lead: 0 },
+  });
+  expect(parseSideSpec("flood_nisar:2026-09-30")).toEqual({ layer: "flood_nisar", date: "2026-09-30" });
+  // A case without NISAR frames does not offer it.
+  expect(compareLayers(both, steps, "flood").some((l) => l.id === "flood_nisar")).toBe(false);
+});

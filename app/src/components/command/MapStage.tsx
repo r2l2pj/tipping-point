@@ -23,7 +23,7 @@ import { resolveChangePair } from "./model/nisarChange";
 import { useNisarChangeImage } from "./useNisarChange";
 import { activeView } from "./model/views";
 import { passLabel, passValue, radarFrame, radarPasses, type Pol } from "./model/radarFrame";
-import { setRadarLook, useRadarLook, useWaterUrl } from "./useWaterRed";
+import { setRadarLook, useRadarLook, useTintedUrl, useWaterUrl } from "./useWaterRed";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
 import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
 import { useFloodNisar } from "./useFloodNisar";
@@ -39,6 +39,9 @@ import { shortCaption } from "./model/caption";
 import type { ManifestLayer } from "@/lib/types";
 import type { Action, ScreenState } from "./state";
 import type { Insets } from "./useInsets";
+
+// L61: the NISAR water overlay in the flooded-area red (FLOODED_FILL).
+const WATER_RGB = [255, 31, 31] as const;
 
 // Offsets from the stage edges: the floating cards plus a margin.
 const L = (px: number) => `calc(var(--cc-il, 0px) + ${px}px)`;
@@ -148,6 +151,12 @@ export default function MapStage({
     const url = l ? assetUrl(caseDirOf(bundle), l.png) : undefined;
     return l && url ? { url, bounds: l.bounds } : undefined;
   }, [fnFrame, bundle, step?.date]);
+  // Lucas: NISAR water reads RED like the candidate polygons (#ff1f1f).
+  const fnWaterRed = useTintedUrl(fnWater?.url, WATER_RGB);
+  const fnWaterShown = useMemo(
+    () => (fnWater && fnWaterRed ? { url: fnWaterRed, bounds: fnWater.bounds } : undefined),
+    [fnWater, fnWaterRed]
+  );
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
   const gfsAny = useMemo(() => hasGfsFrames(bundle), [bundle]);
   // NISAR change layer (Lucas, t5w): the Δ-dB composite of the picked pair —
@@ -175,9 +184,9 @@ export default function MapStage({
       changeImage,
       changeOpacity: state.changeOpacity,
       radarFrame: rFrame && radarUrl ? { url: radarUrl, bounds: rFrame.bounds } : undefined,
-      nisarWater: fnWater,
+      nisarWater: fnWaterShown,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl, fnFrame, fnWater]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl, fnFrame, fnWaterShown]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
