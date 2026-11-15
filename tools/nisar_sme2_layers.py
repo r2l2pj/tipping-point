@@ -123,10 +123,17 @@ def smap_mean(sm, transform, day: dt.date) -> float | None:
     return float(np.nanmean(v)) if np.isfinite(v).any() else None
 
 
+def layer_id(ds: str, track: str | None) -> str:
+    """Unique per case: nisar_sme2_<YYYYMMDD>_<track+direction> (e.g. nisar_sme2_20251204_172D)."""
+    return f"nisar_sme2_{ds}_{track}" if track else f"nisar_sme2_{ds}"
+
+
 def merge_index(index_path: Path, entry: dict) -> None:
     doc = json.loads(index_path.read_text()) if index_path.exists() else {"layers": []}
+    # replace by (id, date) or by the same png (drops the pre-fix shared id "nisar_sme2" on rerun)
     layers = [e for e in doc.get("layers", [])
-              if not (e.get("id") == entry["id"] and e.get("date") == entry["date"])]
+              if not ((e.get("id") == entry["id"] and e.get("date") == entry["date"])
+                      or (entry.get("png") and e.get("png") == entry["png"]))]
     layers.append(entry)
     doc["layers"] = layers
     index_path.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n")
@@ -162,7 +169,7 @@ def main(argv=None) -> int:
                 + (f" vs SMAP L4 surface {smap:.2f} (9 km, same day)" if smap is not None else "")
                 + f"; only {rec_share * 100:.0f} % of pixels flagged 'recommended' — the SME2 algorithms "
                   "(DSG/PMI/TSR) still disagree, read patterns, not absolute values")
-        entry = {"id": "nisar_sme2", "date": day.isoformat(), "kind": "nisar_extra",
+        entry = {"id": layer_id(ds, trk), "date": day.isoformat(), "kind": "nisar_extra",
                  "png": f"{case}/png/nisar_sme2_{ds}.png", "cog": f"{case}/cog/{case}_nisar_sme2_{ds}.tif",
                  "bounds": bounds, "track": trk, "sensor": "NISAR (SME2, provisional)",
                  "source": "NISAR L3 SME2 provisional (ASF, NISAR_L3_SME2_PROVISIONAL_V1)",

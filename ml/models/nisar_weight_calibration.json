@@ -836,6 +836,21 @@
     "20240503",
     "20240504",
     "20240505"
+   ],
+   "uru_poly": [
+    "20260930",
+    "20261001",
+    "20261002",
+    "20261003",
+    "20261004",
+    "20261005",
+    "20261006",
+    "20261007",
+    "20261008",
+    "20261009",
+    "20261010",
+    "20261011",
+    "20261012"
    ]
   },
   "v2_same_days": {
@@ -882,6 +897,28 @@
      "ratio": 1.0,
      "skill": 12.04
     }
+   },
+   "uru_poly": {
+    "w": [
+     1,
+     1,
+     1
+    ],
+    "n_ref": 18,
+    "alto_plus": {
+     "area_pct": 69.28,
+     "hit_pct": 88.89,
+     "lift": 1.28,
+     "ratio": 1.067,
+     "skill": 19.61
+    },
+    "critico": {
+     "area_pct": 38.206,
+     "hit_pct": 83.33,
+     "lift": 2.18,
+     "ratio": 1.995,
+     "skill": 45.12
+    }
    }
   },
   "v3r_uniform": {
@@ -927,6 +964,28 @@
      "lift": 5.21,
      "ratio": 1.0,
      "skill": 12.04
+    }
+   },
+   "uru_poly": {
+    "w": [
+     1,
+     1,
+     1
+    ],
+    "n_ref": 18,
+    "alto_plus": {
+     "area_pct": 65.626,
+     "hit_pct": 88.89,
+     "lift": 1.35,
+     "ratio": 1.067,
+     "skill": 23.26
+    },
+    "critico": {
+     "area_pct": 26.501,
+     "hit_pct": 72.22,
+     "lift": 2.73,
+     "ratio": 2.493,
+     "skill": 45.72
     }
    }
   },
@@ -1035,6 +1094,53 @@
      ]
     ],
     "held_out": {
+     "uru_poly": {
+      "fitted": {
+       "w": [
+        2.5,
+        0.0,
+        0.5
+       ],
+       "n_ref": 18,
+       "alto_plus": {
+        "area_pct": 30.639,
+        "hit_pct": 94.44,
+        "lift": 3.08,
+        "ratio": 2.819,
+        "skill": 63.8
+       },
+       "critico": {
+        "area_pct": 9.596,
+        "hit_pct": 77.78,
+        "lift": 8.11,
+        "ratio": 7.413,
+        "skill": 68.18
+       }
+      },
+      "v2": {
+       "w": [
+        1,
+        1,
+        1
+       ],
+       "n_ref": 18,
+       "alto_plus": {
+        "area_pct": 69.28,
+        "hit_pct": 88.89,
+        "lift": 1.28,
+        "ratio": 1.067,
+        "skill": 19.61
+       },
+       "critico": {
+        "area_pct": 38.206,
+        "hit_pct": 83.33,
+        "lift": 2.18,
+        "ratio": 1.995,
+        "skill": 45.12
+       }
+      },
+      "beats_v2_critical_skill": true
+     },
      "rs_2024": {
       "fitted": {
        "w": [
@@ -1056,6 +1162,206 @@
         "lift": 5.23,
         "ratio": 1.0,
         "skill": 18.25
+       }
+      },
+      "v2": {
+       "w": [
+        1,
+        1,
+        1
+       ],
+       "n_ref": 5156,
+       "alto_plus": {
+        "area_pct": 4.311,
+        "hit_pct": 22.56,
+        "lift": 5.23,
+        "ratio": 1.0,
+        "skill": 18.25
+       },
+       "critico": {
+        "area_pct": 2.856,
+        "hit_pct": 14.9,
+        "lift": 5.21,
+        "ratio": 1.0,
+        "skill": 12.04
+       }
+      },
+      "beats_v2_critical_skill": true
+     }
+    }
+   },
+   {
+    "fit_on": "uru_poly",
+    "best_w": [
+     2.25,
+     0.0,
+     0.75
+    ],
+    "tied_best_w": [
+     [
+      2.25,
+      0.0,
+      0.75
+     ]
+    ],
+    "n_tied": 1,
+    "fit_case": {
+     "fitted": {
+      "w": [
+       2.25,
+       0.0,
+       0.75
+      ],
+      "n_ref": 18,
+      "alto_plus": {
+       "area_pct": 34.391,
+       "hit_pct": 94.44,
+       "lift": 2.75,
+       "ratio": 2.512,
+       "skill": 60.05
+      },
+      "critico": {
+       "area_pct": 9.403,
+       "hit_pct": 88.89,
+       "lift": 9.45,
+       "ratio": 8.647,
+       "skill": 79.49
+      }
+     },
+     "v2": {
+      "w": [
+       1,
+       1,
+       1
+      ],
+      "n_ref": 18,
+      "alto_plus": {
+       "area_pct": 69.28,
+       "hit_pct": 88.89,
+       "lift": 1.28,
+       "ratio": 1.067,
+       "skill": 19.61
+      },
+      "critico": {
+       "area_pct": 38.206,
+       "hit_pct": 83.33,
+       "lift": 2.18,
+       "ratio": 1.995,
+       "skill": 45.12
+      }
+     }
+    },
+    "top5": [
+     [
+      [
+       2.25,
+       0.0,
+       0.75
+      ],
+      79.49
+     ],
+     [
+      [
+       2.0,
+       0.0,
+       1.0
+      ],
+      73.89
+     ],
+     [
+      [
+       1.75,
+       0.25,
+       1.0
+      ],
+      73.86
+     ],
+     [
+      [
+       1.75,
+       0.0,
+       1.25
+      ],
+      72.03
+     ],
+     [
+      [
+       1.5,
+       0.5,
+       1.0
+      ],
+      70.27
+     ]
+    ],
+    "held_out": {
+     "wa_2025": {
+      "fitted": {
+       "w": [
+        2.25,
+        0.0,
+        0.75
+       ],
+       "n_ref": 257820,
+       "alto_plus": {
+        "area_pct": 10.447,
+        "hit_pct": 98.87,
+        "lift": 9.46,
+        "ratio": 1.001,
+        "skill": 88.42
+       },
+       "critico": {
+        "area_pct": 7.421,
+        "hit_pct": 98.27,
+        "lift": 13.24,
+        "ratio": 1.019,
+        "skill": 90.85
+       }
+      },
+      "v2": {
+       "w": [
+        1,
+        1,
+        1
+       ],
+       "n_ref": 257820,
+       "alto_plus": {
+        "area_pct": 9.155,
+        "hit_pct": 98.81,
+        "lift": 10.79,
+        "ratio": 1.006,
+        "skill": 89.66
+       },
+       "critico": {
+        "area_pct": 6.222,
+        "hit_pct": 73.58,
+        "lift": 11.83,
+        "ratio": 0.778,
+        "skill": 67.36
+       }
+      },
+      "beats_v2_critical_skill": true
+     },
+     "rs_2024": {
+      "fitted": {
+       "w": [
+        2.25,
+        0.0,
+        0.75
+       ],
+       "n_ref": 5156,
+       "alto_plus": {
+        "area_pct": 4.311,
+        "hit_pct": 22.56,
+        "lift": 5.23,
+        "ratio": 1.0,
+        "skill": 18.25
+       },
+       "critico": {
+        "area_pct": 3.532,
+        "hit_pct": 18.35,
+        "lift": 5.19,
+        "ratio": 1.0,
+        "skill": 14.82
        }
       },
       "v2": {

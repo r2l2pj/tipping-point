@@ -111,6 +111,16 @@
     "max_abs_err": 0.0001,
     "nan_mismatch_cells": 0
    }
+  },
+  "rs_uruguai_2026|flood|event": {
+   "v2": {
+    "max_abs_err": 0.0002,
+    "nan_mismatch_cells": 0
+   },
+   "v3": {
+    "max_abs_err": 0.0002,
+    "nan_mismatch_cells": 0
+   }
   }
  },
  "v2": {
@@ -1723,12 +1733,12 @@
     },
     {
      "cut": 0.45,
-     "area_pct": 25.439,
-     "flagged_cells": 1580,
+     "area_pct": 25.455,
+     "flagged_cells": 1581,
      "hit_pct": 88.89,
      "lift": 3.49,
-     "terrain_hit_pct": 27.81,
-     "ratio": 3.196
+     "terrain_hit_pct": 27.83,
+     "ratio": 3.194
     },
     {
      "cut": 0.5,
@@ -1822,9 +1832,7 @@
     }
    ]
   },
-  "scored_from_served_cogs": [
-   "rs_uruguai_2026|flood|event"
-  ],
+  "scored_from_served_cogs": [],
   "not_scored": []
  },
  "M2": {
@@ -1838,7 +1846,8 @@
    "wa_2025|slide|event": "wa_2025 landslide inventory points",
    "wa_2025|slide|gfs24": "wa_2025 landslide inventory points",
    "wa_2025|flood|event": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
-   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent"
+   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
+   "rs_uruguai_2026|flood|event": "7 NISAR new-water polygons, corridor, Sep 30 replay"
   },
   "splits": [
    {
@@ -2012,6 +2021,36 @@
        "terrain_hit_pct": 57.23,
        "ratio": 0.591
       }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 12.252,
+       "flagged_cells": 761,
+       "hit_pct": 83.33,
+       "lift": 6.8,
+       "terrain_hit_pct": 13.4,
+       "ratio": 6.221
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 30.108,
+       "flagged_cells": 1870,
+       "hit_pct": 88.89,
+       "lift": 2.95,
+       "terrain_hit_pct": 32.92,
+       "ratio": 2.7
+      },
+      "area_only": {
+       "cut": 0.74,
+       "area_pct": 3.091,
+       "flagged_cells": 192,
+       "hit_pct": 27.78,
+       "lift": 8.99,
+       "terrain_hit_pct": 3.38,
+       "ratio": 8.219
+      }
      }
     }
    },
@@ -2072,6 +2111,36 @@
        "lift": 5.12,
        "terrain_hit_pct": 9.87,
        "ratio": 1.0
+      }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 12.252,
+       "flagged_cells": 761,
+       "hit_pct": 83.33,
+       "lift": 6.8,
+       "terrain_hit_pct": 13.4,
+       "ratio": 6.221
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 30.108,
+       "flagged_cells": 1870,
+       "hit_pct": 88.89,
+       "lift": 2.95,
+       "terrain_hit_pct": 32.92,
+       "ratio": 2.7
+      },
+      "area_only": {
+       "cut": 0.79,
+       "area_pct": 0.837,
+       "flagged_cells": 52,
+       "hit_pct": 0.0,
+       "lift": 0.0,
+       "terrain_hit_pct": 0.92,
+       "ratio": 0.0
       }
      }
     }
@@ -3363,12 +3432,138 @@
      "terrain_hit_pct": null,
      "ratio": null
     }
+   ],
+   "rs_uruguai_2026|flood|event": [
+    {
+     "cut": 0.3,
+     "area_pct": 37.9,
+     "flagged_cells": 2354,
+     "hit_pct": 94.44,
+     "lift": 2.49,
+     "terrain_hit_pct": 41.44,
+     "ratio": 2.279
+    },
+    {
+     "cut": 0.35,
+     "area_pct": 34.197,
+     "flagged_cells": 2124,
+     "hit_pct": 88.89,
+     "lift": 2.6,
+     "terrain_hit_pct": 37.39,
+     "ratio": 2.377
+    },
+    {
+     "cut": 0.4,
+     "area_pct": 30.108,
+     "flagged_cells": 1870,
+     "hit_pct": 88.89,
+     "lift": 2.95,
+     "terrain_hit_pct": 32.92,
+     "ratio": 2.7
+    },
+    {
+     "cut": 0.45,
+     "area_pct": 25.455,
+     "flagged_cells": 1581,
+     "hit_pct": 88.89,
+     "lift": 3.49,
+     "terrain_hit_pct": 27.83,
+     "ratio": 3.194
+    },
+    {
+     "cut": 0.5,
+     "area_pct": 20.093,
+     "flagged_cells": 1248,
+     "hit_pct": 88.89,
+     "lift": 4.42,
+     "terrain_hit_pct": 21.97,
+     "ratio": 4.046
+    },
+    {
+     "cut": 0.55,
+     "area_pct": 15.408,
+     "flagged_cells": 957,
+     "hit_pct": 88.89,
+     "lift": 5.77,
+     "terrain_hit_pct": 16.85,
+     "ratio": 5.276
+    },
+    {
+     "cut": 0.6,
+     "area_pct": 12.252,
+     "flagged_cells": 761,
+     "hit_pct": 83.33,
+     "lift": 6.8,
+     "terrain_hit_pct": 13.4,
+     "ratio": 6.221
+    },
+    {
+     "cut": 0.65,
+     "area_pct": 8.565,
+     "flagged_cells": 532,
+     "hit_pct": 72.22,
+     "lift": 8.43,
+     "terrain_hit_pct": 9.36,
+     "ratio": 7.712
+    },
+    {
+     "cut": 0.7,
+     "area_pct": 5.039,
+     "flagged_cells": 313,
+     "hit_pct": 72.22,
+     "lift": 14.33,
+     "terrain_hit_pct": 5.51,
+     "ratio": 13.108
+    },
+    {
+     "cut": 0.75,
+     "area_pct": 2.721,
+     "flagged_cells": 169,
+     "hit_pct": 11.11,
+     "lift": 4.08,
+     "terrain_hit_pct": 2.97,
+     "ratio": 3.735
+    },
+    {
+     "cut": 0.8,
+     "area_pct": 0.564,
+     "flagged_cells": 35,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 0.62,
+     "ratio": 0.0
+    },
+    {
+     "cut": 0.85,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.9,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.95,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    }
    ]
   },
   "scored_from_served_cogs": [],
-  "not_scored": [
-   "rs_uruguai_2026|flood|event"
-  ]
+  "not_scored": []
  },
  "M3": {
   "rule": "Cr\u00edtico cut = lowest cut with area <= 2.0 % and M1 ratio > 1, chosen on the calibration case only",
@@ -3381,7 +3576,8 @@
    "wa_2025|slide|event": "wa_2025 landslide inventory points",
    "wa_2025|slide|gfs24": "wa_2025 landslide inventory points",
    "wa_2025|flood|event": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
-   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent"
+   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
+   "rs_uruguai_2026|flood|event": "7 NISAR new-water polygons, corridor, Sep 30 replay"
   },
   "splits": [
    {
@@ -3582,6 +3778,45 @@
        "terrain_hit_pct": 31.08,
        "ratio": 0.391
       }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 8.437,
+       "flagged_cells": 524,
+       "hit_pct": 72.22,
+       "lift": 8.56,
+       "terrain_hit_pct": 9.22,
+       "ratio": 7.83
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 27.049,
+       "flagged_cells": 1680,
+       "hit_pct": 88.89,
+       "lift": 3.29,
+       "terrain_hit_pct": 29.57,
+       "ratio": 3.006
+      },
+      "new_critico": {
+       "cut": 0.84,
+       "area_pct": 0.0,
+       "flagged_cells": 0,
+       "hit_pct": 0.0,
+       "lift": null,
+       "terrain_hit_pct": null,
+       "ratio": null
+      },
+      "area_only": {
+       "cut": 0.74,
+       "area_pct": 0.209,
+       "flagged_cells": 13,
+       "hit_pct": 0.0,
+       "lift": 0.0,
+       "terrain_hit_pct": 0.23,
+       "ratio": 0.0
+      }
      }
     }
    },
@@ -3642,6 +3877,36 @@
        "lift": 5.16,
        "terrain_hit_pct": 12.37,
        "ratio": 1.0
+      }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 8.437,
+       "flagged_cells": 524,
+       "hit_pct": 72.22,
+       "lift": 8.56,
+       "terrain_hit_pct": 9.22,
+       "ratio": 7.83
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 27.049,
+       "flagged_cells": 1680,
+       "hit_pct": 88.89,
+       "lift": 3.29,
+       "terrain_hit_pct": 29.57,
+       "ratio": 3.006
+      },
+      "area_only": {
+       "cut": 0.72,
+       "area_pct": 0.853,
+       "flagged_cells": 53,
+       "hit_pct": 0.0,
+       "lift": 0.0,
+       "terrain_hit_pct": 0.93,
+       "ratio": 0.0
       }
      }
     }
@@ -4915,12 +5180,138 @@
      "terrain_hit_pct": null,
      "ratio": null
     }
+   ],
+   "rs_uruguai_2026|flood|event": [
+    {
+     "cut": 0.3,
+     "area_pct": 36.226,
+     "flagged_cells": 2250,
+     "hit_pct": 94.44,
+     "lift": 2.61,
+     "terrain_hit_pct": 39.61,
+     "ratio": 2.385
+    },
+    {
+     "cut": 0.35,
+     "area_pct": 32.024,
+     "flagged_cells": 1989,
+     "hit_pct": 88.89,
+     "lift": 2.78,
+     "terrain_hit_pct": 35.01,
+     "ratio": 2.539
+    },
+    {
+     "cut": 0.4,
+     "area_pct": 27.049,
+     "flagged_cells": 1680,
+     "hit_pct": 88.89,
+     "lift": 3.29,
+     "terrain_hit_pct": 29.57,
+     "ratio": 3.006
+    },
+    {
+     "cut": 0.45,
+     "area_pct": 21.623,
+     "flagged_cells": 1343,
+     "hit_pct": 88.89,
+     "lift": 4.11,
+     "terrain_hit_pct": 23.64,
+     "ratio": 3.76
+    },
+    {
+     "cut": 0.5,
+     "area_pct": 16.261,
+     "flagged_cells": 1010,
+     "hit_pct": 88.89,
+     "lift": 5.47,
+     "terrain_hit_pct": 17.78,
+     "ratio": 5.0
+    },
+    {
+     "cut": 0.55,
+     "area_pct": 12.478,
+     "flagged_cells": 775,
+     "hit_pct": 83.33,
+     "lift": 6.68,
+     "terrain_hit_pct": 13.64,
+     "ratio": 6.108
+    },
+    {
+     "cut": 0.6,
+     "area_pct": 8.437,
+     "flagged_cells": 524,
+     "hit_pct": 72.22,
+     "lift": 8.56,
+     "terrain_hit_pct": 9.22,
+     "ratio": 7.83
+    },
+    {
+     "cut": 0.65,
+     "area_pct": 4.363,
+     "flagged_cells": 271,
+     "hit_pct": 50.0,
+     "lift": 11.46,
+     "terrain_hit_pct": 4.77,
+     "ratio": 10.481
+    },
+    {
+     "cut": 0.7,
+     "area_pct": 1.497,
+     "flagged_cells": 93,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 1.64,
+     "ratio": 0.0
+    },
+    {
+     "cut": 0.75,
+     "area_pct": 0.032,
+     "flagged_cells": 2,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 0.04,
+     "ratio": 0.0
+    },
+    {
+     "cut": 0.8,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.85,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.9,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.95,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    }
    ]
   },
   "scored_from_served_cogs": [],
-  "not_scored": [
-   "rs_uruguai_2026|flood|event"
-  ]
+  "not_scored": []
  },
  "M5": {
   "rule": "Cr\u00edtico cut = lowest cut with area <= 2.0 % and M1 ratio > 1, chosen on the calibration case only",
@@ -4933,7 +5324,8 @@
    "wa_2025|slide|event": "wa_2025 landslide inventory points",
    "wa_2025|slide|gfs24": "wa_2025 landslide inventory points",
    "wa_2025|flood|event": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
-   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent"
+   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
+   "rs_uruguai_2026|flood|event": "7 NISAR new-water polygons, corridor, Sep 30 replay"
   },
   "splits": [
    {
@@ -5107,6 +5499,36 @@
        "terrain_hit_pct": 10.95,
        "ratio": 0.128
       }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 7.241,
+       "flagged_cells": 411,
+       "hit_pct": 61.11,
+       "lift": 8.44,
+       "terrain_hit_pct": 6.36,
+       "ratio": 9.613
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 24.877,
+       "flagged_cells": 1412,
+       "hit_pct": 61.11,
+       "lift": 2.46,
+       "terrain_hit_pct": 21.84,
+       "ratio": 2.798
+      },
+      "area_only": {
+       "cut": 0.93,
+       "area_pct": 0.0,
+       "flagged_cells": 0,
+       "hit_pct": 0.0,
+       "lift": null,
+       "terrain_hit_pct": null,
+       "ratio": null
+      }
      }
     }
    },
@@ -5167,6 +5589,36 @@
        "lift": 5.2,
        "terrain_hit_pct": 14.9,
        "ratio": 1.0
+      }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 7.241,
+       "flagged_cells": 411,
+       "hit_pct": 61.11,
+       "lift": 8.44,
+       "terrain_hit_pct": 6.36,
+       "ratio": 9.613
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 24.877,
+       "flagged_cells": 1412,
+       "hit_pct": 61.11,
+       "lift": 2.46,
+       "terrain_hit_pct": 21.84,
+       "ratio": 2.798
+      },
+      "area_only": {
+       "cut": 0.83,
+       "area_pct": 0.0,
+       "flagged_cells": 0,
+       "hit_pct": 0.0,
+       "lift": null,
+       "terrain_hit_pct": null,
+       "ratio": null
       }
      }
     }
@@ -6458,12 +6910,138 @@
      "terrain_hit_pct": null,
      "ratio": null
     }
+   ],
+   "rs_uruguai_2026|flood|event": [
+    {
+     "cut": 0.3,
+     "area_pct": 33.245,
+     "flagged_cells": 1887,
+     "hit_pct": 61.11,
+     "lift": 1.84,
+     "terrain_hit_pct": 29.19,
+     "ratio": 2.094
+    },
+    {
+     "cut": 0.35,
+     "area_pct": 28.823,
+     "flagged_cells": 1636,
+     "hit_pct": 61.11,
+     "lift": 2.12,
+     "terrain_hit_pct": 25.31,
+     "ratio": 2.415
+    },
+    {
+     "cut": 0.4,
+     "area_pct": 24.877,
+     "flagged_cells": 1412,
+     "hit_pct": 61.11,
+     "lift": 2.46,
+     "terrain_hit_pct": 21.84,
+     "ratio": 2.798
+    },
+    {
+     "cut": 0.45,
+     "area_pct": 20.067,
+     "flagged_cells": 1139,
+     "hit_pct": 61.11,
+     "lift": 3.05,
+     "terrain_hit_pct": 17.62,
+     "ratio": 3.469
+    },
+    {
+     "cut": 0.5,
+     "area_pct": 14.87,
+     "flagged_cells": 844,
+     "hit_pct": 61.11,
+     "lift": 4.11,
+     "terrain_hit_pct": 13.05,
+     "ratio": 4.681
+    },
+    {
+     "cut": 0.55,
+     "area_pct": 10.447,
+     "flagged_cells": 593,
+     "hit_pct": 61.11,
+     "lift": 5.85,
+     "terrain_hit_pct": 9.17,
+     "ratio": 6.662
+    },
+    {
+     "cut": 0.6,
+     "area_pct": 7.241,
+     "flagged_cells": 411,
+     "hit_pct": 61.11,
+     "lift": 8.44,
+     "terrain_hit_pct": 6.36,
+     "ratio": 9.613
+    },
+    {
+     "cut": 0.65,
+     "area_pct": 4.616,
+     "flagged_cells": 262,
+     "hit_pct": 55.56,
+     "lift": 12.04,
+     "terrain_hit_pct": 4.05,
+     "ratio": 13.709
+    },
+    {
+     "cut": 0.7,
+     "area_pct": 1.956,
+     "flagged_cells": 111,
+     "hit_pct": 38.89,
+     "lift": 19.89,
+     "terrain_hit_pct": 1.72,
+     "ratio": 22.65
+    },
+    {
+     "cut": 0.75,
+     "area_pct": 0.652,
+     "flagged_cells": 37,
+     "hit_pct": 5.56,
+     "lift": 8.52,
+     "terrain_hit_pct": 0.57,
+     "ratio": 9.707
+    },
+    {
+     "cut": 0.8,
+     "area_pct": 0.018,
+     "flagged_cells": 1,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 0.02,
+     "ratio": 0.0
+    },
+    {
+     "cut": 0.85,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.9,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.95,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    }
    ]
   },
   "scored_from_served_cogs": [],
-  "not_scored": [
-   "rs_uruguai_2026|flood|event"
-  ]
+  "not_scored": []
  },
  "M6": {
   "rule": "Cr\u00edtico cut = lowest cut with area <= 2.0 % and M1 ratio > 1, chosen on the calibration case only",
@@ -6476,7 +7054,8 @@
    "wa_2025|slide|event": "wa_2025 landslide inventory points",
    "wa_2025|slide|gfs24": "wa_2025 landslide inventory points",
    "wa_2025|flood|event": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
-   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent"
+   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
+   "rs_uruguai_2026|flood|event": "7 NISAR new-water polygons, corridor, Sep 30 replay"
   },
   "splits": [
    {
@@ -6650,6 +7229,36 @@
        "terrain_hit_pct": 91.61,
        "ratio": 0.991
       }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 15.617,
+       "flagged_cells": 970,
+       "hit_pct": 88.89,
+       "lift": 5.69,
+       "terrain_hit_pct": 17.08,
+       "ratio": 5.206
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 32.684,
+       "flagged_cells": 2030,
+       "hit_pct": 88.89,
+       "lift": 2.72,
+       "terrain_hit_pct": 35.73,
+       "ratio": 2.487
+      },
+      "area_only": {
+       "cut": 0.74,
+       "area_pct": 6.73,
+       "flagged_cells": 418,
+       "hit_pct": 72.22,
+       "lift": 10.73,
+       "terrain_hit_pct": 7.36,
+       "ratio": 9.815
+      }
      }
     }
    },
@@ -6710,6 +7319,36 @@
        "lift": 5.21,
        "terrain_hit_pct": 8.09,
        "ratio": 1.0
+      }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 15.617,
+       "flagged_cells": 970,
+       "hit_pct": 88.89,
+       "lift": 5.69,
+       "terrain_hit_pct": 17.08,
+       "ratio": 5.206
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 32.684,
+       "flagged_cells": 2030,
+       "hit_pct": 88.89,
+       "lift": 2.72,
+       "terrain_hit_pct": 35.73,
+       "ratio": 2.487
+      },
+      "area_only": {
+       "cut": 0.84,
+       "area_pct": 2.222,
+       "flagged_cells": 138,
+       "hit_pct": 11.11,
+       "lift": 5.0,
+       "terrain_hit_pct": 2.43,
+       "ratio": 4.574
       }
      }
     }
@@ -7983,12 +8622,138 @@
      "terrain_hit_pct": null,
      "ratio": null
     }
+   ],
+   "rs_uruguai_2026|flood|event": [
+    {
+     "cut": 0.3,
+     "area_pct": 39.06,
+     "flagged_cells": 2426,
+     "hit_pct": 94.44,
+     "lift": 2.42,
+     "terrain_hit_pct": 42.71,
+     "ratio": 2.212
+    },
+    {
+     "cut": 0.35,
+     "area_pct": 36.226,
+     "flagged_cells": 2250,
+     "hit_pct": 94.44,
+     "lift": 2.61,
+     "terrain_hit_pct": 39.61,
+     "ratio": 2.385
+    },
+    {
+     "cut": 0.4,
+     "area_pct": 32.684,
+     "flagged_cells": 2030,
+     "hit_pct": 88.89,
+     "lift": 2.72,
+     "terrain_hit_pct": 35.73,
+     "ratio": 2.487
+    },
+    {
+     "cut": 0.45,
+     "area_pct": 28.482,
+     "flagged_cells": 1769,
+     "hit_pct": 88.89,
+     "lift": 3.12,
+     "terrain_hit_pct": 31.14,
+     "ratio": 2.854
+    },
+    {
+     "cut": 0.5,
+     "area_pct": 23.99,
+     "flagged_cells": 1490,
+     "hit_pct": 88.89,
+     "lift": 3.71,
+     "terrain_hit_pct": 26.23,
+     "ratio": 3.389
+    },
+    {
+     "cut": 0.55,
+     "area_pct": 19.353,
+     "flagged_cells": 1202,
+     "hit_pct": 88.89,
+     "lift": 4.59,
+     "terrain_hit_pct": 21.16,
+     "ratio": 4.201
+    },
+    {
+     "cut": 0.6,
+     "area_pct": 15.617,
+     "flagged_cells": 970,
+     "hit_pct": 88.89,
+     "lift": 5.69,
+     "terrain_hit_pct": 17.08,
+     "ratio": 5.206
+    },
+    {
+     "cut": 0.65,
+     "area_pct": 12.735,
+     "flagged_cells": 791,
+     "hit_pct": 83.33,
+     "lift": 6.54,
+     "terrain_hit_pct": 13.92,
+     "ratio": 5.985
+    },
+    {
+     "cut": 0.7,
+     "area_pct": 9.692,
+     "flagged_cells": 602,
+     "hit_pct": 83.33,
+     "lift": 8.6,
+     "terrain_hit_pct": 10.6,
+     "ratio": 7.864
+    },
+    {
+     "cut": 0.75,
+     "area_pct": 6.054,
+     "flagged_cells": 376,
+     "hit_pct": 72.22,
+     "lift": 11.93,
+     "terrain_hit_pct": 6.62,
+     "ratio": 10.912
+    },
+    {
+     "cut": 0.8,
+     "area_pct": 3.607,
+     "flagged_cells": 224,
+     "hit_pct": 50.0,
+     "lift": 13.86,
+     "terrain_hit_pct": 3.94,
+     "ratio": 12.68
+    },
+    {
+     "cut": 0.85,
+     "area_pct": 1.884,
+     "flagged_cells": 117,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 2.06,
+     "ratio": 0.0
+    },
+    {
+     "cut": 0.9,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.95,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    }
    ]
   },
   "scored_from_served_cogs": [],
-  "not_scored": [
-   "rs_uruguai_2026|flood|event"
-  ]
+  "not_scored": []
  },
  "v3": {
   "rule": "Cr\u00edtico cut = lowest cut with area <= 2.0 % and M1 ratio > 1, chosen on the calibration case only",
@@ -8001,7 +8766,8 @@
    "wa_2025|slide|event": "wa_2025 landslide inventory points",
    "wa_2025|slide|gfs24": "wa_2025 landslide inventory points",
    "wa_2025|flood|event": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
-   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent"
+   "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
+   "rs_uruguai_2026|flood|event": "7 NISAR new-water polygons, corridor, Sep 30 replay"
   },
   "splits": [
    {
@@ -8184,6 +8950,36 @@
        "terrain_hit_pct": 2.07,
        "ratio": 0.0
       }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 7.717,
+       "flagged_cells": 438,
+       "hit_pct": 61.11,
+       "lift": 7.92,
+       "terrain_hit_pct": 6.77,
+       "ratio": 9.02
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 24.841,
+       "flagged_cells": 1410,
+       "hit_pct": 61.11,
+       "lift": 2.46,
+       "terrain_hit_pct": 21.81,
+       "ratio": 2.802
+      },
+      "area_only": {
+       "cut": 0.93,
+       "area_pct": 0.0,
+       "flagged_cells": 0,
+       "hit_pct": 0.0,
+       "lift": null,
+       "terrain_hit_pct": null,
+       "ratio": null
+      }
      }
     }
    },
@@ -8244,6 +9040,36 @@
        "lift": 5.2,
        "terrain_hit_pct": 14.9,
        "ratio": 1.0
+      }
+     },
+     "rs_uruguai_2026": {
+      "n_ref": 18,
+      "old_critico": {
+       "cut": 0.6,
+       "area_pct": 7.717,
+       "flagged_cells": 438,
+       "hit_pct": 61.11,
+       "lift": 7.92,
+       "terrain_hit_pct": 6.77,
+       "ratio": 9.02
+      },
+      "old_alto_plus": {
+       "cut": 0.4,
+       "area_pct": 24.841,
+       "flagged_cells": 1410,
+       "hit_pct": 61.11,
+       "lift": 2.46,
+       "terrain_hit_pct": 21.81,
+       "ratio": 2.802
+      },
+      "area_only": {
+       "cut": 0.8,
+       "area_pct": 0.0,
+       "flagged_cells": 0,
+       "hit_pct": 0.0,
+       "lift": null,
+       "terrain_hit_pct": null,
+       "ratio": null
       }
      }
     }
@@ -9535,11 +10361,137 @@
      "terrain_hit_pct": null,
      "ratio": null
     }
+   ],
+   "rs_uruguai_2026|flood|event": [
+    {
+     "cut": 0.3,
+     "area_pct": 33.192,
+     "flagged_cells": 1884,
+     "hit_pct": 61.11,
+     "lift": 1.84,
+     "terrain_hit_pct": 29.14,
+     "ratio": 2.097
+    },
+    {
+     "cut": 0.35,
+     "area_pct": 28.735,
+     "flagged_cells": 1631,
+     "hit_pct": 61.11,
+     "lift": 2.13,
+     "terrain_hit_pct": 25.23,
+     "ratio": 2.422
+    },
+    {
+     "cut": 0.4,
+     "area_pct": 24.841,
+     "flagged_cells": 1410,
+     "hit_pct": 61.11,
+     "lift": 2.46,
+     "terrain_hit_pct": 21.81,
+     "ratio": 2.802
+    },
+    {
+     "cut": 0.45,
+     "area_pct": 19.697,
+     "flagged_cells": 1118,
+     "hit_pct": 61.11,
+     "lift": 3.1,
+     "terrain_hit_pct": 17.29,
+     "ratio": 3.534
+    },
+    {
+     "cut": 0.5,
+     "area_pct": 15.046,
+     "flagged_cells": 854,
+     "hit_pct": 61.11,
+     "lift": 4.06,
+     "terrain_hit_pct": 13.21,
+     "ratio": 4.626
+    },
+    {
+     "cut": 0.55,
+     "area_pct": 10.747,
+     "flagged_cells": 610,
+     "hit_pct": 61.11,
+     "lift": 5.69,
+     "terrain_hit_pct": 9.44,
+     "ratio": 6.477
+    },
+    {
+     "cut": 0.6,
+     "area_pct": 7.717,
+     "flagged_cells": 438,
+     "hit_pct": 61.11,
+     "lift": 7.92,
+     "terrain_hit_pct": 6.77,
+     "ratio": 9.02
+    },
+    {
+     "cut": 0.65,
+     "area_pct": 5.18,
+     "flagged_cells": 294,
+     "hit_pct": 61.11,
+     "lift": 11.8,
+     "terrain_hit_pct": 4.55,
+     "ratio": 13.438
+    },
+    {
+     "cut": 0.7,
+     "area_pct": 2.167,
+     "flagged_cells": 123,
+     "hit_pct": 38.89,
+     "lift": 17.95,
+     "terrain_hit_pct": 1.9,
+     "ratio": 20.44
+    },
+    {
+     "cut": 0.75,
+     "area_pct": 0.722,
+     "flagged_cells": 41,
+     "hit_pct": 16.67,
+     "lift": 23.07,
+     "terrain_hit_pct": 0.63,
+     "ratio": 26.28
+    },
+    {
+     "cut": 0.8,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.85,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.9,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    {
+     "cut": 0.95,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    }
    ]
   },
   "scored_from_served_cogs": [],
-  "not_scored": [
-   "rs_uruguai_2026|flood|event"
-  ]
+  "not_scored": []
  }
 }

@@ -28,3 +28,15 @@ def test_merge_keeps_other_layers_and_replaces_same_id_date(tmp_path):
 def test_legend_is_object_with_stops():
     assert sme2.LEGEND["unit"] == "m³/m³"
     assert all({"v", "color", "label"} <= set(s) for s in sme2.LEGEND["stops"])
+
+
+def test_layer_id_unique_pattern_and_legacy_replaced(tmp_path):
+    assert sme2.layer_id("20251204", "172D") == "nisar_sme2_20251204_172D"
+    assert sme2.layer_id("20260930", None) == "nisar_sme2_20260930"
+    idx = tmp_path / "_index.json"
+    idx.write_text(json.dumps({"layers": [
+        {"id": "nisar_sme2", "date": "2025-12-04", "png": "wa_2025/png/nisar_sme2_20251204.png"}]}))
+    sme2.merge_index(idx, {"id": "nisar_sme2_20251204_172D", "date": "2025-12-04",
+                           "png": "wa_2025/png/nisar_sme2_20251204.png"})
+    ids = [e["id"] for e in json.loads(idx.read_text())["layers"]]
+    assert ids == ["nisar_sme2_20251204_172D"]

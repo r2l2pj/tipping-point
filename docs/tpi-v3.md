@@ -33,7 +33,7 @@ The Uruguaiana corridor box is small; it is used here as the NISAR reference are
 **Reproduction.**
 
 - Composing v2 from the components reproduces the served COGs exactly (max error 0.0002, 0 NaN mismatches).
-- v3 is reproduced within 0.0002, with 249–308 NaN-mismatch cells out of 4.6 M in RS (wetland edges).
+- v3 is reproduced within 0.0002, with 249–308 NaN-mismatch cells out of 4.6 M in RS (wetland edges). Uruguaiana v2 and v3 are reproduced exactly.
 
 ## 1. Ablation: one change at a time vs v2 (Critical: area / hit / lift / M1 ratio)
 
@@ -52,6 +52,7 @@ The changes:
 | RS slide · gfs24 | 0.11 / 0.18 / 1.6 / 0.08 | = v2 | **0.02 / 0.01 / 0.7 / 0.03** | = v2 | 0.36 / 0.83 / 2.3 / 0.11 | 0.14 / 0.12 / 0.85 / 0.04 |
 | WA slide (n = 15) · event | 22.6 / 60 / 2.65 / 1.00 | = v2 | 21.4 / 60 / 2.8 / 1.29 | = v2 | 22.9 / 60 / 2.6 / 1.00 | 21.8 / 60 / 2.8 / 1.29 |
 | WA slide · gfs24, **High+** | 3.8 / 0 / 0 / 0 | **7.3 / 20 / 2.7 / 1.75** | 3.2 / 0 / 0 / 0 | = v2 | 4.4 / 6.7 / 1.5 / 0.98 | 7.3 / 20 / 2.7 / 1.75 |
+| Uruguaiana flood · Sep 30 (18 cells) | 12.3 / 83 / 6.8 / 6.2 | = v2 (no M2 there) | 8.4 / 72 / 8.6 / 7.8 | **7.2 / 61 / 8.4 / 9.6** | 15.6 / 89 / 5.7 / 5.2 | 7.7 / 61 / 7.9 / 9.0 |
 | Flood · gfs24 (RS, WA) | ≤ 0.01 % area, 0 hit | same | same | same | same | same |
 
 "= v2" means the change to v2 is smaller than 0.1 percentage point.
@@ -64,7 +65,7 @@ The changes:
 - **M3 hurts.** It halves WA Critical coverage (74 % → 45 %, ratio 0.51) and the RS slide forecast (Critical lift 1.6 → 0.7).
 - **M2 does nothing to floods.** For WA slides it gives the only forecast hits: 3 of 15 slides at High+ with ratio 1.75. That is 3 points.
 - **At the event peak, the RS ratio stays 1.00 under every change.** R and S saturate, so the ranking is terrain's.
-- **Uruguaiana is scored on v2 only.** Its components were not written at the time of this run.
+- **Uruguaiana: M5's wetland mask hides real new water.** 5 of the 18 NISAR polygon cells lie on GSW 10–50 % wetland. M5 and v3 set those to NaN, so Critical coverage drops from 83 % to 61 %. The ratio rises (6.2 → 9.6) only because the flagged area shrinks. M6 widens coverage (89 %) for more area; M3 shrinks both. With 18 cells, one cell is 5.6 points.
 
 ## 2. M4: class cuts calibrated on one case, evaluated on the other, per variant
 
@@ -76,6 +77,8 @@ The changes:
 | M2 | slide gfs24, calibrated on WA (n = 15): cut 0.58 | RS ratio 0.13 (fails) |
 | M3 | flood event, calibrated on RS: cut 0.84 (ratio 1.001) | WA hit 1.5 %, ratio 0.13 (fails) |
 | v3 | flood gfs24, calibrated on RS: cut 0.30 (1 % of EMS) | WA hit 0 (fails) |
+
+Flood cuts applied to Uruguaiana: the area-only cuts from RS or WA catch 0–28 % of the polygon cells for every variant. The exception is M6 with the RS cut (0.74): 72 % at 6.7 % area. That cut did not meet the ratio rule on RS.
 
 **M4 is not met for any variant: no calibrated cut transfers.** Keep the cuts 0.4 / 0.6.
 
@@ -125,7 +128,11 @@ Class level at the fixed cuts (Critical area / hit / lift / M1 ratio):
 - **Setup:** the same idea with fixed-cut fitting (argmax Critical hit % − area %), weights summing to 3 on a 0.25 grid (91 triples, including zeros), and WA on its NISAR pair window Dec 4–16. The Uruguaiana darkening change map is added as a second truth.
 - **Result:** fixed-cut fits pick rain-heavy weights (wR = 2.5). They "beat v2" on held-out cases mainly because, with R ≈ 1, they lower the effective Critical threshold to "any T > 0". So they enlarge the Critical class rather than rank better: RS Critical becomes exactly v2's High+, with ratio 1.00.
 - **Darkening truth:** a fit on the Uruguaiana darkening map (Oct 24 → Nov 5, an ungated change map) loses badly on WA (Critical hit 70 % → 16 %).
-- **v3 R** (liquid + extended), with uniform weights: WA Critical hit 74 % → 45 % (ratio 0.51); RS unchanged.
+- **v3 R** (liquid + extended; Uruguaiana: extended only), with uniform weights:
+  - WA Critical hit 74 % → 45 % (ratio 0.51).
+  - RS unchanged.
+  - Uruguaiana Sep 30 – Oct 12: area 38 % → 27 %, hit 83 % → 72 %, ratio 2.0 → 2.5.
+  - Fixed-cut fits with v3 R (WA → (2.5, 0, 0.5); Uruguaiana → (2.25, 0, 0.75)) again "beat v2" on the held-out cases by shifting the effective threshold. They drop S entirely (wS = 0).
 - **Conclusion:** this confirms the threshold-free verdict. No weight triple should be served.
 
 ## Verdict
