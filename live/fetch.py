@@ -152,6 +152,34 @@ def fetch_imerg_gee_standin(bounds, days: int = 7):
     return daily, pid
 
 
+def fetch_smap_l4_vars(bounds, variables: tuple[str, ...], days_back: int = 10):
+    """Latest SPL4SMGP granule: several Geophysical_Data variables on the
+    same EASE-2 points -> (lats2d, lons2d, {var: values2d}, product_id)."""
+    import earthaccess
+    import xarray as xr
+
+    _edl_login()
+    end = dt.date.today()
+    results = earthaccess.search_data(
+        short_name="SPL4SMGP", version="008",
+        temporal=(str(end - dt.timedelta(days=days_back)), str(end)),
+        bounding_box=tuple(bounds))
+    if not results:
+        raise RuntimeError(f"no SPL4SMGP granules in the last {days_back} days")
+    latest = results[-1]
+    f = earthaccess.open([latest])[0]
+    ds = xr.open_dataset(f, group="Geophysical_Data", engine="h5netcdf",
+                         phony_dims="sort")
+    geo = xr.open_dataset(f, engine="h5netcdf", phony_dims="sort")
+    lats, lons = geo["cell_lat"].values, geo["cell_lon"].values
+    w, s, e, n = bounds
+    m = (lats >= s - 0.5) & (lats <= n + 0.5) & (lons >= w - 0.5) & (lons <= e + 0.5)
+    rows, cols = np.flatnonzero(m.any(axis=1)), np.flatnonzero(m.any(axis=0))
+    sl = np.s_[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
+    vals = {v: np.asarray(ds[v][sl].values, dtype=np.float64) for v in variables}
+    return lats[sl], lons[sl], vals, str(latest["meta"]["native-id"])
+
+
 def fetch_smap_l4(bounds, days_back: int = 10):
     """Most recent SMAP L4 sm_rootzone_wetness as scattered lat/lon points.
 
@@ -467,26 +495,28 @@ def _gfs_candidates(issued: dt.date) -> list[tuple[dt.date, int]]:
     return cands[:_GFS_TRIES]
 
 
-def _gfs_last_fh(issued: dt.date, cday: dt.date, chh: int) -> int:
-    """Forecast hour of the last 6h bucket needed to cover day issued+3:
-    the bucket ending at (issued+4) 00:00 UTC."""
+def _gfs_last_fh(issued: dt.date, cday: dt.date, chh: int,
+                 ndays: int = 4) -> int:
+    """Forecast hour of the last 6h bucket needed to cover day
+    issued+ndays-1: the bucket ending at (issued+ndays) 00:00 UTC."""
     cycle0 = dt.datetime.combine(cday, dt.time(chh))
-    end = dt.datetime.combine(issued + dt.timedelta(days=4), dt.time())
+    end = dt.datetime.combine(issued + dt.timedelta(days=ndays), dt.time())
     return int((end - cycle0).total_seconds() // 3600)
 
 
-def _gfs_pick_run(issued: dt.date) -> tuple[dt.date, int]:
+def _gfs_pick_run(issued: dt.date, ndays: int = 4) -> tuple[dt.date, int]:
     """Newest preferred cycle whose index reaches the last needed fh (the
-    bucket ending D+4 00:00 UTC — the tail of calendar day D+3)."""
+    bucket ending D+ndays 00:00 UTC — the tail of calendar day D+ndays-1)."""
     seen = []
     for d, hh in _gfs_candidates(issued):
-        last = _gfs_last_fh(issued, d, hh)
+        last = _gfs_last_fh(issued, d, hh, ndays)
         url = f"{_GFS_BASE}/{_gfs_key(d, hh, last)}.idx"
         if _gfs_head_ok(url):
             return d, hh
         seen.append(f"{d}t{hh:02d}z")
     raise RuntimeError(
-        f"no GFS cycle at/before {issued} covers D+3 ({'; '.join(seen)})")
+        f"no GFS cycle at/before {issued} covers D+{ndays - 1} "
+        f"({'; '.join(seen)})")
 
 
 def _gfs_day_label(valid: dt.datetime) -> dt.date:
@@ -496,8 +526,10 @@ def _gfs_day_label(valid: dt.datetime) -> dt.date:
     return (valid - dt.timedelta(microseconds=1)).date()
 
 
-def fetch_gfs_daily(bounds, issued: dt.date | None = None):
-    """GFS forecast daily precipitation (mm/day) for D..D+3 (L28b).
+def fetch_gfs_daily(bounds, issued: dt.date | None = None, ndays: int = 4):
+    """GFS forecast daily precipitation (mm/day) for D..D+ndays-1 (L28b);
+    ndays=4 for the TPI frames, 14 for the P(trigger) model (GFS runs to
+    384 h; past fh 120 files are 3-hourly, the 6 h buckets still exist).
 
     Source: public NOAA AWS bucket noaa-gfs-bdp-pds (no auth, no GEE). APCP
     in pgrb2 is a TRAILING accumulation, so a UTC calendar-day total is the
@@ -519,12 +551,13 @@ def fetch_gfs_daily(bounds, issued: dt.date | None = None):
     import xarray as xr
 
     issued = issued or dt.date.today()
-    days = [issued + dt.timedelta(days=k) for k in (0, 1, 2, 3)]
-    cday, chh = _gfs_pick_run(issued)
+    days = [issued + dt.timedelta(days=k) for k in range(ndays)]
+    cday, chh = (_gfs_pick_run(issued) if ndays == 4
+                 else _gfs_pick_run(issued, ndays))
     cycle0 = dt.datetime.combine(cday, dt.time(chh))
 
     wanted: dict[dt.date, list[int]] = {d: [] for d in days}
-    for fh in range(6, _gfs_last_fh(issued, cday, chh) + 6, 6):
+    for fh in range(6, _gfs_last_fh(issued, cday, chh, ndays) + 6, 6):
         lab = _gfs_day_label(cycle0 + dt.timedelta(hours=fh))
         if lab in wanted:
             wanted[lab].append(fh)

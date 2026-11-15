@@ -1,0 +1,94 @@
+"""P(trigger) wiring with a synthetic smoke model (never published)."""
+import datetime as dt
+import json
+
+import numpy as np
+import pytest
+import rasterio
+from rasterio.transform import from_origin
+
+from live import now_manifest, p_trigger
+
+BOUNDS = (-52.0, -30.2, -51.8, -30.0)          # 20 x 20 cells at 0.01 deg
+D = dt.date(2026, 11, 15)
+
+
+def _smoke_model(tmp_path):
+    from xgboost import XGBClassifier
+
+    from ml.local import models as M
+    cols = list(p_trigger.STATIC_BANDS) + list(p_trigger.TEXTURE_BANDS) + list(
+        p_trigger.SOIL_VARS) + ["rain_24h", "rain_72h", "rain_7d", "rain_24h_rel",
+                                "rain_72h_rel", "doy_sin", "doy_cos"]
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(200, len(cols)))
+    y = (X[:, cols.index("rain_72h")] > 0.5).astype(int)
+    m = XGBClassifier(n_estimators=5, max_depth=2).fit(X, y)
+    return M.save_xgb(m, tmp_path / "p_trigger_xgb.json",
+                      {"features": cols, "horizons": p_trigger.HORIZONS,
+                       "name": "smoke", "version": "test"})
+
+
+def _static(tmp_path):
+    names = list(p_trigger.STATIC_BANDS) + list(p_trigger.TEXTURE_BANDS) + [
+        "p99_daily", "p99_3day"]
+    arr = np.ones((len(names), 20, 20), dtype="float32")
+    arr[0, 0, 0] = np.nan                       # elevation hole -> NaN output
+    p = tmp_path / "ml_static_now.tif"
+    with rasterio.open(p, "w", driver="GTiff", width=20, height=20, count=len(names),
+                       dtype="float32", crs="EPSG:4326", nodata=np.nan,
+                       transform=from_origin(-52.0, -30.0, 0.01, 0.01)) as ds:
+        ds.write(arr)
+        for i, n in enumerate(names, start=1):
+            ds.set_band_description(i, n)
+    return p
+
+
+def _obs(out_dir):
+    from pipeline.fetch.imerg import write_cog
+    lats = np.arange(-30.25, -29.9, 0.1)
+    lons = np.arange(-52.05, -51.7, 0.1)
+    for k in range(1, 8):
+        d = D - dt.timedelta(days=k)
+        write_cog(out_dir / "cog" / "imerg_early" / f"imerg_early_{d:%Y%m%d}.tif",
+                  np.full((lats.size, lons.size), 5.0 * k, dtype="float32"), lats, lons)
+
+
+def test_p_trigger_frames_and_manifest_flag(tmp_path, monkeypatch):
+    out = tmp_path / "now"
+    _obs(out)
+    soil = {v: np.full((20, 20), 0.3) for v in p_trigger.SOIL_VARS}
+    layers = p_trigger.run(out, D, bounds=BOUNDS, model_path=_smoke_model(tmp_path),
+                           static_path=_static(tmp_path),
+                           rain_fc=np.full((14, 20, 20), 10.0),
+                           gfs_issued="2026-11-15T00:00:00Z", soil=soil)
+    assert [l["id"] for l in layers] == [f"p_trigger_{h}" for h in p_trigger.HORIZONS]
+    l24 = layers[0]
+    assert l24["basis"] == "observed+forecast" and l24["obs_through"] == "2026-11-14"
+    assert l24["forecast_days"] == ["2026-11-15"] and layers[-1]["low_skill"] is True
+    assert "issued 2026-11-15 00:00 UTC" in l24["basis_label"]
+    with rasterio.open(out / "cog" / "p_trigger_24h.tif") as ds:
+        p = ds.read(1)
+    assert np.isnan(p[0, 0]) and np.nanmin(p) >= 0 and np.nanmax(p) <= 1
+    with rasterio.open(out / "cog" / "p_trigger_14d.tif") as ds:
+        p14 = ds.read(1)
+    assert np.nanmean(p14) >= np.nanmean(p) - 1e-6      # survival: P grows with h
+    assert (out / "png" / "p_trigger_14d.png").stat().st_size > 0
+
+    m = {"layers": [{"id": "tpi_flood_d0"}], "products": {}}
+    (out / "manifest.json").write_text(json.dumps(m))
+    monkeypatch.setenv("NOW_P_TRIGGER", "0")            # OFF: no layers listed
+    got = now_manifest.finalize(out)
+    assert got["p_trigger_enabled"] is False
+    assert [l["id"] for l in got["layers"]] == ["tpi_flood_d0"]
+    monkeypatch.setenv("NOW_P_TRIGGER", "1")            # ON: frames appended
+    got = now_manifest.finalize(out)
+    assert got["p_trigger_enabled"] is True
+    assert [l["id"] for l in got["layers"]][1:] == [l["id"] for l in layers]
+
+
+def test_p_trigger_main_is_noop_when_off(tmp_path, monkeypatch, capsys):
+    monkeypatch.delenv("NOW_P_TRIGGER", raising=False)
+    assert p_trigger.main(["--out-dir", str(tmp_path)]) == 0
+    assert "OFF" in capsys.readouterr().out
+    assert not any(tmp_path.iterdir())

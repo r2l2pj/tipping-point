@@ -193,7 +193,27 @@ jobs:
             uv run python pipeline/scripts/16_response_dist.py
           else echo "::notice::R4 script not on this branch yet"; fi
 
+      # L23/L27 P(trigger) frames — OFF until lead-ml's real model + TEST
+      # metrics land: enabled only by the repo variable NOW_P_TRIGGER=1.
+      - name: P(trigger) frames (lead-ml TriggerModel)
+        if: vars.NOW_P_TRIGGER == '1'
+        continue-on-error: true
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+          NOW_P_TRIGGER: "1"
+          PYTHONPATH: pipeline
+        run: |
+          set -euo pipefail
+          rel="https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
+          mkdir -p ml/models data/static/south_brazil/ml
+          [ -s ml/models/p_trigger_xgb.json ] || curl -fsSL --retry 3 -o ml/models/p_trigger_xgb.json "$rel/p_trigger_xgb.json"
+          [ -s ml/models/p_trigger_xgb.meta.json ] || curl -fsSL --retry 3 -o ml/models/p_trigger_xgb.meta.json "$rel/p_trigger_xgb.meta.json"
+          [ -s data/static/south_brazil/ml/ml_static_now.tif ] || curl -fsSL --retry 3 -o data/static/south_brazil/ml/ml_static_now.tif "$rel/ml_static_now.tif"
+          uv run python -m live.p_trigger
+
       - name: Finalize now manifest (merge response node, drop absent products)
+        env:
+          NOW_P_TRIGGER: ${{ vars.NOW_P_TRIGGER }}
         run: |
           uv run python -m live.now_manifest
           uv run python tools/build_manifest.py

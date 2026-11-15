@@ -124,6 +124,29 @@ def add_observed_to_alerts(out_dir: Path) -> None:
     os.replace(tmp, apath)
 
 
+def merge_p_trigger(manifest: dict, out_dir: Path) -> None:
+    """P(trigger) frames (live/p_trigger.py) join the layers only when the
+    flag is ON and their files exist; otherwise no p_trigger layer is listed
+    (the app keys on layer presence) and p_trigger_enabled is false."""
+    from live.p_trigger import enabled
+
+    layers = [l for l in manifest.get("layers", [])
+              if not str(l.get("id", "")).startswith("p_trigger_")]
+    on = False
+    meta = out_dir / "p_trigger" / "layers.json"
+    if enabled() and meta.is_file():
+        try:
+            pt = json.loads(meta.read_text()).get("layers", [])
+        except ValueError:
+            pt = []
+        pt = [l for l in pt if (out_dir / l["png"]).is_file()
+              and (out_dir / l["cog"]).is_file()]
+        layers += pt
+        on = bool(pt)
+    manifest["layers"] = layers
+    manifest["p_trigger_enabled"] = on
+
+
 def finalize(out_dir: Path) -> dict:
     add_observed_to_alerts(out_dir)
     mpath = out_dir / "manifest.json"
@@ -141,6 +164,7 @@ def finalize(out_dir: Path) -> dict:
                 manifest[key] = {**(manifest[key] or {}), **frag[key]}
         if isinstance(frag.get("response"), dict):
             manifest["response"] = frag["response"]
+    merge_p_trigger(manifest, out_dir)
     products = manifest.setdefault("products", {})
     for key, rel in OPTIONAL_PRODUCTS.items():
         products.setdefault(key, rel)
