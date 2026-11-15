@@ -106,11 +106,6 @@
           "kind": "event"
         },
         {
-          "date": "2026-10-08",
-          "label": "Itaqui: 29 people displaced (press)",
-          "kind": "event"
-        },
-        {
           "date": "2026-10-12",
           "label": "NISAR pass (track 010 D)",
           "kind": "nisar"
