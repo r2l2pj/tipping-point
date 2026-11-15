@@ -747,9 +747,16 @@ def publish_case(event_id: str, dry_run: bool = False,
                          "people_critical": crit_stats.get(iso, {})
                                         .get("people_critical"),
                          "river_m": river.get(iso)})
+        # L28b GFS forecast rain fields (kept on every rebuild; tp.gfs_series)
+        from tp.gfs_series import GFS_SOURCE, gfs_fields
+        fr_dir = ser_dir.parent / "forecast_rain"
+        for row in rows:
+            row.update(gfs_fields(fr_dir, case, dt.date.fromisoformat(row["date"])))
         doc = {"event": event_id, "reference_date": ref.isoformat(),
                "rain_p95_mm": rain_p95, "tpi_threshold": TPI_THRESHOLD,
                "days": rows}
+        if any(r["gfs_mm"] is not None or r["gfs_rain3_mm"] is not None for r in rows):
+            doc["gfs_source"] = GFS_SOURCE
         target = ser_dir / "imerg_smap_daily.json"
         rel = str(target.relative_to(data_dir))
         if dry_run:

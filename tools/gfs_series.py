@@ -19,55 +19,23 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import sys
 from pathlib import Path
 
-import numpy as np
-import rasterio
-
 REPO = Path(__file__).resolve().parents[1]
-
-
-def band_mean(case: str, issue: dt.date, band: int) -> float | None:
-    path = REPO / "data" / case / "forecast_rain" / f"{case}_gfs_{issue:%Y%m%d}.tif"
-    if not path.exists():
-        return None
-    with rasterio.open(path) as src:
-        if band > src.count:
-            return None
-        arr = src.read(band).astype(np.float64)
-    return float(np.nanmean(arr)) if np.isfinite(arr).any() else None
-
-
-def rain3_mean(case: str, issue: dt.date) -> float | None:
-    """AOI mean of the 3-day GFS total (bands d1..d3) of the run issued `issue`."""
-    path = REPO / "data" / case / "forecast_rain" / f"{case}_gfs_{issue:%Y%m%d}.tif"
-    if not path.exists():
-        return None
-    with rasterio.open(path) as src:
-        if src.count < 3:
-            return None
-        arr = src.read([1, 2, 3]).astype(np.float64).sum(axis=0)
-    return float(np.nanmean(arr)) if np.isfinite(arr).any() else None
+sys.path.insert(0, str(REPO / "pipeline"))
+from tp.gfs_series import GFS_SOURCE, gfs_fields
 
 
 def add_gfs(series_path: Path) -> int:
     doc = json.loads(series_path.read_text())
     case = series_path.parent.parent.name   # data/<case>/series/
+    fr_dir = series_path.parent.parent / "forecast_rain"
     n = 0
     for row in doc["days"]:
-        day = dt.date.fromisoformat(row["date"])
-        prev = day - dt.timedelta(days=1)
-        row["gfs_mm"] = band_mean(case, prev, 2)
-        row["gfs_mm_lead0"] = band_mean(case, day, 1)
-        row["gfs_issued"] = prev.isoformat() if row["gfs_mm"] is not None else None
-        prev2 = day - dt.timedelta(days=2)
-        row["gfs_rain3_mm"] = rain3_mean(case, prev2)
-        row["gfs_rain3_issued"] = prev2.isoformat() if row["gfs_rain3_mm"] is not None else None
+        row.update(gfs_fields(fr_dir, case, dt.date.fromisoformat(row["date"])))
         n += row["gfs_mm"] is not None
-    doc["gfs_source"] = ("NOAA GFS 0.25 deg 00Z runs via AWS noaa-gfs-bdp-pds; "
-                         "AOI mean of native cells; gfs_mm = 1-day forecast for the day "
-                         "(issued day-1); gfs_rain3_mm = 3-day forecast total ending the day "
-                         "(issued day-2), compare with imerg_mm (observed 3-day total)")
+    doc["gfs_source"] = GFS_SOURCE
     series_path.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n")
     return n
 
