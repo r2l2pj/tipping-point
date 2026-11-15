@@ -151,3 +151,13 @@ def test_static_inputs_never_published(tmp_path):
     assert _app_facing(src / "now/cog/tpi_slide_today.tif", src)
     assert _app_facing(src / "now/response/flood_nisar.geojson", src)
     assert not _app_facing(src / "now/response/dswx_state.npz", src)
+
+
+def test_ml_export_ships_to_fallback(tmp_path):
+    """lead-ml's export (data/ml/*, data/cog/t_ml.tif) is app-facing: every
+    now.yml snapshot must carry it (conductor 2026-11-15)."""
+    from live.publish_fallback import _app_facing
+    src = tmp_path / "data"
+    for rel in ("ml/ml_card.json", "ml/feature_importance_3b.json", "ml/t_ml.json",
+                "ml/t_ml.png", "ml/model_metrics.json", "cog/t_ml.tif", "metrics.json"):
+        assert _app_facing(src / rel, src), rel
