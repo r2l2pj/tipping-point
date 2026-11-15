@@ -88,13 +88,15 @@ def run(now_dir: Path, gsw: Path | None = None, hand: Path | None = None) -> dic
         if k == 0:
             cog = now_dir / "cog" / "tpi_flood_nisar_today.tif"
             cog.parent.mkdir(exist_ok=True)
-            prof = {"driver": "GTiff", "height": shape[0], "width": shape[1], "count": 2, "dtype": "float32",
+            prof = {"driver": "GTiff", "height": shape[0], "width": shape[1], "count": 3, "dtype": "float32",
                     "crs": "EPSG:4326", "transform": tr, "nodata": np.nan, "compress": "deflate"}
             with rasterio.open(cog, "w", **prof) as dst:
                 dst.write(np.round(comb, 3), 1)
                 dst.write(water.astype(np.float32), 2)
+                dst.write(observed.astype(np.float32), 3)
                 dst.set_band_description(1, "tpi")
                 dst.set_band_description(2, "water")
+                dst.set_band_description(3, "observed")
             ent["cog"] = "cog/tpi_flood_nisar_today.tif"
             from live.render import palette_png_bytes, warp_to_3857
             w3857, _t, wb = warp_to_3857(water.astype(np.uint8), tr)

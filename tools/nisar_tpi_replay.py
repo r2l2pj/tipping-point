@@ -88,12 +88,14 @@ def run(case: str) -> dict:
         ag = nw.agreement(tpi, water, km2, fp)
         ymd = day.strftime("%Y%m%d")
         cog = root / case / "cog" / f"{case}_tpi_flood_nisar_{ymd}.tif"
-        p = dict(prof, count=2, dtype="float32", nodata=np.nan, compress="deflate", predictor=3)
+        p = dict(prof, count=3, dtype="float32", nodata=np.nan, compress="deflate", predictor=3)
         with rasterio.open(cog, "w", **p) as dst:
             dst.write(np.round(comb, 3).astype(np.float32), 1)
             dst.write(water.astype(np.float32), 2)
+            dst.write(observed.astype(np.float32), 3)
             dst.set_band_description(1, "tpi")
             dst.set_band_description(2, "water")
+            dst.set_band_description(3, "observed")
         valid = np.isfinite(comb)
         png, bounds = _class_png_3857(classify(np.where(valid, comb, np.nan)), valid, tr, crs)
         (root / case / "png" / f"tpi_flood_nisar_{ymd}.png").write_bytes(png)
