@@ -46,6 +46,8 @@ import { initialState, linkParams, PLAYBACK_MS, reduce, type Action, type Screen
 import StatusBlock from "./StatusBlock";
 import { hideMissingFor } from "./model/sparse";
 import { hasHourFrames, hourFrameFor, hoursOn } from "./model/hours";
+import { bundleForRun, parseNowHistory, type NowRun } from "./model/nowHistory";
+import { resolveAsset } from "@/lib/contract";
 import { plainText } from "./model/plain";
 import Tiles from "./Tiles";
 import TimelineBar from "./TimelineBar";
@@ -141,6 +143,27 @@ export function CommandCenterView({
   // opens the Radar tab.
   const [tab, setTab] = useState<PanelTab | "all">(panelTab ?? (deepLink?.compare === "radar" ? "radar" : "overview"));
   const show = (t: PanelTab) => tab === t || tab === "all";
+  // Lucas: Now steps through the last Now runs (every 3 h) — lead-analysis
+  // now/history. Map only; the panel keeps the latest figures.
+  const historyUrl = liveCase && declared(liveCase, "history")
+    ? geoUrl(liveCase, caseDirOf(liveCase), "history", "history/index.json")
+    : undefined;
+  const [runs, setRuns] = useState<NowRun[]>([]);
+  useEffect(() => {
+    if (!historyUrl) return;
+    let alive = true;
+    fetch(historyUrl).then((r) => (r.ok ? r.json() : null)).then((raw) => { if (alive) setRuns(parseNowHistory(raw)); }).catch(() => {});
+    return () => { alive = false; };
+  }, [historyUrl]);
+  const [runPick, setRunPick] = useState<{ run: NowRun; manifest: unknown }>();
+  const pickRun = (id: string | null) => {
+    const run = id ? runs.find((r) => r.id === id) : undefined;
+    // The newest run is the live view itself.
+    if (!run || run.id === runs[0]?.id || !liveCase) { setRunPick(undefined); return; }
+    const url = resolveAsset(liveCase.assetBase ?? "/data", "", run.manifest);
+    if (!url) return;
+    fetch(url).then((r) => (r.ok ? r.json() : null)).then((m) => { if (m) setRunPick({ run, manifest: m }); }).catch(() => {});
+  };
   // Headline card (Lucas, "simple and WOW"): the live places file, once.
   const [places, setPlaces] = useState<Places>();
   useEffect(() => {
@@ -377,7 +400,7 @@ export function CommandCenterView({
           Narrow: one column (map, panel, timeline); Layers is a drawer. */}
       <main className="relative min-h-0 flex-1">
         <MapStage
-          bundle={bundle}
+          bundle={live && runPick ? bundleForRun(bundle, runPick.run, runPick.manifest) : bundle}
           steps={steps}
           state={state}
           areas={areas}
@@ -608,6 +631,7 @@ export function CommandCenterView({
         onNext={() => dispatch({ type: "next" })}
         onPlayToggle={() => dispatch({ type: "togglePlay" })}
         forecastDates={live ? undefined : new Set(steps.filter((s) => forecastLeadsForDay(bundle, s.date, state.hazard).length > 0).map((s) => s.date))}
+        runs={live && runs.length > 1 ? { list: runs, picked: runPick?.run.id ?? runs[0].id, onPick: pickRun } : undefined}
         hours={hasHourFrames(bundle, state.hazard) ? { available: hoursOn(bundle, state.hazard, step?.date), hour, onHour: (h) => setHourPick({ caseId: bundle.id, hour: h }) } : undefined}
       />
         </div>

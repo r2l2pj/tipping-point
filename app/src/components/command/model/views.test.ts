@@ -46,3 +46,33 @@ test("a replay without an event day lands on its first 'signal' timeline mark (U
   expect(defaultStepIndex(steps as never, b)).toBe(2);
   expect(defaultStepIndex(steps as never)).toBe(3);
 });
+
+test("one replay experience: the landing day comes from the data (landing mark > onset anchor > event day > signal)", async () => {
+  const { defaultStepIndex } = await import("./steps");
+  const steps = ["2025-12-06", "2025-12-07", "2025-12-08", "2025-12-09", "2025-12-10"].map((date, index) =>
+    ({ index, date, forecast: false, top: date, sub: "", offset: index - 4 }));
+  const onset = { flood_warned: { anchor_utc: "2025-12-08T08:00:00+00:00", anchor_basis: "onset" } };
+  expect(defaultStepIndex(steps as never, { metricsView: onset } as never)).toBe(2); // WA: Dec 8 onset
+  expect(defaultStepIndex(steps as never, { metricsView: { slide_warned: { anchor_utc: "2025-12-07T03:00:00Z", anchor_basis: "onset" } } } as never)).toBe(1);
+  expect(defaultStepIndex(steps as never, { metricsView: { ...onset, timeline_marks: [{ date: "2025-12-09", label: "x", kind: "event", landing: true }] } } as never)).toBe(3);
+  expect(defaultStepIndex(steps as never, { metricsView: { flood_warned: { anchor_utc: "2025-12-08", anchor_basis: "damage" } } } as never)).toBe(4); // event day
+  expect(defaultStepIndex(steps as never)).toBe(4);
+});
+
+test("NISAR outlines only from their pass date; before it the caption names the next pass", async () => {
+  const { floodCaptionNote, nextNisarPass } = await import("./steps");
+  const wa = { id: "wa_2025", mode: "replay", bbox: [0, 0, 1, 1], data_dates: { nisar_pre: "2025-12-04", nisar_post: "2025-12-16" },
+    manifest: { layers: [{ id: "nisar_post", date: "2025-12-16", png: "x.png" }, { id: "nisar_hh_20251122", kind: "nisar_frame", date: "2025-11-22", png: "y.png" }] } } as never;
+  expect(floodCaptionNote(wa, "2025-12-08", ["tpi", "flood"])).toBe(" · next NISAR pass: Dec 16");
+  expect(floodCaptionNote(wa, "2025-12-01", ["tpi", "flood"])).toBe(" · next NISAR pass: Dec 4");
+  expect(floodCaptionNote(wa, "2025-12-16", ["tpi", "flood"])).toBe(" · NISAR flood outlines (pass Dec 16, 2025)");
+  expect(floodCaptionNote(wa, "2025-12-08", ["tpi"])).toBe("");
+  expect(nextNisarPass(wa, "2025-11-01")).toBe("2025-11-22");
+});
+
+test("next NISAR pass prefers the NISAR timeline marks (main track) over context frames", async () => {
+  const { nextNisarPass } = await import("./steps");
+  const uy = { id: "rs_uruguai_2026", mode: "replay", bbox: [0, 0, 1, 1], manifest: { layers: [{ id: "nisar_hh_20261005", kind: "nisar_frame", date: "2026-10-05", png: "a.png" }] },
+    metricsView: { timeline_marks: [{ date: "2026-09-30", kind: "nisar", label: "p" }, { date: "2026-10-12", kind: "nisar", label: "p" }] } } as never;
+  expect(nextNisarPass(uy, "2026-09-30")).toBe("2026-10-12");
+});

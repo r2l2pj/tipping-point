@@ -30,7 +30,10 @@ export default function TimelineBar({
   emptyText = NO_STEPS_TEXT,
   hours,
   forecastDates,
+  runs,
 }: {
+  // Lucas (Now): the last Now runs (every 3 h), newest first.
+  runs?: { list: { id: string; label: string }[]; picked: string; onPick: (id: string | null) => void };
   // Replay: days that have an archived NOAA forecast (marked in the picker).
   forecastDates?: Set<string>;
   // Lucas: HOUR selector (6-hourly frames); only for cases that publish them.
@@ -108,6 +111,17 @@ export default function TimelineBar({
               <option key={s.date} value={s.index}>{fmtDate(s.date)}{s.forecast ? " (forecast)" : ""}{forecastDates?.has(s.date) ? " · ● NOAA forecast" : ""}</option>
             ))}
           </select>
+        )}
+        {runs && (
+          <div role="group" aria-label="Now run (BRT)" className="flex flex-wrap items-center gap-1" data-runs>
+            <span className="text-xs font-semibold text-cc-muted">Run</span>
+            {runs.list.map((r, i) => (
+              <button key={r.id} type="button" aria-pressed={runs.picked === r.id} onClick={() => runs.onPick(i === 0 ? null : r.id)}
+                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${runs.picked === r.id ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>
+                {i === 0 ? `Latest · ${r.label}` : r.label}
+              </button>
+            ))}
+          </div>
         )}
         {hours && (
           <div role="group" aria-label="Hour (UTC)" className="flex items-center gap-1" data-hours>

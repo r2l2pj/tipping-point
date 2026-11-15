@@ -87,11 +87,25 @@ export function stepsFor(bundle: CcBundle | undefined): Step[] {
 // Step shown when a case opens: the event day (offset 0), else the last
 // observed step, else the first step.
 export function defaultStepIndex(steps: Step[], bundle?: CcBundle): number {
+  // Lucas: one replay experience for every case. The landing day comes from
+  // the data: a timeline mark flagged `landing`, else the onset anchor of the
+  // "did the alert come before?" test (WA flood Dec 8, RS landslides Apr 29),
+  // else the event day, else the first index signal (Uruguaiana Sep 30).
+  const m = bundle?.metricsView as Record<string, unknown> | undefined;
+  const at = (iso: unknown) => (typeof iso === "string" ? steps.findIndex((s) => s.date.slice(0, 10) === iso.slice(0, 10)) : -1);
+  const marks = Array.isArray(m?.timeline_marks) ? (m!.timeline_marks as Record<string, unknown>[]) : [];
+  const landing = at(marks.find((x) => x && x.landing === true)?.date);
+  if (landing >= 0) return landing;
+  for (const k of ["flood_warned", "slide_warned"]) {
+    const w = m?.[k] as Record<string, unknown> | undefined;
+    if (w && w.anchor_basis === "onset") {
+      const i = at(w.anchor_utc);
+      if (i >= 0) return i;
+    }
+  }
   const event = steps.findIndex((s) => s.offset === 0);
   if (event >= 0) return event;
-  // A replay without an event day (Uruguaiana) lands on its first index
-  // signal (lead-analysis timeline_marks kind 'signal': Sep 30).
-  const tm = (bundle?.metricsView as Record<string, unknown> | undefined)?.timeline_marks;
+  const tm = m?.timeline_marks;
   const signal = Array.isArray(tm)
     ? tm.find((x) => x && typeof x === "object" && (x as Record<string, unknown>).kind === "signal" && typeof (x as Record<string, unknown>).date === "string") as { date: string } | undefined
     : undefined;
@@ -491,6 +505,35 @@ export function floodCaptionNote(
   on: readonly LayerId[]
 ): string {
   const post = floodPostDate(bundle);
-  if (!post || !on.includes("flood") || !floodShownOn(bundle, date)) return "";
+  if (!post || !on.includes("flood")) return "";
+  if (!floodShownOn(bundle, date)) {
+    // Conductor: before the pass that mapped the outlines, say when it comes.
+    const next = nextNisarPass(bundle, date);
+    return next ? ` · next NISAR pass: ${fmtDate(next).replace(/,\s*\d{4}$/, "")}` : "";
+  }
   return ` · NISAR flood outlines (pass ${fmtDate(post)})`;
+}
+
+// The first NISAR pass after a day, from the data: the dated NISAR frames,
+// the pair layers and lead-analysis timeline marks of kind 'nisar'.
+export function nextNisarPass(bundle: CcBundle, date: string | undefined): string | undefined {
+  if (!date) return undefined;
+  const day = date.slice(0, 10);
+  // lead-analysis/lead-ml NISAR marks (main track) win over the frame list,
+  // which also holds context passes from other tracks.
+  const tmarks = (bundle.metricsView as Record<string, unknown> | undefined)?.timeline_marks;
+  const marked = Array.isArray(tmarks)
+    ? tmarks.flatMap((x) => (x && typeof x === "object" && (x as Record<string, unknown>).kind === "nisar" && typeof (x as Record<string, unknown>).date === "string" ? [((x as Record<string, unknown>).date as string).slice(0, 10)] : []))
+    : [];
+  if (marked.length) return marked.filter((d) => d > day).sort()[0];
+  const dates = new Set<string>();
+  for (const raw of bundle.manifest?.layers ?? []) {
+    const l = raw as unknown as Record<string, unknown>;
+    if (typeof l.date === "string" && (l.kind === "nisar_frame" || /^(nisar|radar)_(pre|post)$/.test(String(l.id)))) dates.add(l.date.slice(0, 10));
+  }
+  const dd = bundle.data_dates as Record<string, unknown> | undefined;
+  for (const k of ["nisar_pre", "nisar_post"]) if (typeof dd?.[k] === "string") dates.add((dd[k] as string).slice(0, 10));
+  const tm = (bundle.metricsView as Record<string, unknown> | undefined)?.timeline_marks;
+  if (Array.isArray(tm)) for (const x of tm) if (x && typeof x === "object" && (x as Record<string, unknown>).kind === "nisar" && typeof (x as Record<string, unknown>).date === "string") dates.add(((x as Record<string, unknown>).date as string).slice(0, 10));
+  return [...dates].filter((d) => d > day).sort()[0];
 }
