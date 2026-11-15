@@ -117,3 +117,17 @@ def test_now_header_comment_matches_cron():
     text, _ = _load("now.yml")
     header = text.split("on:", 1)[0]
     assert "every 3 h" in header and "every 6 h" not in header
+
+
+def test_now_caches_climatology_before_run():
+    """L30-clim: actions/cache keeps clim_imerg_0p1.tif across runs and
+    is restored before the run step that reads it."""
+    _, doc = _load("now.yml")
+    steps = _steps(doc)
+    cache = next(i for i, s in enumerate(steps)
+                 if s.get("uses", "").startswith("actions/cache@v4")
+                 and "clim_imerg_0p1" in s["with"]["path"])
+    assert steps[cache]["with"]["path"] == \
+        "data/static/south_brazil/clim/clim_imerg_0p1.tif"
+    assert steps[cache]["with"]["key"].startswith("clim-imerg-0p1-")
+    assert cache < _run_idx(steps, "live/jobs.py now")

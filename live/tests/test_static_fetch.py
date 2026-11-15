@@ -2,7 +2,6 @@
 import datetime as dt
 
 import numpy as np
-import pytest
 
 from live import static_fetch
 
@@ -11,7 +10,7 @@ def test_clim_for_day_nearest_substitution_is_recorded(capsys):
     clim = {318: {"p90": np.ones((2, 2)), "p95": np.ones((2, 2)),
                   "p99": np.ones((2, 2))}}
     static = {"clim": clim}
-    day = dt.date(2026, 11, 16)          # doy 320, not fetched
+    day = dt.date(2026, 11, 15)          # leap-calendar doy 320, not fetched
     got = static_fetch.clim_for_day(static, day)
     assert got is clim[318]
     assert static["clim_doy_used"] == {320: 318}
@@ -19,11 +18,13 @@ def test_clim_for_day_nearest_substitution_is_recorded(capsys):
 
 
 def test_clim_for_day_exact_doy_records_and_stays_quiet(capsys):
-    clim = {319: {"p90": np.zeros((1, 1)), "p95": np.zeros((1, 1)),
+    clim = {320: {"p90": np.zeros((1, 1)), "p95": np.zeros((1, 1)),
                   "p99": np.zeros((1, 1))}}
     static = {"clim": clim}
+    # 2026-11-15 is tm_yday 319 but leap-calendar doy 320 (= Nov 15 in the
+    # 2000-based climatology calendar both products were built on)
     static_fetch.clim_for_day(static, dt.date(2026, 11, 15))
-    assert static["clim_doy_used"] == {319: 319}
+    assert static["clim_doy_used"] == {320: 320}
     assert "SUBSTITUTION" not in capsys.readouterr().err
 
 
@@ -87,3 +88,125 @@ def test_terrain_never_reads_precomputed_t_files(monkeypatch):
     assert reads == ["terrain/slope_deg.tif", "terrain/hand_m.tif"]
     assert np.allclose(t_slide, 0.5) and np.allclose(t_flood, 0.0)  # slope > 5 deg
     assert checks["slope_p99_ok"]
+
+
+def _write_clim(path, doys=3):
+    """tiny whole-year-layout file: 0.1 deg grid over (-58,-34,-57.6,-33.7)
+    padded by a cell; band b holds b*10 + a lon ramp."""
+    import rasterio
+    from rasterio.transform import from_origin
+
+    h, w = 5, 6                       # lat -33.65..-34.05, lon -58.05..-57.55
+    lon_c = -58.05 + np.arange(w) * 0.1
+    data = np.stack([np.tile((b * 10 + lon_c * 0 + np.arange(w)).astype(
+        np.float32), (h, 1)) for b in range(doys * 3)])
+    with rasterio.open(path, "w", driver="GTiff", width=w, height=h,
+                       count=doys * 3, dtype="float32", crs="EPSG:4326",
+                       transform=from_origin(-58.1, -33.6, 0.1, 0.1)) as ds:
+        ds.write(data)
+    return lon_c
+
+
+def test_clim_from_file_reads_doy_bands_and_interpolates(tmp_path, monkeypatch):
+    import rasterio
+
+    path = tmp_path / "clim_imerg_0p1.tif"
+    lon_c = _write_clim(path)
+    read_idx = []
+    real_open = rasterio.open
+
+    class _Spy:
+        def __init__(self, ds):
+            self.ds = ds
+
+        def __enter__(self):
+            self.ds.__enter__()
+            return self
+
+        def __exit__(self, *a):
+            return self.ds.__exit__(*a)
+
+        def read(self, idx):
+            read_idx.append(list(idx))
+            return self.ds.read(idx)
+
+        def __getattr__(self, k):
+            return getattr(self.ds, k)
+
+    monkeypatch.setattr(rasterio, "open", lambda p, *a, **k: _Spy(real_open(p, *a, **k)))
+    bounds = (-58.0, -34.0, -57.6, -33.7)
+    got = static_fetch._clim_from_file(path, 2, bounds)
+    assert read_idx == [[4, 5, 6]]                  # doy 2 -> bands 4..6
+    from live.grid import dst_lats_lons
+    lats, lons = dst_lats_lons(bounds)
+    assert got["p90"].shape == (len(lats), len(lons))
+    # linear in lon on cell centres: value = band*10 + (lon - lon_c[0]) / 0.1
+    want = 3 * 10 + (lons - lon_c[0]) / 0.1
+    for k, name in enumerate(("p90", "p95", "p99")):
+        assert np.isfinite(got[name]).all()
+        np.testing.assert_allclose(got[name][0], want + k * 10, atol=1e-6)
+
+
+def test_load_static_prefers_clim_file_and_falls_back(tmp_path, monkeypatch):
+    path = tmp_path / "clim_imerg_0p1.tif"
+    _write_clim(path, doys=366)
+    monkeypatch.delenv("NOW_CLIM_SOURCE", raising=False)
+    monkeypatch.setattr(static_fetch, "CLIM_FILE", path)
+    monkeypatch.setattr(static_fetch, "_terrain",
+                        lambda: (np.zeros((3, 4)), np.zeros((3, 4)), {}))
+    legacy = []
+    monkeypatch.setattr(static_fetch, "_clim_for_doy",
+                        lambda d: legacy.append(d) or {"p90": 1, "p95": 1, "p99": 1})
+    bounds = (-58.0, -34.0, -57.6, -33.7)
+    st = static_fetch.load_static(bounds, days=[dt.date(2026, 11, 15)])
+    assert set(st["clim"]) == {320} and legacy == []
+    assert st["clim_source"] == "imerg-final-0p1"
+
+    monkeypatch.setenv("NOW_CLIM_SOURCE", "legacy")
+    st = static_fetch.load_static(bounds, days=[dt.date(2026, 11, 15)])
+    assert legacy == [320] and st["clim_source"] == "legacy-doy-cogs"
+
+
+def test_clim_file_downloads_from_release_when_missing(tmp_path, monkeypatch):
+    import io
+
+    path = tmp_path / "clim" / "clim_imerg_0p1.tif"
+    monkeypatch.delenv("NOW_CLIM_SOURCE", raising=False)
+    monkeypatch.setattr(static_fetch, "CLIM_FILE", path)
+    urls = []
+
+    def fake_urlopen(url, timeout=None):
+        urls.append(url)
+        return io.BytesIO(b"tif-bytes")
+
+    monkeypatch.setattr(static_fetch.urllib.request, "urlopen", fake_urlopen)
+    assert static_fetch._clim_file() == path
+    assert path.read_bytes() == b"tif-bytes"
+    assert urls[0].endswith("/static-v1/clim_imerg_0p1.tif")
+
+    path.unlink()
+
+    def boom(url, timeout=None):
+        raise OSError("404")
+
+    monkeypatch.setattr(static_fetch.urllib.request, "urlopen", boom)
+    assert static_fetch._clim_file() is None
+    assert not path.exists() and not path.with_suffix(".part").exists()
+
+
+def test_leap_doy_calendar():
+    """Both climatology products are on the leap-year calendar
+    (date(2000,1,1)+doy-1); tm_yday is off by one after Feb in non-leap
+    years (2026-11-15 is tm_yday 319 but Nov 15 = leap doy 320)."""
+    assert static_fetch.leap_doy(dt.date(2026, 11, 15)) == 320
+    assert dt.date(2026, 11, 15).timetuple().tm_yday == 319
+    assert static_fetch.leap_doy(dt.date(2024, 11, 15)) == 320
+    assert static_fetch.leap_doy(dt.date(2026, 2, 28)) == 59
+    assert static_fetch.leap_doy(dt.date(2026, 3, 1)) == 61
+    assert static_fetch.leap_doy(dt.date(2024, 2, 29)) == 60
+    assert static_fetch.leap_doy(dt.date(2026, 12, 31)) == 366
+
+
+def test_clim_source_matches_run_now_verified_value():
+    from live import run_now
+    assert run_now.CLIM_SOURCE_OK == static_fetch.CLIM_SOURCE_NEW

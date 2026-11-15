@@ -4,12 +4,23 @@ L25: no GEE at runtime. Climatology and terrain are read as COGs —
 first from the public GitHub 'static-v1' Release, then the local
 data/static/ tree, then the legacy Neon object-storage copy:
 
-  data/static/south_brazil/clim/doy_NNN.tif   3-band float32: p90/p95/p99
-    (mm, 3-day IMERG accumulation percentiles) on the NOW_BOUNDS
-    1150x1000 EPSG:4326 dst grid.
+  data/static/south_brazil/clim/clim_imerg_0p1.tif  (L30-clim, preferred)
+    whole-year p90/p95/p99 at IMERG native 0.1 deg, 1098 bands
+    (doy-1)*3+{p90,p95,p99}, built by live/build_clim.py. Source order:
+    local file -> downloaded whole from the static-v1 Release into that
+    path (CI keeps it in actions/cache) -> legacy per-doy COGs below.
+    Only the 3 bands of each needed doy are read, then interpolated to the
+    dst grid exactly like the IMERG obs (live.grid.regrid_da, linear).
+    NOW_CLIM_SOURCE=legacy forces the legacy COGs (verification only).
+  data/static/south_brazil/clim/doy_NNN.tif   legacy 3-band float32:
+    p90/p95/p99 (mm, 3-day IMERG accumulation percentiles) on the
+    NOW_BOUNDS 1150x1000 EPSG:4326 dst grid; doys 284..341 only.
   terrain/{slope_deg,hand_m}.tif  float32 on the same grid; T_slide and
     T_flood are DERIVED here (live/tpi.py formulas) and sanity-checked
     (terrain_checks). Precomputed t_*.tif are never read.
+
+Doys are on the leap-year calendar (date(2000,1,1)+doy-1 = month/day),
+the calendar both climatology products were built on.
 
 The COGs are exported once from the GEE assets (allowed one-off under
 L25) and republished by lead-analysis; the Now job only ever reads them.
@@ -18,7 +29,9 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+import shutil
 import sys
+import urllib.request
 from pathlib import Path
 
 import numpy as np
@@ -59,6 +72,70 @@ def _read_cog(rel: str) -> np.ndarray | None:
         except (rasterio.errors.RasterioIOError, OSError, RuntimeError):
             continue
     return None
+
+
+CLIM_FILE_NAME = "clim_imerg_0p1.tif"
+CLIM_FILE = LOCAL_STATIC / "south_brazil" / "clim" / CLIM_FILE_NAME
+PCT_NAMES = ("p90", "p95", "p99")
+# static["clim_source"] values; run_now.CLIM_SOURCE_OK must equal CLIM_SOURCE_NEW
+CLIM_SOURCE_NEW = "imerg-final-0p1"
+CLIM_SOURCE_LEGACY = "legacy-doy-cogs"
+
+
+def leap_doy(day: dt.date) -> int:
+    """Calendar (month, day) -> 1..366 on the leap-year calendar."""
+    return (dt.date(2000, day.month, day.day) - dt.date(2000, 1, 1)).days + 1
+
+
+def _clim_file() -> Path | None:
+    """The whole-year 0.1 deg climatology: local copy, else downloaded once
+    from the static-v1 Release into the local path. None -> legacy COGs."""
+    if os.environ.get("NOW_CLIM_SOURCE", "").lower() == "legacy":
+        return None
+    if CLIM_FILE.exists():
+        return CLIM_FILE
+    url = f"{STATIC_RELEASE_BASE}/{CLIM_FILE_NAME}"
+    tmp = CLIM_FILE.with_suffix(".part")
+    try:
+        CLIM_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with urllib.request.urlopen(url, timeout=300) as r, open(tmp, "wb") as f:
+            shutil.copyfileobj(r, f)
+        tmp.replace(CLIM_FILE)
+        print(f"[static_fetch] downloaded {url} -> {CLIM_FILE}", file=sys.stderr)
+        return CLIM_FILE
+    except OSError as exc:
+        tmp.unlink(missing_ok=True)
+        print(f"[static_fetch] {CLIM_FILE_NAME} unavailable ({exc}); "
+              f"falling back to per-doy COGs", file=sys.stderr)
+        return None
+
+
+def _clim_from_file(path: Path, doy: int, bounds) -> dict[str, np.ndarray] | None:
+    """Read the 3 bands of `doy` and interpolate them to the dst grid the
+    same way run_now regrids IMERG obs (regrid_da, linear on centers)."""
+    import rasterio
+    import xarray as xr
+
+    from live.grid import dst_lats_lons, regrid_da
+
+    first = (doy - 1) * 3 + 1
+    with rasterio.open(path) as ds:
+        if ds.count < first + 2:
+            return None
+        arr = ds.read([first, first + 1, first + 2]).astype(np.float64)
+        scale = ds.scales[first - 1] if ds.scales else 1.0
+        t = ds.transform
+    if scale not in (None, 1.0):
+        arr = arr * scale
+    lats = t.f + (np.arange(arr.shape[1]) + 0.5) * t.e
+    lons = t.c + (np.arange(arr.shape[2]) + 0.5) * t.a
+    dlats, dlons = dst_lats_lons(tuple(bounds))
+    out = {}
+    for k, name in enumerate(PCT_NAMES):
+        da = xr.DataArray(arr[k][::-1], dims=("lat", "lon"),
+                          coords={"lat": lats[::-1], "lon": lons})
+        out[name] = regrid_da(da, dlats, dlons)
+    return out
 
 
 def _clim_for_doy(doy: int) -> dict[str, np.ndarray] | None:
@@ -106,8 +183,8 @@ def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
                 cache_dir: Path | None = None) -> dict:
     """static inputs for the local TPI loop.
 
-    days: the run's today + forecast days; their day-of-year values select
-    which climatology COGs are read. Missing doys fall back to the
+    days: the run's today + forecast days; their leap-calendar doys select
+    which climatology bands/COGs are read. Missing doys fall back to the
     nearest available one (clim_for_day).
     """
     terr = _terrain()
@@ -115,10 +192,16 @@ def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
         sys.exit("no terrain COGs on Neon/local (data/static/south_brazil"
                  "/terrain/) — export the static assets first")
     days = days or [dt.datetime.now(dt.UTC).date()]
-    doys = sorted({d.timetuple().tm_yday for d in days})
+    doys = sorted({leap_doy(d) for d in days})
     clim, missing = {}, []
+    path = _clim_file()
+    source = CLIM_SOURCE_NEW if path else CLIM_SOURCE_LEGACY
     for doy in doys:
-        c = _clim_for_doy(doy)
+        c = _clim_from_file(path, doy, bounds) if path else None
+        if c is None:
+            c = _clim_for_doy(doy)
+            if c is not None:
+                source = CLIM_SOURCE_LEGACY   # any legacy doy taints the run
         (clim.__setitem__(doy, c) if c is not None else missing.append(doy))
     if not clim:
         sys.exit(f"no climatology COGs for doys {doys}")
@@ -126,7 +209,7 @@ def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
         print(f"[static_fetch] {missing} doy(s) missing — nearest "
               f"available will be used", file=sys.stderr)
     return {"t_slide": terr[0], "t_flood": terr[1], "clim": clim,
-            "checks": terr[2]}
+            "checks": terr[2], "clim_source": source}
 
 
 def clim_for_day(static: dict, day: dt.date) -> dict[str, np.ndarray]:
@@ -134,7 +217,7 @@ def clim_for_day(static: dict, day: dt.date) -> dict[str, np.ndarray]:
     The requested->used mapping is recorded in static["clim_doy_used"] so
     the run manifest can publish it — a substituted climatology day must
     never be silent."""
-    doy = day.timetuple().tm_yday
+    doy = leap_doy(day)
     clim = static["clim"]
     used = doy if doy in clim else min(
         clim, key=lambda d: min(abs(d - doy), 366 - abs(d - doy)))
