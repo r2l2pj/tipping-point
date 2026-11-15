@@ -72,6 +72,8 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 
 | Number | Source | Where |
 |---|---|---|
+| Terrain baseline: terrain alone finds RS slides **7–13×** better than the 24 h GFS flag; terrain-only lift **18.7×** vs **2.71×**; ratio **0.15** High+ / **0.08** Critical; floods ratio **≈1** (RS **1.00**, WA **1.01**); Uruguaiana ratio **2.7** High+ / **6.2** Critical, **18** cells | `ml/models/lift_vs_terrain.json` → `rs_inventory_slide.{alto_plus,critico}.ratio` (0.145 / 0.076), `rs_ems_flood_event.*.ratio` (1.0), `wa_nisar_flood_event.alto_plus.ratio` (1.006), `uru_nisar_flood_sep30.{alto_plus,critico}.ratio` (2.7 / 6.221); `docs/lift-vs-terrain.md` | P, S5, S6, K, R, A, L |
+| WA Critical slide area **about 40%** above 1,000 m on Dec 10, median **919 m** (never "most") | `ml/models/a3_wa_elevation.json` → `days.20251210.critico.above_1000m_pct` (40.7), `….median_elev_m` (919) | P, S6, K, R, A |
 | ML: ROC **0.93** median, **9** held-out disasters, ~**4–5** alarm-days per site per year; **11** disaster events | `docs/science-review/07-overfit-audit.md` | P, S3, S6, K, R, A |
 | Peak saturation: High above ~**16°**, Critical above ~**18°**; P**99** | review 10 §A1 (`docs/science-review/10-correcoes-revisao-externa.md`) | P, S6, R, A |
 | Live first NISAR pair (Oct 25 → Nov 6, 2026) rejected: strip **2.35 km²**, HH **−5.6 / −5.1 dB** | `data/now/response/nisar_timeseries.json`; `docs/science-review/08-updates-2026-11-15-midday.md` | P table |
@@ -82,7 +84,7 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 
 ## Retired — never say
 
-36% / 8.8× (v1 RS forecast) as a headline · "46% of landslides within 500 m" · "175 km² Critical three days before" · "55,000 people exposed" · "three days before the peak" · 1,681,783 / 254,263 / 1,488,833 / 229,782 people · 1.85 km² (on-grid area; use 1.8 km² = `flooded_km2`) · "GFS under-forecast the RS peak by about half" on slides/deck (the README keeps it with its source numbers, row above) · "people are lower bounds (~12% low)" (old resample; counts are now native-grid).
+36% / 8.8× (v1 RS forecast) as a headline · "46% of landslides within 500 m" · "175 km² Critical three days before" · "55,000 people exposed" · "three days before the peak" · 1,681,783 / 254,263 / 1,488,833 / 229,782 people · 1.85 km² (on-grid area; use 1.8 km² = `flooded_km2`) · "GFS under-forecast the RS peak by about half" on slides/deck (the README keeps it with its source numbers, row above) · "people are lower bounds (~12% low)" (old resample; counts are now native-grid) · "most of the WA Critical area is high/snow terrain" (A3 not confirmed: about 40%) · the 2.7× RS lift as evidence that rain locates slides.
 
 ## Grep proof (run after any copy change)
 
