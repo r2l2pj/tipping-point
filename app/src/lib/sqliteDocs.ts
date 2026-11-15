@@ -25,14 +25,32 @@ export const sqliteCandidates = (): string[] => {
 interface Db { prepare(sql: string): { get(...a: unknown[]): unknown } ; close(): void }
 let open: { file: string; mtimeMs: number; db: Db } | undefined;
 
+// Lucas (cosmetic): loading node:sqlite prints "ExperimentalWarning: SQLite is
+// an experimental feature" on some Node versions. Drop exactly that message
+// while the module loads — every other warning still prints.
+type SqliteMod = { DatabaseSync: new (f: string, o: { readOnly: boolean }) => unknown };
+async function loadSqlite(): Promise<SqliteMod> {
+  const orig = process.emitWarning;
+  process.emitWarning = function (this: unknown, w: string | Error, ...rest: unknown[]) {
+    const msg = typeof w === "string" ? w : w?.message;
+    if (/SQLite is an experimental feature/i.test(msg ?? "")) return;
+    return (orig as (...a: unknown[]) => void).call(process, w, ...rest);
+  } as typeof process.emitWarning;
+  try {
+    // @ts-expect-error -- node:sqlite exists in Node ≥ 22.5 and Bun; @types/node 20 lacks its types
+    return (await import("node:sqlite")) as SqliteMod;
+  } finally {
+    process.emitWarning = orig;
+  }
+}
+
 async function db(): Promise<Db | undefined> {
   for (const file of sqliteCandidates()) {
     let mtimeMs: number;
     try { mtimeMs = (await stat(file)).mtimeMs; } catch { continue; }
     if (open && open.file === file && open.mtimeMs === mtimeMs) return open.db;
     try {
-      // @ts-expect-error -- node:sqlite exists in Node ≥ 22.5 and Bun; @types/node 20 lacks its types
-      const { DatabaseSync } = (await import("node:sqlite")) as { DatabaseSync: new (f: string, o: { readOnly: boolean }) => unknown };
+      const { DatabaseSync } = await loadSqlite();
       const next = new DatabaseSync(file, { readOnly: true }) as unknown as Db;
       try { open?.db.close(); } catch { /* already closed */ }
       open = { file, mtimeMs, db: next };
