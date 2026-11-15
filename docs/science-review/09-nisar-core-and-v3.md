@@ -177,8 +177,9 @@ Live Now additionally keeps only RS/SC/PR land. The live Southern Brazil pair (0
   climatology, the same product mix as §1.
 - **Pitch wording:** "tested retrospectively", never "the live index uses upstream rain".
 
-**Gaps.** The TPI replay for `rs_uruguai_2026` (frames, critical km², people) is in progress. Until
-it lands the app shows "No frames published yet".
+**TPI replay: cut (conductor, 13:55).** Local rain index not replayed for this case; local rain at Uruguaiana never reached its own P99 — the flood was driven by upstream-basin rain (see forecast_proof). The replay was
+cut because of OOM risk during the recording. When it is done after submission it must use
+`clim_imerg_0p1.tif`, not the legacy (scrambled) `doy_*.tif` files.
 
 ---
 
@@ -236,4 +237,4 @@ it lands the app shows "No frames published yet".
 4. NISAR SME2 into S (cut today), and coherence with a snow/forest-aware threshold.
 5. TWI/HAND downscaling of S, tested against EMS and NISAR, kept only if it beats bilinear.
 6. 082 D / 010 D paddy-versus-river separation with MapBiomas.
-7. The Uruguay TPI replay with IMERG Final once it is released (about 3.5 months of latency).
+7. The Uruguay TPI replay (cut today) with `clim_imerg_0p1`; with IMERG Final once it is released.
