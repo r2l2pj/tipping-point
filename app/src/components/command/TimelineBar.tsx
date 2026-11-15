@@ -205,13 +205,20 @@ export default function TimelineBar({
           </div>
         )}
       </div>
-      {/* Landing on a marked day names it (lead-analysis timeline marks). */}
-      {marks.some((m) => m.index === dayIndex) && (
-        <p className="m-0 mt-1 flex flex-wrap gap-1 px-2 text-xs font-semibold" data-mark-caption>
-          {marks.filter((m) => m.index === dayIndex).map((m) => (
-            <span key={m.label} className={`rounded px-1.5 py-0.5 text-white ${m.color === "red" ? "bg-[#bd0026]" : m.color === "blue" ? "bg-[#2166ac]" : "bg-[#b06f00]"}`}>{m.label}</span>
-          ))}
-        </p>
+      {/* Landing on a marked day names it (lead-analysis timeline marks). A
+          case with marks keeps one fixed row for them under the steps, so
+          the card does not grow and the steps do not get a scrollbar when
+          the selected day has labels. */}
+      {marks.length > 0 && (
+        <div className="-mt-1 flex h-[22px] w-full min-w-0 items-center px-2" data-mark-row>
+          {marks.some((m) => m.index === dayIndex) && (
+            <p className="m-0 flex min-w-0 gap-1 overflow-hidden text-xs font-semibold" data-mark-caption>
+              {marks.filter((m) => m.index === dayIndex).map((m) => (
+                <span key={m.label} title={m.label} className={`min-w-0 truncate rounded px-1.5 py-0.5 text-white ${m.color === "red" ? "bg-[#bd0026]" : m.color === "blue" ? "bg-[#2166ac]" : "bg-[#b06f00]"}`}>{m.label}</span>
+              ))}
+            </p>
+          )}
+        </div>
       )}
       {children}
     </div>
