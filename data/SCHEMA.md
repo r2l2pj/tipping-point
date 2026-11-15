@@ -980,7 +980,7 @@ last overall).
 | `data/<case>/assets.json` | lead-gathering ingest tool — records extra ingested asset ids per case |
 | `data/<case>/cog/<caso>_opera_validation_<AAAAMMDD>.tif`, `png/opera_validation_<AAAAMMDD>.png`, `opera_validation.json` | `tools/wa_opera_layer.py` (wa_2025) — TP/FP/FN agreement grid via getDownloadURL |
 | `data/raw/**` | fetch scripts (NISAR, OPERA DSWx, HLS, MODIS NRT) — gitignored |
-| `simular.json` | `tools/build_simular.py` — an **app-side fixture** for the Telegram `/simular` demo, NOT a contract product |
+| `simular.json` | `tools/build_simular.py` — an **app-side fixture** (its Telegram `/simular` consumer was removed, L55), NOT a contract product |
 
 ## Conventions
 

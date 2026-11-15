@@ -1,5 +1,8 @@
 # 03 — Observation & response products (radar, optical, impact)
 
+> **L55 (2026-11-15): Telegram is removed for good** — no bot, no subscriber store, no Neon Postgres. Telegram/subscriber/`DATABASE_URL` items below are historical. Alerts are the in-app Public Alerts page only.
+
+
 Science review, Tipping Point (NASA Space Apps 2026, "Dancing with the SARs").
 Audience: geoscience / remote sensing. Written 2026-11-15 ~10:45 BRT.
 
