@@ -515,8 +515,9 @@ def ml_card_v2(met: dict) -> dict:
         "val_vs_test_note": ("VAL = held-out GLC/COOLR events (worldwide, mostly 2015-2018, perfect "
                              "forecast); TEST = held-out disaster events. VAL PR-AUC (24h ~0.13) is "
                              "~5x lower than TEST (~0.62): base rates differ and TEST events are large, "
-                             "well-defined storms. An independent overfit audit is checking whether "
-                             "TEST is easier by design; read TEST next to VAL."),
+                             "well-defined storms. The independent audit found no leakage: TEST is "
+                             "easier by design (extreme storms, case-control rows), so read TEST "
+                             "next to VAL; a rain-vs-local-P99 rule scores about the same."),
         "headline_status": ("audited: no leakage; scores overstate everyday skill (extreme-storm "
                             "test set); similar to a simple rain-threshold rule"),
         "audit": {
