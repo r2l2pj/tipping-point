@@ -145,7 +145,11 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
                   "sensor", "source", "label", "note", "attribution", "polarization",
                   "window", "product", "track",
                   # 6-hourly replay frames (2026-11-15): hour slider keys
-                  "datetime", "lead_h", "step_h", "window_h", "data_basis"):
+                  "datetime", "lead_h", "step_h", "window_h", "data_basis",
+                  # NISAR frame stacks (fixed stretch, per-track grid) + L61 layers
+                  "stretch_db", "coverage_pct", "grid", "mode", "frames",
+                  "nisar_passes", "nisar_water_km2", "nisar_outside_floodplain_pct",
+                  "pass_date", "pass_track", "age_days"):
         if extra in index_entry:
             entry[extra] = index_entry[extra]
     if entry.get("forecast") and "forecast_source" not in entry:

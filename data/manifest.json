@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T23:16:55Z",
+  "updated_at": "2026-11-15T23:20:55Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -3135,7 +3135,25 @@
           "label": "NISAR radar HH · track 005A · 2025-10-17",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "005A"
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.2,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hh_20251022_071D",
@@ -3177,7 +3195,25 @@
           "label": "NISAR radar HH · track 071D · 2025-10-22",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 071D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "071D"
+          "track": "071D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 31.3,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.3136,
+              46.99979999999999,
+              -121.49999999999999,
+              47.9244
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            65
+          ]
         },
         {
           "id": "nisar_hh_20251029_005A",
@@ -3219,7 +3255,25 @@
           "label": "NISAR radar HH · track 005A · 2025-10-29",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "005A"
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 85.9,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hh_20251029_172D",
@@ -3261,7 +3315,26 @@
           "label": "NISAR radar HH · track 172D · 2025-10-29",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hh_20251105_100D",
@@ -3303,7 +3376,25 @@
           "label": "NISAR radar HH · track 100D · 2025-11-05",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 100D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "100D"
+          "track": "100D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 28.4,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              47.273399999999995,
+              -121.83659999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64
+          ]
         },
         {
           "id": "nisar_hh_20251115_071D",
@@ -3345,7 +3436,25 @@
           "label": "NISAR radar HH · track 071D · 2025-11-15",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 071D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "071D"
+          "track": "071D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 31.6,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.3136,
+              46.99979999999999,
+              -121.49999999999999,
+              47.9244
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            65
+          ]
         },
         {
           "id": "nisar_hh_20251122_172D",
@@ -3387,7 +3496,26 @@
           "label": "NISAR radar HH · track 172D · 2025-11-22",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hh_20251204_005A",
@@ -3429,7 +3557,25 @@
           "label": "NISAR radar HH · track 005A · 2025-12-04",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "005A"
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.1,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hh_20251223_106A",
@@ -3471,7 +3617,26 @@
           "label": "NISAR radar HH · track 106A · 2025-12-23",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 106A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "106A"
+          "track": "106A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            25,
+            26
+          ]
         },
         {
           "id": "nisar_hh_20251228_005A",
@@ -3513,7 +3678,25 @@
           "label": "NISAR radar HH · track 005A · 2025-12-28",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "005A"
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.2,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hh_20251228_172D",
@@ -3555,7 +3738,26 @@
           "label": "NISAR radar HH · track 172D · 2025-12-28",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hh_change",
@@ -3616,7 +3818,25 @@
           "label": "NISAR radar HV · track 005A · 2025-10-17",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "005A"
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.2,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hv_20251022_071D",
@@ -3658,7 +3878,25 @@
           "label": "NISAR radar HV · track 071D · 2025-10-22",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 071D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "071D"
+          "track": "071D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 31.3,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.3136,
+              46.99979999999999,
+              -121.49999999999999,
+              47.9244
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            65
+          ]
         },
         {
           "id": "nisar_hv_20251029_005A",
@@ -3700,7 +3938,25 @@
           "label": "NISAR radar HV · track 005A · 2025-10-29",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "005A"
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 85.9,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hv_20251029_172D",
@@ -3742,7 +3998,26 @@
           "label": "NISAR radar HV · track 172D · 2025-10-29",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hv_20251105_100D",
@@ -3784,7 +4059,25 @@
           "label": "NISAR radar HV · track 100D · 2025-11-05",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 100D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "100D"
+          "track": "100D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 28.4,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              47.273399999999995,
+              -121.83659999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64
+          ]
         },
         {
           "id": "nisar_hv_20251110_172D",
@@ -3826,7 +4119,26 @@
           "label": "NISAR radar HV · track 172D · 2025-11-10",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hv_20251115_071D",
@@ -3868,7 +4180,25 @@
           "label": "NISAR radar HV · track 071D · 2025-11-15",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 071D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "071D"
+          "track": "071D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 31.6,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.3136,
+              46.99979999999999,
+              -121.49999999999999,
+              47.9244
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            65
+          ]
         },
         {
           "id": "nisar_hv_20251122_172D",
@@ -3910,7 +4240,26 @@
           "label": "NISAR radar HV · track 172D · 2025-11-22",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hv_20251204_005A",
@@ -3952,7 +4301,25 @@
           "label": "NISAR radar HV · track 005A · 2025-12-04",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "005A"
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.1,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hv_20251223_106A",
@@ -3994,7 +4361,26 @@
           "label": "NISAR radar HV · track 106A · 2025-12-23",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 106A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "106A"
+          "track": "106A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            25,
+            26
+          ]
         },
         {
           "id": "nisar_hv_20251228_005A",
@@ -4036,7 +4422,25 @@
           "label": "NISAR radar HV · track 005A · 2025-12-28",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "005A"
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.2,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hv_20251228_172D",
@@ -4078,7 +4482,26 @@
           "label": "NISAR radar HV · track 172D · 2025-12-28",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hv_change",
@@ -4143,7 +4566,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hv_pre",
@@ -4189,7 +4631,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_post",
@@ -4231,7 +4692,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_pre",
@@ -4273,7 +4753,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_ref",
@@ -4315,7 +4814,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_sme2_20251122_172D",
@@ -8509,7 +9027,26 @@
           "label": "NISAR radar HH · track 132A · 2026-08-10",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 132A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "132A"
+          "track": "132A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 60.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.169000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
         },
         {
           "id": "nisar_hh_20260813_010D",
@@ -8551,7 +9088,26 @@
           "label": "NISAR radar HH · track 010D · 2026-08-13",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20260817_060A",
@@ -8593,7 +9149,26 @@
           "label": "NISAR radar HH · track 060A · 2026-08-17",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 060A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "060A"
+          "track": "060A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 68.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -55.877,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
         },
         {
           "id": "nisar_hh_20260818_082D",
@@ -8635,7 +9210,26 @@
           "label": "NISAR radar HH · track 082D · 2026-08-18",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20260822_132A",
@@ -8677,7 +9271,26 @@
           "label": "NISAR radar HH · track 132A · 2026-08-22",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 132A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "132A"
+          "track": "132A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 60.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.169000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
         },
         {
           "id": "nisar_hh_20260825_010D",
@@ -8719,7 +9332,26 @@
           "label": "NISAR radar HH · track 010D · 2026-08-25",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20260918",
@@ -8760,7 +9392,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20260922_060A",
@@ -8802,7 +9453,26 @@
           "label": "NISAR radar HH · track 060A · 2026-09-22",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 060A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "060A"
+          "track": "060A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 68.5,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -55.877,
+              -28.2
+            ]
+          },
+          "mode": "2005_SHSH_A",
+          "frames": [
+            162,
+            163
+          ]
         },
         {
           "id": "nisar_hh_20260923",
@@ -8843,7 +9513,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20260930",
@@ -8884,7 +9573,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261005",
@@ -8925,7 +9633,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261012",
@@ -8966,7 +9693,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261017",
@@ -9007,7 +9753,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261024",
@@ -9048,7 +9813,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261028",
@@ -9069,7 +9853,8 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "polarization": "HH",
-          "track": "060A"
+          "track": "060A",
+          "coverage_pct": 68.4
         },
         {
           "id": "nisar_hh_20261029",
@@ -9110,7 +9895,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261102",
@@ -9131,7 +9935,8 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "polarization": "HH",
-          "track": "132A"
+          "track": "132A",
+          "coverage_pct": 60.3
         },
         {
           "id": "nisar_hh_20261105",
@@ -9172,7 +9977,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_change_20261012",
@@ -9266,7 +10090,26 @@
           "label": "NISAR radar HV · track 132A · 2026-08-10",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 132A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "132A"
+          "track": "132A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 60.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.169000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
         },
         {
           "id": "nisar_hv_20260813_010D",
@@ -9308,7 +10151,26 @@
           "label": "NISAR radar HV · track 010D · 2026-08-13",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20260817_060A",
@@ -9350,7 +10212,26 @@
           "label": "NISAR radar HV · track 060A · 2026-08-17",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 060A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "060A"
+          "track": "060A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 68.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -55.877,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
         },
         {
           "id": "nisar_hv_20260818_082D",
@@ -9392,7 +10273,26 @@
           "label": "NISAR radar HV · track 082D · 2026-08-18",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20260822_132A",
@@ -9434,7 +10334,26 @@
           "label": "NISAR radar HV · track 132A · 2026-08-22",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 132A); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "132A"
+          "track": "132A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 60.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.169000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
         },
         {
           "id": "nisar_hv_20260825_010D",
@@ -9476,7 +10395,26 @@
           "label": "NISAR radar HV · track 010D · 2026-08-25",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20260918",
@@ -9517,7 +10455,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20260923",
@@ -9558,7 +10515,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20260930",
@@ -9599,7 +10575,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261005",
@@ -9640,7 +10635,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261012",
@@ -9681,7 +10695,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261017",
@@ -9722,7 +10755,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261024",
@@ -9763,7 +10815,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261028",
@@ -9784,7 +10855,8 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "polarization": "HV",
-          "track": "060A"
+          "track": "060A",
+          "coverage_pct": 68.4
         },
         {
           "id": "nisar_hv_20261029",
@@ -9825,7 +10897,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261102",
@@ -9846,7 +10937,8 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "polarization": "HV",
-          "track": "132A"
+          "track": "132A",
+          "coverage_pct": 60.3
         },
         {
           "id": "nisar_hv_20261105",
@@ -9887,7 +10979,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_change_20261012",
@@ -9980,7 +11091,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_pre",
@@ -10021,7 +11151,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_post",
@@ -10062,7 +11211,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_pre",
@@ -10103,7 +11271,26 @@
           "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_sme2_20260918_010D",
