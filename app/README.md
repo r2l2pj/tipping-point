@@ -3,7 +3,7 @@
 Fullstack app for **Tipping Point** — NASA Space Apps Challenge 2026,
 "Dancing with the SARs". Rain warns. Radar sees through.
 
-**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **Repo:** [r2l2pj/tipping-point](https://github.com/r2l2pj/tipping-point) (this app is `app/`; the pipeline is at the root) · **License:** Apache-2.0 · **Team:** [TEAM NAME] — NASA Space Apps 2026, challenge #5 "Dancing with the SARs"
+**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **Repo:** [r2l2pj/tipping-point](https://github.com/r2l2pj/tipping-point) (this app is `app/`; the pipeline is at the root) · **License:** Apache-2.0 · **Team:** [R2L2PJ](https://www.spaceappschallenge.org/2026/find-a-team/r2l2pj/) — NASA Space Apps 2026, challenge #5 "Dancing with the SARs"
 
 ## What it is
 

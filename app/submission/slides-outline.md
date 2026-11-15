@@ -8,7 +8,7 @@
 - **Tipping Point** — *Rain warns. Radar sees through.*
 - NASA Space Apps 2026 · Challenge: Dancing with the SARs
 - One line: NISAR feeds the index: every pass updates the flood map through cloud
-- Team `[TEAM NAME]` · members `[names]` · Local Event `Florianópolis (Founder Haus, Jurerê)` (the guide requires the team name, the member names and the challenge on the slides)
+- Team R2L2PJ · members `[names]` · Local Event `Florianópolis (Founder Haus, Jurerê)` (the guide requires the team name, the member names and the challenge on the slides)
 - *Visual:* our wordmark + tagline over a dark map (no NASA logos or insignia anywhere in the deck: guide rule); the header's "TIPPING POINT | Rain warns. Radar sees through." wordmark
 
 ## Slide 2 — The problem (main case: Uruguay River, Uruguaiana and Itaqui)

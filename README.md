@@ -2,7 +2,7 @@
 
 **Rain warns. Radar sees through.** NASA Space Apps Challenge 2026 — challenge #5 "Dancing with the SARs".
 
-**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **License:** Apache-2.0 · **Team:** [TEAM NAME]
+**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **License:** Apache-2.0 · **Team:** [R2L2PJ](https://www.spaceappschallenge.org/2026/find-a-team/r2l2pj/)
 
 This repository holds the whole project: the data and analysis pipeline at the repo root and the web app in [`app/`](app/) (its own README: [`app/README.md`](app/README.md)). The former `r2l2pj/tipping-point-app` repository was merged in with its history and is frozen. The contract between the pipeline and the app is [`data/SCHEMA.md`](data/SCHEMA.md) — read it first; the app never computes and never globs. Which calendar days a frame labelled X covers is in [`docs/conventions-dates.md`](docs/conventions-dates.md).
 
@@ -370,7 +370,7 @@ features only and is **not** a TPI index input.
 
 ## License and team
 
-Apache-2.0 (see `LICENSE`). Team [TEAM NAME], Local Event Florianópolis — NASA Space Apps Challenge 2026, challenge #5 "Dancing with the SARs".
+Apache-2.0 (see `LICENSE`). Team R2L2PJ, Local Event Florianópolis — NASA Space Apps Challenge 2026, challenge #5 "Dancing with the SARs".
 
 ## Use of AI
 
