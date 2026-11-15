@@ -344,6 +344,8 @@ def _sqlite_conn():
     path = _sqlite_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path)
+    conn.execute("PRAGMA busy_timeout = 5000")
+    conn.execute("PRAGMA journal_mode = WAL")
     if not conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' "
             "AND name='subscribers'").fetchone():

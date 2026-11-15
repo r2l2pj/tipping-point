@@ -389,6 +389,10 @@ def test_sqlite_default_path_and_schema_autocreate(monkeypatch, tmp_path):
     assert cols == ["chat_id", "lat", "lon", "consent", "last_class",
                     "last_alert_ts", "current_label", "data_date",
                     "created_at"]
+    conn = alerts._sqlite_conn()
+    assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
+    assert conn.execute("PRAGMA busy_timeout").fetchone()[0] == 5000
+    conn.close()
 
 
 @pytest.mark.parametrize("hour,quiet", [(4, True), (23, False), (9, False)])

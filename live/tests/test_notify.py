@@ -216,6 +216,18 @@ def test_unverified_manifest_sends_nothing(monkeypatch, tmp_path):
     assert _row(db)["current_label"] is None
 
 
+def test_missing_cog_does_not_send_false_risk_reduction(monkeypatch, tmp_path):
+    db, post = _world(
+        monkeypatch, tmp_path,
+        [{"chat_id": "a", "lat": PT[1], "lon": PT[0], "last_class": 3}],
+        {("landslide", 0): 0.7})
+    (tmp_path / "cog" / "tpi_slide_today.tif").unlink()
+    out = notify.run(tmp_path, now=NOON)
+    assert out["skipped"] == "incomplete-cogs"
+    post.assert_not_called()
+    assert _row(db)["last_class"] == 3
+
+
 def test_no_token_updates_labels_only(monkeypatch, tmp_path, capsys):
     db, post = _world(
         monkeypatch, tmp_path,

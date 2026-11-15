@@ -27,6 +27,14 @@ dependencies = [
 ]
 
 [dependency-groups]
+notify = [
+    "numpy>=2.1",
+    "rasterio>=1.4",
+    "requests>=2.32",
+    "pyyaml>=6.0",
+    "scipy>=1.14",
+    "shapely>=2.0",
+]
 dev = [
     "ruff>=0.8",
     "pytest>=8",

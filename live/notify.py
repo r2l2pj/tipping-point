@@ -288,9 +288,9 @@ def run(out_dir: Path | str = NOW_DIR, now: dt.datetime | None = None) -> dict:
         return summary
     frames = _open_frames(out_dir)
     try:
-        if not frames:
-            print("[notify] no readable TPI COGs — nothing sent")
-            summary["skipped"] = "no-cogs"
+        if len(frames) != len(FRAMES):
+            print("[notify] incomplete TPI COGs — nothing sent")
+            summary["skipped"] = "incomplete-cogs"
             return summary
         try:
             rows = alerts.subscribers()

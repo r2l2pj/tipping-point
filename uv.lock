@@ -4178,6 +4178,17 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
+notify = [
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pyyaml" },
+    { name = "rasterio", version = "1.4.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "rasterio", version = "1.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "requests" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "shapely" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -4207,6 +4218,14 @@ dev = [
     { name = "matplotlib", specifier = ">=3.11.2" },
     { name = "pytest", specifier = ">=8" },
     { name = "ruff", specifier = ">=0.8" },
+]
+notify = [
+    { name = "numpy", specifier = ">=2.1" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "rasterio", specifier = ">=1.4" },
+    { name = "requests", specifier = ">=2.32" },
+    { name = "scipy", specifier = ">=1.14" },
+    { name = "shapely", specifier = ">=2.0" },
 ]
 
 [[package]]
