@@ -18,11 +18,10 @@
 - *Visual:* the Uruguaiana NISAR before/after swipe (Sep 30 → Oct 12) — `.crew/gallery/v6b/1-uy-nisar.png`
 
 ## Slide 3 — NISAR: what it sees through cloud (opens the technical part)
-- *Visual:* "The river's dance" NISAR strip, Uruguaiana (lead-ml, red = new water): `.crew/deck/img/dance_slide.png`
+- *Visual:* "The river's dance" NISAR strip, all 9 passes, cropped to fill the width (`.crew/deck/img/dance_strip_crop.png`, from lead-ml's `dance_strip.png`; red = new water, amber = river above flood stage). Two bullets only
 - **The river's dance:** Across 9 NISAR passes (Sep 18 → Nov 5, 2026), the area of new water the radar saw (red) tracks the Uruguay River gauge at Uruguaiana: r = 0.92 (fixed −15 dB, two tracks mixed, provisional products, 9 passes)
 - Calm floodwater turns dark to radar; radar sees through cloud (C-band, our OPERA reference, does too); NISAR's L-band also reaches water under vegetation and passes every 12 days
-- The index (NASA rain, soil, terrain + NOAA GFS) tells where and when to look between passes
-- **What we learned:** flooded towns and forests stay bright (double bounce), so a darkening rule misses where people live (Washington: 45% of misses in towns or forest vs 5% of hits); BETA/provisional scenes fell to the fixed −15 dB threshold (every Uruguaiana pair we ran was rejected); 12-day revisit and swath edges limit operations; NISAR soil moisture (SME2) stayed flat while SMAP rose, so it is not used
+- *Speaker notes (not on the slide):* The index (NASA rain, soil, terrain + NOAA GFS) tells where and when to look between passes. What we learned: flooded towns and forests stay bright (double bounce), so a darkening rule misses where people live (Washington: 45% of misses in towns or forest vs 5% of hits); BETA/provisional scenes fell to the fixed −15 dB threshold (every Uruguaiana pair we ran was rejected); 12-day revisit and swath edges limit operations; NISAR soil moisture (SME2) stayed flat while SMAP rose, so it is not used
 
 ## Slide 4 — Prevent the disaster, not the flood: when · where · who (Uruguaiana, Oct 2026)
 - **When:** our index, fed by NASA satellite rain (GPM IMERG), turned the Uruguaiana region Critical on Sep 30, five days before flood stage (Oct 5; 13,129 km², 6,121 on the low floodplain); NOAA's forecast from Sep 27 already pointed there, 8 days ahead. Near-real-time rain; holds when scaled to the final product (3,541 km² on the floodplain)
@@ -40,6 +39,7 @@
 
 ## Slide 6 — Impact + honest limitations
 - Impact: WA about 950 people inside the NISAR flood candidates; 225,583 in index-critical areas and night-light drop 44% (Dec 12, 2025); RS 1,627,862 in index-critical areas (9,175 km² Critical) + 33% (peak day May 3, 2024) — night lights indicative only (cloud/snow)
+- NISAR lessons: flooded towns and forests stay bright (double bounce), so darkening misses them; provisional scenes fell to the fixed −15 dB threshold (every Uruguaiana pair we ran was rejected); NISAR soil moisture stayed flat while SMAP rose (not used)
 - Limitations: Thresholds are not yet calibrated for Brazil; validated on 2 replay events + 11 disaster events for the ML; IMERG/SMAP inputs ~10 km; NISAR revisits every 12 days; at the peak, rain saturates and the landslide index reads like a slope map (rain drives when, terrain drives where); no rain/snow split yet (part of Washington's Critical slope area is in the Cascades, about 40% above 1,000 m); rain tells when, terrain tells where: terrain alone locates RS slides better than the forecast flag (18.7× vs 2.71×); rain and soil add to where only at Uruguaiana (ratio 2.7, 18 cells); official warnings still came before the index
 - The video demo is a replay; the live view covers Southern Brazil every 3 h. The replay forecast is NOAA GFS as issued at the time (our only non-NASA input) — perfect-forecast frames appear only as a labelled upper bound
 - Landslides are **candidates only**, never confirmed — no GUNW pair spans the WA event
