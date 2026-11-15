@@ -10,6 +10,17 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { keepForPublic, neededTifs } from "./sync-filter.mjs";
 
+// Lucas (bug): `bun run dev` / `bun run build` used to rewrite the TRACKED
+// app/public/data copy, leaving hundreds of modified files so `git pull`
+// refused. The bundled copy is only the last fallback (after GitHub raw and
+// the SQLite docs table), so the automatic predev/prebuild sync is now off:
+// `bun run sync:data` refreshes it on purpose (then commit it), and
+// SYNC_DATA=1 turns the automatic sync back on.
+if (process.argv.includes("--auto") && !process.env.SYNC_DATA) {
+  console.log("sync-data: skipped on dev/build (keeps git clean) — run `bun run sync:data` to refresh public/data");
+  process.exit(0);
+}
+
 // L53 monorepo: DATA_REPO is a repo ROOT (git fetch origin fallback runs there);
 // default = the monorepo root two levels up (app/scripts -> repo), not ../../data.
 const REPO = process.env.DATA_REPO ?? path.resolve(import.meta.dirname, "../..");

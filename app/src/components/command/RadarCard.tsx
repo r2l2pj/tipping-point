@@ -5,6 +5,7 @@ import { fmtBrt, fmtDate } from "./model/format";
 import NisarSeriesChart from "./NisarSeriesChart";
 import { Icon, ICON } from "./ui";
 import { isMissingText } from "./model/sparse";
+import { layerKey } from "./model/uniqueLayers";
 
 // Radar confirmation. "NISAR" is only said for a real pair; scars are always
 // "candidates". "Confirm with NISAR radar" opens the confirmation on the map
@@ -151,8 +152,8 @@ export default function RadarCard({
       {radar.extras.length > 0 && (
         <div className="mt-2 border-t border-cc-rule pt-1.5 text-xs" data-nisar-extras>
           <p className="m-0 font-semibold">More NISAR products</p>
-          {radar.extras.map((x) => (
-            <figure key={x.id} className="m-0 mt-1.5">
+          {radar.extras.map((x, i) => (
+            <figure key={layerKey(x, i)} className="m-0 mt-1.5">
               <figcaption className="font-medium">{x.label}{x.date ? ` · ${x.date}` : ""}</figcaption>
               {/* eslint-disable-next-line @next/next/no-img-element -- data PNG from the manifest */}
               <img src={x.url} alt={x.label} loading="lazy" className="mt-0.5 h-auto w-full rounded border border-cc-line bg-black" />
