@@ -13,6 +13,7 @@ import { finite, fmtDate, fmtKm2 } from "./format";
 import type { IssueLead } from "./steps";
 import type { CcBundle } from "./types";
 import { stretchOf } from "./changeComposite";
+import { nisarWaterHeadline } from "./floodNisar";
 
 type BBox = [number, number, number, number];
 
@@ -414,6 +415,10 @@ export interface RadarCard {
   postIso?: string;
   flooded?: { label: string; value: string; swath?: string };
   people?: { label: string; value: string };
+  // Conductor (L61): "NISAR saw water in 1,106 km² (passes Sep 30–Oct 12);
+  // 822 km² on the floodplain raised the flood map" — replaces the old
+  // teammate-polygon flooded area (and the people counted on it).
+  water?: string;
   // Live: other satellite flood sources of the R3 summary (OPERA DSWx-S1).
   others?: { label: string; value: string }[];
   note?: string; // live response: candidates + how old the radar pass is
@@ -520,7 +525,9 @@ function responseCard(bundle: CcBundle, base: RadarCard): RadarCard {
 
 export function radarCard(bundle: CcBundle): RadarCard {
   const base = baseRadarCard(bundle);
-  const card = bundle.mode === "live" && bundle.response ? responseCard(bundle, base) : base;
+  const water = bundle.mode === "replay" ? nisarWaterHeadline(bundle) : undefined;
+  const card = bundle.mode === "live" && bundle.response ? responseCard(bundle, base)
+    : water ? { ...base, water: water.text, flooded: undefined, people: undefined } : base;
   const others = (bundle.mode === "live" ? bundle.responseSources ?? [] : [])
     .filter((s) => !/nisar/i.test(s.source))
     .map((s) => ({

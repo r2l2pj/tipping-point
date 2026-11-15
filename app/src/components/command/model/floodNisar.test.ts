@@ -4,7 +4,7 @@
 // @ts-expect-error -- bun:test resolves under `bun test`
 import { expect, test } from "bun:test";
 import { pickTpiFrame } from "@/lib/layers";
-import { agreementText, floodNisarFrame, floodNisarNote, hasFloodNisar, nisarAgreement, nisarWaterLayer } from "./floodNisar";
+import { agreementText, km2Text, nisarWaterHeadline, floodNisarFrame, floodNisarNote, hasFloodNisar, nisarAgreement, nisarWaterLayer } from "./floodNisar";
 import type { CcBundle } from "./types";
 
 const uy = {
@@ -67,15 +67,65 @@ test("L62 agreement: window_12d (index without NISAR, best day ≤ 12 d before t
   const a = nisarAgreement(rich)!;
   expect(a.window).toEqual({ hit: 61.2, daysBefore: 12, day: "2026-09-30", cls: "Critical" });
   const t = agreementText(a);
-  expect(t.main).toBe("NISAR saw water in 28.0 km²; the index without NISAR had flagged 61% of it 12 days before the pass");
+  expect(t.main).toBe("Of the 28.0 km² the Oct 12 pass saw, the index without NISAR had flagged 61% as Critical 12 days before");
   expect(t.main).not.toContain("1 day before");
   expect(t.more).toBe("Pass Oct 12, 2026 · track 010D · Critical on Sep 30, 2026 · pass day: 40% (High or Critical) · NOAA GFS issued Sep 27, 2026 (15 days before): 33% Critical");
   expect(t.label).toBe("index without NISAR, up to 12 days before the pass");
   // flat keys only
   const flat = { ...uy, metricsView: { nisar_agreement_water_km2: 5, nisar_agreement_win_critical_hit_pct: 7.5, nisar_agreement_win_critical_days_before: 3 } } as unknown as CcBundle;
-  expect(agreementText(nisarAgreement(flat)!).main).toBe("NISAR saw water in 5.0 km²; the index without NISAR had flagged 7.5% of it 3 days before the pass");
+  expect(agreementText(nisarAgreement(flat)!).main).toBe("Of the 5.0 km² NISAR saw, the index without NISAR had flagged 8% as Critical 3 days before");
   // a list of pass records: the last one with a window is the headline
   const list = { ...uy, metricsView: { nisar_agreement: [(rich.metricsView as unknown as Record<string, unknown>).nisar_agreement, { water_km2: 1 }] } } as unknown as CcBundle;
   expect(nisarAgreement(list)!.waterKm2).toBe(28.04);
   expect(nisarAgreement({ ...uy, metricsView: {} } as unknown as CcBundle)).toBeUndefined();
+});
+
+// Conductor (L61): the NISAR card headline + an agreement sentence that names
+// its own base — real metrics.json values (main, Nov 15).
+const UY_METRICS = {
+  nisar_water_km2_case_box: 1105.61, nisar_raised_km2_floodplain: 822.03,
+  nisar_agreement_water_km2_single_pass: 612.27, nisar_agreement_win_critical_hit_pct: 8.95,
+  nisar_agreement_win_critical_days_before: 10, nisar_agreement_pass_date: "2026-10-12",
+  nisar_agreement: {
+    pass: { date: "2026-10-12", track: "010D" }, water_km2: 612.27, water_km2_single_pass: 612.27,
+    window_12d: { best_day: { critico: { day: "2026-10-02", days_before: 10, hit_pct: 8.95 } } },
+    map_12d: { passes: ["2026-09-30/010D", "2026-10-05/082D", "2026-10-12/010D"], water_km2_case_box: 1105.61, raised_km2_floodplain: 822.03 },
+  },
+};
+const WA_METRICS = {
+  nisar_agreement_win_critical_hit_pct: 50.53, nisar_agreement_win_critical_days_before: 4,
+  nisar_agreement_pass_date: "2025-12-16", nisar_agreement_water_km2: 2.0,
+  nisar_agreement: { pass: { date: "2025-12-16", track: "172D" }, water_km2: 2.0,
+    window_12d: { best_day: { critico: { day: "2025-12-12", days_before: 4, hit_pct: 50.53 } } } },
+};
+
+test("NISAR card headline: water on the served map (passes ≤ 12 d) + the floodplain part that raised it", () => {
+  const h = nisarWaterHeadline({ ...uy, metricsView: UY_METRICS } as unknown as CcBundle)!;
+  expect(h.text).toBe("NISAR saw water in 1,106 km² (passes Sep 30–Oct 12); 822 km² on the floodplain raised the flood map");
+  expect(h.passes.map((p) => p.track)).toEqual(["010D", "082D", "010D"]);
+  // Flat keys only (no map_12d record): same numbers, passes from nowhere → no range.
+  const flat = nisarWaterHeadline({ ...uy, metricsView: { nisar_water_km2_case_box: 1105.61, nisar_raised_km2_floodplain: 822.03 } } as unknown as CcBundle)!;
+  expect(flat.text).toBe("NISAR saw water in 1,106 km²; 822 km² on the floodplain raised the flood map");
+  // WA: no map record yet → its single scored pass, no 'raised' clause.
+  expect(nisarWaterHeadline({ ...uy, metricsView: WA_METRICS } as unknown as CcBundle)!.text).toBe("NISAR saw water in 2.0 km² (pass Dec 16)");
+  expect(nisarWaterHeadline({ ...uy, metricsView: {} } as unknown as CcBundle)).toBeUndefined();
+});
+
+test("agreement sentence names its own base (the single pass it scores)", () => {
+  expect(agreementText(nisarAgreement({ ...uy, metricsView: UY_METRICS } as unknown as CcBundle)!).main)
+    .toBe("Of the 612 km² the Oct 12 pass saw, the index without NISAR had flagged 9% as Critical 10 days before");
+  expect(agreementText(nisarAgreement({ ...uy, metricsView: WA_METRICS } as unknown as CcBundle)!).main)
+    .toBe("Of the 2.0 km² the Dec 16 pass saw, the index without NISAR had flagged 51% as Critical 4 days before");
+  expect(km2Text(1105.61)).toBe("1,106 km²");
+  expect(km2Text(28.04)).toBe("28.0 km²");
+});
+
+test("Radar card: the headline replaces the teammate-polygon flooded area (replay only)", async () => {
+  const { radarCard } = await import("./radar");
+  const card = radarCard({ ...uy, metricsView: { ...UY_METRICS, flooded_km2: 1.8 } } as unknown as CcBundle);
+  expect(card.water).toBe("NISAR saw water in 1,106 km² (passes Sep 30–Oct 12); 822 km² on the floodplain raised the flood map");
+  expect(card.flooded).toBeUndefined();
+  expect(card.people).toBeUndefined();
+  const none = radarCard({ ...uy, metricsView: { flooded_km2: 1.8 } } as unknown as CcBundle);
+  expect(none.water).toBeUndefined();
 });

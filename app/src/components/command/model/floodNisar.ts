@@ -100,7 +100,9 @@ export function nisarAgreement(bundle: CcBundle): NisarAgreement | undefined {
   const a = Array.isArray(rawA)
     ? rec([...rawA].reverse().find((x) => rec(rec(x)?.window_12d)))
     : rec(rawA);
-  const water = num(a?.water_km2) ?? num(mv.nisar_agreement_water_km2);
+  // Conductor: the sentence names its own base — the single pass it scores.
+  const water = num(a?.water_km2_single_pass) ?? num(mv.nisar_agreement_water_km2_single_pass)
+    ?? num(a?.water_km2) ?? num(mv.nisar_agreement_water_km2);
   if (water === undefined) return undefined;
   const best = rec(rec(a?.window_12d)?.best_day);
   const crit = rec(best?.critico), high = rec(best?.alto_plus);
@@ -115,7 +117,7 @@ export function nisarAgreement(bundle: CcBundle): NisarAgreement | undefined {
       ? { hit: flatHit, daysBefore: flatK, cls: "Critical" as const,
           ...(typeof mv.nisar_agreement_win_critical_best_day === "string" ? { day: mv.nisar_agreement_win_critical_best_day.slice(0, 10) } : {}) }
       : undefined);
-  const pass = rec(a?.pass);
+  const pass = rec(a?.pass) ?? (typeof mv.nisar_agreement_pass_date === "string" ? { date: mv.nisar_agreement_pass_date } : undefined);
   const g = rec(rec(rec(a?.gfs_window_12d)?.best)?.critico);
   const gHit = num(rec(g?.critico)?.hit_pct);
   const passDayHit = num(rec(rec(a?.observed)?.alto_plus)?.hit_pct);
@@ -131,21 +133,72 @@ export function nisarAgreement(bundle: CcBundle): NisarAgreement | undefined {
   };
 }
 
-const pctText = (v: number) => `${v < 10 && v % 1 ? v.toFixed(1) : Math.round(v)}%`;
+// Whole percent (one decimal under 1 %): "9%", "51%", "0.4%".
+const pctText = (v: number) => `${v > 0 && v < 1 ? v.toFixed(1) : Math.round(v)}%`;
 const daysText = (k: number) => `${k} ${k === 1 ? "day" : "days"}`;
+// Headline areas: "1,106 km²" from 100 km² up, else one decimal ("2.0 km²").
+export const km2Text = (v: number): string =>
+  v >= 100 ? `${Math.round(v).toLocaleString("en-US")} km²` : fmtKm2(v);
+const shortDay = (d: string) => fmtDate(d).replace(/,\s*\d{4}$/, "");
 
-// "NISAR saw water in 28.0 km²; the index without NISAR had flagged 40% of it
-// 5 days before the pass" + a details line (pass, pass day, NOAA GFS).
+// Conductor: the sentence names its own base — "Of the 612 km² the Oct 12
+// pass saw, the index without NISAR had flagged 9% as Critical 10 days
+// before" + a details line (pass, track, pass day, NOAA GFS).
 export function agreementText(a: NisarAgreement): { main: string; more?: string; label: string } {
-  const water = `NISAR saw water in ${fmtKm2(a.waterKm2)}`;
+  const base = `Of the ${km2Text(a.waterKm2)} ${a.pass ? `the ${shortDay(a.pass.date)} pass` : "NISAR"} saw`;
   const main = a.window
-    ? `${water}; the index without NISAR had flagged ${pctText(a.window.hit)} of it ${daysText(a.window.daysBefore)} before the pass`
-    : `${water}; the index flagged ${pctText(a.passDayHit!)} of it on the pass day`;
+    ? `${base}, the index without NISAR had flagged ${pctText(a.window.hit)} as ${a.window.cls} ${daysText(a.window.daysBefore)} before`
+    : `${base}, the index flagged ${pctText(a.passDayHit!)} as High or Critical on the pass day`;
   const more = [
     a.pass ? `Pass ${fmtDate(a.pass.date)}${a.pass.track ? ` · track ${a.pass.track}` : ""}` : undefined,
-    a.window ? `${a.window.cls}${a.window.day ? ` on ${fmtDate(a.window.day)}` : ""}` : undefined,
+    a.window?.day ? `${a.window.cls} on ${fmtDate(a.window.day)}` : undefined,
     a.window && a.passDayHit !== undefined ? `pass day: ${pctText(a.passDayHit)} (High or Critical)` : undefined,
     a.gfs ? `NOAA GFS${a.gfs.issued ? ` issued ${fmtDate(a.gfs.issued)}` : ""}${a.gfs.daysBefore !== undefined ? ` (${daysText(a.gfs.daysBefore)} before)` : ""}: ${pctText(a.gfs.hit)} Critical` : undefined,
   ].filter(Boolean).join(" · ");
   return { main, label: a.label, ...(more ? { more } : {}) };
+}
+
+// --- NISAR card headline (conductor, L61) -------------------------------------
+// "NISAR saw water in 1,106 km² (passes Sep 30–Oct 12); 822 km² on the
+// floodplain raised the flood map" — the water on the served flood + NISAR
+// map (every pass ≤ 12 days, full case box; metrics nisar_water_km2_case_box,
+// raised = the HAND ≤ 5 m floodplain part, nisar_raised_km2_floodplain).
+// A case without that map record (WA today) says what its single scored pass
+// saw. Replaces the old teammate-polygon flooded area on the Radar card.
+export interface NisarWaterHeadline {
+  waterKm2: number;
+  raisedKm2?: number;
+  passes: { date: string; track?: string }[];
+  text: string;
+}
+const passRange = (ds: string[]): string => {
+  if (ds.length <= 1) return ds[0] ? shortDay(ds[0]) : "";
+  const [a, z] = [ds[0], ds[ds.length - 1]];
+  return a.slice(0, 7) === z.slice(0, 7) ? `${shortDay(a)}–${Number(z.slice(8, 10))}` : `${shortDay(a)}–${shortDay(z)}`;
+};
+export function nisarWaterHeadline(bundle: CcBundle): NisarWaterHeadline | undefined {
+  const mv = rec(bundle.metricsView as unknown);
+  if (!mv) return undefined;
+  const rawA = mv.nisar_agreement;
+  const a = Array.isArray(rawA) ? rec([...rawA].reverse().find((x) => rec(rec(x)?.window_12d))) : rec(rawA);
+  const map = rec(a?.map_12d);
+  const parsePass = (v: unknown): { date: string; track?: string } | undefined => {
+    if (typeof v === "string") { const [date, track] = v.split("/"); return /^\d{4}-\d{2}-\d{2}/.test(date) ? { date: date.slice(0, 10), ...(track ? { track } : {}) } : undefined; }
+    const r = rec(v);
+    return r && typeof r.date === "string" ? { date: r.date.slice(0, 10), ...(typeof r.track === "string" ? { track: r.track } : {}) } : undefined;
+  };
+  let water = num(mv.nisar_water_km2_case_box) ?? num(map?.water_km2_case_box);
+  const raised = water !== undefined ? num(mv.nisar_raised_km2_floodplain) ?? num(map?.raised_km2_floodplain) : undefined;
+  let passes = (Array.isArray(map?.passes) ? map!.passes as unknown[] : []).map(parsePass).filter((p): p is { date: string; track?: string } => !!p);
+  if (water === undefined) {
+    water = num(a?.water_km2_single_pass) ?? num(mv.nisar_agreement_water_km2_single_pass) ?? num(a?.water_km2) ?? num(mv.nisar_agreement_water_km2);
+    const p = parsePass(a?.pass) ?? parsePass(mv.nisar_agreement_pass_date);
+    passes = p ? [p] : [];
+  }
+  if (water === undefined) return undefined;
+  passes.sort((x, y) => x.date.localeCompare(y.date));
+  const range = passRange(passes.map((p) => p.date));
+  const text = `NISAR saw water in ${km2Text(water)}${range ? ` (${passes.length > 1 ? "passes" : "pass"} ${range})` : ""}${
+    raised !== undefined ? `; ${km2Text(raised)} on the floodplain raised the flood map` : ""}`;
+  return { waterKm2: water, ...(raised !== undefined ? { raisedKm2: raised } : {}), passes, text };
 }
