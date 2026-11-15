@@ -199,8 +199,11 @@ def test_render_now_writes_local_files(production):
     assert {f["properties"]["hazard"] for f in critical["features"]} == {"slide", "flood"}
     assert all(f["properties"]["label"] == "Crítico" for f in critical["features"])
     assert len([1 for method, args, _ in calls if method == "gt" and args == (0.6,)]) == 6
-    assert summary["people_exposed"] == summary["people_flooded"] == 12.5
-    assert summary["_null_reasons"] == {}
+    # people audit B3: the GEE scale=1000 sum is never published
+    assert summary["people_exposed"] is None and summary["people_flooded"] is None
+    assert summary["_unpublished_estimates"]["people_flooded"] == 12.5
+    assert "native-grid" in summary["_null_reasons"]["people_exposed"]
+    assert set(summary["_null_reasons"]) == {"people_critical", "people_exposed", "people_flooded"}
     assert all((production / rel).read_bytes() == content for rel, content in originals.items())
     assert entries[-2:] == ["now/manifest.json", "manifest.json"]
     assert all((production / rel).is_file() for rel in entries)

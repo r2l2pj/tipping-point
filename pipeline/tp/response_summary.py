@@ -7,7 +7,7 @@ Inputs under data/now/:
 * ``geojson/critical_areas.geojson`` (Now TPI job — the "Critical TPI
   areas": class >= 2 features = Alto/Crítico, the live critical mask)
 * ``summary.json`` (Now TPI job headline — merged in place, never rebuilt)
-* ``static/gpw/gpw_popcount_2020_30sec.tif`` (GPW v4.11 UN-adjusted 2020
+* ``static/gpw/gpw_popcount_2020_30sec.tif`` (GPW v4.11 2020 (unadjusted count)
   count raster, EPSG:4326, persons per 30 arc-second cell; gitignored —
   the now job / static step provides it). The ONLY people source.
 
@@ -23,9 +23,10 @@ Areas vs people:
 * Every ``*_km2`` is a GEODESIC polygon area (shapely union of the
   candidates -> pyproj.Geod on WGS84) — no raster inflation; overlapping
   sources are unioned before measuring, so nothing is double-counted.
-* People are summed from GPW on one EPSG:4326 analysis grid (``res`` deg
-  over domains.now.bbox) with centre-sampled masks (all_touched=False);
-  municipality people totals use the same centre-sampled label raster.
+* People: GPW v4.11 2020 population count (unadjusted) on its NATIVE 30"
+  grid, each cell weighted by the exact fraction covered by the mapped
+  polygons (``people_geom``); totals and municipality zones alike. The
+  centre-sampled ``res``-deg grid is only a legacy fallback (tests).
 
 Outputs: ``response/summary.json`` (headline + per-source blocks with
 latest_acquired / latency_h copied from each meta + ``_null_reasons``),
@@ -55,7 +56,7 @@ import numpy as np
 
 ANALYSIS_RES_DEG = 0.0025           # same posting as the DSWx-S1 grid (~280 m)
 GPW_NOW_REL = Path("static/gpw/gpw_popcount_2020_30sec.tif")   # under data/now/
-GPW_LABEL = "GPW v4.11 UN-adjusted 2020 30 arc-sec count"
+GPW_LABEL = "GPW v4.11 2020 population count (unadjusted), 30 arc-sec"
 # IBGE UFs intersecting the Now domain bbox (RS/SC/PR required; SP/MS corner).
 UFS_DEFAULT = ("RS", "SC", "PR", "SP", "MS")
 UF_CODE = {"41": "PR", "42": "SC", "43": "RS", "35": "SP", "50": "MS"}
@@ -274,7 +275,7 @@ def people_in(mask: np.ndarray | None, pop: np.ndarray | None) -> int | None:
     return round(float(pop[mask].sum()))
 
 
-PEOPLE_METHOD = ("GPW v4.11 UN-adjusted 2020 count on its native 30 arc-sec grid, each cell "
+PEOPLE_METHOD = ("GPW v4.11 2020 population count (unadjusted) on its native 30 arc-sec grid, each cell "
                  "weighted by the fraction of its area covered by the mapped polygons "
                  "(exact polygon-cell intersection); unions deduplicate overlaps")
 
@@ -806,8 +807,7 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
         "people_method": PEOPLE_METHOD if people_src else None,
         "method": {
             "area": "geodesic polygon area (shapely union, pyproj.Geod WGS84)",
-            "people": (f"GPW summed on a {res} deg EPSG:4326 grid, "
-                       "centre-sampled masks (all_touched=False)"),
+            "people": PEOPLE_METHOD,
             "confidence": ("headline = standard confidence (absent = standard); "
                            "*_lower = lower-confidence not covered by standard"),
         },
