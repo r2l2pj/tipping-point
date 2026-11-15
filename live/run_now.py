@@ -133,15 +133,18 @@ def write_imerg_cogs(daily, out_dir: Path) -> list[Path]:
 
 
 def _sample_points(daily) -> list[tuple[float, float]]:
-    """>= 3 test points: the wettest cell of the last day + two fixed
-    interior points (Porto Alegre, Curitiba area) inside the NOW bbox."""
+    """>= 3 test points at SOURCE cell centres (never on a cell edge, where
+    nearest-cell picks are ambiguous): the wettest cell of the last day +
+    two interior cells at 1/3 and 2/3 of the grid."""
     lat = next(d for d in daily.dims if "lat" in d.lower())
     lon = next(d for d in daily.dims if "lon" in d.lower())
     last = daily.isel(time=-1).transpose(lat, lon)
+    la, lo = last[lat].values, last[lon].values
     i, j = np.unravel_index(int(np.nanargmax(np.nan_to_num(last.values))),
                             last.shape)
-    return [(float(last[lon].values[j]), float(last[lat].values[i])),
-            (-51.2, -30.0), (-49.3, -25.4)]
+    idx = [(i, j), (la.size // 3, lo.size // 3),
+           (2 * la.size // 3, 2 * lo.size // 3)]
+    return [(float(lo[c]), float(la[r])) for r, c in idx]
 
 
 def imerg_cogs_match_source(daily, paths: list[Path], tol_mm: float = 0.01) -> bool:

@@ -27,6 +27,7 @@ import numpy as np
 from live.config import REPO_ROOT
 
 LC_TYPE1 = REPO_ROOT / "data" / "now" / "static" / "mcd12q1" / "lc_type1_2025.tif"
+BRAZIL_OUTLINE = REPO_ROOT / "data" / "now" / "static" / "brazil_outline.geojson"
 IGBP_WATER = 17
 WATER_SIMPLIFY_DEG = 0.002   # ~200 m, well under the 500 m source pixel
 WATER_MIN_KM2 = 0.5          # drop single-pixel specks (one pixel ~0.21 km2)
@@ -91,9 +92,25 @@ def ensure_municipal_boundaries(gj_dir: Path, bounds: tuple[float, ...],
     return out
 
 
+def _land_mask_geom(outline_path: Path, bounds):
+    """Brazil outline (IBGE, committed) ∩ bbox; None when unavailable."""
+    from shapely.geometry import box, shape
+    from shapely.ops import unary_union
+
+    try:
+        fc = json.loads(Path(outline_path).read_text())
+        geom = unary_union([shape(f["geometry"]) for f in fc["features"]])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    return geom.intersection(box(*bounds))
+
+
 def ensure_permanent_water(gj_dir: Path, bounds: tuple[float, ...],
-                           lc_path: Path = LC_TYPE1) -> Path | None:
-    """MCD12Q1 IGBP class 17 within bounds -> permanent_water.geojson."""
+                           lc_path: Path = LC_TYPE1,
+                           outline_path: Path = BRAZIL_OUTLINE) -> Path | None:
+    """MCD12Q1 IGBP class 17 within bounds -> permanent_water.geojson,
+    clipped to the Brazil outline: class 17 includes the open ocean (one
+    212,094 km2 Atlantic polygon on 2026-11-15) and neighbours' water."""
     import rasterio
     import rasterio.features
     from rasterio.windows import from_bounds
@@ -116,10 +133,21 @@ def ensure_permanent_water(gj_dir: Path, bounds: tuple[float, ...],
         transform = ds.window_transform(win)
     mask = arr == IGBP_WATER
     aoi = box(*bounds)
+    land = _land_mask_geom(outline_path, bounds)
+    if land is None:
+        print("[now_geojson] Brazil outline missing — permanent_water "
+              "skipped (unclipped class 17 includes the ocean)",
+              file=sys.stderr)
+        return out if out.exists() else None
+    from shapely.prepared import prep
+    land_p = prep(land)
     feats = []
     for geom, _ in rasterio.features.shapes(
             mask.astype(np.uint8), mask=mask, transform=transform):
-        g = shape(geom).intersection(aoi)
+        g = shape(geom)
+        if not land_p.intersects(g):
+            continue
+        g = g.intersection(land) if not land_p.contains(g) else g
         lat = g.centroid.y if not g.is_empty else 0.0
         km2 = g.area * (111.195 ** 2) * np.cos(np.deg2rad(lat))
         if g.is_empty or km2 < WATER_MIN_KM2:
@@ -132,7 +160,7 @@ def ensure_permanent_water(gj_dir: Path, bounds: tuple[float, ...],
     out.write_text(json.dumps({
         "type": "FeatureCollection",
         "source": "MODIS MCD12Q1 v061 LC_Type1 2025, IGBP class 17 "
-                  "(water bodies), 500 m",
+                  "(water bodies), 500 m, clipped to the IBGE Brazil outline",
         "features": feats}, separators=(",", ":")) + "\n")
     print(f"[now_geojson] permanent_water: {len(feats)} polygons")
     return out
