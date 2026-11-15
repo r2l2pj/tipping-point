@@ -27,11 +27,13 @@ import os
 import shutil
 from pathlib import Path
 
+import numpy as np
+
 KEEP = 8
 SCHEMA = "tipping-point/now-history@1"
 NOTE = ("Past Now runs (every 3 h), newest first, rolling: the last {keep} runs "
-        "(~{hours} h). Map frames (PNG) + summary only; COGs, GeoJSON and the "
-        "response layers are not kept. Each run's layer dates are as issued then.")
+        "(~{hours} h). Map frames (PNG) + summary + TPI_flood d0..d3 COGs (for NISAR agreement leads); "
+        "other COGs, GeoJSON and the response layers are not kept. Each run's layer dates are as issued then.")
 
 
 def run_id(updated_at: str) -> str:
@@ -75,6 +77,8 @@ def snapshot(now_dir: Path, hist: Path) -> dict | None:
         shutil.copy2(now_dir / png, tmp / png)
         layers.append({k: v for k, v in lay.items() if k != "cog"})
 
+    cogs = _flood_cogs(now_dir, tmp)
+
     summary = None
     if (now_dir / "summary.json").is_file():
         shutil.copy2(now_dir / "summary.json", tmp / "summary.json")
@@ -82,6 +86,7 @@ def snapshot(now_dir: Path, hist: Path) -> dict | None:
 
     hm = {k: v for k, v in m.items() if k not in ("layers", "products", "response")}
     hm.update(schema=m.get("schema"), history=True, run=_iso(rid), layers=layers,
+              flood_cogs=cogs,
               products={"summary": "summary.json"} if summary is not None else {},
               _history_note="snapshot of a past Now run: PNG layers + summary only "
                             "(COGs, GeoJSON and the response node are not kept)")
@@ -98,6 +103,35 @@ def snapshot(now_dir: Path, hist: Path) -> dict | None:
             "smap": dd.get("smap"), "mode": m.get("mode"),
             "layers": len(layers),
             "critical_km2_any": crit.get("any"), "alert_km2_any": alert.get("any")}
+
+
+def _flood_cogs(now_dir: Path, dst: Path) -> list[str]:
+    """TPI_flood d0..d3 of this run as small COGs (cog/tpi_flood_d<k>.tif, float32
+    rounded to 0.001) from places_tpi.npz, so later NISAR passes can score the
+    forecasts issued 1–3 days before them (L61 agreement leads)."""
+    npz = now_dir / "places_tpi.npz"
+    if not npz.is_file():
+        return []
+    import rasterio
+    from rasterio.transform import from_bounds
+
+    z = np.load(npz)
+    w, s, e, n = (float(x) for x in z["bounds"])
+    k_, h, wd = z["flood"].shape
+    tr = from_bounds(w, s, e, n, wd, h)
+    (dst / "cog").mkdir(parents=True, exist_ok=True)
+    out = []
+    for k in range(k_):
+        a = np.round(z["flood"][k].astype(np.float32), 3)
+        prof = {"driver": "GTiff", "height": h, "width": wd, "count": 1, "dtype": "float32",
+                "crs": "EPSG:4326", "transform": tr, "nodata": np.nan, "compress": "deflate",
+                "predictor": 3, "tiled": True, "blockxsize": 256, "blockysize": 256}
+        name = f"cog/tpi_flood_d{k}.tif"
+        with rasterio.open(dst / name, "w", **prof) as d:
+            d.write(a, 1)
+            d.set_band_description(1, str(z["dates"][k]))
+        out.append(name)
+    return out
 
 
 def _row_from_dir(d: Path) -> dict | None:

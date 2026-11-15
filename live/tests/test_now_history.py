@@ -88,3 +88,19 @@ def test_no_manifest_is_noop(tmp_path: Path):
     now.mkdir()
     idx = nh.update(now)
     assert idx["runs"] == []
+
+
+def test_flood_cogs_archived_for_agreement_leads(tmp_path: Path):
+    import numpy as np
+    import rasterio
+    now = tmp_path / "now"
+    _run(now, dt.datetime(2026, 11, 15, 20, 17, 0))
+    fl = np.full((4, 5, 6), 0.3, np.float16)
+    np.savez(now / "places_tpi.npz", flood=fl, slide=fl, bounds=np.array([-58.0, -34.0, -48.0, -22.5]),
+             dates=np.array(["2026-11-15", "2026-11-16", "2026-11-17", "2026-11-18"]))
+    nh.update(now)
+    d = now / "history" / "20261115T201700Z"
+    hm = json.loads((d / "manifest.json").read_text())
+    assert hm["flood_cogs"] == [f"cog/tpi_flood_d{k}.tif" for k in range(4)]
+    with rasterio.open(d / "cog" / "tpi_flood_d2.tif") as s:
+        assert s.descriptions[0] == "2026-11-17" and abs(float(s.read(1)[0, 0]) - 0.3) < 1e-3
