@@ -494,9 +494,9 @@ def ml_card_v2(met: dict) -> dict:
             for ev, m in ((ref or {}).get("by_event") or {}).items():
                 e = events.setdefault(ev, {"id": ev, "name": (reg[ev].name if ev in reg else
                                                              BUILTIN_EVENT_NAMES.get(ev, ev)),
-                                           "n_pos_24h": None, "sources": []})
-                if src not in e["sources"]:
-                    e["sources"].append(src)
+                                           "n_pos_24h": None, "sources": []})  # n_pos_24h = positive issue-day rows
+                if src not in e["sources"] and (m.get("n_pos") or 0) > 0:
+                    e["sources"].append(src)   # only sources that score this event's positives
                 if h == "24h" and src == "perfect":
                     e["n_pos_24h"] = m.get("n_pos")
     card.update({
