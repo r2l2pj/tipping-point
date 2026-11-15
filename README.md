@@ -243,8 +243,9 @@ index input.
   reduce but do not remove this. The rain-support rule has no flow routing.
 - GUNW/coherence landslide detection is moot for wa_2025 (no event-crossing
   pair); candidates are HLS optical and stay "candidates", never confirmed.
-- WA landslide hit-rate may be null — the GLC inventory has no in-window
-  points; radar confirms floods only for this case.
+- WA landslide hit-rate rests on n = 15 undated WGS inventory points:
+  66.7 % (10 of 15) are Critical on the case peak day 2025-12-12 —
+  small-sample; per-day values in metrics `landslide_hit.per_day`.
 - wa_2025 `flooded_km2` is a **lower bound within the NISAR swath**: the
   post scene covers ~74% of the case AOI (south-west is outside the
   swath); `swath_coverage_pct` and `flooded_km2_scope` say so in metrics.
