@@ -269,6 +269,37 @@ The chart series per event:
 - `rain_p95_mm` — the p95 daily-rain climatology used for the rain axis;
   `tpi_threshold` — the Alto cut (config.yaml `tpi_classes`).
 
+### `series/imerg_vs_gauge.json`
+
+Per-station daily pairs for the IMERG-vs-gauge validation check (rs_2024,
+ruling L19 — INMET gauges validate IMERG, never feed the index). Written by
+`tools/imerg_vs_gauge.py`: gauge daily mm summed from the INMET hourly
+archive on the CSV's own UTC `Data` day; `imerg_mm` is the GPM_3IMERGDF V07
+daily *Final* value of the 0.1° cell containing the station, fetched per
+day via GES DISC OPeNDAP ascii subsets (`.npy`-cached under gitignored
+`data/raw/imerg_vs_gauge/`). A station-day is skipped (`stations[].skipped[]`
+carries the reason) when > `max_missing_hours` (default 2) of its 24
+hourly values are missing, when the station has no rows that UTC day, or
+when IMERG has no value.
+
+```json
+{ "source": "...", "gauge_source": "...",
+  "imerg_product": "GPM_3IMERGDF V07 daily Final",
+  "window": {"start": "2024-04-20", "end": "2024-05-15"},
+  "event_total_window": {"start": "2024-04-27", "end": "2024-05-06"},
+  "max_missing_hours": 2,
+  "caveat": "point gauge vs 0.1 deg cell",
+  "stations": [
+    { "id": "A801", "name": "...", "lat": -30.05, "lon": -51.17,
+      "imerg_cell": {"i": 1288, "j": 599, "lon": -51.15, "lat": -30.05},
+      "n_days": 26, "r": 0.98, "bias_pct": 5.5,
+      "event_total_gauge_mm": 382.6, "event_total_imerg_mm": 425.3,
+      "event_total_ratio": 1.112,
+      "skipped": [{"date": "...", "reason": "..."}],
+      "days": [{"date": "2024-04-20", "gauge_mm": 0.0,
+                "gauge_hours": 24, "imerg_mm": 0.0}] } ] }
+```
+
 ### `series/<caso>_swot_<AAAAMMDD>.json`
 
 Dated SWOT river-level series per reach (pipeline output, e.g.
@@ -389,6 +420,14 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
 - `rf_auc` is the XGBoost model AUC — the key name stays for contract
   stability; public text says "XGBoost". Detailed sub-results may nest under
   extra sections (e.g. `landslide_ml`); the keys above stay flat.
+- `imerg_vs_gauge` — nested IMERG-vs-INMET-gauge validation summary
+  (rs_2024; L19, validation-only — gauges never feed the index):
+  `{source, imerg_product, window, n_stations, n_station_days,
+  pearson_r_median, bias_pct_median, event_total_ratio_median, caveat,
+  stations[]}` where `bias_pct` is 100·(ΣIMERG − Σgauge)/Σgauge over paired
+  UTC days and `event_total_*` sums Apr 27–May 6. Written by
+  `tools/imerg_vs_gauge.py`; per-day pairs in
+  `series/imerg_vs_gauge.json`. Caveat: point gauge vs 0.1° cell.
 
 Writers (merge via `tp.metrics.merge_metrics` into the case's blob in the
 root file, never `write_text` on the file): `04_validation.py` (iou, f1,

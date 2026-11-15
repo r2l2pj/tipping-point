@@ -59,6 +59,6 @@ def merge_metrics(
     if collections:
         blob.setdefault("collections", {}).update(collections)
     tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(metrics, indent=2) + "\n")
+    tmp.write_text(json.dumps(metrics, indent=2, ensure_ascii=False) + "\n")
     os.replace(tmp, path)
     return metrics

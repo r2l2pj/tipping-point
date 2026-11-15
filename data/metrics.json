@@ -1394,7 +1394,97 @@
       "gpw_product": "GPW v4.11 population count (CIESIN/NASA SEDAC), 30 arc-sec",
       "population_total": 5298955,
       "population_total_scope": "sum of the case GPW COG over the case AOI",
-      "lead_time_mean_note": "exact from lead_time_hist: daily 00Z crossings vs the fixed anchor put each occupied 6-h bin on a single lead value"
+      "lead_time_mean_note": "exact from lead_time_hist: daily 00Z crossings vs the fixed anchor put each occupied 6-h bin on a single lead value",
+      "imerg_vs_gauge": {
+        "source": "GES DISC OPeNDAP IMERG Final daily subset at station cells + INMET historical archive hourly gauges (validation-only, L19)",
+        "imerg_product": "GPM_3IMERGDF V07 daily Final (3B-DAY.MS.MRG.3IMERG.*.V07B)",
+        "window": "2024-04-20..2024-05-15",
+        "n_stations": 7,
+        "n_station_days": 182,
+        "pearson_r_median": 0.8874,
+        "bias_pct_median": 5.5,
+        "event_total_ratio_median": 1.118,
+        "caveat": "point gauge vs 0.1 deg cell",
+        "stations": [
+          {
+            "id": "A801",
+            "name": "PORTO ALEGRE - JARDIM BOTANICO",
+            "lat": -30.05361111,
+            "lon": -51.17472221,
+            "n_days": 26,
+            "r": 0.9769,
+            "bias_pct": 5.5,
+            "event_total_gauge_mm": 382.6,
+            "event_total_imerg_mm": 425.3
+          },
+          {
+            "id": "A813",
+            "name": "RIO PARDO",
+            "lat": -29.87222221,
+            "lon": -52.38194443,
+            "n_days": 26,
+            "r": 0.8551,
+            "bias_pct": 4.0,
+            "event_total_gauge_mm": 385.0,
+            "event_total_imerg_mm": 488.2
+          },
+          {
+            "id": "A840",
+            "name": "BENTO GONCALVES",
+            "lat": -29.164581,
+            "lon": -51.534202,
+            "n_days": 26,
+            "r": 0.9193,
+            "bias_pct": -16.7,
+            "event_total_gauge_mm": 647.2,
+            "event_total_imerg_mm": 571.2
+          },
+          {
+            "id": "A879",
+            "name": "CANELA",
+            "lat": -29.36888888,
+            "lon": -50.82722221,
+            "n_days": 26,
+            "r": 0.8874,
+            "bias_pct": -12.8,
+            "event_total_gauge_mm": 562.0,
+            "event_total_imerg_mm": 561.8
+          },
+          {
+            "id": "A882",
+            "name": "TEUTONIA",
+            "lat": -29.44916666,
+            "lon": -51.82333332,
+            "n_days": 26,
+            "r": 0.6002,
+            "bias_pct": 19.0,
+            "event_total_gauge_mm": 280.0,
+            "event_total_imerg_mm": 514.1
+          },
+          {
+            "id": "A884",
+            "name": "CAMPO BOM",
+            "lat": -29.674293,
+            "lon": -51.064042,
+            "n_days": 26,
+            "r": 0.8479,
+            "bias_pct": 6.0,
+            "event_total_gauge_mm": 390.6,
+            "event_total_imerg_mm": 498.4
+          },
+          {
+            "id": "B807",
+            "name": "PORTO ALEGRE- BELEM NOVO",
+            "lat": -30.1861111,
+            "lon": -51.17805554,
+            "n_days": 26,
+            "r": 0.9789,
+            "bias_pct": 7.6,
+            "event_total_gauge_mm": 370.2,
+            "event_total_imerg_mm": 413.8
+          }
+        ]
+      }
     }
   }
 }

@@ -178,6 +178,9 @@ forecast with an archive for the replay windows; L22) and three
 **context/reference layers that never enter the TPI**: JRC Global Surface
 Water v1.4 (seasonal-water confidence in R1), IBGE country/municipality
 outlines (Brazil clip, priority zones), and the landslide inventories.
+**INMET** automatic-station gauges are a validation-only input (L19): they
+check IMERG daily rain at rs_2024 station cells (`imerg_vs_gauge` in
+metrics.json, `series/imerg_vs_gauge.json`) and never feed the index.
 
 ## Response products (Modo Agora, ruling L27)
 
