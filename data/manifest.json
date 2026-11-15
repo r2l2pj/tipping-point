@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T15:46:40Z",
+  "updated_at": "2026-11-15T15:48:36Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7090,7 +7090,11 @@
             -29.700131
           ],
           "forecast": false,
-          "kind": "observed"
+          "kind": "observed",
+          "sensor": "unconfirmed (likely Sentinel-1)",
+          "source": "teammate",
+          "label": "Radar after (sensor unconfirmed, likely Sentinel-1)",
+          "note": "v0 teammate render (EPSG:3857 false-colour), teammate radar pair (sensor unconfirmed, likely Sentinel-1: relative orbit 10, 12-day repeat; no NISAR GCOV exists for these dates), 2026-09-30 -> 2026-10-12; not NISAR"
         },
         {
           "id": "radar_pre",
@@ -7109,7 +7113,11 @@
             -29.700131
           ],
           "forecast": false,
-          "kind": "observed"
+          "kind": "observed",
+          "sensor": "unconfirmed (likely Sentinel-1)",
+          "source": "teammate",
+          "label": "Radar before (sensor unconfirmed, likely Sentinel-1)",
+          "note": "v0 teammate render (EPSG:3857 false-colour), teammate radar pair (sensor unconfirmed, likely Sentinel-1: relative orbit 10, 12-day repeat; no NISAR GCOV exists for these dates), 2026-09-30 -> 2026-10-12; not NISAR"
         }
       ],
       "metrics": "metrics.json#rs_uruguai_2026",
