@@ -751,7 +751,8 @@ def publish_case(event_id: str, dry_run: bool = False,
         if peak and peak[1]["people_critical"] is None:
             reasons["people_critical"] = "no population COG (GPW)"
         if not dry_run:
-            merge_metrics(event_id, flat, reasons=reasons)
+            # the metrics of the data tree being published (tests pass a tmp tree)
+            merge_metrics(event_id, flat, reasons=reasons, path=data_dir / "metrics.json")
 
     # ---- publish-size budget: compact every geojson product < 1 MB ----
     _compact_geojsons(gj_dir, out, dry_run)
