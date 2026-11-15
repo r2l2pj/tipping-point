@@ -134,21 +134,42 @@ def test_now_caches_climatology_before_run():
 
 
 def test_now_notify_step_after_fallback_publish():
-    """G1+G2: subscriber alerts run on the just-published bundle, after the
-    fallback branch publish; always exit-0, so continue-on-error anyway."""
+    """The VPS worker receives the just-published bundle; Neon is rollback-only."""
     _, doc = _load("now.yml")
     steps = _steps(doc)
-    notify = [s for s in steps if "live.notify" in s.get("run", "")]
-    assert len(notify) == 1
-    step = notify[0]
-    assert step["run"] == "uv run python -m live.notify"
-    assert step.get("continue-on-error") is True
-    env = step.get("env", {})
-    assert env["TELEGRAM_TOKEN"] == "${{ secrets.TELEGRAM_TOKEN }}"
-    assert env["DATABASE_URL"] == "${{ secrets.DATABASE_URL }}"
-    i_notify = steps.index(step)
-    assert _run_idx(steps, "publish_fallback.py") < i_notify
-    assert i_notify < _run_idx(steps, "publish_s3.sh")
+    old_notify = next(s for s in steps if "live.notify" in s.get("run", ""))
+    vps_notify = next(s for s in steps
+                      if s.get("name") == "Notify Telegram subscribers on VPS SQLite")
+    assert old_notify["if"] == "vars.VPS_NOTIFIER_ENABLED != '1'"
+    assert old_notify.get("continue-on-error") is True
+    assert old_notify["env"]["DATABASE_URL"] == "${{ secrets.DATABASE_URL }}"
+    assert vps_notify["if"] == "vars.VPS_NOTIFIER_ENABLED == '1'"
+    assert vps_notify.get("continue-on-error") is True
+    for key in ("VPS_HOST", "VPS_USER", "VPS_DEPLOY_KEY", "VPS_KNOWN_HOSTS"):
+        assert key in vps_notify["env"]
+    assert "rsync" in vps_notify["run"]
+    assert "sudo -n /usr/local/sbin/tipping-point-notify" in vps_notify["run"]
+    assert "docker run" not in vps_notify["run"]
+    wrapper = (WORKFLOWS.parents[1] / "deploy" / "vps" / "run-notify.sh").read_text()
+    assert "sqlite:/app/.data/tipping-point.sqlite" in wrapper
+    assert "Neon-Connection-String" not in wrapper
+    assert "tipping-point-notifier:stable" in wrapper
+    assert _run_idx(steps, "publish_fallback.py") < steps.index(vps_notify)
+    assert steps.index(vps_notify) < _run_idx(steps, "publish_s3.sh")
+    run_now = next(s for s in steps if "live/jobs.py now" in s.get("run", ""))
+    assert "DATABASE_URL" not in run_now.get("env", {})
+
+
+def test_vps_notifier_wrapper_uses_limited_secrets_and_readonly_bundle():
+    wrapper = WORKFLOWS.parents[1] / "deploy" / "vps" / "run-notify.sh"
+    text = wrapper.read_text()
+    assert "--env-file /etc/tipping-point/notifier.env" in text
+    assert "--env-file /etc/tipping-point/app.env" not in text
+    assert "source=tipping-point-data,target=/app/.data" in text
+    assert "src=/var/lib/tipping-point-notify,dst=/input,readonly" in text
+    assert "--cap-drop=ALL" in text
+    assert "--security-opt=no-new-privileges" in text
+    assert "-type l" in text
 
 
 def test_now_watchdog_dispatches_stale_now_runs():
@@ -184,8 +205,9 @@ def test_now_watchdog_stale_alarm_after_dispatch():
 
 
 def test_now_publish_has_drop_guard_allowlist_only_for_r2():
-    import yaml
     from pathlib import Path
+
+    import yaml
     wf = yaml.safe_load((Path(__file__).resolve().parents[2]
                          / ".github/workflows/now.yml").read_text())
     step = next(s for s in wf["jobs"][next(iter(wf["jobs"]))]["steps"]

@@ -132,7 +132,6 @@ jobs:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GEE_PROJECT: ${{ vars.GEE_PROJECT }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NOW_LOCAL: "1"
         run: uv run python live/jobs.py now
 
@@ -277,12 +276,61 @@ jobs:
       # store/Telegram errors are logged inside live.notify, which always
       # exits 0; continue-on-error is belt-and-braces.
       - name: Notify Telegram subscribers
+        if: vars.VPS_NOTIFIER_ENABLED != '1'
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           APP_URL: https://tipping-point-app.vercel.app
         run: uv run python -m live.notify
+
+      - name: Notify Telegram subscribers on VPS SQLite
+        if: vars.VPS_NOTIFIER_ENABLED == '1'
+        continue-on-error: true
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+          VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          : "${VPS_HOST:?Configure the VPS_HOST secret}"
+          : "${VPS_USER:?Configure the VPS_USER secret}"
+          : "${VPS_DEPLOY_KEY:?Configure the VPS_DEPLOY_KEY secret}"
+          : "${VPS_KNOWN_HOSTS:?Configure the VPS_KNOWN_HOSTS secret}"
+          VPS_SSH_PORT="${VPS_SSH_PORT:-22}"
+          [[ "$VPS_SSH_PORT" =~ ^[0-9]{1,5}$ ]] && ((VPS_SSH_PORT > 0 && VPS_SSH_PORT < 65536))
+          [[ "$VPS_HOST" =~ ^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)(\.([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?))*$ ]]
+          [[ "$VPS_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]]
+          inbox=/var/lib/tipping-point-notify/inbox
+
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_DEPLOY_KEY" > "$HOME/.ssh/tipping-point-deploy"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/tipping-point-deploy" "$HOME/.ssh/known_hosts"
+          ssh_cmd=(ssh -i "$HOME/.ssh/tipping-point-deploy" -p "$VPS_SSH_PORT"
+            -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts")
+
+          files=(data/now/manifest.json)
+          for file in \
+            data/now/cog/tpi_slide_today.tif data/now/cog/tpi_flood_today.tif \
+            data/now/cog/tpi_slide_d1.tif data/now/cog/tpi_flood_d1.tif \
+            data/now/geojson/municipal_boundaries.geojson; do
+            [[ ! -f "$file" ]] || files+=("$file")
+          done
+          "${ssh_cmd[@]}" "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE_CLEAN'
+          set -euo pipefail
+          inbox=/var/lib/tipping-point-notify/inbox
+          mkdir -p "$inbox/data/now"
+          find "$inbox/data/now" -type f -delete
+          REMOTE_CLEAN
+          rsync -aR -e "${ssh_cmd[*]}" "${files[@]}" \
+            "$VPS_USER@$VPS_HOST:$inbox/"
+          "${ssh_cmd[@]}" "$VPS_USER@$VPS_HOST" \
+            sudo -n /usr/local/sbin/tipping-point-notify
 
       - name: Publish data/ to Neon storage
         continue-on-error: true
