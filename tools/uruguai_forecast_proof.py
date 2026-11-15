@@ -200,7 +200,9 @@ def main(argv=None) -> int:
     clim, early, gfs, bias = basin_series(a.dir)
     thr = thresholds(clim)
     ind = indicators(early, gfs, thr)
-    impacts = {"itaqui_displaced_2026-10-08": "2026-10-08"}
+    # L36 official-or-cut: the press-only Itaqui displacement is replaced by the
+    # ANA Itaqui gauge (75900000) flood-stage crossing
+    impacts = {"itaqui_flood_stage_2026-10-05": "2026-10-05"}
     sc = score(ind, tr, impacts)
     wt = where_test(a.dir, a.nisar)
     doc = {"case": "rs_uruguai_2026",

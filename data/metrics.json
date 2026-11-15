@@ -14160,7 +14160,7 @@
       },
       "forecast_proof": {
         "question": "Would the upstream-rain signal have warned Uruguaiana before the Oct 2026 Uruguay River flood?",
-        "answer_short": "Yes, 5 days before the river reached flood stage at Uruguaiana (Oct 5) and 8 days before the Itaqui displacement (Oct 8): satellite rain already observed over the upstream basin (IMERG Early) plus the NOAA GFS run of Sep 30 put the basin 3-day total above the season's 99th percentile. Second rise: 6 days before Oct 29 (>= p95, Oct 23). The GFS forecast alone did not flag either rise; local rain at Uruguaiana never reached its own 99th percentile.",
+        "answer_short": "Yes, 5 days before the river reached flood stage at Uruguaiana (Oct 5) and at Itaqui (ANA gauge 75900000 also above flood stage from Oct 5): satellite rain already observed over the upstream basin (IMERG Early) plus the NOAA GFS run of Sep 30 put the basin 3-day total above the season's 99th percentile. Second rise: 6 days before Oct 29 (>= p95, Oct 23). The GFS forecast alone did not flag either rise; local rain at Uruguaiana never reached its own 99th percentile.",
         "truth": {
           "source": "ANA telemetry (ServiceANA), daily median level",
           "flood_stage_m": 8.5,
@@ -14195,9 +14195,6 @@
               "2026-10-16",
               9.93
             ]
-          },
-          "impact": {
-            "2026-10-08": "Itaqui: 29 people displaced"
           }
         },
         "signal": {
@@ -14212,9 +14209,12 @@
             "p95_first_issue_in_runup": "2026-09-29",
             "p95": 6
           },
-          "itaqui_displacement_2026-10-08": {
-            "p99": 8,
-            "p95": 9
+          "itaqui_flood_stage_2026-10-05": {
+            "p99_first_issue": "2026-09-30",
+            "p99": 5,
+            "p95_first_issue_in_runup": "2026-09-29",
+            "p95": 6,
+            "source": "ANA telemetry 75900000 (Itaqui), daily median level >= 8.50 m from Oct 5"
           },
           "uruguaiana_flood_stage_2026-10-29": {
             "p95_first_issue": "2026-10-23",
@@ -14257,11 +14257,11 @@
           "doc": ".crew/research/uruguai-forecast-proof.md"
         }
       },
-      "forecast_proof_answer": "Yes, 5 days before the river reached flood stage at Uruguaiana (Oct 5) and 8 days before the Itaqui displacement (Oct 8): satellite rain already observed over the upstream basin (IMERG Early) plus the NOAA GFS run of Sep 30 put the basin 3-day total above the season's 99th percentile. Second rise: 6 days before Oct 29 (>= p95, Oct 23). The GFS forecast alone did not flag either rise; local rain at Uruguaiana never reached its own 99th percentile.",
+      "forecast_proof_answer": "Yes, 5 days before the river reached flood stage at Uruguaiana (Oct 5) and at Itaqui (ANA gauge 75900000 also above flood stage from Oct 5): satellite rain already observed over the upstream basin (IMERG Early) plus the NOAA GFS run of Sep 30 put the basin 3-day total above the season's 99th percentile. Second rise: 6 days before Oct 29 (>= p95, Oct 23). The GFS forecast alone did not flag either rise; local rain at Uruguaiana never reached its own 99th percentile.",
       "forecast_proof_uruguaiana_p99": 5,
       "forecast_proof_uruguaiana_p95": 6,
-      "forecast_proof_itaqui_p99": 8,
-      "forecast_proof_itaqui_p95": 9,
+      "forecast_proof_itaqui_p99": 5,
+      "forecast_proof_itaqui_p95": 6,
       "forecast_proof_source": "lead-ml tools/uruguai_forecast_proof.py (data main 07d99c3); full data data/rs_uruguai_2026/series/forecast_proof.json; upstream-basin rain is an evaluation (not served in Now)",
       "tpi_replay_note": "Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) over the Uruguay River reach of the Fronteira Oeste (Barra do Quaraí – São Borja) read Critical over the Uruguaiana region in the bands of Sep 30 – Oct 2 (rain Sep 28–30; 13,129 km² Critical on Sep 30, 6,121 km² of it on the HAND ≤ 5 m floodplain), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 11 before the Oct 16 crest and Oct 24–25 before the Oct 29 rise. The NOAA GFS run of Sep 27 already showed Critical on the floodplain for Sep 29–30, the Sep 29 run for Sep 30, the Sep 30 run for Oct 1 (2,783 km²), the Oct 1 run for Oct 3–4. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof).",
       "critical_km2": 13128.97,
