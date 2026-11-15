@@ -1,11 +1,11 @@
 // Lucas (URGENT, keep it simple): "Water in red" — a colour ramp on ONE
 // NISAR radar image. Each pixel's gray is decoded to dB (the frame's fixed
-// stretch); the darker, the redder: dB ≥ −14 keeps the grey radar, −14..−22
+// stretch); the darker, the redder: dB ≥ −17 keeps the grey radar, −17..−22
 // ramps grey → #ff1f1f, ≤ −22 is full red. No second date, no mask.
 import type { Stretch } from "./changeComposite";
 
 export const WATER_RED_LEGEND = "Red = very dark radar = smooth surface, likely water";
-export const RAMP_START_DB = -14;
+export const RAMP_START_DB = -17;
 export const RAMP_FULL_DB = -22;
 // Lead-analysis contract: every NISAR frame is rendered on ONE fixed
 // −25..0 dB stretch. A frame that does not declare it is decoded with it too
