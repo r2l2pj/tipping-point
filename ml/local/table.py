@@ -185,7 +185,7 @@ def sample_3b(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> 
     dlat = r_km * np.sin(theta) / 110.57
     dlon = r_km * np.cos(theta) / (111.32 * np.cos(np.radians(pos["lat"].to_numpy())))
     neg_b = pos.copy()
-    neg_b["lon"] = pos["lon"].to_numpy() + dlon
+    neg_b["lon"] = (pos["lon"].to_numpy() + dlon + 180.0) % 360.0 - 180.0  # antimeridian
     neg_b["lat"] = pos["lat"].to_numpy() + dlat
     far = L.min_dist_km(neg_b.lon.to_numpy(), neg_b.lat.to_numpy(),
                         inv.lon.to_numpy(), inv.lat.to_numpy()) > S.NEG_MIN_DIST_KM

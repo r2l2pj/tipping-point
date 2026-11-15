@@ -1110,8 +1110,10 @@ def _points_terrain(lon: np.ndarray, lat: np.ndarray, keep_dem: bool
         clon, clat = int(cells[0][sel[0]]), int(cells[1][sel[0]])
         try:
             hgt, zip_path = _ensure_hgt((clon, clat))
-        except RuntimeError:
-            continue                        # e.g. ocean cell, no granule
+        except Exception as exc:  # noqa: BLE001 - ocean cell / dead download -> NaN
+            if not isinstance(exc, RuntimeError):
+                print(f"WARNING static points cell {clon},{clat}: {exc}", file=sys.stderr)
+            continue
         try:
             with rasterio.open(hgt) as ds:
                 dem = ds.read(1)

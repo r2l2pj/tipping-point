@@ -971,7 +971,8 @@ def climate_on_grid(transform, shape: tuple[int, int],
 
 # --- NASA POWER per-point rain ------------------------------------------------------
 def _power_cell(lon, lat) -> tuple[np.ndarray, np.ndarray]:
-    """0.1-deg IMERG cell centre containing each point."""
+    """0.1-deg IMERG cell centre containing each point (lon wrapped to [-180, 180))."""
+    lon = (np.asarray(lon, float) + 180.0) % 360.0 - 180.0
     lonc = np.floor((np.asarray(lon, float) + 180.0) * 10.0
                     + 1e-9) / 10.0 - 180.0 + 0.05
     latc = np.floor((np.asarray(lat, float) + 90.0) * 10.0
@@ -994,6 +995,14 @@ def fetch_power_points(lon, lat, workers: int = 4) -> Path:
     today = dt.date.today()
 
     def work(cell) -> str:
+        # one dead cell (bad coordinate, POWER outage) must not kill a global run
+        try:
+            return _work(cell)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("power: cell %s failed (%s) -> NaN", cell, exc)
+            return "failed"
+
+    def _work(cell) -> str:
         la, lo = cell
         p = _power_path(lo, la)
         start = POWER_START
@@ -1167,6 +1176,13 @@ def fetch_smap_points(lon, lat, dates, workers: int = 8) -> Path:
     var_fq = {v: f"/Geophysical_Data/{v}" for v in SMAP_VARS}
 
     def work(d) -> str:
+        try:
+            return _work(d)
+        except Exception as exc:  # noqa: BLE001 - a missing day -> NaN, never fatal
+            log.warning("smap_points: %s failed (%s) -> NaN", d, exc)
+            return "failed"
+
+    def _work(d) -> str:
         key = str(d).replace("-", "")
         outp = pdir / f"{key}.npz"
         if outp.exists():
