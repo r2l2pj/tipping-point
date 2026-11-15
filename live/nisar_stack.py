@@ -178,7 +178,8 @@ def render_pass(key, gs, bbox, token, pdir: Path, rel_dir: str, *, read=_read_db
     t, lk, day = key
     pid = f"{tag(t, lk)}_{day}"
     modes = sorted({rn.mode_token(g["granule_id"]) for g in gs})
-    colls = sorted({"provisional" if "PROVISIONAL" in str(g.get("h5_url", "")) else "V1" for g in gs})
+    colls = sorted({"beta" if "BETA" in str(g.get("h5_url", "")) else
+                    "provisional" if "PROVISIONAL" in str(g.get("h5_url", "")) else "V1" for g in gs})
     out = []
     for pol, term in (("HH", "HHHH"), ("HV", "HVHV")):
         parts = [p for p in (read(g["h5_url"], term, bbox, token, res) if read is _read_db
@@ -196,7 +197,8 @@ def render_pass(key, gs, bbox, token, pdir: Path, rel_dir: str, *, read=_read_db
             "bounds": bounds, "legend": LEGEND[pol],
             "sensor": "NISAR" if colls == ["V1"] else "NISAR (GCOV provisional)",
             "source": source or ("NISAR L2 GCOV (ASF, " + ", ".join(
-                "NISAR_L2_GCOV_PROVISIONAL_V1" if c == "provisional" else "NISAR_L2_GCOV_V1" for c in colls) + ")"),
+                {"provisional": "NISAR_L2_GCOV_PROVISIONAL_V1", "beta": "NISAR_L2_GCOV_BETA_V1"}.get(
+                    c, "NISAR_L2_GCOV_V1") for c in colls) + ")"),
             "label": f"NISAR radar {pol} · track {tag(t, lk)} · {day}",
             "note": (f"Backscatter, ONE fixed {DB_MIN:g}..{DB_MAX:g} dB stretch for every NISAR frame "
                      f"({res:g} m; same grid for every pass of track {tag(t, lk)}); compare two passes "

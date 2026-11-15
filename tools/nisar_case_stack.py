@@ -3,7 +3,7 @@
 Same per-pass renderer and contract as the Now stack (live/nisar_stack.py):
 id nisar_<hh|hv>_<YYYYMMDD>_<TTTL>, kind nisar_frame, track, polarization, png
 EPSG:3857 gray+alpha clipped to the swath, bounds, legend (dB object), sensor.
-Both CMR collections (NISAR_L2_GCOV_PROVISIONAL_V1 + NISAR_L2_GCOV_V1), all tracks;
+All three CMR GCOV collections (V1 > PROVISIONAL > BETA for the same acquisition), all tracks;
 mixed-mode ('_M') granules skipped. ONE fixed −25..0 dB stretch and ONE grid per
 track (every pass of a track has identical PNG size + bounds). Older frame entries
 of the same pass + polarization (nisar_hh_<date>, nisar_pre/post, …) get the new
@@ -28,12 +28,14 @@ for _p in (str(REPO), str(REPO / "pipeline")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-COLLECTIONS = ("NISAR_L2_GCOV_PROVISIONAL_V1", "NISAR_L2_GCOV_V1")
+# preference order for the SAME acquisition (track, look, frame, start) found in more
+# than one collection; BETA holds frames the others lack (e.g. WA 172D f064).
+COLLECTIONS = ("NISAR_L2_GCOV_V1", "NISAR_L2_GCOV_PROVISIONAL_V1", "NISAR_L2_GCOV_BETA_V1")
 
 
 def search(bbox, start: dt.date, end: dt.date) -> list[dict]:
     from fetch import nisar as fn
-    seen, out = set(), []
+    seen, acq, out = set(), set(), []
     for coll in COLLECTIONS:
         try:
             gs = fn.search_gcov_domain(bbox, f"{start}T00:00:00Z", f"{end}T23:59:59Z", collection=coll)
@@ -41,10 +43,12 @@ def search(bbox, start: dt.date, end: dt.date) -> list[dict]:
             print(f"search {coll}: {exc}")
             continue
         for g in gs:
-            if g["granule_id"] not in seen:
-                seen.add(g["granule_id"])
-                g = dict(g, collection=coll)
-                out.append(g)
+            key = (int(g["track"]), g["look"], int(g["frame"]), str(g["start"])[:16])
+            if g["granule_id"] in seen or key in acq:
+                continue
+            seen.add(g["granule_id"])
+            acq.add(key)
+            out.append(dict(g, collection=coll))
         print(f"{coll}: {len(gs)} granules")
     return out
 
