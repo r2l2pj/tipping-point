@@ -83,3 +83,22 @@ def test_now_step_end_to_end(tmp_path: Path):
     assert res["summary"]["pass_date"] == "2026-11-10" and res["summary"]["age_days"] == 5
     assert (now / "png" / "tpi_flood_nisar_d0.png").is_file() and (now / "cog" / "tpi_flood_nisar_today.tif").is_file()
     assert json.loads((now / "summary.json").read_text())["nisar_water"]["water_km2"] > 0
+
+
+def test_now_step_masks_ocean_with_land(tmp_path: Path):
+    now = tmp_path / "now"
+    db = np.full((40, 40), -24.0)                 # all dark (ocean-like)
+    e = _frame(now, "2026-11-10", db)
+    (now / "nisar_stack" / "layers.json").write_text(json.dumps({"layers": [e]}))
+    fl = np.full((4, 50, 50), 0.1, np.float16)
+    np.savez(now / "places_tpi.npz", flood=fl, slide=fl,
+             dates=np.array(["2026-11-15", "2026-11-16", "2026-11-17", "2026-11-18"]), bounds=np.array(B))
+    (now / "geojson").mkdir(parents=True)
+    land = {"type": "Polygon", "coordinates": [[[-52.0, -30.0], [-51.5, -30.0], [-51.5, -29.0], [-52.0, -29.0], [-52.0, -30.0]]]}
+    (now / "geojson" / "municipal_boundaries.geojson").write_text(json.dumps(
+        {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": land, "properties": {}}]}))
+    from live import now_nisar_tpi as nt
+    res = nt.run(now)
+    w = np.load(now / "nisar_tpi" / "water.npz")["water"]
+    assert w[:, :20].mean() > 0.9 and not w[:, 30:].any()     # only the land half
+    assert res["summary"]["water_km2"] > 0

@@ -33,6 +33,20 @@ def _grid(z):
     return (h, wd), from_bounds(w, s, e, n, wd, h)
 
 
+def _brazil_land(now_dir: Path, shape, tr):
+    """Brazilian land on the Now grid (IBGE municipalities) — the Now stats domain.
+    Without it dark ocean backscatter along the coast counts as 'water'."""
+    mb = now_dir / "geojson" / "municipal_boundaries.geojson"
+    if not mb.is_file():
+        return None
+    from rasterio.features import rasterize
+    from shapely.geometry import shape as shp
+    geoms = [shp(f["geometry"]) for f in json.loads(mb.read_text())["features"] if f.get("geometry")]
+    if not geoms:
+        return None
+    return rasterize(geoms, out_shape=shape, transform=tr, fill=0, default_value=1, dtype="uint8").astype(bool)
+
+
 def run(now_dir: Path, gsw: Path | None = None, hand: Path | None = None) -> dict:
     import rasterio
     from rasterio.warp import Resampling, reproject
@@ -63,6 +77,7 @@ def run(now_dir: Path, gsw: Path | None = None, hand: Path | None = None) -> dic
             reproject(rasterio.band(src, 1), h, dst_transform=tr, dst_crs="EPSG:4326",
                       dst_nodata=np.nan, resampling=Resampling.bilinear)
         fp = np.nan_to_num(h, nan=99) <= 5.0
+    land = _brazil_land(now_dir, shape, tr)
     lat = tr.f + (np.arange(shape[0]) + 0.5) * tr.e
     km2 = (abs(tr.a) * 111.32 * np.cos(np.deg2rad(lat)))[:, None] * abs(tr.e) * 110.574 * np.ones((1, shape[1]))
     layers, summary = [], None
@@ -70,6 +85,8 @@ def run(now_dir: Path, gsw: Path | None = None, hand: Path | None = None) -> dic
         day = dt.date.fromisoformat(str(ds))
         tpi = z["flood"][k].astype(np.float32)
         pw = ~np.isfinite(tpi) if perm is None else (perm | ~np.isfinite(tpi))
+        if land is not None:            # ocean / outside Brazil: not NISAR flood water
+            pw = pw | ~land
         water, observed, used = nw.water_mask(frames, day, now_dir, shape, tr, perm_water=pw)
         if not used:
             continue
@@ -116,8 +133,8 @@ def run(now_dir: Path, gsw: Path | None = None, hand: Path | None = None) -> dic
             summary = {"pass_date": last["date"], "pass_track": last.get("track"), "age_days": age,
                        "water_km2": ag["water_km2"], "outside_floodplain_pct": ag.get("outside_floodplain_pct"),
                        "tpi_today": {"high_plus": ag["high_plus"], "critical": ag["critical"]},
-                       "definition": "NISAR water = HH < −18 dB outside permanent water, latest pass ≤ 12 d "
-                                     "before today; hit = share of that water the TPI flags (today's map)"}
+                       "definition": "NISAR water = HH < −18 dB on Brazilian land outside permanent water, latest "
+                                     "pass ≤ 12 d before today; hit = share of that water the TPI flags (today's map)"}
         layers.append(ent)
     tmp = lpath.with_suffix(".json.tmp")
     tmp.write_text(json.dumps({"layers": layers}, indent=2, ensure_ascii=False))
