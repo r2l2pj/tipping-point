@@ -1,99 +1,58 @@
-# L42-now-nisar — live "Now" NISAR multi-date series + HH/HV pair PNGs
+# implement: alarm precision (t195)
 
-## Deliverables (all real data, no mocks)
+## What changed
 
-- `data/now/response/nisar_timeseries.json` — WA-contract series, 4 same-mode
-  dates (≥3 required): dates/roles/units/areas (hh_db, hv_db, median/p10/p90,
-  n_px_by_date, km2)/frames/reading/reading_line/status/grids/passes/
-  rejected_passes/guards/caveats.
-- `data/now/response/png/nisar_{hh,hv}_{20261025,20261106}.png` — EPSG:3857
-  gray 2–98 % stretch (bundle._gray_png_3857), bounds per frame.
-- `data/now/response/nisar_layers.json` — layer entries merged by
-  `live/now_manifest.merge_nisar_layers` (file-existence filter on png).
-- `data/now/manifest.json` — regenerated via `live.now_manifest.finalize`:
-  layers nisar_pre/nisar_post/nisar_hv_pre/nisar_hv_post +
-  products.nisar_timeseries = "response/nisar_timeseries.json".
-- `tools/now_nisar_timeseries.py` — reproducible producer (anonymous CMR
-  search → same-mode selection → chunked block-average fetch → guarded stats
-  → PNGs → JSON). `--cache-dir` reuses per-date npy (avoids refetch).
+- `tools/alarm_precision.py` (new) — municipality x GFS-issue-day alarm
+  precision. Reuses `tools/warned_before.py` (`ANCHORS`, `_day`, `_nanmax`,
+  ALTO/CRIT) by import (`sys.path` insert, same convention as
+  `tools/rs_ems_validation.py`). Rasterizes municipal polygons onto the TPI
+  grid (cell-centre rule), nanmax over `d1..d3 _slide` bands per issue day,
+  `np.maximum.reduceat` per municipality; slides->municipality via STRtree
+  `intersects`. Scores per case x reference x depicted-window variant x cut;
+  `--write` merges into `data/metrics.json` (json load/modify/dump +
+  `os.replace`, like `warned_before.merge`).
+- `pipeline/tests/test_alarm_precision.py` (new) — 14 hermetic tests: issue
+  discovery, band picking, depicted windows (both variants), overlap edges,
+  lead_h sign, `summarize` precision/baseline/lift/POD/lead on synthetic
+  units, municipality rasterization partition, STRtree slide assignment.
+- `data/metrics.json` — merged `cases.<c>.alarm_precision_*` flat keys +
+  `cases.<c>.alarm_precision` object (per reference, per variant, per cut,
+  `by_issue_day` table, definitions, dating assumption, flat-key map).
+- `data/SCHEMA.md` — new "Alarm precision — `alarm_*`" section.
+- `.herdr/implement-alarm-prec.md` — headline table + notes.
 
-## Discovery (anonymous CMR, collection NISAR_L2_GCOV_V1, 60 d window)
+## Decisions / findings
 
-- Track 024 D frame 101: only **2** passes exist — 2026-10-25 and 2026-11-06.
-  NISAR systematic GCOV coverage of Southern Brazil only began ~Oct 22 (102
-  granules total over the live bbox, Oct 22→Nov 6); no earlier repeat exists.
-- To reach ≥3 dates, widened to "passes covering the candidate footprint"
-  (same-mode 4005_DHDH_A, looks=100 only, per lead-analysis guard):
-  - 2026-10-25 024D_101 P (pair geometry, partial swath, EPSG:32723)
-  - 2026-10-29 074A_166 F (ascending context, EPSG:32722)
-  - 2026-11-01 125D_100 P (descending context, EPSG:32722)
-  - 2026-11-06 024D_101 P (pair geometry, partial swath, EPSG:32723)
-- 5 granules rejected with reasons recorded in json (mixed-mode 2005 product
-  on Oct 25 — the published pre granule — dupes, no-coverage, no-h5).
-
-## Guard application (9456cc8, imported from tp.response_nisar — not copied)
-
-- `rn.pair_mismatch`: published pair 2005_DHDH_M (looks 25) → 4005_DHDH_A
-  (looks 100) is mixed-mode → rejected; series uses same-mode 4005 products.
-- `threshold_method == "fallback"` (-15 dB) in nisar_meta.json → the pass is
-  not flood evidence (recorded in guards.published_pair_rejected).
-- `rn.edge_zone` (2 km): candidate strip (234 px) → 1 px kept Oct 25,
-  **0 px** Nov 6. Urban control fully in edge zone on both 024D dates.
-- `rn.states_geom`/`rn.in_states` on municipal_boundaries.geojson: all 8
-  candidate polygons in **São Miguel Arcanjo, SP** → outside RS/SC/PR,
-  dropped (dropped_outside_states = 8). Boundaries file taken from the
-  fallback branch copy at ~/.cache (pending lead-gathering's product).
-
-## Numbers (HH linear-power mean dB, edge-guarded)
-
-| area | Oct 25 | Oct 29 | Nov 1 | Nov 6 |
-|---|---|---|---|---|
-| flood_candidates (2.35 km²) | -14.13 (n=1) | -5.61 (n=235) | -5.15 (n=235) | — (n=0) |
-| control_open_field (55.5 km²) | -8.78 | -6.60 | -6.26 | -9.05 |
-| control_urban (4.6 km²) | — | -4.88 | +1.01 | — |
-
-Unguarded pair-date strip median: -16.8 (Oct 25) → -17.5 dB (Nov 6) — already
-dark pre-event, i.e. edge-zone artifact, NOT new flooding. Context passes
-show ordinary land over the same strip; urban double-bounce (+1.0 dB HH)
-visible Nov 1.
+- WA `municipal_boundaries.geojson` holds `place`+`county_subdivision`
+  features, NOT counties. Fetched WA counties from TIGERweb
+  `State_County/MapServer/1` (BAS 2026, STATE='53', AOI-intersect, same
+  query pattern as `pipeline/fetch/boundaries.py`), cached at
+  `~/.cache/lead-analysis/alarm-prec/wa_counties.geojson` -> 7 counties
+  (Island, Jefferson, King, Kitsap, Pierce, Skagit, Snohomish).
+- TPI bands `d1..d3` depict D+1..D+3 (warned_before `gfs_frames`); the
+  `depict_d0_d2` variant re-reads them under the forecast_rain `d<j>`=D+j-1
+  convention (same arrays, hit test only).
+- Flat keys mirror `references.catalog.variants.depict_d1_d3`; POD/lead flat
+  keys use the critical cut.
+- All municipalities have >= 1 TPI cell (no zero-cell units).
 
 ## Commands run
 
-- `uv sync` (uv binary: ~/.local/share/mise/installs/uv/0.13.8/uv-*; mise
-  shim broken), `.env` sourced for EARTHDATA_TOKEN (never printed).
-- probes/fetch under `systemd-run --user --scope -p MemoryMax=3G`,
-  cache ~/.cache/l42-now-nisar/{fetch_passes.py,probe.py,same-mode_*.npy,
-  passes.json,municipal_boundaries.geojson}.
-- `git fetch + rebase onto 9456cc8` (clean).
-- `python tools/now_nisar_timeseries.py --cache-dir ~/.cache/l42-now-nisar`
-  (3 runs: mode_token fix, km2-from-mask fix).
-- `python -m live.now_manifest --out-dir data/now`.
-- `uv run pytest live/tests pipeline/tests` → **753 passed**.
+- `curl TIGERweb State_County/MapServer?f=json` + layer-1 query STATE='53'
+  AOI-envelope -> wa_counties.geojson (7 counties)
+- `python tools/alarm_precision.py` then `--write` (systemd-run, 2G cap,
+  PYTHONPATH=.:pipeline)
+- `pytest -q pipeline/tests/test_alarm_precision.py` -> 14 passed
+- `pytest -q pipeline/tests live/tests gee/tests` -> 893 passed, 0 failed
 
-## Rerun on the same-mode pair (conductor-approved, commit 876544e)
+## Headline (primary window depict D+1..D+3, catalog reference)
 
-- `fetch/nisar.py pair_latest_pass`: pre pool now iterates all granules (not
-  the per-frame dedupe) and prefers granules matching the post's
-  `rn.mode_token` — future runs auto-pick same-mode products; +2 tests.
-- `14_response_nisar.py` rerun on the Now domain (HAND via symlink to the
-  main checkout's local hand_m.tif, GPW via vsicurl): paired 4005 Oct-25 →
-  4005 Nov-6 automatically. Outcome: **no_usable_pair** — Otsu per-scene
-  calibration failed on the partial-swath overlap, threshold fell back to
-  -15.0 dB → pair rejected (`rejected_pairs` records it). flood_nisar.geojson
-  deleted by the pipeline; manifest pruned the `flood_nisar` product;
-  nisar layers/timeseries stay (app gates on meta.status).
-- Published: main dbf2402..876544e, fallback snapshot pushed
-  (FALLBACK_ALLOW_DROP for the deleted flood_nisar.geojson).
-- CORRECTED (lead-analysis): the worktree snapshot dropped 31 live
-  data/now files the worktree didn't hold (summary.json, TPI layers,
-  alerts, p_trigger) — restored at fallback 78586d5. Rule learned: never
-  push fallback from a worktree; push main only, now.yml publishes.
+| case | cut | alarms | hits | precision % | baseline % | lift | POD<onset % | lead h med (IQR) |
+|---|---|---|---|---|---|---|---|---|
+| rs_2024 | critical | 971 | 327 | 33.68 | 24.93 | 1.35 | 100 | 3.0 (3-27) |
+| rs_2024 | alto+ | 1093 | 343 | 31.38 | 24.93 | 1.26 | 100 | 3.0 (3-27) |
+| rs_2024 ems | critical | 971 | 35 | 3.60 | 2.90 | 1.24 | 100 | 3.0 (3-27) |
+| wa_2025 | critical | 66 | 13 | 19.70 | 10.00 | 1.97 | 100 | 56.0 (20-68) |
+| wa_2025 | alto+ | 84 | 14 | 16.67 | 10.00 | 1.67 | 100 | 44.0 (26-62) |
 
-## Caveats
-
-- Cross-track context dates have different incidence — levels indicative
-  only; the pair dates are same-geometry.
-- flood_candidates Oct-25 value is n=1 px (edge-clipped) — shown for
-  transparency with n_px_by_date.
-- The live candidates fail every guard → series reports them honestly as
-  rejected/edge-artifact, never as flooding ("candidates, never confirmed").
+Committed on branch `alarm-prec` (not pushed).

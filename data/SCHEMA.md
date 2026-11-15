@@ -582,6 +582,45 @@ reference (497 EMS polygons in five small AOIs vs 16,027 inventory points
 AOI-wide) and the cell rule (any-cell-touched vs the point's own cell — more
 permissive); the order comparison lives in `landslide_ems.inventory_16027`.
 
+### Alarm precision — `alarm_*` (both cases)
+
+Producer `tools/alarm_precision.py` (imports `tools/warned_before.py`
+ANCHORS / frame conventions). Unit = **municipality x GFS 00Z run issue
+day** over every replay issue day that exists as
+`<case>/cog/<case>_tpi_gfs_<D>.tif` (rs_2024: 138 IBGE municipios x 15 days,
+2024-04-23..05-07; wa_2025: 7 US Census TIGER counties intersecting the AOI x
+20 days, 2025-12-01..12-20 — the published
+`wa_2025/geojson/municipal_boundaries.geojson` holds places/county
+subdivisions, NOT counties; the county polygons come from TIGERweb
+State_County MapServer layer 1, BAS 2026, cached under
+`~/.cache/lead-analysis/alarm-prec/wa_counties.geojson`).
+
+ALARM(muni, D) = any ~90 m TPI_slide cell whose centre falls inside the
+municipality polygon has TPI > 0.6 (`critical` cut) / > 0.4 (`alto_plus`),
+max over the `d1..d3 _slide` bands depicting D+1..D+3 (the TPI-frame
+convention; the `depict_d0_d2` variant re-reads the same bands as D..D+2
+under the forecast_rain COG `d<j>` = D+j-1 convention — alarm masks
+identical, only the hit-overlap test shifts). HIT(muni, D) = the
+municipality holds >= 1 mapped landslide AND the depicted window overlaps
+the trigger window — the inventories are undated, so every slide is assumed
+inside it (rs: 2024-04-29..05-02; wa: 2025-12-08..12-12; L37,
+`docs/conventions-dates.md`).
+
+| key | unit | definition |
+|---|---|---|
+| `alarm_precision_critical_pct` / `_n_alarms` / `_n_hits` / `_false_alarms` | % / counts | alarmed units that are hits, Crítico cut |
+| `alarm_precision_alto_plus_pct` / `_n_alarms` / `_n_hits` / `_false_alarms` | % / counts | same at the Alto+ cut |
+| `alarm_pod_before_onset_pct` | % of slide municipalities | >= 1 alarmed hit unit issued (00Z) before the onset (`pod_before_window_end_pct` in the object relaxes to any in-window run) |
+| `alarm_lead_h_median` | h | onset - issue 00Z, median over alarmed hit units issued before the onset (all-issue median + IQRs in the object) |
+| `alarm_baseline_pct` | % of all units | share of muni x D units that are hits — what a uniformly random alarm scores |
+| `alarm_lift` | ratio | precision / baseline (critical cut) |
+| `alarm_precision` | object | `unit`, `municipality_source`, `n_municipalities`, `issue_days`, `trigger_window`, `dating_assumption`, `definitions`, `flat_keys_*` map, and `references.<ref>` (`catalog`, rs also `ems`) each with `n_slides`, `slide_municipalities`, `variants.depict_{d1_d3,d0_d2}.cuts.<cut>` = the full statistic block incl. `by_issue_day` table |
+
+All flat keys mirror `references.catalog.variants.depict_d1_d3` only
+(`flat_keys_cut` names which cut each mirrors). rs_2024 scores two
+references separately (catalog = 16,027 inventory points; ems = the 497
+EMSR720 polygons, Taquari-valley-only coverage).
+
 ## data/now/ — the live bundle
 
 Moved from repo-root `now/` so `scripts/sync-data.mjs` copies it with

@@ -909,7 +909,794 @@
             }
           }
         }
-      }
+      },
+      "alarm_precision": {
+        "unit": "municipality x GFS 00Z run issue day",
+        "municipality_source": "US Census TIGER BAS 2026 counties intersecting the case AOI (tigerweb State_County MapServer layer 1, cached ~/.cache/lead-analysis/alarm-prec/wa_counties.geojson — the published municipal_boundaries.geojson holds places/county subdivisions, not counties)",
+        "municipality_admin": "county",
+        "n_municipalities": 7,
+        "municipalities": [
+          "Island",
+          "Jefferson",
+          "King",
+          "Kitsap",
+          "Pierce",
+          "Skagit",
+          "Snohomish"
+        ],
+        "n_tpi_cells_in_municipalities": 2528738,
+        "n_issue_days": 20,
+        "issue_days": [
+          "2025-12-01",
+          "2025-12-02",
+          "2025-12-03",
+          "2025-12-04",
+          "2025-12-05",
+          "2025-12-06",
+          "2025-12-07",
+          "2025-12-08",
+          "2025-12-09",
+          "2025-12-10",
+          "2025-12-11",
+          "2025-12-12",
+          "2025-12-13",
+          "2025-12-14",
+          "2025-12-15",
+          "2025-12-16",
+          "2025-12-17",
+          "2025-12-18",
+          "2025-12-19",
+          "2025-12-20"
+        ],
+        "onset_utc": "2025-12-08T08:00:00+00:00",
+        "onset_local": "2025-12-08 00:00 PST (UTC-8)",
+        "trigger_window": [
+          "2025-12-08",
+          "2025-12-12"
+        ],
+        "dating_assumption": "the landslide references are UNDATED (imagery-mapped inventories); every slide is assumed inside the trigger window, so a unit is a hit iff the municipality holds >= 1 slide AND the run's depicted window overlaps the trigger window",
+        "definitions": {
+          "alarm": "any ~90 m TPI_slide cell whose centre falls inside the municipality polygon has TPI > 0.6 (critical cut) / > 0.4 (alto_plus cut); max over bands d1..d3 _slide",
+          "hit": "municipality holds >= 1 mapped landslide (point/polygon intersects it) AND the run's depicted window overlaps the trigger window",
+          "precision": "alarm_precision_*_pct = 100 * alarmed hit units / alarmed units",
+          "baseline": "alarm_baseline_pct = 100 * hit units / all units — what a uniformly random alarm scores",
+          "lift": "alarm_lift = precision_pct / baseline_pct (critical cut)",
+          "pod": "alarm_pod_before_onset_pct = % of slide municipalities with >= 1 alarmed hit unit issued (00Z) before the onset; pod_before_window_end_pct relaxes it to any in-window run",
+          "lead": "alarm_lead_h_* = onset - issue 00Z, hours, over alarmed hit units; median + IQR over all and over issues before the onset"
+        },
+        "flat_keys_reference": "catalog",
+        "flat_keys_variant": "depict_d1_d3",
+        "flat_keys_cut": {
+          "alarm_precision_critical_*": "critical",
+          "alarm_precision_alto_plus_*": "alto_plus",
+          "alarm_pod_before_onset_pct": "critical",
+          "alarm_lead_h_median": "critical, issued before onset",
+          "alarm_baseline_pct": "cut-independent",
+          "alarm_lift": "critical"
+        },
+        "references": {
+          "catalog": {
+            "file": "data/wa_2025/geojson/landslide_catalog.geojson",
+            "n_slides": 15,
+            "slide_municipalities": [
+              "Skagit",
+              "Snohomish"
+            ],
+            "variants": {
+              "depict_d1_d3": {
+                "depicted_window": "bands d1..d3 depict D+1..D+3 (TPI frame convention)",
+                "cuts": {
+                  "critical": {
+                    "n_units": 140,
+                    "n_hit_units": 14,
+                    "n_alarms": 66,
+                    "n_hits": 13,
+                    "false_alarms": 53,
+                    "precision_pct": 19.7,
+                    "baseline_pct": 10.0,
+                    "lift": 1.97,
+                    "n_slide_municipalities": 2,
+                    "n_municipalities": 7,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": 8.0,
+                      "iqr": [
+                        -40.0,
+                        56.0
+                      ],
+                      "n": 13
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 56.0,
+                      "iqr": [
+                        20.0,
+                        68.0
+                      ],
+                      "n": 7
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2025-12-01",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2025-12-02",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2025-12-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 2,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-05",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-06",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-07",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 3,
+                        "n_hits": 1,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-08",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-09",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-10",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-11",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 5,
+                        "n_hits": 2,
+                        "precision_pct": 40.0
+                      },
+                      {
+                        "issue": "2025-12-12",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 1,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-13",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-14",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-15",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-16",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-17",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-18",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-19",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-20",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 1,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      }
+                    ]
+                  },
+                  "alto_plus": {
+                    "n_units": 140,
+                    "n_hit_units": 14,
+                    "n_alarms": 84,
+                    "n_hits": 14,
+                    "false_alarms": 70,
+                    "precision_pct": 16.67,
+                    "baseline_pct": 10.0,
+                    "lift": 1.67,
+                    "n_slide_municipalities": 2,
+                    "n_municipalities": 7,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": 8.0,
+                      "iqr": [
+                        -34.0,
+                        50.0
+                      ],
+                      "n": 14
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 44.0,
+                      "iqr": [
+                        26.0,
+                        62.0
+                      ],
+                      "n": 8
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2025-12-01",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2025-12-02",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 2,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-05",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-06",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-07",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-08",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-09",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 6,
+                        "n_hits": 2,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-10",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 6,
+                        "n_hits": 2,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-11",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 6,
+                        "n_hits": 2,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-12",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 3,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-13",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-14",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-15",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 6,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-16",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-17",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-18",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-19",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-20",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      }
+                    ]
+                  }
+                }
+              },
+              "depict_d0_d2": {
+                "depicted_window": "bands d1..d3 re-read as depicting D..D+2 (forecast_rain COG d<j> = day D+j-1 convention; same arrays, hit test only)",
+                "cuts": {
+                  "critical": {
+                    "n_units": 140,
+                    "n_hit_units": 14,
+                    "n_alarms": 66,
+                    "n_hits": 11,
+                    "false_alarms": 55,
+                    "precision_pct": 16.67,
+                    "baseline_pct": 10.0,
+                    "lift": 1.67,
+                    "n_slide_municipalities": 2,
+                    "n_municipalities": 7,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -16.0,
+                      "iqr": [
+                        -40.0,
+                        20.0
+                      ],
+                      "n": 11
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 32.0,
+                      "iqr": [
+                        8.0,
+                        56.0
+                      ],
+                      "n": 5
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2025-12-01",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2025-12-02",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2025-12-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 2,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-06",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-07",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 3,
+                        "n_hits": 1,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-08",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-09",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-10",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-11",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 5,
+                        "n_hits": 2,
+                        "precision_pct": 40.0
+                      },
+                      {
+                        "issue": "2025-12-12",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 1,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-13",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-14",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-15",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-16",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-17",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-18",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-19",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-20",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 1,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      }
+                    ]
+                  },
+                  "alto_plus": {
+                    "n_units": 140,
+                    "n_hit_units": 14,
+                    "n_alarms": 84,
+                    "n_hits": 13,
+                    "false_alarms": 71,
+                    "precision_pct": 15.48,
+                    "baseline_pct": 10.0,
+                    "lift": 1.55,
+                    "n_slide_municipalities": 2,
+                    "n_municipalities": 7,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -16.0,
+                      "iqr": [
+                        -40.0,
+                        32.0
+                      ],
+                      "n": 13
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 32.0,
+                      "iqr": [
+                        14.0,
+                        50.0
+                      ],
+                      "n": 6
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2025-12-01",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2025-12-02",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 2,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-06",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-07",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-08",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 4,
+                        "n_hits": 2,
+                        "precision_pct": 50.0
+                      },
+                      {
+                        "issue": "2025-12-09",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 6,
+                        "n_hits": 2,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-10",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 6,
+                        "n_hits": 2,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-11",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 6,
+                        "n_hits": 2,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-12",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 3,
+                        "n_hits": 1,
+                        "precision_pct": 33.33
+                      },
+                      {
+                        "issue": "2025-12-13",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-14",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-15",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 6,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-16",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-17",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-18",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-19",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2025-12-20",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 4,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "alarm_precision_critical_pct": 19.7,
+      "alarm_precision_critical_n_alarms": 66,
+      "alarm_precision_critical_n_hits": 13,
+      "alarm_precision_critical_false_alarms": 53,
+      "alarm_precision_alto_plus_pct": 16.67,
+      "alarm_precision_alto_plus_n_alarms": 84,
+      "alarm_precision_alto_plus_n_hits": 14,
+      "alarm_precision_alto_plus_false_alarms": 70,
+      "alarm_pod_before_onset_pct": 100.0,
+      "alarm_lead_h_median": 56.0,
+      "alarm_baseline_pct": 10.0,
+      "alarm_lift": 1.97
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -4991,7 +5778,1440 @@
             }
           }
         }
-      }
+      },
+      "alarm_precision": {
+        "unit": "municipality x GFS 00Z run issue day",
+        "municipality_source": "IBGE municipios intersecting the case AOI (data/rs_2024/geojson/municipal_boundaries.geojson)",
+        "municipality_admin": "municipio",
+        "n_municipalities": 138,
+        "municipalities": [
+          "Alto Feliz",
+          "Alvorada",
+          "Anta Gorda",
+          "Araricá",
+          "Arroio do Meio",
+          "Arroio dos Ratos",
+          "Barra do Ribeiro",
+          "Barros Cassal",
+          "Barão",
+          "Barão do Triunfo",
+          "Bento Gonçalves",
+          "Boa Vista do Sul",
+          "Bom Princípio",
+          "Bom Retiro do Sul",
+          "Boqueirão do Leão",
+          "Brochier",
+          "Butiá",
+          "Cachoeirinha",
+          "Campo Bom",
+          "Canela",
+          "Canoas",
+          "Canudos do Vale",
+          "Capela de Santana",
+          "Capitão",
+          "Capivari do Sul",
+          "Carlos Barbosa",
+          "Caxias do Sul",
+          "Cerro Grande do Sul",
+          "Charqueadas",
+          "Colinas",
+          "Coqueiro Baixo",
+          "Coronel Pilar",
+          "Cotiporã",
+          "Cruzeiro do Sul",
+          "Dois Irmãos",
+          "Dois Lajeados",
+          "Dom Feliciano",
+          "Doutor Ricardo",
+          "Eldorado do Sul",
+          "Encantado",
+          "Encruzilhada do Sul",
+          "Esteio",
+          "Estrela",
+          "Estância Velha",
+          "Farroupilha",
+          "Fazenda Vilanova",
+          "Feliz",
+          "Flores da Cunha",
+          "Fontoura Xavier",
+          "Forquetinha",
+          "Garibaldi",
+          "General Câmara",
+          "Glorinha",
+          "Gramado",
+          "Gravataí",
+          "Guaíba",
+          "Harmonia",
+          "Igrejinha",
+          "Imigrante",
+          "Ivoti",
+          "Lajeado",
+          "Lindolfo Collor",
+          "Linha Nova",
+          "Maratá",
+          "Mariana Pimentel",
+          "Marques de Souza",
+          "Mato Leitão",
+          "Minas do Leão",
+          "Monte Belo do Sul",
+          "Montenegro",
+          "Morro Reuter",
+          "Muçum",
+          "Nova Bréscia",
+          "Nova Hartz",
+          "Nova Petrópolis",
+          "Nova Pádua",
+          "Nova Roma do Sul",
+          "Nova Santa Rita",
+          "Novo Hamburgo",
+          "Palmares do Sul",
+          "Pantano Grande",
+          "Pareci Novo",
+          "Parobé",
+          "Passo do Sobrado",
+          "Paverama",
+          "Picada Café",
+          "Pinto Bandeira",
+          "Porto Alegre",
+          "Portão",
+          "Pouso Novo",
+          "Poço das Antas",
+          "Presidente Lucena",
+          "Progresso",
+          "Putinga",
+          "Relvado",
+          "Rio Pardo",
+          "Roca Sales",
+          "Rolante",
+          "Salvador do Sul",
+          "Santa Clara do Sul",
+          "Santa Cruz do Sul",
+          "Santa Maria do Herval",
+          "Santa Tereza",
+          "Santo Antônio da Patrulha",
+          "Sapiranga",
+          "Sapucaia do Sul",
+          "Sertão Santana",
+          "Sinimbu",
+          "Soledade",
+          "São Francisco de Paula",
+          "São Jerônimo",
+          "São José do Herval",
+          "São José do Hortêncio",
+          "São José do Sul",
+          "São Leopoldo",
+          "São Marcos",
+          "São Pedro da Serra",
+          "São Sebastião do Caí",
+          "São Valentim do Sul",
+          "São Vendelino",
+          "Sério",
+          "Tabaí",
+          "Tapes",
+          "Taquara",
+          "Taquari",
+          "Teutônia",
+          "Travesseiro",
+          "Triunfo",
+          "Três Coroas",
+          "Tupandi",
+          "Vale Real",
+          "Vale Verde",
+          "Venâncio Aires",
+          "Vera Cruz",
+          "Veranópolis",
+          "Vespasiano Corrêa",
+          "Viamão",
+          "Westfália"
+        ],
+        "n_tpi_cells_in_municipalities": 4372170,
+        "n_issue_days": 15,
+        "issue_days": [
+          "2024-04-23",
+          "2024-04-24",
+          "2024-04-25",
+          "2024-04-26",
+          "2024-04-27",
+          "2024-04-28",
+          "2024-04-29",
+          "2024-04-30",
+          "2024-05-01",
+          "2024-05-02",
+          "2024-05-03",
+          "2024-05-04",
+          "2024-05-05",
+          "2024-05-06",
+          "2024-05-07"
+        ],
+        "onset_utc": "2024-04-29T03:00:00+00:00",
+        "onset_local": "2024-04-29 00:00 BRT (UTC-3)",
+        "trigger_window": [
+          "2024-04-29",
+          "2024-05-02"
+        ],
+        "dating_assumption": "the landslide references are UNDATED (imagery-mapped inventories); every slide is assumed inside the trigger window, so a unit is a hit iff the municipality holds >= 1 slide AND the run's depicted window overlaps the trigger window",
+        "definitions": {
+          "alarm": "any ~90 m TPI_slide cell whose centre falls inside the municipality polygon has TPI > 0.6 (critical cut) / > 0.4 (alto_plus cut); max over bands d1..d3 _slide",
+          "hit": "municipality holds >= 1 mapped landslide (point/polygon intersects it) AND the run's depicted window overlaps the trigger window",
+          "precision": "alarm_precision_*_pct = 100 * alarmed hit units / alarmed units",
+          "baseline": "alarm_baseline_pct = 100 * hit units / all units — what a uniformly random alarm scores",
+          "lift": "alarm_lift = precision_pct / baseline_pct (critical cut)",
+          "pod": "alarm_pod_before_onset_pct = % of slide municipalities with >= 1 alarmed hit unit issued (00Z) before the onset; pod_before_window_end_pct relaxes it to any in-window run",
+          "lead": "alarm_lead_h_* = onset - issue 00Z, hours, over alarmed hit units; median + IQR over all and over issues before the onset"
+        },
+        "flat_keys_reference": "catalog",
+        "flat_keys_variant": "depict_d1_d3",
+        "flat_keys_cut": {
+          "alarm_precision_critical_*": "critical",
+          "alarm_precision_alto_plus_*": "alto_plus",
+          "alarm_pod_before_onset_pct": "critical",
+          "alarm_lead_h_median": "critical, issued before onset",
+          "alarm_baseline_pct": "cut-independent",
+          "alarm_lift": "critical"
+        },
+        "references": {
+          "catalog": {
+            "file": "data/rs_2024/geojson/landslide_catalog.geojson",
+            "n_slides": 16027,
+            "slide_municipalities": [
+              "Alto Feliz",
+              "Anta Gorda",
+              "Arroio do Meio",
+              "Barros Cassal",
+              "Barão",
+              "Bento Gonçalves",
+              "Boa Vista do Sul",
+              "Bom Princípio",
+              "Boqueirão do Leão",
+              "Brochier",
+              "Campo Bom",
+              "Canela",
+              "Canudos do Vale",
+              "Capitão",
+              "Carlos Barbosa",
+              "Caxias do Sul",
+              "Colinas",
+              "Coqueiro Baixo",
+              "Coronel Pilar",
+              "Cotiporã",
+              "Cruzeiro do Sul",
+              "Dois Lajeados",
+              "Doutor Ricardo",
+              "Encantado",
+              "Estrela",
+              "Farroupilha",
+              "Feliz",
+              "Flores da Cunha",
+              "Fontoura Xavier",
+              "Forquetinha",
+              "Garibaldi",
+              "Gramado",
+              "Igrejinha",
+              "Imigrante",
+              "Ivoti",
+              "Lajeado",
+              "Linha Nova",
+              "Maratá",
+              "Marques de Souza",
+              "Monte Belo do Sul",
+              "Morro Reuter",
+              "Muçum",
+              "Nova Bréscia",
+              "Nova Hartz",
+              "Nova Petrópolis",
+              "Nova Pádua",
+              "Nova Roma do Sul",
+              "Novo Hamburgo",
+              "Paverama",
+              "Picada Café",
+              "Pinto Bandeira",
+              "Pouso Novo",
+              "Poço das Antas",
+              "Presidente Lucena",
+              "Progresso",
+              "Putinga",
+              "Relvado",
+              "Roca Sales",
+              "Rolante",
+              "Salvador do Sul",
+              "Santa Clara do Sul",
+              "Santa Cruz do Sul",
+              "Santa Maria do Herval",
+              "Santa Tereza",
+              "Sapiranga",
+              "Sinimbu",
+              "Soledade",
+              "São Francisco de Paula",
+              "São José do Herval",
+              "São José do Hortêncio",
+              "São José do Sul",
+              "São Marcos",
+              "São Pedro da Serra",
+              "São Valentim do Sul",
+              "São Vendelino",
+              "Sério",
+              "Taquara",
+              "Teutônia",
+              "Travesseiro",
+              "Três Coroas",
+              "Tupandi",
+              "Vale Real",
+              "Venâncio Aires",
+              "Veranópolis",
+              "Vespasiano Corrêa",
+              "Westfália"
+            ],
+            "variants": {
+              "depict_d1_d3": {
+                "depicted_window": "bands d1..d3 depict D+1..D+3 (TPI frame convention)",
+                "cuts": {
+                  "critical": {
+                    "n_units": 2070,
+                    "n_hit_units": 516,
+                    "n_alarms": 971,
+                    "n_hits": 327,
+                    "false_alarms": 644,
+                    "precision_pct": 33.68,
+                    "baseline_pct": 24.93,
+                    "lift": 1.35,
+                    "n_slide_municipalities": 86,
+                    "n_municipalities": 138,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -21.0,
+                      "iqr": [
+                        -45.0,
+                        3.0
+                      ],
+                      "n": 327
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 3.0,
+                      "iqr": [
+                        3.0,
+                        27.0
+                      ],
+                      "n": 155
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2024-04-23",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 20,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-24",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-25",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-26",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-27",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 1,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-28",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 97,
+                        "n_hits": 69,
+                        "precision_pct": 71.13
+                      },
+                      {
+                        "issue": "2024-04-29",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 125,
+                        "n_hits": 86,
+                        "precision_pct": 68.8
+                      },
+                      {
+                        "issue": "2024-04-30",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 128,
+                        "n_hits": 86,
+                        "precision_pct": 67.19
+                      },
+                      {
+                        "issue": "2024-05-01",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 129,
+                        "n_hits": 86,
+                        "precision_pct": 66.67
+                      },
+                      {
+                        "issue": "2024-05-02",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 130,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 130,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 110,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 96,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-06",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-07",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      }
+                    ]
+                  },
+                  "alto_plus": {
+                    "n_units": 2070,
+                    "n_hit_units": 516,
+                    "n_alarms": 1093,
+                    "n_hits": 343,
+                    "false_alarms": 750,
+                    "precision_pct": 31.38,
+                    "baseline_pct": 24.93,
+                    "lift": 1.26,
+                    "n_slide_municipalities": 86,
+                    "n_municipalities": 138,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -21.0,
+                      "iqr": [
+                        -33.0,
+                        3.0
+                      ],
+                      "n": 343
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 3.0,
+                      "iqr": [
+                        3.0,
+                        27.0
+                      ],
+                      "n": 171
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2024-04-23",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 55,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-24",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-25",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-26",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-27",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 16,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-28",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 128,
+                        "n_hits": 85,
+                        "precision_pct": 66.41
+                      },
+                      {
+                        "issue": "2024-04-29",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 131,
+                        "n_hits": 86,
+                        "precision_pct": 65.65
+                      },
+                      {
+                        "issue": "2024-04-30",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 86,
+                        "precision_pct": 65.15
+                      },
+                      {
+                        "issue": "2024-05-01",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 86,
+                        "precision_pct": 65.15
+                      },
+                      {
+                        "issue": "2024-05-02",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 132,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 132,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 119,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 107,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-06",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 9,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-07",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      }
+                    ]
+                  }
+                }
+              },
+              "depict_d0_d2": {
+                "depicted_window": "bands d1..d3 re-read as depicting D..D+2 (forecast_rain COG d<j> = day D+j-1 convention; same arrays, hit test only)",
+                "cuts": {
+                  "critical": {
+                    "n_units": 2070,
+                    "n_hit_units": 516,
+                    "n_alarms": 971,
+                    "n_hits": 413,
+                    "false_alarms": 558,
+                    "precision_pct": 42.53,
+                    "baseline_pct": 24.93,
+                    "lift": 1.71,
+                    "n_slide_municipalities": 86,
+                    "n_municipalities": 138,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -21.0,
+                      "iqr": [
+                        -45.0,
+                        3.0
+                      ],
+                      "n": 413
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 3.0,
+                      "iqr": [
+                        3.0,
+                        27.0
+                      ],
+                      "n": 155
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2024-04-23",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 20,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-24",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-25",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-26",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-27",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 1,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-28",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 97,
+                        "n_hits": 69,
+                        "precision_pct": 71.13
+                      },
+                      {
+                        "issue": "2024-04-29",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 125,
+                        "n_hits": 86,
+                        "precision_pct": 68.8
+                      },
+                      {
+                        "issue": "2024-04-30",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 128,
+                        "n_hits": 86,
+                        "precision_pct": 67.19
+                      },
+                      {
+                        "issue": "2024-05-01",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 129,
+                        "n_hits": 86,
+                        "precision_pct": 66.67
+                      },
+                      {
+                        "issue": "2024-05-02",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 130,
+                        "n_hits": 86,
+                        "precision_pct": 66.15
+                      },
+                      {
+                        "issue": "2024-05-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 130,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 110,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 96,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-06",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-07",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      }
+                    ]
+                  },
+                  "alto_plus": {
+                    "n_units": 2070,
+                    "n_hit_units": 516,
+                    "n_alarms": 1093,
+                    "n_hits": 429,
+                    "false_alarms": 664,
+                    "precision_pct": 39.25,
+                    "baseline_pct": 24.93,
+                    "lift": 1.57,
+                    "n_slide_municipalities": 86,
+                    "n_municipalities": 138,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -21.0,
+                      "iqr": [
+                        -45.0,
+                        3.0
+                      ],
+                      "n": 429
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 3.0,
+                      "iqr": [
+                        3.0,
+                        27.0
+                      ],
+                      "n": 171
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2024-04-23",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 55,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-24",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-25",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-26",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-27",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 16,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-28",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 128,
+                        "n_hits": 85,
+                        "precision_pct": 66.41
+                      },
+                      {
+                        "issue": "2024-04-29",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 131,
+                        "n_hits": 86,
+                        "precision_pct": 65.65
+                      },
+                      {
+                        "issue": "2024-04-30",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 86,
+                        "precision_pct": 65.15
+                      },
+                      {
+                        "issue": "2024-05-01",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 86,
+                        "precision_pct": 65.15
+                      },
+                      {
+                        "issue": "2024-05-02",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 86,
+                        "precision_pct": 65.15
+                      },
+                      {
+                        "issue": "2024-05-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 132,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 119,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 107,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-06",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 9,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-07",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "ems": {
+            "file": "data/rs_2024/geojson/landslide_ems.geojson",
+            "n_slides": 497,
+            "slide_municipalities": [
+              "Bento Gonçalves",
+              "Cotiporã",
+              "Doutor Ricardo",
+              "Encantado",
+              "Monte Belo do Sul",
+              "Muçum",
+              "Roca Sales",
+              "Santa Tereza",
+              "Veranópolis",
+              "Vespasiano Corrêa"
+            ],
+            "variants": {
+              "depict_d1_d3": {
+                "depicted_window": "bands d1..d3 depict D+1..D+3 (TPI frame convention)",
+                "cuts": {
+                  "critical": {
+                    "n_units": 2070,
+                    "n_hit_units": 60,
+                    "n_alarms": 971,
+                    "n_hits": 35,
+                    "false_alarms": 936,
+                    "precision_pct": 3.6,
+                    "baseline_pct": 2.9,
+                    "lift": 1.24,
+                    "n_slide_municipalities": 10,
+                    "n_municipalities": 138,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -21.0,
+                      "iqr": [
+                        -45.0,
+                        3.0
+                      ],
+                      "n": 35
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 3.0,
+                      "iqr": [
+                        3.0,
+                        27.0
+                      ],
+                      "n": 15
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2024-04-23",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 20,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-24",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-25",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-26",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-27",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 1,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-28",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 97,
+                        "n_hits": 5,
+                        "precision_pct": 5.15
+                      },
+                      {
+                        "issue": "2024-04-29",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 125,
+                        "n_hits": 10,
+                        "precision_pct": 8.0
+                      },
+                      {
+                        "issue": "2024-04-30",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 128,
+                        "n_hits": 10,
+                        "precision_pct": 7.81
+                      },
+                      {
+                        "issue": "2024-05-01",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 129,
+                        "n_hits": 10,
+                        "precision_pct": 7.75
+                      },
+                      {
+                        "issue": "2024-05-02",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 130,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 130,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 110,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 96,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-06",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-07",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      }
+                    ]
+                  },
+                  "alto_plus": {
+                    "n_units": 2070,
+                    "n_hit_units": 60,
+                    "n_alarms": 1093,
+                    "n_hits": 40,
+                    "false_alarms": 1053,
+                    "precision_pct": 3.66,
+                    "baseline_pct": 2.9,
+                    "lift": 1.26,
+                    "n_slide_municipalities": 10,
+                    "n_municipalities": 138,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -9.0,
+                      "iqr": [
+                        -27.0,
+                        9.0
+                      ],
+                      "n": 40
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 15.0,
+                      "iqr": [
+                        3.0,
+                        27.0
+                      ],
+                      "n": 20
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2024-04-23",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 55,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-24",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-25",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-26",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-27",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 16,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-28",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 128,
+                        "n_hits": 10,
+                        "precision_pct": 7.81
+                      },
+                      {
+                        "issue": "2024-04-29",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 131,
+                        "n_hits": 10,
+                        "precision_pct": 7.63
+                      },
+                      {
+                        "issue": "2024-04-30",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 10,
+                        "precision_pct": 7.58
+                      },
+                      {
+                        "issue": "2024-05-01",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 10,
+                        "precision_pct": 7.58
+                      },
+                      {
+                        "issue": "2024-05-02",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 132,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 132,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 119,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 107,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-06",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 9,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-07",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      }
+                    ]
+                  }
+                }
+              },
+              "depict_d0_d2": {
+                "depicted_window": "bands d1..d3 re-read as depicting D..D+2 (forecast_rain COG d<j> = day D+j-1 convention; same arrays, hit test only)",
+                "cuts": {
+                  "critical": {
+                    "n_units": 2070,
+                    "n_hit_units": 60,
+                    "n_alarms": 971,
+                    "n_hits": 45,
+                    "false_alarms": 926,
+                    "precision_pct": 4.63,
+                    "baseline_pct": 2.9,
+                    "lift": 1.6,
+                    "n_slide_municipalities": 10,
+                    "n_municipalities": 138,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -21.0,
+                      "iqr": [
+                        -45.0,
+                        3.0
+                      ],
+                      "n": 45
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 3.0,
+                      "iqr": [
+                        3.0,
+                        27.0
+                      ],
+                      "n": 15
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2024-04-23",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 20,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-24",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-25",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-26",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-27",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 1,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-28",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 97,
+                        "n_hits": 5,
+                        "precision_pct": 5.15
+                      },
+                      {
+                        "issue": "2024-04-29",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 125,
+                        "n_hits": 10,
+                        "precision_pct": 8.0
+                      },
+                      {
+                        "issue": "2024-04-30",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 128,
+                        "n_hits": 10,
+                        "precision_pct": 7.81
+                      },
+                      {
+                        "issue": "2024-05-01",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 129,
+                        "n_hits": 10,
+                        "precision_pct": 7.75
+                      },
+                      {
+                        "issue": "2024-05-02",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 130,
+                        "n_hits": 10,
+                        "precision_pct": 7.69
+                      },
+                      {
+                        "issue": "2024-05-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 130,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 110,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 96,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-06",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 5,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-07",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      }
+                    ]
+                  },
+                  "alto_plus": {
+                    "n_units": 2070,
+                    "n_hit_units": 60,
+                    "n_alarms": 1093,
+                    "n_hits": 50,
+                    "false_alarms": 1043,
+                    "precision_pct": 4.57,
+                    "baseline_pct": 2.9,
+                    "lift": 1.58,
+                    "n_slide_municipalities": 10,
+                    "n_municipalities": 138,
+                    "pod_before_onset_pct": 100.0,
+                    "pod_before_window_end_pct": 100.0,
+                    "alarm_lead_h_all": {
+                      "median": -21.0,
+                      "iqr": [
+                        -45.0,
+                        3.0
+                      ],
+                      "n": 50
+                    },
+                    "alarm_lead_h_issued_before_onset": {
+                      "median": 15.0,
+                      "iqr": [
+                        3.0,
+                        27.0
+                      ],
+                      "n": 20
+                    },
+                    "by_issue_day": [
+                      {
+                        "issue": "2024-04-23",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 55,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-24",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-25",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-26",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      },
+                      {
+                        "issue": "2024-04-27",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 16,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-04-28",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 128,
+                        "n_hits": 10,
+                        "precision_pct": 7.81
+                      },
+                      {
+                        "issue": "2024-04-29",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 131,
+                        "n_hits": 10,
+                        "precision_pct": 7.63
+                      },
+                      {
+                        "issue": "2024-04-30",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 10,
+                        "precision_pct": 7.58
+                      },
+                      {
+                        "issue": "2024-05-01",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 10,
+                        "precision_pct": 7.58
+                      },
+                      {
+                        "issue": "2024-05-02",
+                        "window_overlaps_trigger": true,
+                        "n_alarms": 132,
+                        "n_hits": 10,
+                        "precision_pct": 7.58
+                      },
+                      {
+                        "issue": "2024-05-03",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 132,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-04",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 119,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-05",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 107,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-06",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 9,
+                        "n_hits": 0,
+                        "precision_pct": 0.0
+                      },
+                      {
+                        "issue": "2024-05-07",
+                        "window_overlaps_trigger": false,
+                        "n_alarms": 0,
+                        "n_hits": 0,
+                        "precision_pct": null
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "alarm_precision_critical_pct": 33.68,
+      "alarm_precision_critical_n_alarms": 971,
+      "alarm_precision_critical_n_hits": 327,
+      "alarm_precision_critical_false_alarms": 644,
+      "alarm_precision_alto_plus_pct": 31.38,
+      "alarm_precision_alto_plus_n_alarms": 1093,
+      "alarm_precision_alto_plus_n_hits": 343,
+      "alarm_precision_alto_plus_false_alarms": 750,
+      "alarm_pod_before_onset_pct": 100.0,
+      "alarm_lead_h_median": 3.0,
+      "alarm_baseline_pct": 24.93,
+      "alarm_lift": 1.35
     }
   }
 }
