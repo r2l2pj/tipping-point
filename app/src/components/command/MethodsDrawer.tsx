@@ -2,14 +2,14 @@
 // upward), links to the public
 // READMEs. Section anchors are GitHub heading slugs on main.
 const DATA = "https://github.com/r2l2pj/tipping-point/blob/main/README.md";
-const APP = "https://github.com/r2l2pj/tipping-point-app/blob/main/README.md";
+const APP = "https://github.com/r2l2pj/tipping-point/blob/main/app/README.md";
 
 export const METHODS_LINKS: { label: string; sub: string; href: string }[] = [
   { label: "TPI formula", sub: "geometric mean of rain, soil and terrain scores", href: `${DATA}#method-and-thresholds` },
   { label: "Data used", sub: "NASA observations; forecast rain from NOAA GFS", href: `${DATA}#data-sources-nasa--partners` },
   { label: "Validation", sub: "radar vs OPERA, landslide inventories, held-out ML test", href: `${APP}#validation` },
   { label: "Limitations", sub: "what the index and the radar cannot do", href: `${DATA}#declared-limitations` },
-  { label: "Project document", sub: "the full plan (PT-BR)", href: "https://github.com/r2l2pj/tipping-point-app/blob/main/docs/PLAN.md" },
+  { label: "Project document", sub: "the full plan (PT-BR)", href: "https://github.com/r2l2pj/tipping-point/blob/main/docs/PLAN.md" },
 ];
 
 export default function MethodsDrawer() {
