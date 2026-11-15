@@ -401,6 +401,26 @@ night_light_drop_pct — merge its CSV printout), `gee/04_hand_vs_merit.js` /
 feature_importance; XGBoost stands in for the doc's in-GEE Random Forest —
 see ml/README.md), `07_forecast.py` (forecast_source).
 
+### "Did the alert come before?" — `flood_warned*` (wa_2025), `slide_warned*` (rs_2024)
+
+Producer `tools/warned_before.py` (Modo 3 row 1). Share of the damage that the
+TPI already flagged **Alto or higher (>= 0.4)** — and Crítico (> 0.6) — in the
+frames available **24-48 h before the damage anchor**; each damage location
+takes the ~90 m TPI cell that contains it; max over the window frames.
+
+| key | unit | compares |
+|---|---|---|
+| `flood_warned_pct` (wa) | % of NISAR-confirmed new-flood **area** (27.9 km²) | Alto+ in the L22 issued-GFS TPI_flood frames from 00Z runs 24-48 h before the anchor (headline) |
+| `flood_warned_observed_pct` | same | Alto+ in observed TPI_flood bands dated anchor-2d..anchor-1d (latency ignored = upper bound) |
+| `flood_warned_critical_pct` | same | Crítico share of the headline window |
+| `slide_warned_pct` / `_observed_pct` / `_critical_pct` (rs) | % of the 16,027 inventory **points** | same rules with TPI_slide |
+| `flood_warned` / `slide_warned` | object | `definition`, `anchor_utc` + `anchor_source`, `observed`, `forecast_gfs`, `best_issued_gfs_before_anchor`, `by_issue_gfs[]`, `by_date_observed[]` (per-date curve), WA `explanation` |
+
+Anchors: wa = case damage anchor (King County Flood Warning Center update
+2025-12-09 00:35Z); rs = 2024-05-01 00:00Z (the fixed RS dating of the ML
+TEST set). rs `flood_warned_pct` is null with a reason (no RS flood map).
+`no_tpi_pct` = locations on TPI no-data, kept in the denominator.
+
 ## data/now/ — the live bundle
 
 Moved from repo-root `now/` so `scripts/sync-data.mjs` copies it with

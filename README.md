@@ -257,6 +257,26 @@ index input.
 - NISAR frames are BETA pre-calibration products; use relative
   before/after change on the same frame.
 
+- "Did the alert come before?" (Modo 3, `tools/warned_before.py`, metrics
+  `flood_warned*` / `slide_warned*`): RS 2024 — 88.1 % of the 16,027
+  inventory landslides were Alto+ (69.1 % Crítico) in the NOAA GFS frames
+  issued 24-48 h before 2024-05-01 (observed frames 88.8 % / 73.5 %).
+  WA 2025 — only 0.1 % of the 27.9 km² NISAR-confirmed flood was Alto+
+  24-48 h before the first damage report (0.0 % observed); the flooded
+  valley floors went Alto+ only from the 2025-12-10 frame (41 %, then 89 %
+  and 99 %). The TPI is pixel-local: those pixels had high T_flood but no
+  local extreme rain; the river flood came from rain upstream in the
+  Cascades, which R does not route. RS 2024 has no flood reference map, so
+  its flood equivalent is null.
+
+## Use of AI
+
+Built with AI coding assistants (Anthropic Claude via Claude Code, Cognition
+Devin, OpenAI Codex/GPT) under human direction: they wrote and reviewed code
+and drafted docs. The idea, method and data choices come from the team's own
+project document (`docs/PLAN.md`); every source, threshold and reported number
+was reviewed by the team. AI-assisted commits carry a `Co-Authored-By` trailer.
+
 ## Rules
 
 - Inputs are NASA (or challenge-partner) data only. MERIT Hydro is a
