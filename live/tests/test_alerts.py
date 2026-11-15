@@ -490,7 +490,10 @@ def test_telegram_delivery_and_timestamp(monkeypatch, tmp_path, capsys, mode):
         assert post.call_args.args == ("https://api.telegram.org/bottest-token/sendMessage",)
         payload = post.call_args.kwargs["json"]
         assert payload["chat_id"] == "inside"
-        assert payload["text"].endswith("\n— Defesa Civil • Tipping Point (NASA GPM/SMAP/NISAR)")
+        assert "Tipping Point (não oficial)" in payload["text"]
+        assert payload["text"].endswith(
+            "\nSiga as orientações da Defesa Civil. SMS 40199.")
+        assert "Defesa Civil •" not in payload["text"]
     if mode == "unset":
         assert "TELEGRAM_TOKEN unset" in capsys.readouterr().out
     elif mode in ("http_error", "api_error", "exception"):

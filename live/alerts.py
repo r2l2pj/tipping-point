@@ -384,17 +384,18 @@ def _neon_query(query: str, params: list | None = None) -> list[dict]:
 
 
 def subscribers() -> list[dict]:
-    """Consenting subscriber rows (chat_id, lat, lon, last_class)."""
+    """Consenting subscriber rows (chat_id, lat, lon, last_class,
+    last_alert_ts — live.notify needs it for the 6 h rate limit)."""
     kind = _backend()
     if kind == "neon":
         return _neon_query(
-            "SELECT chat_id, lat, lon, last_class FROM subscribers "
-            "WHERE consent = true")
+            "SELECT chat_id, lat, lon, last_class, last_alert_ts "
+            "FROM subscribers WHERE consent = true")
     if kind == "sqlite":
         with _sqlite_conn() as conn:
             cur = conn.execute(
-                "SELECT chat_id, lat, lon, last_class FROM subscribers "
-                "WHERE consent")
+                "SELECT chat_id, lat, lon, last_class, last_alert_ts "
+                "FROM subscribers WHERE consent")
             cols = [d[0] for d in cur.description]
             return [dict(zip(cols, r)) for r in cur.fetchall()]
     return []
@@ -467,8 +468,9 @@ def update_subscribers_from_regions(regions: list[dict], data_date: str) -> int:
         if cls != prev and cls >= ALERT_MIN_CLASS and token and not quiet:
             import requests
 
-            text = (f"Alerta: risco {label} hoje ou amanhã. Dados: {data_date}."
-                    "\n— Defesa Civil • Tipping Point (NASA GPM/SMAP/NISAR)")
+            from .notify import FOOTER, SIGNATURE
+            text = (f"⚠️ {SIGNATURE}: risco {label} hoje ou amanhã na sua "
+                    f"região. Dados: {data_date}.\n{FOOTER}")
             try:
                 response = requests.post(
                     f"https://api.telegram.org/bot{token}/sendMessage",

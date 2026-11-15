@@ -133,6 +133,24 @@ def test_now_caches_climatology_before_run():
     assert cache < _run_idx(steps, "live/jobs.py now")
 
 
+def test_now_notify_step_after_fallback_publish():
+    """G1+G2: subscriber alerts run on the just-published bundle, after the
+    fallback branch publish; always exit-0, so continue-on-error anyway."""
+    _, doc = _load("now.yml")
+    steps = _steps(doc)
+    notify = [s for s in steps if "live.notify" in s.get("run", "")]
+    assert len(notify) == 1
+    step = notify[0]
+    assert step["run"] == "uv run python -m live.notify"
+    assert step.get("continue-on-error") is True
+    env = step.get("env", {})
+    assert env["TELEGRAM_TOKEN"] == "${{ secrets.TELEGRAM_TOKEN }}"
+    assert env["DATABASE_URL"] == "${{ secrets.DATABASE_URL }}"
+    i_notify = steps.index(step)
+    assert _run_idx(steps, "publish_fallback.py") < i_notify
+    assert i_notify < _run_idx(steps, "publish_s3.sh")
+
+
 def test_now_watchdog_dispatches_stale_now_runs():
     _text, doc = _load("now-watchdog.yml")
     on = _on(doc)

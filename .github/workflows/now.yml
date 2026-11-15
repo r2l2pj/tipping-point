@@ -238,6 +238,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: uv run python live/publish_fallback.py
 
+      # G1+G2: Telegram subscriber alerts on the just-published bundle —
+      # store/Telegram errors are logged inside live.notify, which always
+      # exits 0; continue-on-error is belt-and-braces.
+      - name: Notify Telegram subscribers
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          APP_URL: https://tipping-point-app.vercel.app
+        run: uv run python -m live.notify
+
       - name: Publish data/ to Neon storage
         continue-on-error: true
         env:
