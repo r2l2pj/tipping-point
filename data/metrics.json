@@ -1511,7 +1511,13 @@
       "slide_warned_observed_72h_pct": 0.25,
       "slide_warned_observed_72h_critical_pct": 0.0,
       "slide_warned_n": 16027,
-      "slide_warned_by_lead_definition": "slide_warned_{gfs|observed}_{24|48|72}h[_critical]_pct = % of the 16,027 RS 2024 inventory landslide points whose ~90 m TPI_slide cell was Alto+ (>= 0.4) [Crítico > 0.6] in: gfs = the NOAA GFS 00Z run issued 24/48/72 h before 2024-05-01 00Z (max over its d1..d3 frames depicting dates <= 2024-05-01); observed = the observed TPI band dated 24/48/72 h before (rain ending that day 00Z, latency ignored). Points on TPI no-data stay in the denominator."
+      "slide_warned_by_lead_definition": "slide_warned_{gfs|observed}_{24|48|72}h[_critical]_pct = % of the 16,027 RS 2024 inventory landslide points whose ~90 m TPI_slide cell was Alto+ (>= 0.4) [Crítico > 0.6] in: gfs = the NOAA GFS 00Z run issued 24/48/72 h before 2024-05-01 00Z (max over its d1..d3 frames depicting dates <= 2024-05-01); observed = the observed TPI band dated 24/48/72 h before (rain ending that day 00Z, latency ignored). Points on TPI no-data stay in the denominator.",
+      "cloud_pct_source": "HLS v2.0 Fmask (HLSL30 Landsat + HLSS30 Sentinel-2), cloud/adjacent/shadow/snow bits 1-4; 20 scenes on 2024-05-01, 2024-05-02, 2024-05-03 (2024-05-01..2024-05-03) over the AOI; a pixel counts clear if clear in ANY scene",
+      "hls_scene_dates": [
+        "2024-05-01",
+        "2024-05-02",
+        "2024-05-03"
+      ]
     }
   }
 }

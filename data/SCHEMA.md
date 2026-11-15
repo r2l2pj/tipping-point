@@ -411,6 +411,11 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   optical DSWx-HLS all-water, mostly cloud (`hls_method`, `cloud_pct`,
   `cloud_pct_source`). `tools/validation_metrics.py` writes only `*_raw` and
   `hls_*`; the headline keys are never overwritten by the all-water run.
+- rs_2024 optical cloud (`tools/validation_metrics.py` task B): `cloud_pct`
+  (100 − `cloud_free_pct`), `hls_scenes` (count), `hls_scene_dates` (UTC dates
+  of those HLS L30/S30 scenes over the AOI) and `cloud_pct_source` (product,
+  Fmask bits, scene count + dates, union rule) — what the app cites for
+  'clouds hid X%'.
 - `hand_validation` is a scalar 0–100 percentage: the HAND<5 m zone IoU
   against MERIT at the selected radius, suitable for the app `MetricsV4`
   percentage renderer. `hand_validation_radii` preserves per-radius `{r, iou}`

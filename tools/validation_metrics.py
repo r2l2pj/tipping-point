@@ -206,10 +206,19 @@ def task_rs2024() -> tuple[dict, dict, dict]:
     union = col.map(_flags).max()  # pixel seen/clear in ANY scene
     stats = union.reduceRegion(reducer=ee.Reducer.sum(), geometry=aoi,
                                scale=SCALE, maxPixels=MAX_PIXELS)
-    stats = stats.set("hls_scenes", col.size()).getInfo()
+    stats = (stats.set("hls_scenes", col.size())
+             .set("hls_times", col.aggregate_array("system:time_start")).getInfo())
     stats = stats if isinstance(stats, dict) else {}
     valid = stats.get("valid") or 0
     flat["hls_scenes"] = int(stats.get("hls_scenes") or 0)
+    dates = sorted({datetime.fromtimestamp(t / 1000, UTC).date().isoformat()
+                    for t in (stats.get("hls_times") or [])})
+    flat["hls_scene_dates"] = dates
+    flat["cloud_pct_source"] = (
+        f"HLS v2.0 Fmask (HLSL30 Landsat + HLSS30 Sentinel-2), cloud/adjacent/"
+        f"shadow/snow bits 1-4; {flat['hls_scenes']} scenes on "
+        f"{', '.join(dates) or 'none'} ({PEAK_RS[0]}..2024-05-03) over the AOI; "
+        f"a pixel counts clear if clear in ANY scene")
     flat["hls_observed_px"] = valid
     if valid:
         clear = stats.get("clear") or 0
