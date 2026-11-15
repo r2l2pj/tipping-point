@@ -1,88 +1,54 @@
 {
   "source": "nisar-gcov",
   "collection": "NISAR_L2_GCOV_V1",
-  "generated_at": "2026-11-15T05:20:50Z",
+  "generated_at": "2026-11-15T14:44:04Z",
   "bbox": [
     -58.0,
     -34.0,
     -48.0,
     -22.5
   ],
-  "latest_acquired": "2026-11-06T21:16:03Z",
-  "latency_h": 99.7,
-  "n_granules": 95,
-  "pairs": [
+  "latest_acquired": null,
+  "latency_h": null,
+  "n_granules": 102,
+  "pairs": [],
+  "rejected_pairs": [
     {
-      "pre": "NISAR_L2_PR_GCOV_034_024_D_101_2005_DHDH_M_20261025T211603_20261025T211633_P05036_N_F_J_001",
+      "pre": "NISAR_L2_PR_GCOV_034_024_D_101_4005_DHDH_A_20261025T211603_20261025T211609_P05036_N_P_J_001",
       "post": "NISAR_L2_PR_GCOV_035_024_D_101_4005_DHDH_A_20261106T211603_20261106T211610_P05036_N_P_J_001",
-      "track": 24,
-      "look": "D",
-      "frame": 101,
-      "pre_acquired": "2026-10-25T21:16:03Z",
-      "post_acquired": "2026-11-06T21:16:03Z",
-      "post_available": "2026-11-11T00:58:14Z",
-      "term": "HHHH",
-      "grid": {
-        "epsg": 32723,
-        "left": 144000.0,
-        "top": 7388700.0,
-        "res": 100.0,
-        "width": 790,
-        "height": 3183
-      },
-      "io": {
-        "pre": {
-          "chunks": 256,
-          "requests": 32,
-          "bytes": 66304254,
-          "looks": 25
-        },
-        "post": {
-          "chunks": 1008,
-          "requests": 19,
-          "bytes": 54078337,
-          "looks": 100
-        }
-      },
-      "valid_km2": 1599.9,
-      "threshold_db": -15.0,
-      "threshold_method": "fallback",
-      "open_water_km2": 2.34,
-      "bright_km2": 0,
-      "receded_km2": 0.0,
-      "polygons": 8
+      "reason": "water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used"
     }
   ],
-  "flooded_km2": 2.34,
-  "open_water_km2": 2.34,
-  "bright_km2": 0.0,
-  "new_km2": 2.34,
-  "receded_km2": 0.0,
-  "people_flooded": 82,
+  "flooded_km2": null,
+  "open_water_km2": null,
+  "bright_km2": null,
+  "new_km2": null,
+  "receded_km2": null,
+  "people_flooded": null,
   "method": {
     "algorithm": "tp.flood_mask.flood_mask (wa_2025): pre->post dB drop < -3.0 dB into water (Otsu, clamp -15.0 dB), pre-water excluded, HAND gate, bright-flood layer, MMU 3.0 ha",
     "res_m": 100.0,
     "multilook": "mean linear power per block",
-    "hand": "HAND (m), data/static/south_brazil/terrain/hand_90m.tif",
+    "hand": "HAND (m), hand_m.tif",
     "people": "GPW v4.11 2020 count, pixel-centre sampled, area-weighted"
   },
-  "_null_reasons": {},
+  "_null_reasons": {
+    "pair 024D_101": "water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used",
+    "pairs": "no comparable NISAR pair this pass (water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used)",
+    "flooded_km2": "no comparable NISAR pair this pass (water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used)",
+    "new_km2": "no comparable NISAR pair this pass (water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used)",
+    "receded_km2": "no comparable NISAR pair this pass (water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used)",
+    "people_flooded": "no comparable NISAR pair this pass (water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used)",
+    "open_water_km2": "no comparable NISAR pair this pass (water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used)",
+    "bright_km2": "no comparable NISAR pair this pass (water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used)"
+  },
   "search_window": [
-    "2026-09-16T05:20:50Z",
-    "2026-11-15T05:20:50Z"
+    "2026-09-16T14:44:04Z",
+    "2026-11-15T14:44:04Z"
   ],
   "newest_available_acquired": "2026-11-06T21:16:03Z",
   "newer_unpaired": [],
-  "n_polygons": 8,
-  "pre_hand_flooded_km2": 31.62,
-  "hand_excluded_km2": 29.28,
-  "pre_hand_people": 840,
-  "hand_excluded_people": 758,
-  "hand_source": {
-    "file": "data/static/south_brazil/terrain/hand_90m.tif",
-    "sha256_12": "40bc5963e6fc",
-    "res_deg": 0.0008333333333333334,
-    "res_m_approx": 93
-  },
-  "geojson": "flood_nisar.geojson"
+  "status": "no_usable_pair",
+  "status_label": "No usable NISAR pair this pass \u2014 flood candidates not computed (water threshold fell back to -15.0 dB (fallback): per-scene calibration failed, pair not used)",
+  "geojson": null
 }

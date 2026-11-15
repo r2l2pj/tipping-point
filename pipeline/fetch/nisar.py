@@ -619,11 +619,15 @@ def pair_latest_pass(
     A pass is (cycle, track, look). Passes are tried newest first; for each
     frame of the pass overlapping the domain by >= min_overlap_km2 the pre is
     the most recent earlier granule on the SAME track + look + frame no more
-    than `max_gap_days` before it. The first pass with >= 1 pair wins; newer
+    than `max_gap_days` before it — granules matching the post's acquisition
+    mode (tp.response_nisar.mode_token) are preferred when a frame/date has
+    several products. The first pass with >= 1 pair wins; newer
     passes that could not be paired are reported in "skipped".
 
     Returns {"pass": {...} | None, "pairs": [{"pre", "post"}], "skipped": [...]}.
     """
+    from tp.response_nisar import mode_token
+
     domain = _domain_geom(bbox) if bbox is not None else None
     chosen = list(_best_per_frame(granules, domain).values())
     passes: dict[tuple, list[dict]] = {}
@@ -644,7 +648,7 @@ def pair_latest_pass(
                 reasons.append(f"{label}: no .h5 data link")
                 continue
             earlier = [
-                g for g in chosen
+                g for g in granules
                 if (g["track"], g["look"], g["frame"]) == (post["track"], post["look"], post["frame"])
                 and g["start"] < post["start"]
                 and (post["start"] - g["start"]).total_seconds() <= max_gap_days * 86400
@@ -653,7 +657,13 @@ def pair_latest_pass(
             if not earlier:
                 reasons.append(f"{label}: no earlier pass on the same track/frame within {max_gap_days:g} d")
                 continue
-            pairs.append({"pre": max(earlier, key=lambda g: g["start"]), "post": post})
+            post_mode = mode_token(post["granule_id"])
+            same_mode = [g for g in earlier
+                         if post_mode and mode_token(g["granule_id"]) == post_mode]
+            pool = same_mode or earlier          # prefer the same acquisition mode
+            pairs.append({"pre": max(pool, key=lambda g: (
+                g["start"], g["coverage"] == "F", _overlap_km2(g, domain),
+                g["granule_id"])), "post": post})
         info = {
             "cycle": key[0], "track": key[1], "look": key[2],
             "acquired": max(g["start"] for g in frames),

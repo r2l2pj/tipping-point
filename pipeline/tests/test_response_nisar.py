@@ -192,6 +192,27 @@ def test_pair_rejects_gap_and_reports_unpaired_newer_pass():
     assert "within 36 d" in res["skipped"][1]["reasons"][0]
 
 
+def test_pair_prefers_same_mode_pre_over_full_frame():
+    """A frame/date with two products pairs the one matching the post's
+    acquisition mode, even when the other product is a full frame."""
+    fp = (-50.0, -26.0, -49.0, -25.0)
+    bbox = (-58, -34, -48, -22.5)
+    post = _g(G_POST, fp=fp)                                   # 4005_DHDH_A
+    pre_same = _g(G_PRE.replace("_N_F_", "_N_P_"), fp=fp)      # 4005, partial
+    pre_other = _g(G_PRE.replace("4005_DHDH_A", "2005_DHDH_M"), fp=fp)  # 2005 F
+    res = fn.pair_latest_pass([pre_same, pre_other, post], bbox)
+    assert res["pairs"][0]["pre"]["granule_id"] == pre_same["granule_id"]
+
+
+def test_pair_falls_back_to_any_mode_when_no_same_mode():
+    fp = (-50.0, -26.0, -49.0, -25.0)
+    bbox = (-58, -34, -48, -22.5)
+    post = _g(G_POST, fp=fp)
+    pre_other = _g(G_PRE.replace("4005_DHDH_A", "2005_DHDH_M"), fp=fp)
+    res = fn.pair_latest_pass([pre_other, post], bbox)
+    assert res["pairs"][0]["pre"]["granule_id"] == pre_other["granule_id"]
+
+
 def test_pair_prefers_full_frame_and_skips_sliver_overlap():
     bbox = (-58, -34, -48, -22.5)
     fp = (-50.0, -26.0, -49.0, -25.0)

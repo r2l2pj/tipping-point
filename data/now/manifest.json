@@ -81,7 +81,6 @@
   "products": {
     "response_summary": "response/summary.json",
     "flood_dswx": "response/flood_dswx.geojson",
-    "flood_nisar": "response/flood_nisar.geojson",
     "dswx_meta": "response/dswx_meta.json",
     "nisar_meta": "response/nisar_meta.json",
     "landslide_candidates": "response/landslide_dist.geojson",
