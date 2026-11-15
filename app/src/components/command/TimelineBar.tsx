@@ -104,8 +104,9 @@ export default function TimelineBar({
   const small = "inline-flex h-[38px] w-10 shrink-0 items-center justify-center rounded-lg border border-cc-line-strong bg-cc-surface disabled:cursor-not-allowed disabled:opacity-50";
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border border-cc-line bg-cc-surface px-4 py-2 shadow-[0_4px_18px_rgba(0,0,0,0.28)]">
-      {/* Wraps on a narrow screen so the card, not the page, holds the controls. */}
-      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+      {/* The controls take their own row above the steps (Lucas), and wrap
+          on a narrow screen so the card, not the page, holds them. */}
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-2" data-timeline-controls>
         <button type="button" onClick={onPlayToggle} disabled={n < 2} aria-label={playing ? "Pause" : "Play"}
           className="inline-flex h-[46px] w-[50px] shrink-0 items-center justify-center rounded-[10px] bg-cc-accent text-white disabled:cursor-not-allowed disabled:opacity-50">
           <Icon d={playing ? ICON.pause : ICON.play} size={20} fill={!playing} strokeWidth={playing ? 3 : 2.2} />
