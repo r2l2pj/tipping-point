@@ -14865,6 +14865,196 @@
         "flood_stage_uruguaiana": "2026-10-05",
         "crest": "2026-10-16",
         "tool": "tools/rs_uruguai_tpi_flood_replay.py"
+      },
+      "tpi_flood_upstream_experimental": {
+        "stats": [
+          {
+            "date": "2026-09-28",
+            "p3_up_mm": 17.1,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-09-29",
+            "p3_up_mm": 61.7,
+            "r_up": 0.471,
+            "highplus_share_local": 0.0011,
+            "highplus_share_upstream": 0.8165,
+            "critical_share_upstream": 0.1499
+          },
+          {
+            "date": "2026-09-30",
+            "p3_up_mm": 109.8,
+            "r_up": 1.0,
+            "highplus_share_local": 0.3011,
+            "highplus_share_upstream": 0.8749,
+            "critical_share_upstream": 0.7872
+          },
+          {
+            "date": "2026-10-01",
+            "p3_up_mm": 101.5,
+            "r_up": 1.0,
+            "highplus_share_local": 0.2626,
+            "highplus_share_upstream": 0.8762,
+            "critical_share_upstream": 0.7938
+          },
+          {
+            "date": "2026-10-02",
+            "p3_up_mm": 57.9,
+            "r_up": 0.336,
+            "highplus_share_local": 0.0915,
+            "highplus_share_upstream": 0.8176,
+            "critical_share_upstream": 0.0681
+          },
+          {
+            "date": "2026-10-03",
+            "p3_up_mm": 9.8,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-04",
+            "p3_up_mm": 16.6,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-05",
+            "p3_up_mm": 27.9,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-06",
+            "p3_up_mm": 33.2,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-07",
+            "p3_up_mm": 21.0,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-08",
+            "p3_up_mm": 9.2,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-09",
+            "p3_up_mm": 33.6,
+            "r_up": 0.0,
+            "highplus_share_local": 0.2545,
+            "highplus_share_upstream": 0.2545,
+            "critical_share_upstream": 0.0064
+          },
+          {
+            "date": "2026-10-10",
+            "p3_up_mm": 40.8,
+            "r_up": 0.0,
+            "highplus_share_local": 0.1608,
+            "highplus_share_upstream": 0.1608,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-11",
+            "p3_up_mm": 56.3,
+            "r_up": 0.28,
+            "highplus_share_local": 0.445,
+            "highplus_share_upstream": 0.8388,
+            "critical_share_upstream": 0.5218
+          },
+          {
+            "date": "2026-10-12",
+            "p3_up_mm": 31.4,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-13",
+            "p3_up_mm": 38.3,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-14",
+            "p3_up_mm": 27.3,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-15",
+            "p3_up_mm": 25.5,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-16",
+            "p3_up_mm": 11.2,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-17",
+            "p3_up_mm": 6.8,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-18",
+            "p3_up_mm": 3.6,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-19",
+            "p3_up_mm": 0.7,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          },
+          {
+            "date": "2026-10-20",
+            "p3_up_mm": 0.0,
+            "r_up": 0.0,
+            "highplus_share_local": 0.0,
+            "highplus_share_upstream": 0.0,
+            "critical_share_upstream": 0.0
+          }
+        ],
+        "label": "experimental, post-event test, not in the live index",
+        "source": "lead-ml"
       }
     }
   }

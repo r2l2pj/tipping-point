@@ -1513,6 +1513,512 @@
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
       "critical_km2": 4322.43
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-09-28",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20260928.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20260928.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 17 mm over the 3 days before Sep 28 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-09-29",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20260929.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20260929.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 62 mm over the 3 days before Sep 29 (R_up 0.47). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 82 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-09-30",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20260930.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20260930.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 110 mm over the 3 days before Sep 30 (R_up 1.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 87 % with the upstream term vs 30 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-01",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261001.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261001.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 102 mm over the 3 days before Oct 1 (R_up 1.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 88 % with the upstream term vs 26 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-02",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261002.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261002.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 58 mm over the 3 days before Oct 2 (R_up 0.34). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 82 % with the upstream term vs 9 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-03",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261003.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261003.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 10 mm over the 3 days before Oct 3 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-04",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261004.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261004.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 17 mm over the 3 days before Oct 4 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-05",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261005.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261005.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 28 mm over the 3 days before Oct 5 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-06",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261006.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261006.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 33 mm over the 3 days before Oct 6 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-07",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261007.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261007.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 21 mm over the 3 days before Oct 7 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-08",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261008.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261008.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 9 mm over the 3 days before Oct 8 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-09",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261009.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261009.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 34 mm over the 3 days before Oct 9 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 25 % with the upstream term vs 25 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-10",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261010.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261010.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 41 mm over the 3 days before Oct 10 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 16 % with the upstream term vs 16 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-11",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261011.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261011.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 56 mm over the 3 days before Oct 11 (R_up 0.28). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 84 % with the upstream term vs 44 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-12",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261012.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261012.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 31 mm over the 3 days before Oct 12 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-13",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261013.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261013.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 38 mm over the 3 days before Oct 13 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-14",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261014.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261014.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 27 mm over the 3 days before Oct 14 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-15",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261015.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261015.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 26 mm over the 3 days before Oct 15 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-16",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261016.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261016.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 11 mm over the 3 days before Oct 16 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-17",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261017.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261017.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 7 mm over the 3 days before Oct 17 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-18",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261018.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261018.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 4 mm over the 3 days before Oct 18 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-19",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261019.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261019.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 1 mm over the 3 days before Oct 19 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
+    },
+    {
+      "id": "tpi_flood_upstream",
+      "date": "2026-10-20",
+      "kind": "experimental",
+      "png": "rs_uruguai_2026/png/tpi_flood_upstream_20261020.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_upstream_20261020.tif",
+      "bounds": [
+        -57.25,
+        -29.846985,
+        -56.453196,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood index with upstream rain — experimental, post-event test, not in the live index",
+      "note": "R = max(local 3-day rain, Uruguay-basin upstream 3-day rain) vs climatology; upstream basin-mean IMERG Early 0 mm over the 3 days before Oct 20 (R_up 0.00). Upstream rain lights the map 5-15 days BEFORE the river crests at Uruguaiana, not on the flood days. High+ share of the AOI: 0 % with the upstream term vs 0 % local-only. When upstream rain is extreme it flags most of the flat floodplain, not specific neighbourhoods."
     }
   ]
 }
