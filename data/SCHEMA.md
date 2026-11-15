@@ -468,10 +468,23 @@ takes the ~90 m TPI cell that contains it; max over the window frames.
 | `slide_warned_pct` / `_observed_pct` / `_critical_pct` (rs) | % of the 16,027 inventory **points** | same rules with TPI_slide |
 | `flood_warned` / `slide_warned` | object | `definition`, `anchor_utc` + `anchor_source`, `observed`, `forecast_gfs`, `best_issued_gfs_before_anchor`, `by_issue_gfs[]`, `by_date_observed[]` (per-date curve), WA `explanation` |
 
-Anchors: wa = case damage anchor (King County Flood Warning Center update
-2025-12-09 00:35Z); rs = 2024-05-01 00:00Z (the fixed RS dating of the ML
-TEST set). rs `flood_warned_pct` is null with a reason (no RS flood map).
-`no_tpi_pct` = locations on TPI no-data, kept in the denominator.
+Anchors (L37): the documented event **ONSET**, not the peak —
+`*_warned.anchor_basis = "onset"`, `*_warned_anchor_{basis,utc,source}` flat.
+rs = 2024-04-29 00:00 BRT (03:00Z; first deaths of the event, MetSul laudo +
+press); wa = 2025-12-08 00:00 PST (08:00Z; onset day, WA EMD SEOC sitrep).
+`*_warned.sensitivity[]` repeats the window + per-lead numbers for other
+anchors (rs: 2024-04-30 first landslide deaths, 2024-05-01 00Z previous fixed
+dating; wa: King County FWC update 2025-12-09 00:35Z). Per-lead flat keys
+`{slide|flood}_warned_{gfs|observed}_{24|48|72}h[_critical]_pct` +
+`_gfs_{h}h_issue`: the 00Z run of the UTC date (onset − h) — issued at least
+h hours before the onset. rs `flood_warned_pct` is null with a reason (no RS
+flood map). `no_tpi_pct` = locations on TPI no-data, kept in the denominator.
+
+`forecast_lead_time_onset` (both cases): the L22/L28b forecast lead time
+re-anchored on the onset — issue day warned if any frame depicting a date <=
+the onset day has an AOI-max TPI (slide or flood) > 0.6 anywhere in the AOI
+(not at the damage locations); `lead_h` = onset − issue 00Z; `issue_days[]`,
+`sensitivity[]`. The older `forecast_lead_time` block keeps its own anchor.
 
 ## data/now/ — the live bundle
 

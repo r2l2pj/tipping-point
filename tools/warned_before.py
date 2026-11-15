@@ -211,6 +211,43 @@ def anchored(cog, case, hazard, series, idx, w, a: dict) -> dict:
             "anchor_label": a["label"], "anchor_source": a["source"], **r, "by_lead": by_lead(r, a["utc"])}
 
 
+def onset_lead_time(cog: Path, case: str, anchor: dt.datetime) -> dict:
+    """forecast_lead_time (L22/L28b definition) re-anchored on the onset: an issue day I
+    (00Z run, I < anchor) 'warned' if any of its frames depicting a date <= the onset
+    day has an AOI max (slide or flood) > 0.6; lead_h = anchor - I 00Z."""
+    rows = []
+    for p in sorted(cog.glob(f"{case}_tpi_gfs_*.tif")):
+        issue = _day(p.stem.rsplit("_", 1)[1])
+        t0 = dt.datetime.combine(issue, dt.time(0), tzinfo=dt.UTC)
+        if t0 >= anchor:
+            continue
+        first = None
+        with rasterio.open(p) as src:
+            for b, name in enumerate(src.descriptions, start=1):
+                k = int(name[1])
+                day = issue + dt.timedelta(days=k)
+                if day > anchor.date():
+                    continue
+                a = src.read(b)
+                if np.isfinite(a).any() and np.nanmax(a) > CRIT and (first is None or day < first[1]):
+                    first = (k, day, name.split("_", 1)[1])
+        lead = round((anchor - t0).total_seconds() / 3600, 1)
+        rows.append({"issue": issue.isoformat(), "warned": first is not None,
+                     "first_critical_date": first[1].isoformat() if first else None,
+                     "hazard": first[2] if first else None, "lead_h": lead if first else None})
+    leads = sorted(r["lead_h"] for r in rows if r["warned"])
+    q = (lambda x: round(float(np.percentile(leads, x)), 1)) if leads else (lambda x: None)
+    return {"anchor_utc": anchor.isoformat(), "earliest_critical_issue": next(
+                (r["issue"] for r in rows if r["warned"]), None),
+            "would_have_warned_h": leads[-1] if leads else None, "lead_h_median": q(50),
+            "lead_h_iqr": [q(25), q(75)] if leads else None, "n_warned": len(leads),
+            "n_issue_days": len(rows), "issue_days": rows,
+            "definition": "issue days = GFS 00Z runs before the onset; warned = any frame depicting a "
+                          "date <= the onset day has an AOI-max TPI (slide or flood) > 0.6 (Crítico) "
+                          "anywhere in the case AOI — not at the damage locations (see *_warned for "
+                          "that); lead_h = onset - issue 00Z"}
+
+
 COMMON_DEF = ("TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in the frames available 24-48 h before the "
               "anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, "
               "latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, "
@@ -297,6 +334,16 @@ def merge(data_root: Path, res: dict) -> None:
             f"day); observed = the observed TPI band dated that day (rain ending that day 00Z, latency "
             f"ignored). Onset = {r['anchor_label']}. Locations on TPI no-data stay in the denominator. "
             f"Sensitivity anchors in {key}.sensitivity.")
+    for case in ("wa_2025", "rs_2024"):
+        on, *sens = ANCHORS[case]
+        cog = data_root / case / "cog"
+        lt = onset_lead_time(cog, case, on["utc"])
+        lt.update(anchor_basis="onset", anchor_local=on["local"], anchor_label=on["label"],
+                  anchor_source=on["source"], sensitivity=[
+                      {"anchor_basis": a["basis"], "anchor_local": a["local"],
+                       **{k: v for k, v in onset_lead_time(cog, case, a["utc"]).items()
+                          if k not in ("issue_days", "definition")}} for a in sens])
+        m["cases"][case]["forecast_lead_time_onset"] = lt
     rsb = m["cases"]["rs_2024"]
     rsb["slide_warned_n"] = res["rs_2024"]["n_points"]
     rsb["flood_warned_pct"] = None
