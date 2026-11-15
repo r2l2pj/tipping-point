@@ -94,8 +94,8 @@
     },
     {
       "date": "2024-05-07",
-      "tpi_slide_max": 0.9700534343719482,
-      "tpi_flood_max": 1.0,
+      "tpi_slide_max": 0.7155415415763855,
+      "tpi_flood_max": 0.8698113560676575,
       "first_critical_bool": true
     }
   ]
