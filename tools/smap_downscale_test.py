@@ -35,7 +35,7 @@ for p in (str(REPO), str(REPO / "pipeline")):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-RELEASE = "https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
+RELEASE = "https://github.com/r2l2pj/tipping-point/releases/download/static-v1"
 SMAP_DATES = ("2024-05-01", "2024-05-03")
 H0 = 5.0
 

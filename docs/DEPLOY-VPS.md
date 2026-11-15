@@ -20,8 +20,9 @@ VPS, build on another machine and `docker save | ssh vps docker load`.
 ```bash
 # L53 monorepo: the app is in app/ of the data repo; the Dockerfile and
 # .dockerignore sit at the repo ROOT, so build from the root as before.
-# (The repo was renamed from r2l2pj/tipping-point; the old URL redirects.)
-git clone --single-branch --filter=blob:none https://github.com/r2l2pj/tipping-point.git tipping-point && cd tipping-point   # blobless: skips the 7 GB COG history
+# (The repo was renamed from r2l2pj/tipping-point-data on 2026-11-15; the old
+# name redirects.)
+git clone --single-branch --filter=blob:none https://github.com/r2l2pj/tipping-point.git && cd tipping-point   # blobless: skips the 7 GB COG history
 git checkout main
 docker build -t tipping-point-app \
   .

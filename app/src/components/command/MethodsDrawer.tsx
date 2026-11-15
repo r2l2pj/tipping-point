@@ -1,7 +1,7 @@
 // "Methods" for judges (conductor): closed by default, in the footer (opens
 // upward), links to the public
 // READMEs. Section anchors are GitHub heading slugs on main.
-const DATA = "https://github.com/r2l2pj/tipping-point-data/blob/main/README.md";
+const DATA = "https://github.com/r2l2pj/tipping-point/blob/main/README.md";
 const APP = "https://github.com/r2l2pj/tipping-point-app/blob/main/README.md";
 
 export const METHODS_LINKS: { label: string; sub: string; href: string }[] = [

@@ -75,7 +75,7 @@ jobs:
       - name: Fetch static response inputs (cache miss only, sha256-checked)
         run: |
           set -euo pipefail
-          rel="https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
+          rel="https://github.com/r2l2pj/tipping-point/releases/download/static-v1"
           get() {  # asset dest sha256
             if [ ! -s "$2" ]; then
               mkdir -p "$(dirname "$2")"
@@ -203,7 +203,7 @@ jobs:
           PYTHONPATH: pipeline
         run: |
           set -euo pipefail
-          rel="https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
+          rel="https://github.com/r2l2pj/tipping-point/releases/download/static-v1"
           mkdir -p ml/models data/static/south_brazil/ml
           get() {  # asset dest sha256 (lead-ml real model, 2026-11-15)
             [ -s "$2" ] || curl -fsSL --retry 3 -o "$2" "$rel/$1"

@@ -28,7 +28,7 @@ for p in (str(REPO), str(REPO / "pipeline")):
         sys.path.insert(0, p)
 
 STATIC90 = Path.home() / ".cache/tipping-point-ml/static90/static90.vrt"
-RELEASE = "https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
+RELEASE = "https://github.com/r2l2pj/tipping-point/releases/download/static-v1"
 HIGH, CRIT = 0.4, 0.6
 
 

@@ -154,7 +154,7 @@ const NOW_NODE = {
 describe("remote-first reads (DATA_BASE_URL)", () => {
   test("raw-style localhost JSON loads remotely and binary GET honors Range", async () => {
     stageReplay();
-    const prefix = "/r2l2pj/tipping-point-data/fallback/data/";
+    const prefix = "/r2l2pj/tipping-point/fallback/data/";
     const binary = Buffer.from([0x49, 0x49, 0x2a, 0, 8, 0, 0, 0]);
     const fixture = createServer((req, res) => {
       const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
@@ -622,7 +622,7 @@ describe("default remote bases (no DATA_BASE_URL)", () => {
       expect(b.liveLayers).toBeUndefined();
       expect(b.dataDate).toBeUndefined();
       // L53: the GitHub data branch is the only remote (no Neon).
-      expect(requested[0]).toBe("https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/manifest.json");
+      expect(requested[0]).toBe("https://raw.githubusercontent.com/r2l2pj/tipping-point/fallback/data/manifest.json");
       expect(requested.some((u) => u.includes("neon"))).toBe(false);
     } finally {
       remote.mockRestore();
@@ -632,7 +632,7 @@ describe("default remote bases (no DATA_BASE_URL)", () => {
   // GitHub answers: frames resolve to GitHub raw.
   test("github hit: layer PNGs point at github", async () => {
     delete process.env.DATA_BASE_URL;
-    const GH = "https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/";
+    const GH = "https://raw.githubusercontent.com/r2l2pj/tipping-point/fallback/data/";
     const fixtures = path.join(process.cwd(), "test/fixtures/public-data");
     const requested: string[] = [];
     const remote = spyOn(globalThis, "fetch").mockImplementation(async (input: string | URL | Request) => {

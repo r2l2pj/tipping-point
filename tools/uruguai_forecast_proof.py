@@ -33,7 +33,7 @@ OBS_START = pd.Timestamp("2026-09-01")
 HIT_WINDOWS = (10, 14)
 AOI = (-57.25, -29.85, -56.45, -29.05)
 HAND_LEVELS = (5.0, 10.0)
-RELEASE = "https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
+RELEASE = "https://github.com/r2l2pj/tipping-point/releases/download/static-v1"
 
 
 def truth(d: Path) -> dict:

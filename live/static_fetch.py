@@ -44,7 +44,7 @@ NEON_PREFIX = "static/south_brazil"
 # assets are flat basenames (doy_318.tif, slope_deg.tif, gpw_pop.tif).
 STATIC_RELEASE_BASE = os.environ.get(
     "STATIC_RELEASE_BASE",
-    "https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1")
+    "https://github.com/r2l2pj/tipping-point/releases/download/static-v1")
 
 
 def _public_base() -> str:

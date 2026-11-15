@@ -4,7 +4,7 @@ import { bundle } from "./fixtures";
 import { compactLayerUrls, expandLayerUrls } from "./layerUrls";
 
 describe("layer URL compaction (page budget)", () => {
-  const B = "https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/wa_2025/";
+  const B = "https://raw.githubusercontent.com/r2l2pj/tipping-point/fallback/data/wa_2025/";
   const b = bundle({ manifest: { event: "wa_2025", layers: [
     { id: "tpi_flood", date: "2025-12-10", png: `${B}png/tpi_flood_20251210.png`, cog: `${B}cog/x.tif` },
     { id: "tpi_slide_gfs_d1", date: "2025-12-11", png: `${B}png/tpi_slide_gfs_d1_20251211.png`, cog: null },

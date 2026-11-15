@@ -321,7 +321,7 @@ interface ReadCtx {
 // L26: the public GitHub data branch is the PRIMARY store (branch name kept
 // as `fallback` to avoid churn).
 const GITHUB_DATA_BASE =
-  "https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data";
+  "https://raw.githubusercontent.com/r2l2pj/tipping-point/fallback/data";
 
 // Max remote attempts per read context before short-circuiting to disk.
 // DATA_MAX_REMOTE_TRIES overrides; ~14 files × ≤3 bases fits in 60.

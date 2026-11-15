@@ -1,4 +1,4 @@
-// Types matching data/SCHEMA.md in r2l2pj/tipping-point-data — keep in sync.
+// Types matching data/SCHEMA.md in r2l2pj/tipping-point — keep in sync.
 // Additive v3 extensions (mode/data_dates/model/alerts) are marked optional.
 
 import type {
