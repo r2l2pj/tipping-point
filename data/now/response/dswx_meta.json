@@ -1,22 +1,27 @@
 {
   "source": "opera-dswx-s1",
   "status": "candidate",
-  "generated_at": "2026-11-15T04:30:22Z",
+  "generated_at": "2026-11-15T04:39:21Z",
   "latest_acquired": "2026-11-14T09:06:12.000Z",
   "latency_h": null,
   "n_granules": 0,
   "n_failed": 0,
   "n_granules_total": 2166,
-  "flooded_km2": 129.695,
+  "flooded_km2": 127.704,
   "new_km2": 0.0,
   "receded_km2": 0.0,
-  "people_flooded": 493.2,
-  "lower_confidence_km2": 158.25,
+  "people_flooded": 491.8,
+  "lower_confidence_km2": 160.377,
   "lower_confidence_new_km2": 0.0,
-  "lower_confidence_people": 394.4,
-  "sub_mmu_km2": 226.574,
+  "lower_confidence_people": 396.0,
+  "sub_mmu_km2": 226.438,
   "seasonal_downgraded_km2": 0.0,
   "seasonal_downgraded_people": 0.0,
+  "norain_downgraded_km2": 2.026,
+  "norain_downgraded_people": 1.4,
+  "norain_flagged_pixel_km2": 4.34,
+  "all_candidates_km2": 288.081,
+  "all_candidates_people": 887.8,
   "seasonal_flagged_pixel_km2": 16.863,
   "seasonal_flagged_pixel_people": 344.2,
   "excluded_water_wetland_km2": 222.322,
@@ -66,6 +71,18 @@
   "landcover_source": "MCD12Q1.061 2025 LC_Type1 (IGBP)",
   "brazil_outline_source": "IBGE malhas v3 paises/BR",
   "seasonal_water_source": "JRC Global Surface Water v1.4 (1984-2021), cell mean",
+  "rain_rule": {
+    "window": [
+      "2026-11-07",
+      "2026-11-14"
+    ],
+    "n_files": 8,
+    "threshold_mm": 10.0,
+    "radius_km": 50.0,
+    "upstream_proxy": "max over a 50 km radius, all directions (superset of upstream; no flow routing)",
+    "local_median_mm": 19.3
+  },
+  "rain_source": "IMERG Early daily (GES DISC), 0.1 deg",
   "_null_reasons": {
     "latency_h": "no granules ingested this run"
   }

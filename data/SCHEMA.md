@@ -461,7 +461,7 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
   so it equals what the map draws), `sub_mmu_km2` (in-Brazil candidate
   pixels in smaller clusters: not mapped, not in any headline),
   `receded_km2`, `lower_confidence_km2` (also polygon sums; "lower" =
-  MCD12Q1 cropland OR JRC GSW seasonal/occasional water — occurrence ≥
+  MCD12Q1 cropland OR JRC GSW seasonal/occasional water OR no supporting rain — occurrence ≥
   `params.gsw_occurrence_min_pct` % or seasonality ≥
   `params.gsw_seasonality_min_months` months; polygons carry
   `lower_reason` [list]), `seasonal_downgraded_km2` /
@@ -469,6 +469,14 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
   the mapped polygons = change to the headline), `seasonal_flagged_pixel_km2`
   / `seasonal_flagged_pixel_people` (same incl. sub-MMU specks),
   `seasonal_water_source`,
+  `norain_downgraded_km2` / `norain_downgraded_people` (moved standard →
+  lower by the rain-support rule: 8-day IMERG Early total < 10 mm locally
+  AND everywhere within 50 km — a direction-agnostic upstream proxy, no flow
+  routing — AND JRC occurrence 0; unknown rain never downgrades),
+  `norain_flagged_pixel_km2`, `rain_rule` (window, n_files, threshold_mm,
+  radius_km, local_median_mm), `rain_source`, `all_candidates_km2` /
+  `all_candidates_people` (standard + lower, shown alongside the
+  standard-only headline),
   `lower_confidence_new_km2`, `lower_confidence_people`,
   `excluded_water_wetland_km2`, `outside_brazil_km2`, `raw_candidate_km2`
   (before land cover / Brazil filtering),

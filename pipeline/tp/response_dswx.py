@@ -37,6 +37,12 @@ Method
   >= GSW_OCC_MIN % or seasonality >= GSW_MONTHS_MIN months) is also kept as
   confidence "lower" (``lower_reason`` names the rule); missing GSW rasters
   -> the rule is skipped and ``_null_reasons.seasonal_water`` says so.
+* No supporting rain: a candidate whose 8-day IMERG Early total is below
+  RAIN_MIN_MM both locally AND everywhere within RAIN_RADIUS_KM (a
+  direction-agnostic upstream proxy) AND whose JRC occurrence is 0 (never
+  water 1984-2021) is kept as "lower" (``lower_reason`` "no supporting rain
+  within 50 km (8 d IMERG)"). Missing/unknown rain never downgrades.
+  ``all_candidates_km2`` / ``all_candidates_people`` = standard + lower.
   Missing land cover or outline -> headline null + reason (unfiltered water
   is never published).
 * change: "new" = candidate now and not in the previous run's candidate
@@ -53,7 +59,7 @@ import math
 import os
 import tempfile
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -343,6 +349,66 @@ GSW_OCC_MIN = 25             # JRC GSW occurrence (%) at/above which water is "o
 GSW_MONTHS_MIN = 3           # JRC GSW seasonality (months/yr) at/above which water is seasonal
 REASON_CROP = "cropland (MCD12Q1)"
 REASON_SEAS = "seasonal/occasional water (JRC GSW)"
+REASON_NORAIN = "no supporting rain within 50 km (8 d IMERG)"
+RAIN_DAYS = 8                # IMERG Early daily files summed for the rain-support rule
+RAIN_MIN_MM = 10.0           # below this (local AND 50 km neighbourhood) = no supporting rain
+RAIN_RADIUS_KM = 50.0        # upstream proxy: max over this radius, all directions
+
+
+def rain_support_grid(imerg_dir, end: date, grid: Grid, days: int = RAIN_DAYS,
+                      radius_km: float = RAIN_RADIUS_KM):
+    """8-day IMERG rain support on `grid`: (support_mm, info, None) or (None, info, reason).
+
+    support = max(local 8-day total, max over a `radius_km` ellipse) on the
+    IMERG 0.1 deg grid — a direction-agnostic superset of "upstream" (no flow
+    routing). Cells with any missing day are UNKNOWN (+inf: never downgraded).
+    Files must cover the grid bbox (a transposed lon-first file does not) and
+    at least days-1 of the `days` files ending `end` must exist.
+    """
+    import rasterio
+    from rasterio.warp import Resampling, reproject
+    from scipy.ndimage import maximum_filter
+
+    imerg_dir = Path(imerg_dir)
+    want = [end - timedelta(days=k) for k in range(days - 1, -1, -1)]
+    paths = [imerg_dir / f"imerg_early_{d:%Y%m%d}.tif" for d in want]
+    have = [p for p in paths if p.exists()]
+    info = {"window": [want[0].isoformat(), want[-1].isoformat()], "n_files": len(have),
+            "threshold_mm": RAIN_MIN_MM, "radius_km": radius_km,
+            "upstream_proxy": "max over a 50 km radius, all directions (superset of upstream; no flow routing)"}
+    if len(have) < days - 1:
+        return None, info, f"IMERG daily files: {len(have)}/{days} for {info['window']}"
+    total = tf = None
+    for p in have:
+        with rasterio.open(p) as src:
+            b = src.bounds
+            tol = abs(src.res[0]) / 2 + 1e-6       # half a cell
+            if (b.left > grid.west + tol or b.right < grid.east - tol
+                    or b.bottom > grid.south + tol or b.top < grid.north - tol):
+                return None, info, (f"{p.name} bounds {tuple(round(v, 2) for v in b)} do not cover the "
+                                    "domain (transposed or truncated IMERG COG)")
+            a = src.read(1).astype(np.float64)
+            if src.nodata is not None and not np.isnan(src.nodata):
+                a[a == src.nodata] = np.nan
+            if total is None:
+                total, tf, crs, shape = a, src.transform, src.crs, a.shape
+            elif a.shape != shape or src.transform != tf:
+                return None, info, f"{p.name}: grid differs from the other IMERG files"
+            else:
+                total = total + a                       # NaN anywhere -> unknown
+    total = np.where(np.isfinite(total), total, np.inf)
+    lat_mid = math.radians((grid.north + grid.south) / 2)
+    ry = radius_km / (111.32 * abs(tf.e))
+    rx = radius_km / (111.32 * math.cos(lat_mid) * abs(tf.a))
+    yy, xx = np.mgrid[-math.ceil(ry):math.ceil(ry) + 1, -math.ceil(rx):math.ceil(rx) + 1]
+    support = maximum_filter(total, footprint=(yy / ry) ** 2 + (xx / rx) ** 2 <= 1.0,
+                             mode="constant", cval=np.inf)       # edge = unknown
+    out = np.full(grid.shape, np.inf, np.float32)
+    reproject(support.astype(np.float32), out, src_transform=tf, src_crs=crs,
+              dst_transform=grid.transform, dst_crs="EPSG:4326", resampling=Resampling.nearest,
+              src_nodata=None, dst_nodata=None)
+    info["local_median_mm"] = round(float(np.median(total[np.isfinite(total)])), 1) if np.isfinite(total).any() else None
+    return out, info, None
 
 
 def gsw_grid(occ_path, seas_path, grid: Grid, occ_min: int = GSW_OCC_MIN,
@@ -365,9 +431,10 @@ def gsw_grid(occ_path, seas_path, grid: Grid, occ_min: int = GSW_OCC_MIN,
                           resampling=Resampling.nearest)
             out.append(a)
         occ, seas = out
-        return ((occ != 255) & (occ >= occ_min)) | ((seas != 255) & (seas >= months_min)), None
+        seasonal = ((occ != 255) & (occ >= occ_min)) | ((seas != 255) & (seas >= months_min))
+        return seasonal, occ == 0, None          # occ == 0: never water 1984-2021 (255 = unknown)
     except Exception as e:  # noqa: BLE001
-        return None, f"JRC GSW raster unavailable ({Path(str(occ_path)).name}: {type(e).__name__})"
+        return None, None, f"JRC GSW raster unavailable ({Path(str(occ_path)).name}: {type(e).__name__})"
 
 
 def landcover_grid(path, grid: Grid):
@@ -411,7 +478,7 @@ def brazil_grid(path, grid: Grid):
 
 
 def apply_context(masks: dict, lc: np.ndarray, excl: np.ndarray, br: np.ndarray, prev: np.ndarray,
-                  seasonal: np.ndarray | None = None) -> dict:
+                  seasonal: np.ndarray | None = None, norain: np.ndarray | None = None) -> dict:
     """Split raw candidates into excluded / outside Brazil / standard / lower.
 
     lower = cropland OR seasonal/occasional water (when the GSW mask exists);
@@ -423,7 +490,8 @@ def apply_context(masks: dict, lc: np.ndarray, excl: np.ndarray, br: np.ndarray,
     inbr = kept & br
     crop = inbr & np.isin(lc, LC_LOWER)
     seas = inbr & seasonal if seasonal is not None else np.zeros_like(inbr)
-    lower = crop | seas
+    dry = inbr & norain if norain is not None else np.zeros_like(inbr)
+    lower = crop | seas | dry
     std = inbr & ~lower
     return {
         **masks,
@@ -435,6 +503,8 @@ def apply_context(masks: dict, lc: np.ndarray, excl: np.ndarray, br: np.ndarray,
         "lower_crop": crop,
         "lower_seasonal": seas,
         "seasonal_downgraded": seas & ~crop,
+        "lower_norain": dry,
+        "norain_downgraded": dry & ~crop & ~seas,
         "std_new": std & ~prev,
         "lower_new": lower & ~prev,
         "receded": masks["receded"] & br,
@@ -491,11 +561,14 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
             del lc_counts
             n_crop = np.bincount(fid, weights=masks["lower_crop"][sel], minlength=n)
             n_seas = np.bincount(fid, weights=masks["lower_seasonal"][sel], minlength=n)
-            # what the GSW rule moved standard -> lower INSIDE mapped polygons
-            sd = masks["seasonal_downgraded"] & sel
-            moved_km2 = float((sd * grid.row_area_km2()).sum())
-            moved_people = float(pop[sd].sum()) if pop is not None else None
-            del sd
+            n_dry = np.bincount(fid, weights=masks["lower_norain"][sel], minlength=n)
+            # what each rule moved standard -> lower INSIDE mapped polygons
+            moved = {}
+            for key in ("seasonal_downgraded", "norain_downgraded"):
+                md = masks[key] & sel
+                moved[key] = {"km2": round(float((md * grid.row_area_km2()).sum()), 3),
+                              "people": None if pop is None else round(float(pop[md].sum()), 1)}
+                del md
             del ids, sel, fid
             gran: dict[int, list[str]] = {}
             for f_i, g_i in pairs.T:
@@ -515,7 +588,8 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
                     "change": "new" if f["properties"]["value"] in (1, 3) else "persisting",
                     "confidence": "lower" if f["properties"]["value"] in (3, 4) else "standard",
                     "landcover": IGBP.get(int(lc_major[i]), "unclassified"),
-                    "lower_reason": ([r for r, k in ((REASON_CROP, n_crop[i]), (REASON_SEAS, n_seas[i])) if k > 0]
+                    "lower_reason": ([r for r, k in ((REASON_CROP, n_crop[i]), (REASON_SEAS, n_seas[i]),
+                                                     (REASON_NORAIN, n_dry[i])) if k > 0]
                                      if f["properties"]["value"] in (3, 4) else None),
                 }})
             feats = out_feats
@@ -531,7 +605,8 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
     # headline totals from the MAPPED polygons (>= min_area), so the numbers
     # match what the map draws; sub-MMU specks are reported separately
     if not feats:
-        moved_km2, moved_people = 0.0, (0.0 if pop is not None else None)
+        zero = {"km2": 0.0, "people": 0.0 if pop is not None else None}
+        moved = {"seasonal_downgraded": zero, "norain_downgraded": zero}
     totals = {k: {"km2": 0.0, "people": 0.0} for k in ("standard", "std_new", "lower", "lower_new")}
     for f in feats:
         p = f["properties"]
@@ -544,8 +619,7 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
             "min_area_km2": min_area_km2,
             "totals": {k: {"km2": round(v["km2"], 3), "people": round(v["people"], 1)}
                        for k, v in totals.items()},
-            "seasonal_moved": {"km2": round(moved_km2, 3),
-                               "people": None if moved_people is None else round(moved_people, 1)}}
+            "moved": moved}
 
 
 def _atomic_write(path: Path, text: str) -> None:
@@ -580,6 +654,7 @@ def run(
     landcover_path=None,
     outline_path=None,
     gsw_paths: tuple | None = None,      # (occurrence COG, seasonality COG)
+    imerg_dir=None,                      # dir of imerg_early_YYYYMMDD.tif daily COGs
     now: datetime | None = None,
     bootstrap_days: int = 60,
     overlap_h: int = 24,
@@ -674,9 +749,23 @@ def run(
     lc, excl, lc_reason = (landcover_grid(landcover_path, grid) if landcover_path
                            else (None, None, "no land cover raster configured"))
     br, br_reason = brazil_grid(outline_path, grid) if outline_path else (None, "no Brazil outline configured")
-    seasonal, gsw_reason = (gsw_grid(*gsw_paths, grid) if gsw_paths
-                            else (None, "no JRC GSW rasters configured"))
-    for k, r in (("landcover", lc_reason), ("brazil", br_reason), ("seasonal_water", gsw_reason)):
+    seasonal, never_water, gsw_reason = (gsw_grid(*gsw_paths, grid) if gsw_paths
+                                         else (None, None, "no JRC GSW rasters configured"))
+    rain_info, norain, rain_reason = None, None, None
+    if not imerg_dir:
+        rain_reason = "no IMERG daily directory configured"
+    elif state.last_acquired is None:
+        rain_reason = "no DSWx acquisition to anchor the rain window"
+    elif never_water is None:
+        rain_reason = "rule needs JRC GSW occurrence (missing)"
+    else:
+        end = parse_iso(state.last_acquired).date()
+        support, rain_info, rain_reason = rain_support_grid(imerg_dir, end, grid)
+        if support is not None:
+            norain = (support < RAIN_MIN_MM) & never_water
+            del support
+    for k, r in (("landcover", lc_reason), ("brazil", br_reason), ("seasonal_water", gsw_reason),
+                 ("rain_support", rain_reason)):
         if r:
             reasons[k] = r
 
@@ -685,11 +774,13 @@ def run(
     stat_keys = ("flooded_km2", "new_km2", "receded_km2", "people_flooded", "lower_confidence_km2",
                  "lower_confidence_new_km2", "lower_confidence_people", "excluded_water_wetland_km2",
                  "outside_brazil_km2", "sub_mmu_km2", "seasonal_downgraded_km2",
-                 "seasonal_downgraded_people", "seasonal_flagged_pixel_km2", "seasonal_flagged_pixel_people")
+                 "seasonal_downgraded_people", "seasonal_flagged_pixel_km2", "seasonal_flagged_pixel_people",
+                 "norain_downgraded_km2", "norain_downgraded_people", "norain_flagged_pixel_km2",
+                 "all_candidates_km2", "all_candidates_people")
     if valid and lc is not None and br is not None:
         prev = state.prev_flood.astype(bool) if state.has_prev else np.zeros(grid.shape, bool)
-        masks = apply_context(masks, lc, excl, br, prev, seasonal)
-        del excl, br, seasonal
+        masks = apply_context(masks, lc, excl, br, prev, seasonal, norain)
+        del excl, br, seasonal, norain
         poly = polygonize(state, masks, pop, lc, flood_path, min_area_km2, simplify_m)
         tot = poly["totals"]
         stats = {
@@ -706,8 +797,14 @@ def run(
             # what the GSW rule moved standard -> lower in the MAPPED polygons
             # (= change to the headline); *_pixel_* also counts sub-MMU specks.
             # null when the GSW rasters are missing
-            "seasonal_downgraded_km2": poly["seasonal_moved"]["km2"] if gsw_reason is None else None,
-            "seasonal_downgraded_people": poly["seasonal_moved"]["people"] if gsw_reason is None else None,
+            "seasonal_downgraded_km2": poly["moved"]["seasonal_downgraded"]["km2"] if gsw_reason is None else None,
+            "seasonal_downgraded_people": poly["moved"]["seasonal_downgraded"]["people"] if gsw_reason is None else None,
+            "norain_downgraded_km2": poly["moved"]["norain_downgraded"]["km2"] if rain_reason is None else None,
+            "norain_downgraded_people": poly["moved"]["norain_downgraded"]["people"] if rain_reason is None else None,
+            "norain_flagged_pixel_km2": km2(masks["norain_downgraded"]) if rain_reason is None else None,
+            # every mapped candidate, standard + lower (shown alongside the headline)
+            "all_candidates_km2": round(tot["standard"]["km2"] + tot["lower"]["km2"], 3),
+            "all_candidates_people": round(tot["standard"]["people"] + tot["lower"]["people"], 1),
             "seasonal_flagged_pixel_km2": km2(masks["seasonal_downgraded"]) if gsw_reason is None else None,
             "seasonal_flagged_pixel_people": ((None if pop is None else round(float(pop[masks["seasonal_downgraded"]].sum()), 1))
                                               if gsw_reason is None else None),
@@ -725,7 +822,7 @@ def run(
         reasons.setdefault("flooded_km2", "no valid baseline/observations (see bootstrap)" if not valid
                            else "land cover or Brazil outline missing: unfiltered water is not published")
     if pop is None:
-        for k in ("people_flooded", "lower_confidence_people"):
+        for k in ("people_flooded", "lower_confidence_people", "all_candidates_people"):
             stats[k] = None
 
     # latency of the newest pass only (a bootstrap backlog would inflate it)
@@ -762,6 +859,8 @@ def run(
         "landcover_source": None if lc is None else "MCD12Q1.061 2025 LC_Type1 (IGBP)",
         "brazil_outline_source": None if br_reason else "IBGE malhas v3 paises/BR",
         "seasonal_water_source": None if gsw_reason else "JRC Global Surface Water v1.4 (1984-2021), cell mean",
+        "rain_rule": rain_info,
+        "rain_source": None if rain_reason else "IMERG Early daily (GES DISC), 0.1 deg",
         "_null_reasons": reasons,
     }
     del masks, pop, lc

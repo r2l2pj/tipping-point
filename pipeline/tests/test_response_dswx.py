@@ -307,3 +307,73 @@ def test_missing_gsw_skips_rule_with_reason(tmp_path):
     assert meta["flooded_km2"] > 0                                   # headline still published
     assert meta["seasonal_downgraded_km2"] is None
     assert "seasonal_water" in meta["_null_reasons"] and meta["seasonal_water_source"] is None
+
+
+IMERG_W, IMERG_N = -51.5, -28.5            # 0.1 deg, 30x30 cells around GRID
+
+
+def write_imerg(dir_, end, n=8, wet=None, mm=0.0, west=IMERG_W, north=IMERG_N, shape=(30, 30)):
+    """Daily imerg_early COGs ending `end`; `wet`=(lon, lat) cell gets `mm`/day."""
+    from rasterio.transform import from_origin
+
+    dir_.mkdir(parents=True, exist_ok=True)
+    t = from_origin(west, north, 0.1, 0.1)
+    for k in range(n):
+        a = np.zeros(shape, np.float32)
+        if wet is not None:
+            r, c = rasterio.transform.rowcol(t, *wet)
+            a[r, c] = mm
+        day = end - timedelta(days=k)
+        with rasterio.open(dir_ / f"imerg_early_{day:%Y%m%d}.tif", "w", driver="GTiff",
+                           height=shape[0], width=shape[1], count=1, dtype="float32",
+                           crs="EPSG:4326", transform=t, nodata=np.nan) as dst:
+            dst.write(a, 1)
+    return dir_
+
+
+def _rain_run(tmp_path, imerg_dir):
+    cat = [granule(i, T0 + timedelta(days=4 * i), tile()) for i in range(4)]
+    cat.append(granule(4, T0 + timedelta(days=16), tile(water_rows=(5,))))
+    occ = write_gsw(tmp_path / "occ.tif")                 # never water
+    seas = write_gsw(tmp_path / "seas.tif")
+    return make_run(tmp_path, cat, T0 + timedelta(days=17), gsw_paths=(occ, seas),
+                    imerg_dir=imerg_dir)[0]
+
+
+LAST = (T0 + timedelta(days=16)).date()
+
+
+def test_no_rain_downgrades_to_lower(tmp_path):
+    meta = _rain_run(tmp_path, write_imerg(tmp_path / "imerg", LAST))
+    assert meta["flooded_km2"] == 0.0 and meta["lower_confidence_km2"] > 0
+    # pixel-area sum inside polygons vs polygon area: same region, <1 % apart
+    assert meta["norain_downgraded_km2"] == pytest.approx(meta["lower_confidence_km2"], rel=0.01)
+    assert meta["all_candidates_km2"] == pytest.approx(meta["lower_confidence_km2"])
+    assert meta["rain_rule"]["n_files"] == 8 and meta["rain_source"]
+    fc = json.loads((tmp_path / "flood_dswx.geojson").read_text())
+    assert all(f["properties"]["lower_reason"] == [rd.REASON_NORAIN] for f in fc["features"])
+
+
+def test_rain_within_50km_keeps_standard(tmp_path):
+    # ~30 km east of the grid: 2 mm/day x 8 = 16 mm >= 10 -> supported
+    meta = _rain_run(tmp_path, write_imerg(tmp_path / "imerg", LAST, wet=(-49.65, -30.05), mm=2.0))
+    assert meta["flooded_km2"] > 0 and meta["norain_downgraded_km2"] == 0.0
+
+
+def test_rain_beyond_50km_does_not_support(tmp_path):
+    # ~100 km east: outside the radius -> still no supporting rain
+    meta = _rain_run(tmp_path, write_imerg(tmp_path / "imerg", LAST, wet=(-48.95, -30.05), mm=5.0))
+    assert meta["flooded_km2"] == 0.0 and meta["norain_downgraded_km2"] > 0
+
+
+def test_rain_rule_skipped_on_bad_or_missing_files(tmp_path):
+    # transposed-like file that does not cover the domain -> skipped, never downgrades
+    bad = write_imerg(tmp_path / "bad", LAST, west=-49.5, shape=(30, 30))   # misses the domain
+    (tmp_path / "a").mkdir()
+    meta = _rain_run(tmp_path / "a", bad)
+    assert meta["flooded_km2"] > 0 and meta["norain_downgraded_km2"] is None
+    assert "do not cover" in meta["_null_reasons"]["rain_support"]
+    few = write_imerg(tmp_path / "few", LAST, n=5)
+    (tmp_path / "b").mkdir()
+    meta = _rain_run(tmp_path / "b", few)
+    assert meta["flooded_km2"] > 0 and "5/8" in meta["_null_reasons"]["rain_support"]
