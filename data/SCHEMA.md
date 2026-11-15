@@ -401,6 +401,14 @@ night_light_drop_pct — merge its CSV printout), `gee/04_hand_vs_merit.js` /
 feature_importance; XGBoost stands in for the doc's in-GEE Random Forest —
 see ml/README.md), `07_forecast.py` (forecast_source).
 
+### Impact bookkeeping — `gpw_year`, `gpw_product`, `population_total`
+
+`gpw_year` 2020 (GPW v4.11 count, latest epoch, nearest both events);
+`population_total` (persons) = sum of the case GPW COG over the case AOI
+(`population_total_scope`); `people_critical` must be smaller. rs
+`lead_time_mean_h` is exact from `lead_time_hist` (`lead_time_mean_note`).
+Producer `tools/fill_impact_lead_keys.py`.
+
 ### "Did the alert come before?" — `flood_warned*` (wa_2025), `slide_warned*` (rs_2024)
 
 Producer `tools/warned_before.py` (Modo 3 row 1). Share of the damage that the

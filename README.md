@@ -136,6 +136,15 @@ anchor − first Critical crossing`; metrics carry `lead_time_median_h`,
 `lead_time_assumptions`. Null fields ship with a reason string, never a
 silent 0.
 
+Lead-time counts (observed replay, anchor = first damage report):
+- rs_2024 (5,678 Crítico clusters vs the MetSul/Canoas anchor 2024-04-27
+  15:00Z): warned before **0**, after **5,678**, never-critical not defined
+  (clusters exist only where Crítico was crossed). Median −57 h, mean
+  −61.5 h — the observed index crossed after the first damage report; the
+  forecast lead time (L22, issued GFS) is the one that can warn earlier.
+- wa_2025: point counts undefined — the 15 WGS points are undated; the
+  case-level first Crítico crossing came 0.6 h before the damage anchor.
+
 ## Data sources (NASA + partners)
 
 | Source | GEE catalog id / product | Used for |
@@ -146,7 +155,7 @@ silent 0.
 | MODIS LC | `MODIS/061/MCD12Q1` | ML features + R1 wetland/water exclusion and cropland confidence — **not** a TPI index input (ruling A3) |
 | OPERA DSWx-S1 | PO.DAAC `OPERA_L3_DSWX-S1_V1` (`WTR`) via CMR | R1 near-real-time flood candidates (Modo Agora) |
 | NOAA GFS (non-NASA, declared) | AWS `noaa-gfs-bdp-pds` 0.25° APCP | replay real-forecast frames (L22) + live forecast (L25) |
-| GPWv4.11 | `CIESIN/GPWv411/GPW_Population_Count` | exposed population (`gpw_year` in metrics = epoch nearest the event; epochs are 5-yr, latest 2020) |
+| GPWv4.11 | `CIESIN/GPWv411/GPW_Population_Count` | exposed population (`gpw_year` = 2020 for both cases: the epoch nearest both events, epochs are 5-yr and 2020 is the latest; verified cell-for-cell for rs_2024; `population_total` = case-AOI sum, so `people_critical` < total is checkable) |
 | Black Marble | `NASA/VIIRS/002/VNP46A2` (`DNB_BRDF_Corrected_NTL`) | pre/post night-lights change |
 | OPERA DSWx | `OPERA/DSWX/L3_V1/HLS` (rs_2024), `OPERA/DSWX/L3_V1/S1` (wa_2025) | validation IoU/F1 (`B01_WTR`, ≤5 d after event, ruling L10b) |
 | HLS | `NASA/HLS/HLSL30/v002`, `NASA/HLS/HLSS30/v002` | scar candidates, cloud fraction |

@@ -58,7 +58,6 @@
         "lead_time_hist": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
         "rf_auc": "No local labeled WA feature CSV/parquet table or trained model exists. The ml pipeline is configured for RS-2024; no WA validation labels/features are available to compute case-specific AUC. Synthetic test fixtures are not validation data.",
         "rule_auc": "No local labeled WA feature CSV/parquet table or trained model exists. The ml pipeline is configured for RS-2024; no WA validation labels/features are available to compute case-specific AUC. Synthetic test fixtures are not validation data.",
-        "gpw_year": "not merged: the committed people_critical comes from pipeline/tp/bundle.py, which records no GPW epoch; gee/impact.py (writes gpw_year) was not merged for this case",
         "lead_time_mean_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
         "feature_importance": "no trained model: ml/models holds only model_card.md (no slide_xgb.json) and no labeled feature table exists, so importance is undefined"
       },
@@ -157,7 +156,7 @@
         "denominator_note": "quote n_warned of n_eligible_issue_days; issue days after the anchor cannot warn by definition"
       },
       "opera_fn_diagnosis": "raw FN 1.19M px = permanent/pre-existing water (pre_water 1.21M px) which our new-flood mask correctly excludes; like-for-like FN drops to 60.7k px",
-      "gpw_year": null,
+      "gpw_year": 2020,
       "lead_time_mean_h": null,
       "feature_importance": null,
       "forecast_source": "noaa-gfs",
@@ -483,7 +482,10 @@
       "flood_warned_pct": 0.14,
       "flood_warned_critical_pct": 0.0,
       "flood_warned_observed_pct": 0.0,
-      "flood_warned_basis": "forecast_gfs (issued 24-48 h before the anchor)"
+      "flood_warned_basis": "forecast_gfs (issued 24-48 h before the anchor)",
+      "gpw_product": "GPW v4.11 population count (CIESIN/NASA SEDAC), 30 arc-sec",
+      "population_total": 3431240,
+      "population_total_scope": "sum of the case GPW COG over the case AOI"
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -537,8 +539,6 @@
         "iou": "no NISAR water mask: event predates NISAR launch (Jul 2025), so NISAR-vs-OPERA IoU is undefined",
         "f1": "no NISAR water mask: event predates NISAR launch (Jul 2025), so NISAR-vs-OPERA F1 is undefined",
         "hand_validation": "gee/hand.py (HAND proxy vs MERIT hnd) not run/merged for rs_2024; GEE is not used at runtime (L25)",
-        "gpw_year": "not merged: the committed people_critical comes from pipeline/tp/bundle.py, which records no GPW epoch; gee/impact.py (writes gpw_year) was not merged for this case",
-        "lead_time_mean_h": "not merged: the committed cluster-mode lead-time block carries median/IQR/hist only; mean was not recorded",
         "flood_warned_pct": "no flood reference map for RS 2024: event predates NISAR, OPERA DSWx-HLS was 100 % cloud, OPERA DSWx-S1 has no granules for 2024-05-01..20 (CMR) and the S1 RTC route is pending the ASF OPERA RTC-S1 EULA"
       },
       "lead_time_median_h": -57.0,
@@ -680,8 +680,8 @@
       "iou": null,
       "f1": null,
       "hand_validation": null,
-      "gpw_year": null,
-      "lead_time_mean_h": null,
+      "gpw_year": 2020,
+      "lead_time_mean_h": -61.5,
       "feature_importance": {
         "relief": 0.49359378516508334,
         "slope": 0.25491190413829856,
@@ -1390,7 +1390,11 @@
       "slide_warned_critical_pct": 69.07,
       "slide_warned_observed_pct": 88.83,
       "slide_warned_basis": "forecast_gfs (issued 24-48 h before the anchor)",
-      "flood_warned_pct": null
+      "flood_warned_pct": null,
+      "gpw_product": "GPW v4.11 population count (CIESIN/NASA SEDAC), 30 arc-sec",
+      "population_total": 5298955,
+      "population_total_scope": "sum of the case GPW COG over the case AOI",
+      "lead_time_mean_note": "exact from lead_time_hist: daily 00Z crossings vs the fixed anchor put each occupied 6-h bin on a single lead value"
     }
   }
 }
