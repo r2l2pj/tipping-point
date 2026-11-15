@@ -20,8 +20,11 @@ observed it with Fmask bits1-4 unset — the "optical saw X%" number).
 
 Task C (wa_2025): HAND proxy flood extent (NASADEM - focalMin(radius) < 5m)
 vs the rasterized NISAR flood mask across radii 1000/1500/3000m. Emits
-hand_validation (best IoU*100), hand_validation_radii {radius_m: iou} and
-hand_best_radius_m.
+hand_nisar_iou (best IoU 0-1), hand_nisar_iou_radii {radius_m: iou 0-1} and
+hand_nisar_radius_m. Keys carry the `hand_nisar_*` prefix on purpose: this is
+an observed-flood-extent comparison, NOT the MERIT Hydro hand_validation_*
+schema in data/metrics.json (gee/hand.py) — the bare names once polluted the
+root metrics with an ambiguous percent.
 
 Read-only: interactive ee + reduceRegion only — no Export tasks.
 """
@@ -126,8 +129,8 @@ def task_wa2025() -> tuple[dict, dict, dict]:
     collections["nisar_flood"] = res["nisar"]
     if nisar is None:
         why = "NISAR flood polygons asset not found in data/wa_2025/assets.json"
-        for k in ("iou", "f1", "hls_iou", "hls_f1", "hand_validation",
-                  "hand_best_radius_m"):
+        for k in ("iou", "f1", "hls_iou", "hls_f1", "hand_nisar_iou",
+                  "hand_nisar_radius_m"):
             flat[k] = None
             reasons[k] = why
         return flat, reasons, collections
@@ -188,14 +191,14 @@ def task_wa2025() -> tuple[dict, dict, dict]:
         radii[str(r)] = iou
         if iou > best_iou:
             best_r, best_iou = r, iou
-    flat["hand_validation_radii"] = radii
+    flat["hand_nisar_iou_radii"] = radii
     if best_r is None:
-        flat["hand_validation"] = flat["hand_best_radius_m"] = None
-        reasons["hand_validation"] = reasons["hand_best_radius_m"] = (
+        flat["hand_nisar_iou"] = flat["hand_nisar_radius_m"] = None
+        reasons["hand_nisar_iou"] = reasons["hand_nisar_radius_m"] = (
             "no valid HAND/NISAR overlap samples")
     else:
-        flat["hand_validation"] = 100 * best_iou
-        flat["hand_best_radius_m"] = best_r
+        flat["hand_nisar_iou"] = best_iou
+        flat["hand_nisar_radius_m"] = best_r
     collections["HAND_proxy"] = f"{IMG_NASADEM} elev - focalMin(radius) < {LOW_HAND_M}m"
     return flat, reasons, collections
 

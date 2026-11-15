@@ -55,7 +55,7 @@ Every derived image carries the properties:
 | Module | Purpose | Dry flags |
 | --- | --- | --- |
 | `python -m gee.tpi --case <id>` | Replay TPI_slide/TPI_flood multiband series + R/S series + T rasters + per-case climatology asset | `--dry-run` (window + planned exports, no `ee.Initialize`), `--tasks` (export dicts) |
-| `python -m gee.hand --case <id>` | HAND-proxy validation vs MERIT (reference only); merges `hand_validation` | `--dry-run` / `--tasks` |
+| `python -m gee.hand --case <id>` | HAND-proxy validation vs MERIT (reference only) on one local 90 m grid; merges `hand_validation_iou`/`_r`/`_radius_m`/`_radii`/`_definition` + legacy `hand_validation` (IoU 0-1) | `--dry-run` / `--tasks` |
 | `python -m gee.impact --case <id>` | people_critical/flooded, flooded_km2, VIIRS night-light drop + COGs | `--dry-run` / `--tasks` |
 | `python -m gee.opera --case <id>` | NISAR water vs OPERA DSWx: iou/f1/cloud_pct into metrics.json | `--dry-run` / `--tasks` |
 | `python -m gee.hls_scar --case <id>` | HLS dNBR landslide-scar candidates | `--dry-run` / `--tasks` |

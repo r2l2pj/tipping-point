@@ -419,12 +419,25 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   of those HLS L30/S30 scenes over the AOI) and `cloud_pct_source` (product,
   Fmask bits, scene count + dates, union rule) — what the app cites for
   'clouds hid X%'.
-- `hand_validation` is a scalar 0–100 percentage: the HAND<5 m zone IoU
-  against MERIT at the selected radius, suitable for the app `MetricsV4`
-  percentage renderer. `hand_validation_radii` preserves per-radius `{r, iou}`
-  ratios; `hand_best_radius_m` is selected by maximum `r + iou` and written
-  back to `config.yaml` `thresholds.hand_proxy_radius_m`. No valid comparison
-  produces null plus `_null_reasons`, not an object in `hand_validation`.
+- `hand_validation` is the HAND<5 m zone IoU in 0–1 against MERIT Hydro 'hnd'
+  at the selected radius (unit: fraction; before the G2 schema fix it was an
+  ambiguous 0–100 percent, which the app read as "98%"). The unambiguous keys:
+  `hand_validation_iou` (IoU 0–1), `hand_validation_r` (Pearson r, -1..1),
+  `hand_validation_radius_m` (best radius = highest IoU, ties -> smallest;
+  reported only, `thresholds.hand_proxy_radius_m` is NOT rewritten),
+  `hand_validation_radii` {radius_m: iou 0-1}; `hand_validation_by_radius`
+  {radius_m: {iou, r, r_5k, n_px, low_proxy_pct,
+  low_merit_pct}} and `hand_validation_definition` (method text). Everything
+  is computed locally on ONE common grid: MERIT 'hnd' plus the three proxy
+  bands (NASADEM z − focalMin(radius)) downloaded together via
+  `getDownloadURL` (NPY, 90 m, EPSG:4326, clipped to the case AOI, tiled over
+  its bounding box). `r` covers all pixels valid on both bands, `r_5k` a
+  5000-px sample (seed 1); `low_*_pct` is each HAND<5 m zone's share of the
+  compared pixels. MERIT is a reference only — never an index input. No valid
+  comparison produces null plus `_null_reasons`.
+  (`tools/validation_metrics.py` Task C compares the same proxy against the
+  NISAR flood mask — a different question — and publishes `hand_nisar_*`
+  keys in `data/<case>/validation_metrics.json`, never `hand_validation*`.)
 - `rf_auc` is the XGBoost model AUC — the key name stays for contract
   stability; public text says "XGBoost". Detailed sub-results may nest under
   extra sections (e.g. `landslide_ml`); the keys above stay flat.

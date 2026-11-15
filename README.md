@@ -297,7 +297,9 @@ was reviewed by the team. AI-assisted commits carry a `Co-Authored-By` trailer.
 ## Rules
 
 - Inputs are NASA (or challenge-partner) data only. MERIT Hydro is a
-  validation reference, never an index input.
+  validation reference, never an index input — the HAND-proxy check lands
+  as `hand_validation_iou`/`hand_validation_r`/`hand_validation_radii`
+  (0-1 IoU + Pearson r per radius on one 90 m grid; `gee/hand.py`).
 - Secrets live in `.env` / `~/.netrc` / CI secrets — never committed.
 - NISAR products are HDF5 — subset to the AOI before writing COGs.
 - Manifests are written LAST (`data/now/manifest.json` per run,

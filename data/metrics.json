@@ -99,13 +99,6 @@
       "validation_method_raw": "all water: NISAR flood mask vs every OPERA DSWx-S1 water pixel 2025-12-15/17 over the AOI (includes permanent/pre-existing water, so FN is inflated)",
       "hls_method": "all water, OPERA DSWx-HLS (optical) 2025-12-15/17, cloud-free pixels only; 92.9% cloud -> reference mostly unobserved; not comparable to iou/f1",
       "cloud_pct_source": "OPERA DSWx-HLS cloud class (WTR 253) 2025-12-15/17 over the AOI",
-      "hand_best_radius_m": 1000,
-      "hand_validation": 0.9751807438686789,
-      "hand_validation_radii": {
-        "1000": 0.00975180743868679,
-        "1500": 0.00938195579408305,
-        "3000": 0.0075653966720609705
-      },
       "hls_confusion": {
         "fn": 603407.9843137254,
         "fp": 34,
@@ -742,6 +735,47 @@
             "n_issue_days": 9
           }
         ]
+      },
+      "hand_best_radius_m": 1000,
+      "hand_validation": 0.2613487985956041,
+      "hand_validation_radii": {
+        "1000": 0.2613487985956041,
+        "1500": 0.1914404516412562,
+        "3000": 0.10793287490704208
+      },
+      "hand_validation_iou": 0.2613487985956041,
+      "hand_validation_r": 0.8719500287830763,
+      "hand_validation_radius_m": 1000,
+      "hand_validation_definition": "IoU of HAND<5 m zones, NASADEM proxy z - min z within radius vs MERIT Hydro hnd (reference only), 90 m, case AOI; r = Pearson over pixels",
+      "hand_validation_by_radius": {
+        "1000": {
+          "iou": 0.2613487985956041,
+          "r": 0.8719500287830763,
+          "r_5k": 0.8807809414849775,
+          "n_px": 2274437,
+          "low_proxy_pct": 5.966883233081417,
+          "low_merit_pct": 22.022636810779986
+        },
+        "1500": {
+          "iou": 0.1914404516412562,
+          "r": 0.854405058705562,
+          "r_5k": 0.8627448462898945,
+          "n_px": 2274437,
+          "low_proxy_pct": 4.320058106687501,
+          "low_merit_pct": 22.022636810779986
+        },
+        "3000": {
+          "iou": 0.10793287490704208,
+          "r": 0.7886085881839228,
+          "r_5k": 0.7997995424906549,
+          "n_px": 2274437,
+          "low_proxy_pct": 2.4100909367900716,
+          "low_merit_pct": 22.022636810779986
+        }
+      },
+      "collections": {
+        "NASADEM": "NASA/NASADEM_HGT/001",
+        "MERIT_Hydro": "MERIT/Hydro/v1_0_1"
       }
     },
     "rs_2024": {
@@ -795,7 +829,6 @@
         "flood_source": "no NISAR coverage — event predates launch (Jul 2025)",
         "iou": "no NISAR water mask: event predates NISAR launch (Jul 2025), so NISAR-vs-OPERA IoU is undefined",
         "f1": "no NISAR water mask: event predates NISAR launch (Jul 2025), so NISAR-vs-OPERA F1 is undefined",
-        "hand_validation": "gee/hand.py (HAND proxy vs MERIT hnd) not run/merged for rs_2024; GEE is not used at runtime (L25)",
         "flood_warned_pct": "no flood reference map for RS 2024: event predates NISAR, OPERA DSWx-HLS was 100 % cloud, OPERA DSWx-S1 has no granules for 2024-05-01..20 (CMR) and the S1 RTC route is pending the ASF OPERA RTC-S1 EULA"
       },
       "lead_time_median_h": -57.0,
@@ -936,7 +969,6 @@
       },
       "iou": null,
       "f1": null,
-      "hand_validation": null,
       "gpw_year": 2020,
       "lead_time_mean_h": -61.5,
       "feature_importance": {
@@ -1385,7 +1417,9 @@
         "ml_soil": "SMAP L4 SPL4SMGP 008 + SPL4SMLM 008",
         "ml_terrain": "NASADEM_HGT 001",
         "ml_landcover": "MCD12Q1 061",
-        "ml_ndvi": "VNP13C2 002"
+        "ml_ndvi": "VNP13C2 002",
+        "NASADEM": "NASA/NASADEM_HGT/001",
+        "MERIT_Hydro": "MERIT/Hydro/v1_0_1"
       },
       "xgb_model": "xgb_terrain_landcover",
       "xgb_model_selected_by": "best VAL PR-AUC",
@@ -2068,6 +2102,42 @@
             "n_issue_days": 8
           }
         ]
+      },
+      "hand_validation": 0.4204081467264385,
+      "hand_validation_iou": 0.4204081467264385,
+      "hand_validation_r": 0.9003635100079249,
+      "hand_validation_radius_m": 1000,
+      "hand_validation_radii": {
+        "1000": 0.4204081467264385,
+        "1500": 0.34366911730757216,
+        "3000": 0.2376511723598617
+      },
+      "hand_validation_definition": "IoU of HAND<5 m zones, NASADEM proxy z - min z within radius vs MERIT Hydro hnd (reference only), 90 m, case AOI; r = Pearson over pixels",
+      "hand_validation_by_radius": {
+        "1000": {
+          "iou": 0.4204081467264385,
+          "r": 0.9003635100079249,
+          "r_5k": 0.90508222676828,
+          "n_px": 4607942,
+          "low_proxy_pct": 13.90536165602779,
+          "low_merit_pct": 31.738832650237352
+        },
+        "1500": {
+          "iou": 0.34366911730757216,
+          "r": 0.8593403373433339,
+          "r_5k": 0.8647544390227525,
+          "n_px": 4607942,
+          "low_proxy_pct": 11.208148887290683,
+          "low_merit_pct": 31.738832650237352
+        },
+        "3000": {
+          "iou": 0.2376511723598617,
+          "r": 0.773168059487053,
+          "r_5k": 0.7750481998349574,
+          "n_px": 4607942,
+          "low_proxy_pct": 7.622166251224516,
+          "low_merit_pct": 31.738832650237352
+        }
       }
     }
   }
