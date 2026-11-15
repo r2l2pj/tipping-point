@@ -24,6 +24,8 @@ test("headline: total people in High/Critical cells and the top municipality", (
   expect(h.top.id).toBe(top.id);
   expect(h.text).toMatch(/^Today & tomorrow: [\d,]+ people in High or Critical risk areas · most in .+ \([A-Z]{2}\)$/);
   expect(headlineFor({ dates: [], places: [] })).toBeUndefined();
+  // The Now summary's people_alert (the tile's number) wins over the places sum.
+  expect(headlineFor(P, 23040)!.text).toMatch(/^Today & tomorrow: 23,000 people in High or Critical risk areas/);
 });
 
 test("timeline_marks from the metrics become timeline marks (event red, nisar blue, signal amber)", async () => {
