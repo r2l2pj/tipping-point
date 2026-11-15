@@ -587,11 +587,91 @@ def export_card_v2() -> dict:
         if isinstance(v, list):
             return [rnd(x) for x in v]
         return v
-    card = rnd(ml_card_v2(met))
+    card = plain_card_text(rnd(ml_card_v2(met)))
     (mldir / "ml_card_v2.json").write_text(json.dumps(card, separators=(",", ":"), default=str))
     (mldir / "model_metrics_v2.json").write_text(json.dumps(met, separators=(",", ":"), default=str))
     log.info("ml_card_v2: %d horizons, %d TEST events", len(card["trigger"]), len(card["test_events"]))
     return card
+
+
+
+
+# --------------------------------------------------------------- plain English (app text)
+PLAIN_MODELS = {
+    "xgb_rain_soil": "XGBoost on rain + soil moisture",
+    "direct_rain": "One XGBoost per forecast window, on rain only",
+    "xgb_all": "XGBoost on all inputs (rain, soil moisture, terrain, land cover)",
+    "rf_all": "Random forest (200 trees) on all inputs",
+    "xgb_rain_only": "XGBoost on rain only",
+    "nowcast_xgb_all": "XGBoost on rain already observed only (no forecast)",
+    "climatology": "Season and place only (no rain or soil moisture)",
+    "rule_tpi": "TPI rule (Tipping Point Index above 0.6)",
+    "xgb_terrain_landcover": "XGBoost on terrain + land cover",
+    "xgb_terrain_only": "XGBoost on terrain only",
+    "rule_slope": "Slope rule (slopes of 15-30°)",
+}
+PLAIN_FEATURES = {
+    "rain_24h": "rain in the last 24 h (IMERG)", "rain_72h": "rain in the last 3 days (IMERG)",
+    "rain_7d": "rain in the last 7 days (IMERG)",
+    "rain_24h_rel": "24 h rain vs the local 1-in-100-day level",
+    "rain_72h_rel": "3-day rain vs the local 1-in-100-day level",
+    "sm_surface": "surface soil moisture (SMAP)", "sm_rootzone": "root-zone soil moisture (SMAP)",
+    "sm_profile_wetness": "soil wetness, whole profile (SMAP)",
+    "clay": "clay share of the soil", "sand": "sand share of the soil", "porosity": "soil porosity",
+    "elevation": "elevation", "slope": "slope", "aspect_sin": "slope direction (east-west)",
+    "aspect_cos": "slope direction (north-south)", "curvature": "terrain curvature",
+    "relief": "local relief", "landcover": "land cover type", "ndvi": "vegetation greenness (NDVI)",
+}
+
+
+def plain_card_text(card: dict) -> dict:
+    """App-facing sentences without code names (same keys)."""
+    card["models"] = {**card.get("models", {}), **PLAIN_MODELS}
+    if isinstance(card.get("served"), dict):
+        card["served"]["note"] = (
+            "The live map uses XGBoost on rain + soil moisture: one daily model, combined over "
+            "the days of each forecast window. On the validation events, one XGBoost per forecast "
+            "window (rain only) ranked slightly higher (by at most 0.02 PR-AUC); both are reported "
+            "on the test events.")
+    card["val_vs_test_note"] = (
+        "Validation = held-out landslide reports worldwide (NASA landslide catalogues, mostly "
+        "2015-2018, scored with observed rain). Test = held-out disaster storms. Validation PR-AUC "
+        "(24 h, about 0.13) is about 5x lower than on the test storms (about 0.62), because the test "
+        "storms are large and well dated. An independent audit found no leakage: the test events are "
+        "easier by design, so read the test scores next to the validation scores. A simple rule - "
+        "rain compared with the local 1-in-100-day level - scores about the same.")
+    card["split"]["3a"] = (
+        "Landslide susceptibility map v2: trained and validated on NASA landslide reports in "
+        "~50 km blocks across south and south-east Brazil, without any Rio Grande do Sul 2024 "
+        "points; tested on landslides of held-out Brazilian events against random land points.")
+    card["split"]["3b"] = (
+        "Trigger model: trained and validated on dated NASA landslide reports worldwide, split by "
+        "event; tested on held-out disaster events never seen in training. NOAA GFS forecasts are "
+        "scored only on days with an archived forecast run.")
+    if isinstance(card.get("audit"), dict):
+        card["audit"]["verdict"] = (
+            "No leakage or overfitting found. The test events are extreme storms, so test scores "
+            "overstate everyday skill; the ML performs about as well as a rule comparing rain with "
+            "the local 1-in-100-day level.")
+    note = card.get("t_ml_ranking_note") or ""
+    for k, v in sorted(PLAIN_MODELS.items(), key=lambda kv: -len(kv[0])):
+        note = note.replace(k, v)
+    card["t_ml_ranking_note"] = note.replace("3a TEST PR-AUC", "Susceptibility map, test PR-AUC")
+    return card
+
+
+def plain_feature_importance(path: Path) -> None:
+    """feature_importance_3b.json: human feature names in 'feature' (raw id kept in 'feature_id')."""
+    d = json.loads(path.read_text())
+    for r in d.get("rows", []):
+        fid = r.get("feature_id") or r.get("feature")
+        r["feature_id"] = fid
+        r["feature"] = PLAIN_FEATURES.get(fid, fid)
+    d["group_labels"] = {"rain": "Rain (NASA IMERG)", "soil": "Soil moisture (NASA SMAP)",
+                         "terrain": "Terrain (NASADEM)", "landcover": "Land cover (MODIS + VIIRS)",
+                         "climate": "Long-term climate (IMERG/SMAP means)",
+                         "soil_texture": "Soil texture (SMAP)"}
+    path.write_text(json.dumps(d, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
@@ -599,3 +679,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
     if sys.argv[1:] == ["card-v2"]:
         export_card_v2()
+        plain_feature_importance(DATA_OUT / "ml" / "feature_importance_3b.json")
