@@ -68,6 +68,19 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | Optical **100%** cloud, **20** HLS scenes | `cloud_pct` (100.0), `hls_scenes` (20) | P |
 | HAND ≤ **15 m** vs floods ~**16 m** above the river; ROC **0.61 / 0.85**, WA **0.93 → 0.83** | `docs/t-flood-fix-eval.md` (not in metrics.json) | R, A |
 
+## Pending (L61, NISAR agreement — fill ~21:00, then grep for `[TBD` = 0)
+
+| Slot | Meaning | Key (to confirm) | Used in |
+|---|---|---|---|
+| `[TBD uy_high]` | % of NISAR water pixels (Uruguaiana pass) at High+ in the index before the pass | `[TBD key]` | R A P S K |
+| `[TBD uy_crit]` | same, Critical | `[TBD key]` | R A P |
+| `[TBD uy_area]` | % of the land the pre-pass index flagged High+ (chance) | `[TBD key]` | R A P |
+| `[TBD uy_lift]` | uy_high ÷ uy_area | `[TBD key]` | R A P S K |
+| `[TBD uy_pass]` | the NISAR pass scored (date) | `[TBD key]` | R A S |
+| `[TBD wa_high]` / `[TBD wa_lift]` | Washington, same | `[TBD key]` | R A P S K |
+| `[TBD now_status]` | Now: latest NISAR pass used, or "no water seen yet" | `now/summary.json` `[TBD key]` | P |
+| `[TBD key]` | the metrics.json key of the agreement block | — | R A |
+
 ## Other numbers (sources outside metrics.json)
 
 | Number | Source | Where |
