@@ -30,6 +30,7 @@ OPTIONAL_PRODUCTS = {
     "response_summary": "response/summary.json",
     "landslide_candidates": "response/landslide_dist.geojson",
     "dist_meta": "response/dist_meta.json",
+    "nisar_timeseries": "response/nisar_timeseries.json",
 }
 FRAGMENT = "response/manifest_node.json"
 MERGE_KEYS = ("data_dates", "products", "_null_reasons")
@@ -147,6 +148,23 @@ def merge_p_trigger(manifest: dict, out_dir: Path) -> None:
     manifest["p_trigger_enabled"] = on
 
 
+def merge_nisar_layers(manifest: dict, out_dir: Path) -> None:
+    """NISAR HH/HV pair layers (tools/now_nisar_timeseries.py) join the
+    manifest when response/nisar_layers.json exists — same shape as the
+    p_trigger merge; the app keys on layer presence."""
+    layers = [l for l in manifest.get("layers", [])
+              if not str(l.get("id", "")).startswith("nisar_")]
+    meta = out_dir / "response" / "nisar_layers.json"
+    if meta.is_file():
+        try:
+            nl = json.loads(meta.read_text()).get("layers", [])
+            layers += [l for l in nl if (out_dir / l["png"]).is_file()]
+        except ValueError as exc:
+            print(f"[now_manifest] bad nisar_layers.json: {exc}",
+                  file=sys.stderr)
+    manifest["layers"] = layers
+
+
 def finalize(out_dir: Path) -> dict:
     add_observed_to_alerts(out_dir)
     mpath = out_dir / "manifest.json"
@@ -165,6 +183,7 @@ def finalize(out_dir: Path) -> dict:
         if isinstance(frag.get("response"), dict):
             manifest["response"] = frag["response"]
     merge_p_trigger(manifest, out_dir)
+    merge_nisar_layers(manifest, out_dir)
     products = manifest.setdefault("products", {})
     for key, rel in OPTIONAL_PRODUCTS.items():
         products.setdefault(key, rel)
