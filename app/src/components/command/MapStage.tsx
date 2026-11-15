@@ -24,7 +24,8 @@ import { caseDirOf } from "./model/lazy";
 import { preloadFrames } from "./model/preload";
 import { effectiveLead, floodCaptionNote, forecastForDay, forecastLeadsForDay, frameFor, mapCaption, shiftDay, type IssueLead, type Step } from "./model/steps";
 import type { CcBundle } from "./model/types";
-import { hourLabel } from "./model/hours";
+import { hourForecastCaption, hourForecastFrame, hourLabel } from "./model/hours";
+import { HAZARD_LABEL } from "./model/types";
 import { shortCaption } from "./model/caption";
 import type { ManifestLayer } from "@/lib/types";
 import type { Action, ScreenState } from "./state";
@@ -66,6 +67,7 @@ export default function MapStage({
   cityOutline,
   compareDefaults,
   hourFrame,
+  hour,
 }: {
   bundle: CcBundle;
   steps: Step[];
@@ -87,6 +89,7 @@ export default function MapStage({
   compareDefaults?: { before?: string; after?: string };
   // Lucas: a 6-hourly TPI frame picked with the timeline hour chips.
   hourFrame?: ManifestLayer;
+  hour?: string | null;
 }) {
   const [map, setMap] = useState<MapInstance | null>(null);
   const [bearing, setBearing] = useState(0);
@@ -101,8 +104,9 @@ export default function MapStage({
   // Replay "forecast issued this day": the GFS frame issued on the step
   // day for D+k replaces the day's own frame.
   const issued = useMemo(
-    () => forecastForDay(bundle, step?.date, state.hazard, effectiveLead(bundle, step?.date, state.hazard, state.issueLead))?.layer,
-    [bundle, step?.date, state.hazard, state.issueLead]
+    () => hourForecastFrame(bundle, state.hazard, step?.date, hour ?? null, state.issueLead)?.layer ??
+      forecastForDay(bundle, step?.date, state.hazard, effectiveLead(bundle, step?.date, state.hazard, state.issueLead))?.layer,
+    [bundle, step?.date, state.hazard, state.issueLead, hour]
   );
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
   const swipeLeads = useMemo(() => swipeLeadsFor(bundle, step?.date, state.hazard), [bundle, step?.date, state.hazard]);
@@ -259,9 +263,13 @@ export default function MapStage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, bundle.id, insets.left, insets.right, insets.bottom]);
   const comparing = !!comparePair;
-  const effLead = effectiveLead(bundle, step?.date, state.hazard, state.issueLead);
+  // An hour chip in Forecast view: the 6-hourly NOAA run (lead in hours).
+  const hourFc = hourForecastFrame(bundle, state.hazard, step?.date, hour ?? null, state.issueLead);
+  const effLead = (hourFc?.k as IssueLead | undefined) ?? effectiveLead(bundle, step?.date, state.hazard, state.issueLead);
   const fLeads = forecastLeadsForDay(bundle, step?.date, state.hazard);
-  const caption = mapCaption(bundle, steps, state.dayIndex, state.hazard, state.layers, effLead);
+  const caption = hourFc && step && hour && state.layers.includes("tpi")
+    ? { text: hourForecastCaption(step.date, hour, hourFc.issued, HAZARD_LABEL[state.hazard]), forecast: true }
+    : mapCaption(bundle, steps, state.dayIndex, state.hazard, state.layers, effLead);
   // L52 merged view: name the NISAR pass while the outlines are on screen.
   const captionNote = floodCaptionNote(bundle, step?.date, state.layers);
   // Prod regression: the ML forecast horizon must be on the map, not only in
@@ -388,8 +396,9 @@ export default function MapStage({
         // full sentence behind ⓘ (tap) and in the tooltip / screen readers.
         // lead-analysis: every 6-hourly frame carries a 'smooth by construction'
         // note — shown with the full caption.
-        const hourNote = hourFrame && !issued && typeof (hourFrame as unknown as { note?: unknown }).note === "string"
-          ? ` — ${(hourFrame as unknown as { note: string }).note}` : "";
+        const sixH = hourFc?.layer ?? (!issued ? hourFrame : undefined);
+        const hourNote = sixH && typeof (sixH as unknown as { note?: unknown }).note === "string"
+          ? ` — ${(sixH as unknown as { note: string }).note}` : "";
         const full = `${caption.text}${hourFrame && !issued ? ` · 72 h rain until ${hourLabel(hourFrame)}` : ""}${captionNote}${hourNote}`;
         return (
           <div className="absolute z-10 flex max-w-[60%] flex-col items-start gap-1 max-[639px]:max-w-[calc(100%-120px)]" style={{ left: L(14), bottom: B(36) }}>

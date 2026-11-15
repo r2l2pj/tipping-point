@@ -415,6 +415,7 @@ export function CommandCenterView({
           cityPin={cityPin}
           compareDefaults={{ before: radar.preIso, after: radar.postIso }}
           hourFrame={hourFrameFor(bundle, state.hazard, step?.date, hour)}
+          hour={hour}
           cityOutline={!live ? replayCity?.outline : undefined}
           featuredCase={(() => {
             const f = cases.find((c) => c.mode === "replay" && isFeatured(c));
