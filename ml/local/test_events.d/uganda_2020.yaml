@@ -1,0 +1,35 @@
+# Uganda — southern Rwenzori Mountains, 21-22 May 2020 GH event.
+# Inventory: Deijns et al. 2022, NHESS 22, 3679-3700 (doi:10.5194/nhess-22-3679-2022),
+# dataset Zenodo doi:10.5281/zenodo.7198322 — Uganda.shp holds 1063 polygons, ALL
+# landslides ("Event 1 ... counts 1063 landslide features", Sect. 2.1), manually
+# mapped from Sentinel-2 + PlanetScope; event day from local media/field obs.
+# The shapefiles carry NO date/type attribute (fields: id, Area, LandUsemaj,
+# Aspectmean, Slopemean, ASC_MASKma, DSC_MASKma, Aspect) -> dating=fixed, and the
+# landslide/flash-flood split needs no filter here (paper: all 1063 = landslides;
+# dropped 0).
+# Onset (first documented damage) = 21 May 2020: River Lhubiriha burst its banks in
+# Kasese district (Bwera/Mpondwe towns), 8 dead, the Uganda-DRC bridge destroyed
+# (ReliefWeb / ACT RRF 04/2020: https://reliefweb.int/report/uganda/act-rapid-response-fund-uganda-humanitarian-support-flood-affected-communities-kasese).
+# The 21-22 May wave was the second of the May 2020 Kasese flood episode (first wave
+# ~6-10 May, rivers Nyamwamba/Mubuku/Lhubiriha/Nyamugasani/Sebwe) ->
+# inventory_window covers the whole episode.
+# Source = local shapefile under $ML_DATA_DIR (Zenodo serves only loose
+# shp/shx/dbf/prj components — a bare .shp is unreadable and there is no
+# per-country zip). Regenerate: download Uganda.{shp,shx,dbf,prj} from
+# https://zenodo.org/api/records/7198322 into $ML_DATA_DIR/events/uganda_2020/.
+# Pre-2021-03-23: no GFS archive -> perfect-forecast (observed IMERG) only.
+events:
+  - event_id: uganda_2020
+    name: "Rwenzori Mountains, Uganda, 21-22 May 2020 (Deijns et al. 2022 GH inventory)"
+    country: UG
+    date: 2020-05-21            # event occurred between 21 and 22 May 2020 (Deijns et al. 2022)
+    trigger_window: [2020-05-21, 2020-05-22]
+    inventory_window: [2020-05-07, 2020-05-29]   # whole May 2020 Kasese flood episode (waves ~6-10 + 21-22 May)
+    dating: fixed               # no per-point date attribute in the shapefile
+    format: vector              # EPSG:32635 shp; loader reprojects to 4326
+    source: "~/.cache/tipping-point-ml/events/uganda_2020/Uganda.shp"
+    max_points: 3000
+    citation: "Deijns et al. 2022, Nat. Hazards Earth Syst. Sci. 22, 3679-3700, doi:10.5194/nhess-22-3679-2022; dataset: Deijns et al., Zenodo doi:10.5281/zenodo.7198322"
+    license: "CC-BY-4.0"
+    notes: "proposed_split: train. Trigger: rain (multi-day intense rain -> landslides + flash floods in Rwenzori foothills). Onset=2020-05-21 (first documented damage; ReliefWeb ACT RRF 04/2020). Type filter: none needed — paper states all 1063 Uganda features are landslides (dropped 0). Loaded: 1063 polygons -> representative points -> 935 pts after 90 m dedupe; bbox 29.7055,0.1303 - 29.8402,0.1787. GLC leak check (~/.cache/tipping-point-ml/labels/inventory.csv, source==glc, +-3 d of trigger_window, <=100 km): 0 hits (also 0 under inventory_window +-3 d semantics). Source is a local path under ML_DATA_DIR — not portable; see comment above for regeneration."
+    enabled: false

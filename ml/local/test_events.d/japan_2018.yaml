@@ -1,0 +1,29 @@
+# July 2018 western Japan heavy rain (Heisei 30; JMA "Heavy Rain Event of July
+# 2018"): Baiu front + Typhoon Prapiroon remnants, record rain 28 Jun - 8 Jul;
+# significant landslide/flood damage concentrated 6-8 Jul in Hiroshima, Okayama,
+# Ehime (https://dil-opac.bosai.go.jp/publication/nied_natural_disaster/pdf/53/53-01.pdf ;
+# https://www.sciencedirect.com/science/article/pii/S0038080619301957 ;
+# https://www.sciencedirect.com/science/article/pii/S0038080619302100).
+# Onset = first documented damage 6 Jul 2018; landslide peak night 6->7 Jul
+# -> D = 2018-07-07.
+# Inventory: same Zenodo record doi:10.5281/zenodo.10369021 (CC-BY-4.0, GSI
+# inventories digitized by doi:10.1080/01431161.2023.2224096 authors): files
+# 'Ehime.kmz' (464 polygons, LS-1..LS-464) + 'Hiroshima landslide scars.kml'
+# (276 MultiPolygons), merged geometry-only into
+# $ML_DATA_DIR/events/japan_2018/inventory.geojson (740 polygons; raw downloads in
+# the same dir). No date fields -> dating=fixed. Okayama slides are not covered
+# by this record.
+events:
+  - event_id: japan_2018
+    name: "Western Japan (Ehime + Hiroshima), Jul 2018 heavy rain (GSI-derived scars, Zenodo 10369021)"
+    country: JP
+    date: 2018-07-07            # landslide peak night 6->7 Jul; damage 6-8 Jul
+    trigger_window: [2018-07-06, 2018-07-08]
+    dating: fixed               # inventory has no per-point date
+    format: geojson             # merged Ehime.kmz + Hiroshima kml (see header)
+    source: "/home/lucascoelho/.cache/tipping-point-ml/events/japan_2018/inventory.geojson"
+    max_points: 3000
+    citation: "GSI inventories digitized in Zenodo doi:10.5281/zenodo.10369021 (files 'Ehime.kmz' + 'Hiroshima landslide scars.kml'); companion paper doi:10.1080/01431161.2023.2224096"
+    license: "CC-BY-4.0"
+    notes: "proposed_split: train; glc_leak: 1 pt within 100 km +-3 d of trigger window (glc_14590; glc_20180709_9221, dated 2018-07-09, 16.8 km) -> leak filter drops it. 740 scar polygons (Ehime 464 + Hiroshima 276) -> 654 pts after 90 m dedupe; trigger rain (Baiu front); onset 2018-07-06."
+    enabled: false

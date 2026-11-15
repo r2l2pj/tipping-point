@@ -37,7 +37,8 @@ def prepare_X(df: pd.DataFrame, cols: list[str], *, for_rf: bool = False) -> pd.
 
 
 def fit_xgb(train: pd.DataFrame, val: pd.DataFrame, cols: list[str], *,
-            pos_weight: float | None = None, seed: int = S.SEED, **over) -> XGBClassifier:
+            pos_weight: float | None = None, seed: int = S.SEED,
+            sample_weight=None, **over) -> XGBClassifier:
     params = dict(S.XGB_PARAMS)
     params["monotone_constraints"] = {k: v for k, v in S.MONOTONE.items() if k in cols}
     params["random_state"] = seed
@@ -49,7 +50,8 @@ def fit_xgb(train: pd.DataFrame, val: pd.DataFrame, cols: list[str], *,
         params.pop("early_stopping_rounds", None)
     model = XGBClassifier(**params)
     eval_set = [(prepare_X(val, cols), val["label"].to_numpy())] if has_val else None
-    model.fit(prepare_X(train, cols), train["label"].to_numpy(), eval_set=eval_set, verbose=False)
+    model.fit(prepare_X(train, cols), train["label"].to_numpy(), eval_set=eval_set, verbose=False,
+              sample_weight=sample_weight)
     return model
 
 

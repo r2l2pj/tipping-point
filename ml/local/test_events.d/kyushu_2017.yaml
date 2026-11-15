@@ -1,0 +1,25 @@
+# Northern Kyushu (Fukuoka + Oita) heavy rain of 5-6 Jul 2017 — JMA "July 2017
+# Northern Kyushu heavy rain" (quasi-stationary Baiu front, back-building storms;
+# Asakura 545.5 mm/24 h on 5 Jul, a JMA record). ~200 slope failures/debris flows
+# in Asakura City, Toho Village (Fukuoka) and Hita City (Oita) on 5-6 Jul
+# (https://doi.org/10.25676/11124/173142 ; https://en.wikipedia.org/wiki/2017_Northern_Kyushu_floods).
+# Onset = first documented damage: afternoon of 5 Jul 2017 -> D = 2017-07-05.
+# Inventory: Zenodo record 10369021 (doi:10.5281/zenodo.10369021, CC-BY-4.0),
+# file 'Kyushu landslide.kmz' — 2097 landslide-scar polygons (MultiPolygon) from
+# a GSI inventory digitized by the authors of doi:10.1080/01431161.2023.2224096.
+# No per-point date field (only FID/style attrs) -> dating=fixed.
+# .kmz is read directly by geopandas/pyogrio (no unzip needed by the loader).
+events:
+  - event_id: kyushu_2017
+    name: "Northern Kyushu, Japan, 5-6 Jul 2017 heavy rain (GSI-derived scar inventory, Zenodo 10369021)"
+    country: JP
+    date: 2017-07-05            # rain peak + onset of failures (afternoon 5 Jul)
+    trigger_window: [2017-07-05, 2017-07-06]
+    dating: fixed               # inventory has no per-point date
+    format: vector              # .kmz via geopandas/pyogrio
+    source: "https://zenodo.org/records/10369021/files/Kyushu%20landslide.kmz?download=1"
+    max_points: 3000
+    citation: "GSI inventory digitized in Zenodo doi:10.5281/zenodo.10369021 (file 'Kyushu landslide.kmz'); companion paper doi:10.1080/01431161.2023.2224096 (Int. J. Remote Sensing 2023)"
+    license: "CC-BY-4.0"
+    notes: "proposed_split: train; glc_leak: 2 pts within 100 km +-3 d of trigger window (glc_11008, glc_11009; both glc_20170706_1226, dated 2017-07-06, <=0.3 km) -> leak filter drops them. 2097 scar polygons -> 2007 pts after 90 m dedupe; trigger rain (Baiu front); onset 2017-07-05."
+    enabled: false

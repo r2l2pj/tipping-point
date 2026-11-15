@@ -1,0 +1,43 @@
+# Rwanda — Karongi District, Western Province, 6 May 2018 GH event.
+# Inventory: Deijns et al. 2022, NHESS 22, 3679-3700 (doi:10.5194/nhess-22-3679-2022),
+# dataset Zenodo doi:10.5281/zenodo.7198322 — Rwanda.shp holds 494 polygons MIXING
+# landslides and flash floods ("Event 2 ... 494 features composed of both landslide
+# and flash floods", Sect. 2.1), manually mapped from Sentinel-2 + PlanetScope.
+# The shapefiles carry NO date/type attribute (fields: id, Area, LandUsemaj,
+# Aspectmean, Slopemean, ASC_MASKma, DSC_MASKma, Aspect), so landslides were kept by
+# applying the paper's own description ("flash floods tend to be elongated and occur
+# in the valleys with shallower terrain, whereas landslides occurred mainly on the
+# steeper hillslopes", Sect. 5.1.2): dropped 47 flood-like polygons with
+# rotated-rectangle elongation >= 3 AND Slopemean <= 30 deg (narrow ribbons,
+# median width ~36 m, clustered along the main valley corridor); kept 447 ->
+# Rwanda_landslides.geojson (EPSG:4326, geometry only) next to the raw components
+# under $ML_DATA_DIR. heuristic split — report counts kept/dropped: 447/47.
+# Onset (first documented damage) = late 6 May 2018: evening downpour triggered the
+# Rwankuba-sector landslide(s) in Karongi (Bucyurabuhoro village), 18 dead, ~12
+# injured, ~300 homeless (FloodList: https://floodlist.com/africa/rwanda-landslide-western-province-may-2018;
+# AP: https://apnews.com/general-news-eaf2a3d598394aab81d423164a12dc1b; UN Rwanda).
+# Paper dates the GH event to 6 May 2018.
+# GLC: glc_11325 ("Bucyurabuhoro landslide kills 18", 2018-05-06, acc 5 km) IS this
+# event (0.2 km from inventory points) -> the leak filter must drop it.
+# rwanda_2023 (COOLR manual inventory, existing TEST/VAL event) spatially OVERLAPS
+# this site: bboxes intersect; min point distance ~0.0 km, median 7.3 km; 92/401
+# rwanda_2018 points within 5 km, all within 50 km — same steep cultivated Karongi
+# terrain (possibly reactivated scars); NO time overlap (2018-05-06 vs 2023-05-02/03).
+# Pre-2021-03-23: no GFS archive -> perfect-forecast (observed IMERG) only.
+# Source = filtered derivative under $ML_DATA_DIR. Regenerate: download
+# Rwanda.{shp,shx,dbf,prj} from https://zenodo.org/api/records/7198322, drop
+# elong>=3 & Slopemean<=30 polygons, write EPSG:4326 geojson.
+events:
+  - event_id: rwanda_2018
+    name: "Karongi District, Western Rwanda, 6 May 2018 (Deijns et al. 2022 GH inventory, landslides only)"
+    country: RW
+    date: 2018-05-06            # GH event occurred on 6 May 2018 (Deijns et al. 2022; media)
+    trigger_window: [2018-05-06, 2018-05-06]
+    dating: fixed               # no per-point date attribute in the shapefile
+    format: geojson             # landslide-only derivative of Rwanda.shp (see comments)
+    source: "~/.cache/tipping-point-ml/events/rwanda_2018/Rwanda_landslides.geojson"
+    max_points: 3000
+    citation: "Deijns et al. 2022, Nat. Hazards Earth Syst. Sci. 22, 3679-3700, doi:10.5194/nhess-22-3679-2022; dataset: Deijns et al., Zenodo doi:10.5281/zenodo.7198322"
+    license: "CC-BY-4.0"
+    notes: "proposed_split: train. Trigger: rain (evening downpour). Onset=2018-05-06 (first documented damage; FloodList/AP/UN Rwanda). Type split: dataset has NO type attribute (task premise) — heuristic per paper Sect. 5.1.2: dropped 47 flood-like polygons (rotated-rect elongation>=3 AND Slopemean<=30deg, valley-corridor ribbons ~36 m wide), kept 447 landslides -> 401 pts after 90 m dedupe; bbox 29.3279,-2.1996 - 29.4397,-2.0917. GLC leak check (~/.cache/tipping-point-ml/labels/inventory.csv, source==glc, +-3 d of trigger_window, <=100 km): 1 hit = glc_11325 (2018-05-06, 0.2 km). Spatial overlap vs rwanda_2023: bboxes intersect, min ~0.0 km / median 7.3 km, 92/401 pts <5 km (different event, 5 yr later). Local-path source — not portable; see comment above for regeneration."
+    enabled: false
