@@ -11,6 +11,7 @@ import {
   caseAlias,
   canonicalCaseId,
   flattenLandslideHit,
+  isSafeCaseId,
   FORECAST_SOURCE_LABELS,
   forecastSourceLabel,
   resolveAsset,
@@ -311,6 +312,16 @@ describe("caseAlias / canonicalCaseId", () => {
     expect(caseAlias(cases.wa_2025.event_id)).toBe("wa_2025");
     expect(cases.rs_2024.forecast_source).toBe("perfect-forecast");
     expect(cases.rs_2024.products?.swot).toBe("rs_2024/series/swot.json");
+  });
+});
+
+describe("isSafeCaseId", () => {
+  test("accepts the known id shapes", () => {
+    for (const id of ["now", "wa_2025", "wa-2025-12", "rs_uruguai_2026"]) expect(isSafeCaseId(id)).toBe(true);
+  });
+
+  test("rejects path parts and empty or long ids", () => {
+    for (const id of ["", "..", "../now", "a/b", "a\\b", "a.b", "%2e%2e", "x".repeat(65)]) expect(isSafeCaseId(id)).toBe(false);
   });
 });
 

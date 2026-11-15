@@ -1,3 +1,4 @@
+import { isSafeCaseId } from "@/lib/contract";
 import { geeEnabled } from "@/lib/ee";
 import { cachedJson, noStoreJson } from "@/lib/http-cache";
 import {
@@ -15,6 +16,9 @@ export async function GET(request: Request) {
   const caseId = new URL(request.url).searchParams.get("case");
   if (!caseId) {
     return noStoreJson({ error: "missing required param: case" }, { status: 400 });
+  }
+  if (!isSafeCaseId(caseId)) {
+    return noStoreJson({ error: "invalid param: case" }, { status: 400 });
   }
 
   try {
