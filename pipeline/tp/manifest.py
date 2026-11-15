@@ -143,7 +143,9 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
                   "critical_km2", "people_critical", "_null_reasons",
                   "legend", "db_range",
                   "sensor", "source", "label", "note", "attribution", "polarization",
-                  "window", "product", "track"):
+                  "window", "product", "track",
+                  # 6-hourly replay frames (2026-11-15): hour slider keys
+                  "datetime", "lead_h", "step_h", "window_h", "data_basis"):
         if extra in index_entry:
             entry[extra] = index_entry[extra]
     if entry.get("forecast") and "forecast_source" not in entry:
@@ -178,7 +180,8 @@ def _layers(case_id: str, case_dir: Path, ref_date) -> tuple[list, dict]:
     index_ids = {e["id"] for e in index}
     layers, missing, seen = [], {}, set()
     # every rendered frame: repeated ids = per-day series (SCHEMA)
-    for e in sorted(index, key=lambda x: (x["id"], x.get("date") or "")):
+    for e in sorted(index, key=lambda x: (x["id"], x.get("date") or "",
+                                          x.get("datetime") or "", x.get("issued") or "")):
         seen.add(e["id"])
         layers.append(_layer_entry(case_id, e["id"], ref_date, e))
     # expected-but-unproduced layers keep a placeholder (pruned later if

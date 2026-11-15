@@ -10,10 +10,10 @@
   },
   "aoi": {
     "bbox": [
-      -57.25,
-      -29.85,
-      -56.45,
-      -29.05
+      -58.0,
+      -30.6,
+      -55.3,
+      -28.2
     ]
   },
   "nisar": {
@@ -128,18 +128,19 @@
       "p95_during_flood": "4-5"
     },
     "where": {
-      "method": "river corridor HAND <= 5 m (90 m HAND) inside the AOI vs the radar new-water candidate polygons at Uruguaiana (7 polygons, 1.85 km2, about 29 people)",
+      "method": "river floodplain HAND <= 5 m (90 m HAND) inside the case area (Fronteira Oeste reach, lon -58.0..-55.3, lat -30.6..-28.2) vs the radar new-water candidate polygons at Uruguaiana (7 polygons, 1.85 km2, about 29 people)",
       "share_of_flooded_candidate_area_flagged": 0.538,
       "share_of_people_in_it_flagged": 0.574,
-      "flagged_share_of_aoi": 0.364,
-      "lift_vs_random": 1.48,
-      "people_in_flagged_corridor_gpw2020": 20885.0,
+      "flagged_share_of_aoi": 0.281,
+      "lift_vs_random": 1.92,
+      "people_in_flagged_corridor_gpw2020": 97755.0,
       "hand_le_10m": {
         "share": 1.0,
-        "aoi_share": 0.625,
-        "lift": 1.6
+        "aoi_share": 0.504,
+        "lift": 1.99
       },
-      "reading": "the signal points to the river corridor, not to specific neighbourhoods: the floodplain is flat (lift 1.5)"
+      "reading": "the signal points to the river floodplain, not to specific neighbourhoods (lift 1.9; the lift depends on the area chosen: 1.5 on the earlier 80 x 80 km box)",
+      "people_in_flagged_corridor_method": "GPW v4.11 2020 unadjusted 30\" x fraction of 90 m HAND cells <= 5 m"
     },
     "caveats": [
       "IMERG Final is not out for Sep-Nov 2026: observed rain is IMERG Early (Early ran 1.34x Final on RS 2024 Apr 27). Scaling Early by 1/1.34: Sep 30 basin 3-day 75.7 mm (< p99 100.3, >= p95 62.5) -> still 5 d before Oct 5 at p95; second rise first flag moves from Oct 23 to Oct 24 -> 5 d before Oct 29.",
@@ -246,7 +247,7 @@
     "collections": "NISAR_L2_GCOV_PROVISIONAL_V1 (to cycle 033: Sep 18, Sep 30, Oct 12) + NISAR_L2_GCOV_V1 (034+: Oct 24, Nov 5); context passes 060A Oct 28, 082D Oct 29, 132A Nov 2",
     "access": "HDF5 chunk range reads over HTTPS via tp.response_nisar.open_gcov/block_average (no full-granule download)"
   },
-  "tpi_replay_note": "Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) read Critical over the Uruguaiana region in the bands of Sep 30 – Oct 2 (rain Sep 28–30; up to 813 km² Critical), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 9 & 11 before the Oct 16 crest. The NOAA GFS run of Sep 29 showed High for Sep 30, the Sep 30 run Critical for Oct 1, the Oct 2 run High for Oct 3–5. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof).",
+  "tpi_replay_note": "Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) over the Uruguay River reach of the Fronteira Oeste (Barra do Quaraí – São Borja) read Critical over the Uruguaiana region in the bands of Sep 30 – Oct 2 (rain Sep 28–30; 13,129 km² Critical on Sep 30, 6,121 km² of it on the HAND ≤ 5 m floodplain), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 11 before the Oct 16 crest and Oct 24–25 before the Oct 29 rise. The NOAA GFS run of Sep 27 already showed Critical on the floodplain for Sep 29–30, the Sep 29 run for Sep 30, the Sep 30 run for Oct 1 (2,783 km²), the Oct 1 run for Oct 3–4. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof).",
   "timeline_marks": [
     {
       "date": "2026-09-18",

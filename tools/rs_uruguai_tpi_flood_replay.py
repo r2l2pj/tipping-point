@@ -13,13 +13,14 @@ IMERG *Final* is not released for Oct 2026, so observed rain is IMERG *Early*, s
 against the Final-based climatology (same known bias as the live Now job).
 
 Inputs: ~/.cache/lead-analysis/uru-replay/imerg_e/<YYYYMMDD>.npy (GPM_3IMERGDE subsets),
-data/rs_uruguai_2026/forecast_rain/rs_uruguai_2026_gfs_<issue>.tif (d1..d4 = days I..I+3),
+GFS cubes rs_uruguai_2026_gfs_<issue>.tif (d1..d4 = days I..I+3; tools/regen_gfs_replay.py) in $URU_GFS_DIR,
 SMAP via Earth Engine NASA/SMAP/SPL4SMGP/008, south_brazil terrain statics.
 """
 from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -36,15 +37,17 @@ from live.run_now import now_water_mask  # noqa: E402
 from live.tpi import classify, terrain_flood, terrain_slide, tpi  # noqa: E402
 
 CASE = "rs_uruguai_2026"
-BOUNDS = (-57.25, -29.85, -56.45, -29.05)
+# case AOI (config.yaml): Uruguay River reach of the Fronteira Oeste, Barra do Quaraí .. São Borja
+BOUNDS = (-58.0, -30.6, -55.3, -28.2)
 CACHE = Path.home() / ".cache/lead-analysis/uru-replay"
-IMERG = CACHE / "imerg_e"
+IMERG = CACHE / "imerg_e_big"          # GPM_3IMERGDE subsets over the AOI + 0.1 deg
 MAIN = Path.home() / "code/r2l2pj/tipping-point-data"
 TERRAIN = MAIN / "data/static/south_brazil/terrain"
 GSW = Path.home() / ".cache/lead-analysis/gsw/gsw_occurrence_2021.tif"
-GFS_DIR = Path.home() / "code/r2l2pj/tipping-point-data-wt/uruguai/data/rs_uruguai_2026/forecast_rain"
-OBS = [dt.date(2026, 9, 28) + dt.timedelta(days=k) for k in range(23)]      # Sep 28 .. Oct 20
-ISSUES = [dt.date(2026, 9, 28) + dt.timedelta(days=k) for k in range(9)]    # Sep 28 .. Oct 6
+GFS_DIR = Path(os.environ.get("URU_GFS_DIR", REPO / "data" / CASE / "forecast_rain"))  # tools/regen_gfs_replay.py
+OBS = [dt.date(2026, 9, 28) + dt.timedelta(days=k) for k in range(35)]      # Sep 28 .. Nov 1
+# every daily 00Z issue Sep 25 .. Oct 31: any target day Sep 28 .. Nov 1 has leads 1-3
+ISSUES = [dt.date(2026, 9, 25) + dt.timedelta(days=k) for k in range(37)]
 GPW = MAIN / "data/now/static/gpw/gpw_popcount_2020_30sec.tif"
 
 LATS, LONS = dst_lats_lons(BOUNDS)
@@ -129,7 +132,7 @@ def main() -> int:
     water, wbasis = now_water_mask(BOUNDS, *SHAPE, occ_path=GSW)
     water = np.zeros(SHAPE, bool) if water is None else water
     corridor = (np.nan_to_num(hand, nan=99) <= 5.0) & ~water
-    rain = {d: imerg_day(d) for d in [dt.date(2026, 9, 25) + dt.timedelta(days=k) for k in range(26)]}
+    rain = {d: imerg_day(d) for d in [dt.date(2026, 9, 22) + dt.timedelta(days=k) for k in range(40)]}  # Sep 22 .. Oct 31
     missing = [d.isoformat() for d, a in rain.items() if a is None]
     sm_days = sorted({d - dt.timedelta(days=1) for d in OBS} | {i - dt.timedelta(days=1) for i in ISSUES})
     sm = smap_days(sm_days)

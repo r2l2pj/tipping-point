@@ -92,7 +92,7 @@ class TestManifestNode:
         node = manifest.build_case_node("rs_uruguai_2026", root)
         assert node["event_id"] == "rs_uruguai_2026"
         assert node["mode"] == "replay"
-        assert node["bounds"] == [-57.25, -29.85, -56.45, -29.05]
+        assert node["bounds"] == [-58.0, -30.6, -55.3, -28.2]   # Fronteira Oeste reach (2026-11-15)
         assert node["metrics"] == "metrics.json#rs_uruguai_2026"
         frame = next(l for l in node["layers"] if l["id"] == "nisar_hh_20261105")
         assert frame["kind"] == "nisar_frame"
