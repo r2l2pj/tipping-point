@@ -1,0 +1,205 @@
+{
+ "reference": "Copernicus EMS EMSR720 flood extent, 5 Taquari AOIs (images 2024-05-04..15)",
+ "grid": "90 m HAND (static-v1 hand_90m.tif)",
+ "h0_m": 5.0,
+ "dates": {
+  "2024-05-01": {
+   "block": {
+    "S": {
+     "roc_auc": 0.336,
+     "pr_auc": 0.1201,
+     "iou_at_share": 0.077,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_live": {
+     "roc_auc": 0.5207,
+     "pr_auc": 0.1525,
+     "iou_at_share": 0.1405,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_hand30": {
+     "roc_auc": 0.9168,
+     "pr_auc": 0.4752,
+     "iou_at_share": 0.3702,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_p5_p50_p95": [
+     0.917,
+     0.928,
+     0.974
+    ]
+   },
+   "bilinear": {
+    "S": {
+     "roc_auc": 0.379,
+     "pr_auc": 0.1204,
+     "iou_at_share": 0.076,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_live": {
+     "roc_auc": 0.5207,
+     "pr_auc": 0.1526,
+     "iou_at_share": 0.1405,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_hand30": {
+     "roc_auc": 0.9168,
+     "pr_auc": 0.4749,
+     "iou_at_share": 0.3699,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_p5_p50_p95": [
+     0.918,
+     0.936,
+     0.968
+    ]
+   },
+   "hand_ds": {
+    "S": {
+     "roc_auc": 0.9264,
+     "pr_auc": 0.5292,
+     "iou_at_share": 0.4385,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_live": {
+     "roc_auc": 0.5207,
+     "pr_auc": 0.1526,
+     "iou_at_share": 0.1405,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_hand30": {
+     "roc_auc": 0.9161,
+     "pr_auc": 0.4748,
+     "iou_at_share": 0.3751,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_p5_p50_p95": [
+     0.0,
+     0.0,
+     1.0
+    ]
+   }
+  },
+  "2024-05-03": {
+   "block": {
+    "S": {
+     "roc_auc": 0.3684,
+     "pr_auc": 0.1225,
+     "iou_at_share": 0.077,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_live": {
+     "roc_auc": 0.5207,
+     "pr_auc": 0.1525,
+     "iou_at_share": 0.1405,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_hand30": {
+     "roc_auc": 0.9168,
+     "pr_auc": 0.475,
+     "iou_at_share": 0.3691,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_p5_p50_p95": [
+     0.943,
+     0.959,
+     0.988
+    ]
+   },
+   "bilinear": {
+    "S": {
+     "roc_auc": 0.357,
+     "pr_auc": 0.1169,
+     "iou_at_share": 0.0766,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_live": {
+     "roc_auc": 0.5207,
+     "pr_auc": 0.1526,
+     "iou_at_share": 0.1405,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_hand30": {
+     "roc_auc": 0.9168,
+     "pr_auc": 0.4748,
+     "iou_at_share": 0.3683,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_p5_p50_p95": [
+     0.946,
+     0.963,
+     0.984
+    ]
+   },
+   "hand_ds": {
+    "S": {
+     "roc_auc": 0.9267,
+     "pr_auc": 0.5307,
+     "iou_at_share": 0.4455,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_live": {
+     "roc_auc": 0.5207,
+     "pr_auc": 0.1526,
+     "iou_at_share": 0.1405,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_x_T_hand30": {
+     "roc_auc": 0.9162,
+     "pr_auc": 0.4749,
+     "iou_at_share": 0.3751,
+     "n": 34389,
+     "flooded_share": 0.1405
+    },
+    "S_p5_p50_p95": [
+     0.0,
+     0.0,
+     1.0
+    ]
+   }
+  }
+ },
+ "baselines": {
+  "T_flood_live": {
+   "roc_auc": 0.5207,
+   "pr_auc": 0.1526,
+   "iou_at_share": 0.1405,
+   "n": 34389,
+   "flooded_share": 0.1405
+  },
+  "T_hand30": {
+   "roc_auc": 0.917,
+   "pr_auc": 0.4771,
+   "iou_at_share": 0.3751,
+   "n": 34389,
+   "flooded_share": 0.1405
+  },
+  "minus_HAND": {
+   "roc_auc": 0.925,
+   "pr_auc": 0.4834,
+   "iou_at_share": 0.3751,
+   "n": 34389,
+   "flooded_share": 0.1405
+  },
+  "T_flood_live_zero_share": 0.988,
+  "slope_gt5_share": 0.9512,
+  "hand_median_flooded_m": 16.1
+ }
+}
