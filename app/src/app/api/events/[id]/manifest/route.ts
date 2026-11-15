@@ -1,4 +1,4 @@
-import { canonicalCaseId } from "@/lib/contract";
+import { canonicalCaseId, isSafeCaseId } from "@/lib/contract";
 import { getManifest, getRootManifest } from "@/lib/data";
 import type { EventManifest } from "@/lib/types";
 
@@ -6,6 +6,9 @@ export const maxDuration = 30;
 
 export async function GET(_req: Request, ctx: RouteContext<"/api/events/[id]/manifest">) {
   const { id } = await ctx.params;
+  if (!isSafeCaseId(id)) {
+    return Response.json({ error: "invalid event id" }, { status: 400 });
+  }
   const canonical = canonicalCaseId(id);
   // v4 root manifest: one `cases` entry per case (canonical underscore keys).
   const root = await getRootManifest();
