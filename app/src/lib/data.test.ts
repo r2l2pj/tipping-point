@@ -193,7 +193,7 @@ describe("remote-first reads (DATA_BASE_URL)", () => {
       const bundle = await getCaseBundle("rs_2024", "RS", RS_BBOX, "2024-05-02");
       expect(bundle.metricsView?.iou).toBe(0.99);
       expect(bundle.places?.features[0].properties?.name).toBe("Remoto");
-      expect(bundle.manifest?.layers[0].png).toBe(`${rawBase}rs_2024/png/tpi_slide_20240502.png`);
+      expect(bundle.manifest?.layers[0].png).toBe(`${rawBase}rs_2024/png/tpi_slide_20240502.png` + "?v=2026-11-14T12%3A00%3A00Z");
       expect(bundle.fallback).toBe(false);
       const json = await fetch(`${rawBase}manifest.json`);
       expect(json.headers.get("Access-Control-Allow-Origin")).toBe("*");
@@ -218,7 +218,7 @@ describe("remote-first reads (DATA_BASE_URL)", () => {
     expect(b.metricsView?.cloud_pct).toBe(0.42);
     expect(b.places?.features[0].properties?.name).toBe("Remoto");
     expect(b.manifest?.layers[0].png).toBe(
-      `${base}/rs_2024/png/tpi_slide_20240502.png`
+      `${base}/rs_2024/png/tpi_slide_20240502.png?v=2026-11-14T12%3A00%3A00Z`
     );
     expect(b.fallback).toBe(false);
     // null products are absent — never fetched, never read from disk

@@ -597,8 +597,10 @@ export default function MapStage({
 
       {comparePair && (
         <CompareOverlay key={`${bundle.id}-${comparePair.kind}-${comparePair.before.url}-${comparePair.after.url}`}
-          // Uruguaiana: a NISAR pair (side by side or Change) opens on the river window.
-          pair={riverWin && (comparePair.before.pol || comparePair.after.pol) ? { ...comparePair, bounds: riverWin } : comparePair}
+          // Lucas: the camera fits the real footprint of the two frames (their
+          // intersection, or the union when they barely overlap) — never a
+          // fixed box; each image keeps its own bounds.
+          pair={footprintPair(comparePair)}
           sidesCtl={comparePair.kind === "forecast" ? sidesCtl : undefined}
           controlsRef={compare} onClose={() => dispatch({ type: "closeCompare" })} />
       )}
@@ -614,4 +616,20 @@ export default function MapStage({
       />
     </div>
   );
+}
+
+// Camera box of a compare pair: the intersection of the two frames' own
+// bounds, or their union when the overlap is under a quarter of the smaller
+// frame (or a side has no bounds — then the pair's own box stays).
+type Box4 = [number, number, number, number];
+export function footprintBounds(a?: readonly number[], b?: readonly number[]): Box4 | undefined {
+  if (!a || !b || a.length !== 4 || b.length !== 4) return undefined;
+  const area = (x: readonly number[]) => Math.max(0, x[2] - x[0]) * Math.max(0, x[3] - x[1]);
+  const inter: Box4 = [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.min(a[2], b[2]), Math.min(a[3], b[3])];
+  const union: Box4 = [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])];
+  return area(inter) >= 0.25 * Math.min(area(a), area(b)) ? inter : union;
+}
+function footprintPair(p: ComparePair): ComparePair {
+  const fb = footprintBounds(p.before.bounds, p.after.bounds);
+  return fb ? { ...p, bounds: fb } : p;
 }

@@ -632,10 +632,13 @@ export function CommandCenterView({
                       pols: [...new Set(frames.map((f) => f.pol))],
                       cyan: state.changeCyan,
                       opacity: state.changeOpacity,
-                      passes: frames.map((f) => ({
+                      // One option per pass (date + track): HH/HV is its own
+                      // toggle — one option per pol duplicated value + React key
+                      // (lead-app2 QA) and picking HV selected HH.
+                      passes: [...new Map(frames.map((f) => [changeValue(f), {
                         value: changeValue(f),
-                        label: `${fmtDate(f.date)}${f.track ? ` · track ${f.track}` : ""} · ${f.pol}`,
-                      })),
+                        label: `${fmtDate(f.date)}${f.track ? ` · track ${f.track}` : ""}`,
+                      }])).values()],
                       before: sel.before,
                       after: sel.after,
                       onToggle: () => dispatch({ type: "toggleLayer", id: "nisarChange" }),

@@ -142,7 +142,7 @@ export function radarSensor(bundle: CcBundle): RadarSensor {
 }
 
 export const otherGeometry = (l: Record<string, unknown>, role?: string): boolean =>
-  (typeof l.png === "string" && /_\d{3}[AD](_[^/]*)?\.png$/i.test(l.png)) ||
+  (typeof l.png === "string" && /_\d{3}[AD](_[^/?]*)?\.png(\?.*)?$/i.test(l.png)) ||
   (typeof l.note === "string" && /context track/i.test(l.note)) ||
   (typeof role === "string" && /other geometry|context pass/i.test(role));
 
