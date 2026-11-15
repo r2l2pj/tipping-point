@@ -24,6 +24,9 @@ data/raw/
 # local subscriber store (sqlite default backend)
 .data/
 
+# pipeline scratch outputs (large, rebuilt by tools/)
+intermediate/
+
 # never commit credential keys
 *-service-account*.json
 hermes-*.json
