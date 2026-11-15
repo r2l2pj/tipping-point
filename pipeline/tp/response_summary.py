@@ -70,6 +70,7 @@ FLOOD_SOURCES = (
 )
 CRIT_GEOJSON = Path("geojson") / "critical_areas.geojson"
 ZONES_GEOJSON = Path("geojson") / "priority_zones.geojson"
+MUNIS_NOW_REL = Path("static/ibge/municipalities_now.geojson")   # under data/now/ (static-v1)
 CRIT_CLASS_CRITICAL = 3             # class 3 = "Crítico"; 2 = "Alto"
 CLASS_TPI_FLOOR = {3: 0.6, 2: 0.4}  # TPI_CUTS lower edge of the class
 KIND_HAZARD = {"slide": "landslide", "flood": "flood"}
@@ -659,6 +660,8 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
                                          f"({type(e).__name__}: {str(e)[:120]})")
     else:
         reasons["priority_zones"] = "municipal boundaries not provided"
+    if boundaries_fc is not None and not (boundaries_fc.get("features") or []):
+        reasons["priority_zones"] = "municipal boundaries empty (0 features): zones not computed"
     zones = zone_features(boundaries_fc, grid, unions, masks, pop,
                           crit_geoms=crit_geoms, crit_props=crit_props)
     _write_fc(resp_dir / "priority_zones.geojson", zones)

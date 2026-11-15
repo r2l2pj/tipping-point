@@ -42,7 +42,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="comma-separated IBGE UFs for municipal boundaries")
     ap.add_argument("--boundaries", type=Path,
                     help="local FeatureCollection of municipalities (skips the "
-                         "IBGE fetch; offline mode)")
+                         "IBGE fetch). Default: <now-dir>/static/ibge/"
+                         "municipalities_now.geojson when present (static-v1 "
+                         "asset; the IBGE API is unreachable from CI runners), "
+                         "else the live IBGE fetch")
     ap.add_argument("--no-zones", action="store_true",
                     help="skip municipal boundaries entirely (empty zones)")
     args = ap.parse_args(argv)
@@ -51,11 +54,14 @@ def main(argv: list[str] | None = None) -> int:
     ufs = tuple(u.strip() for u in args.ufs.split(",") if u.strip())
     if args.no_zones:
         load_boundaries = None
-    elif args.boundaries is not None:
-        bpath = args.boundaries
-        load_boundaries = lambda bb: json.loads(bpath.read_text())
     else:
-        load_boundaries = lambda bb: rs.ibge_municipalities(bb, ufs=ufs)
+        bpath = args.boundaries or (args.now_dir / rs.MUNIS_NOW_REL)
+        if args.boundaries is not None or bpath.is_file():
+            print(f"municipal boundaries: {bpath}", file=sys.stderr)
+            load_boundaries = lambda bb: json.loads(bpath.read_text())
+        else:
+            print("municipal boundaries: live IBGE fetch", file=sys.stderr)
+            load_boundaries = lambda bb: rs.ibge_municipalities(bb, ufs=ufs)
 
     summary = rs.run_summary(
         bbox, args.now_dir,

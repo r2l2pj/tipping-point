@@ -327,3 +327,11 @@ def test_grid_and_people_helpers(tmp_path: Path):
     assert rs.people_in(mask, pop) == 400
     assert rs.people_in(None, pop) is None
     assert rs.people_in(mask, None) is None
+
+
+def test_empty_boundaries_reported_not_silent(tmp_path: Path):
+    gpw = _write_gpw(tmp_path / "gpw.tif")
+    now_dir = _seed(tmp_path / "now")
+    s = _run(now_dir, gpw, boundaries=_fc([]))
+    assert s["priority_zones"]["municipalities"] == 0
+    assert "0 features" in s["_null_reasons"]["priority_zones"]
