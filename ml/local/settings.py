@@ -124,6 +124,14 @@ GFS_ARCHIVE_START = dt.date(2021, 3, 23)
 # positives split by 50 km blocks, so 59 % of RS 3b TEST positives were T_ML TRAIN
 # points (P_trigger x T_ML on RS leaked). RS stays a 3b TEST event; T_ML never sees it.
 T_ML_POSITIVE_SOURCES = ("glc",)
+# GLC-only 3a is too clustered for a 60/20/20 block split (v2 try: VAL 0 / TEST 1
+# positive). So GLC blocks -> TRAIN/VAL (75/25) only, and 3a TEST = the held-out
+# event inventories inside REGION_TRAIN (RS 2024, São Sebastião, Petrópolis, Angra;
+# <= T_ML_TEST_CAP per event) vs random land negatives (3:1). TRAIN/VAL rows within
+# BUFFER_KM of a TEST point -> buffer (T_ML never learns the TEST sites).
+T_ML_TEST_FROM_EVENTS = True
+T_ML_TEST_CAP = 1000
+T_ML_FRACS = {"train": 0.75, "val": 0.25, "test": 0.0}
 
 EVENT_LINK_DAYS = 3        # GLC points within 3 days ...
 EVENT_LINK_KM = 100.0      # ... and 100 km are one event

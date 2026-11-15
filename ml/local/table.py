@@ -111,9 +111,21 @@ def sample_3a(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> 
         cap = 60 if smoke else S.RS2024_MAX_POINTS
         parts.append(rs.sample(n=min(len(rs), cap), random_state=seed))
     pos = pd.concat(parts, ignore_index=True).assign(label=1, neg_type="")
+    ev_test = pos.iloc[:0]
+    if S.T_ML_TEST_FROM_EVENTS and not smoke:
+        ev_test = inv[inv.event_id.isin(S.TRIGGER_TEST_EVENTS) & L.in_bbox(inv.lon, inv.lat, region)]
+        ev_test = pd.concat([g.sample(n=min(len(g), S.T_ML_TEST_CAP), random_state=seed)
+                             for _, g in ev_test.groupby("event_id")],
+                            ignore_index=True).assign(label=1, neg_type="")
+        log.info("3a TEST positives from held-out events: %s", ev_test.event_id.value_counts().to_dict())
+        near = L.min_dist_km(pos.lon.to_numpy(), pos.lat.to_numpy(),
+                             ev_test.lon.to_numpy(), ev_test.lat.to_numpy()) < S.BUFFER_KM
+        log.info("3a: %d of %d GLC positives within %.0f km of a TEST event point -> dropped "
+                 "(T_ML must not learn the TEST sites)", int(near.sum()), len(pos), S.BUFFER_KM)
+        pos = pos[~near].reset_index(drop=True)
 
     known_lon, known_lat = inv["lon"].to_numpy(), inv["lat"].to_numpy()
-    want = S.NEG_RATIO_3A * len(pos)
+    want = S.NEG_RATIO_3A * (len(pos) + len(ev_test))
     got_lon, got_lat = [], []
     tries = 0
     while sum(map(len, got_lon)) < want and tries < 50:
@@ -129,11 +141,21 @@ def sample_3a(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> 
         "source": "random", "event_id": "", "date": pd.NaT, "date_precision": "none",
         "acc_km": 0.0, "trigger": "", "title": "", "label": 0, "neg_type": "random_far",
     })
-    rows = pd.concat([pos, neg], ignore_index=True)
-
-    blocks = SP.split_blocks_3a(pos, region)
-    SP.save_table(blocks, S.MODEL_DIR / "split_3a_blocks.csv")
-    rows["split"] = SP.rows_split_3a(rows["lon"], rows["lat"], blocks)
+    if len(ev_test):
+        n_tneg = S.NEG_RATIO_3A * len(ev_test)
+        neg_test, neg = neg.iloc[:n_tneg].assign(split="test"), neg.iloc[n_tneg:]
+        blocks = SP.split_blocks_3a(pos, region, fracs=S.T_ML_FRACS)
+        SP.save_table(blocks, S.MODEL_DIR / "split_3a_blocks.csv")
+        rows = pd.concat([pos, neg], ignore_index=True)
+        rows["split"] = SP.rows_split_3a(rows["lon"], rows["lat"], blocks)
+        rows = pd.concat([rows, ev_test.assign(split="test"), neg_test], ignore_index=True)
+        rows["split"] = SP.buffer_rows(rows["lon"].to_numpy(), rows["lat"].to_numpy(),
+                                       rows["split"].to_numpy())
+    else:
+        rows = pd.concat([pos, neg], ignore_index=True)
+        blocks = SP.split_blocks_3a(pos, region)
+        SP.save_table(blocks, S.MODEL_DIR / "split_3a_blocks.csv")
+        rows["split"] = SP.rows_split_3a(rows["lon"], rows["lat"], blocks)
     rows["region"] = L.report_region(rows["lon"].to_numpy(), rows["lat"].to_numpy())
     rows["row_id"] = np.arange(len(rows))
     rows.to_csv(tables_dir() / "rows_3a.csv", index=False)

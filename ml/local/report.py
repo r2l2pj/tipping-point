@@ -70,9 +70,13 @@ def render(met: dict) -> str:
                 continue
             L += _table([(k, v.get("test")) for k, v in blk.items()])
             ev_rows = []
-            for k in ("xgb_all", "rf_all", "rule_tpi"):
-                for r, m in ((blk.get(k) or {}).get("by_region") or {}).items():
-                    ev_rows.append((f"{k} · {EVENT.get(r, r)}", m))
+            for k in ("xgb_rain_soil", "direct_rain", "xgb_all", "rf_all", "rule_tpi"):
+                b = blk.get(k) or {}
+                if b.get("by_event"):
+                    ev_rows += [(f"{k} · {ev}", m) for ev, m in b["by_event"].items()]
+                else:
+                    ev_rows += [(f"{k} · {EVENT.get(r, r)}", m)
+                                for r, m in (b.get("by_region") or {}).items()]
             if ev_rows:
                 L += ["", "By TEST event:", ""] + _table(ev_rows, first="model · event")
     return "\n".join(L) + "\n"

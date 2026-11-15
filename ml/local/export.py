@@ -393,3 +393,49 @@ def export_serving_static(out: Path | None = None, bbox=S.REGION_SERVE,
     fin = {b: float(np.isfinite(arr[i]).mean()) for i, b in enumerate(SERVE_BANDS)}
     log.info("ml_static_now: %s %dx%d finite %s", out, W, H, fin)
     return out
+
+
+V1_STATIC_SHA256 = "721b92280fd6785581c78842056f8cd91a8619af7b26c6c367e16b3459be3612"
+
+
+def export_serving_v2(v1_static: Path, t_ml_tif: Path | None = None,
+                      out_dir: Path | None = None) -> dict:
+    """v2 serving assets (conductor: NEW names, never overwrite static-v1 v1 assets).
+
+    ml_static_now_v2.tif = the v1 static stack (sha-checked) with its ``t_ml`` band
+    replaced by the L32 GLC-only T_ML (same 0.01° Now grid); p_trigger_xgb_v2.json /
+    .meta.json = the retrained served trigger. Returns {name: sha256}.
+    """
+    import hashlib
+    import shutil
+
+    def sha(p: Path) -> str:
+        return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+
+    if sha(v1_static) != V1_STATIC_SHA256:
+        raise ValueError(f"{v1_static} is not the published v1 ml_static_now.tif")
+    t_ml_tif = t_ml_tif or DATA_OUT / "cog" / "t_ml.tif"
+    out_dir = out_dir or S.DATA_DIR / "serve" / "v2"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = out_dir / "ml_static_now_v2.tif"
+    with rasterio.open(v1_static) as src, rasterio.open(t_ml_tif) as tm:
+        if (src.width, src.height, src.transform) != (tm.width, tm.height, tm.transform):
+            raise ValueError("t_ml grid differs from the v1 static stack")
+        prof = src.profile
+        arr = src.read()
+        desc = list(src.descriptions)
+        arr[desc.index("t_ml")] = tm.read(1).astype(arr.dtype)
+    prof.update(driver="COG", compress="deflate")
+    with rasterio.open(out, "w", **prof) as dst:
+        dst.write(arr)
+        for i, b in enumerate(desc, start=1):
+            dst.set_band_description(i, b)
+    files = {"ml_static_now_v2.tif": out}
+    for name in ("p_trigger_xgb.json", "p_trigger_xgb.meta.json"):
+        dst = out_dir / name.replace("p_trigger_xgb", "p_trigger_xgb_v2")
+        shutil.copy(S.MODEL_DIR / name, dst)
+        files[dst.name] = dst
+    shas = {k: sha(v) for k, v in files.items()}
+    (out_dir / "SHA256SUMS").write_text("".join(f"{v}  {k}\n" for k, v in shas.items()))
+    log.info("serving v2: %s", shas)
+    return shas

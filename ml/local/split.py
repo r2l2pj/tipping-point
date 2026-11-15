@@ -77,7 +77,8 @@ def block_key(bx, by) -> np.ndarray:
 
 
 def split_blocks_3a(pos: pd.DataFrame, bbox=S.REGION_TRAIN, *, size: float = S.BLOCK_DEG,
-                    seed: int = S.SEED, merge_max_points: int = 200) -> pd.DataFrame:
+                    seed: int = S.SEED, merge_max_points: int = 200,
+                    fracs: dict[str, float] = S.SPLIT_FRACS) -> pd.DataFrame:
     """Block table for the 3a region: block_x, block_y, unit_id, n_pos, split.
 
     Blocks touched by the same event with <= ``merge_max_points`` points are
@@ -116,7 +117,7 @@ def split_blocks_3a(pos: pd.DataFrame, bbox=S.REGION_TRAIN, *, size: float = S.B
     allb["n_pos_block"] = allb["block"].map(counts).fillna(0).astype(int)
     units = allb.groupby("unit_id", as_index=False)["n_pos_block"].sum().rename(
         columns={"n_pos_block": "n_pos"})
-    assign = greedy_assign(units, seed=seed)
+    assign = greedy_assign(units, fracs=fracs, seed=seed)
     allb["split"] = allb["unit_id"].map(assign)
     xy = allb["block"].str.split("_", expand=True).astype(np.int64)
     allb["block_x"], allb["block_y"] = xy[0], xy[1]
