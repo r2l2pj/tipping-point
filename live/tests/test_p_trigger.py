@@ -103,3 +103,36 @@ def test_smap_granule_pick_prefers_1030z():
     assert "T223000" in _pick_smap_granule(res, None)["meta"]["native-id"]
     with pytest.raises(RuntimeError):
         _pick_smap_granule([g("20261114T223000")], "T103000")
+
+
+def test_serve_combine_multiplies_by_t_ml(tmp_path):
+    """lead-ml meta 'serve_combine': P_live_H = p_trigger_H x t_ml."""
+    import rasterio
+    from ml.local import models as M
+    mp = _smoke_model(tmp_path)
+    model, meta = M.load_xgb(mp)
+    meta.update({"serve_combine": "P_live_H = p_trigger_H x t_ml",
+                 "serve_label": "Relative likelihood of a rain-triggered landslide within H (when x where), 0-1"})
+    mp.with_suffix(".meta.json").write_text(json.dumps(meta))
+    sp = _static(tmp_path)
+    with rasterio.open(sp) as ds:
+        arr, prof, names = ds.read(), ds.profile, list(ds.descriptions)
+    prof.update(count=len(names) + 1)
+    sp2 = tmp_path / "static_tml.tif"
+    with rasterio.open(sp2, "w", **prof) as ds:
+        ds.write(np.concatenate([arr, np.full((1, 20, 20), 0.5, "float32")]))
+        for i, n in enumerate(names + ["t_ml"], start=1):
+            ds.set_band_description(i, n)
+    kw = dict(bounds=BOUNDS, rain_fc=np.full((14, 20, 20), 10.0),
+              gfs_issued="2026-11-15T00:00:00Z",
+              soil={v: np.full((20, 20), 0.3) for v in p_trigger.SOIL_VARS})
+    out_a, out_b = tmp_path / "a", tmp_path / "b"
+    _obs(out_a); _obs(out_b)
+    with pytest.raises(ValueError, match="t_ml"):        # combine needs the band
+        p_trigger.run(out_a, D, model_path=mp, static_path=sp, **kw)
+    layers = p_trigger.run(out_b, D, model_path=mp, static_path=sp2, **kw)
+    with rasterio.open(out_b / "cog" / "p_trigger_24h.tif") as ds:
+        pb = ds.read(1)
+    assert layers[0]["legend"]["type"] == "relative_index"
+    assert layers[0]["title"].startswith("Relative likelihood of a rain-triggered landslide within 24h")
+    assert np.nanmax(pb) <= 0.5 + 1e-6

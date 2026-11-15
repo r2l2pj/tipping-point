@@ -206,9 +206,13 @@ jobs:
           set -euo pipefail
           rel="https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
           mkdir -p ml/models data/static/south_brazil/ml
-          [ -s ml/models/p_trigger_xgb.json ] || curl -fsSL --retry 3 -o ml/models/p_trigger_xgb.json "$rel/p_trigger_xgb.json"
-          [ -s ml/models/p_trigger_xgb.meta.json ] || curl -fsSL --retry 3 -o ml/models/p_trigger_xgb.meta.json "$rel/p_trigger_xgb.meta.json"
-          [ -s data/static/south_brazil/ml/ml_static_now.tif ] || curl -fsSL --retry 3 -o data/static/south_brazil/ml/ml_static_now.tif "$rel/ml_static_now.tif"
+          get() {  # asset dest sha256 (lead-ml real model, 2026-11-15)
+            [ -s "$2" ] || curl -fsSL --retry 3 -o "$2" "$rel/$1"
+            echo "$3  $2" | sha256sum -c -
+          }
+          get p_trigger_xgb.json ml/models/p_trigger_xgb.json 2eba71d66b1939333a4eb6bd42a38ab5320fccd3d08b993ad86437f3044464ed
+          get p_trigger_xgb.meta.json ml/models/p_trigger_xgb.meta.json 44df91aa4c6473148a9f5dc1237a8e1b39b68d6f4182bb3459c20c081dce7b07
+          get ml_static_now.tif data/static/south_brazil/ml/ml_static_now.tif 721b92280fd6785581c78842056f8cd91a8619af7b26c6c367e16b3459be3612
           uv run python -m live.p_trigger
 
       - name: Finalize now manifest (merge response node, drop absent products)

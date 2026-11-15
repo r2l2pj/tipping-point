@@ -113,6 +113,8 @@ def frame_layers(today: dt.date, gfs_issued: str, files: dict,
                  bounds: dict, model_meta: dict) -> list[dict]:
     layers = []
     issued = gfs_issued[:16].replace("T", " ") + " UTC"
+    serve_label = model_meta.get("serve_label") or (
+        "P(landslide trigger within H)")
     for h, n in HORIZONS.items():
         if f"cog/p_trigger_{h}.tif" not in files:
             continue
@@ -121,16 +123,23 @@ def frame_layers(today: dt.date, gfs_issued: str, files: dict,
         layers.append({
             "id": f"p_trigger_{h}", "date": today.isoformat(), "horizon_days": n,
             "png": f"png/p_trigger_{h}.png", "cog": f"cog/p_trigger_{h}.tif",
-            "legend": {"type": "probability", "stops": [0, 0.1, 0.25, 0.5, 0.75, 1]},
+            "legend": {"type": ("relative_index" if model_meta.get("serve_combine")
+                                else "probability"),
+                       "stops": [0, 0.1, 0.25, 0.5, 0.75, 1]},
+            "title": serve_label.replace("within H", f"within {h}"),
+            "serve_note": model_meta.get("serve_note"),
             "bounds": bounds[h], "forecast": True, "partly_forecast": True,
             "basis": "observed+forecast", "obs_days": obs, "forecast_days": fc,
             "obs_through": obs[-1], "gfs_issued": gfs_issued,
-            "basis_label": (f"P(landslide trigger within {h}) — observed IMERG to "
+            "basis_label": (f"{serve_label.replace('within H', f'within {h}').split(',')[0]}"
+                            f" — observed IMERG to "
                             f"{(today - dt.timedelta(days=1)):%b %-d} + NOAA GFS "
                             f"forecast to {(today + dt.timedelta(days=n - 1)):%b %-d} "
                             f"(issued {issued})"),
             "low_skill": h in LOW_SKILL,
-            "model": {"name": model_meta.get("name", "p_trigger_xgb"),
+            "domain": "Brazilian land only (model trained on Brazilian inventories)",
+            "model": {"name": model_meta.get("model") or model_meta.get("name", "p_trigger_xgb"),
+                      "combine": model_meta.get("serve_combine"),
                       "version": model_meta.get("version"),
                       "test_metrics": "data/ml/ml_card.json"},
         })
@@ -169,6 +178,21 @@ def run(out_dir: Path, today: dt.date, bounds=NOW_BOUNDS, model_path=MODEL_PATH,
     out = tm.predict(today, static=static, soil=soil, texture=texture,
                      rain_obs=obs, rain_fc=rain_fc, p99_daily=st["p99_daily"],
                      p99_3day=st["p99_3day"])
+    # lead-ml serving rule (meta 'serve_combine'): P_live_H = p_trigger_H x
+    # t_ml — "when" (rain/soil trigger) x "where" (susceptibility band t_ml)
+    combine = str(tm.meta.get("serve_combine", ""))
+    if "t_ml" in combine:
+        if "t_ml" not in st:
+            raise ValueError("model asks for x t_ml but the static stack has no t_ml band")
+        tml = st["t_ml"]
+        out = {k: (v * tml).astype(np.float32) for k, v in out.items()}
+    # the model and T_ML are trained on Brazilian inventories: outside
+    # Brazilian land (IBGE outline minus MCD12Q1 water) the index is nodata
+    # (2026-11-15: 32 % of the 14 d > 0.1 area fell in Paraguay/Argentina)
+    from live.run_now import now_land_mask
+    land = now_land_mask(tuple(bounds), lats.size, lons.size)
+    if land is not None:
+        out = {k: np.where(land, v, np.nan).astype(np.float32) for k, v in out.items()}
     files, bnds = {}, {}
     for h in HORIZONS:
         p = out.get(f"p_trigger_{h}")
