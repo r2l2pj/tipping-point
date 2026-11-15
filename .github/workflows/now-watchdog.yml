@@ -5,6 +5,9 @@ name: now-watchdog
 # different minutes, dispatches now.yml with GITHUB_TOKEN when the last
 # SUCCESSFUL now run is older than 3.5 h and none is queued or running.
 # workflow_dispatch from GITHUB_TOKEN is allowed to start workflow runs.
+# The last step FAILS the run when the published data/now/manifest.json on the
+# fallback branch is older than 6 h (L13b) — GitHub emails the owner on failed
+# runs; that is the stale-data alarm.
 
 on:
   schedule:
@@ -15,6 +18,9 @@ on:
       max_age_s:
         description: "dispatch if the last successful now run is older than this (s)"
         default: "12600"
+      stale_after_s:
+        description: "fail the run when the published Now manifest is older than this (s)"
+        default: "21600"
 
 permissions:
   actions: write
@@ -29,6 +35,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Dispatch now.yml if the last success is stale
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -53,3 +65,17 @@ jobs:
           else
             echo "fresh enough — not dispatching"
           fi
+
+      # L13b stale-data alarm: runs AFTER the dispatch step (a dispatch still
+      # happens) and fails the job when the published Now manifest on the
+      # fallback branch is > 6 h old. Git, not the raw CDN (no propagation
+      # lag). The failed run is what emails the owner.
+      - name: Fail when the published Now data is stale
+        if: always()
+        env:
+          STALE_AFTER_S: ${{ inputs.stale_after_s || '21600' }}   # 6 h
+        run: |
+          set -euo pipefail
+          git fetch --quiet --depth 1 origin fallback
+          git show FETCH_HEAD:data/now/manifest.json | \
+            python -m live.staleness --max-age-s "$STALE_AFTER_S"

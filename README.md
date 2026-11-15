@@ -136,6 +136,15 @@ anchor − first Critical crossing`; metrics carry `lead_time_median_h`,
 `lead_time_assumptions`. Null fields ship with a reason string, never a
 silent 0.
 
+Lead-time counts (observed replay, anchor = first damage report):
+- rs_2024 (5,678 Crítico clusters vs the MetSul/Canoas anchor 2024-04-27
+  15:00Z): warned before **0**, after **5,678**, never-critical not defined
+  (clusters exist only where Crítico was crossed). Median −57 h, mean
+  −61.5 h — the observed index crossed after the first damage report; the
+  forecast lead time (L22, issued GFS) is the one that can warn earlier.
+- wa_2025: point counts undefined — the 15 WGS points are undated; the
+  case-level first Crítico crossing came 0.6 h before the damage anchor.
+
 ## Data sources (NASA + partners)
 
 | Source | GEE catalog id / product | Used for |
@@ -146,10 +155,11 @@ silent 0.
 | MODIS LC | `MODIS/061/MCD12Q1` | ML features + R1 wetland/water exclusion and cropland confidence — **not** a TPI index input (ruling A3) |
 | OPERA DSWx-S1 | PO.DAAC `OPERA_L3_DSWX-S1_V1` (`WTR`) via CMR | R1 near-real-time flood candidates (Modo Agora) |
 | NOAA GFS (non-NASA, declared) | AWS `noaa-gfs-bdp-pds` 0.25° APCP | replay real-forecast frames (L22) + live forecast (L25) |
-| GPWv4.11 | `CIESIN/GPWv411/GPW_Population_Count` | exposed population (`gpw_year` in metrics = epoch nearest the event; epochs are 5-yr, latest 2020) |
+| GPWv4.11 | `CIESIN/GPWv411/GPW_Population_Count` | exposed population (`gpw_year` = 2020 for both cases: the epoch nearest both events, epochs are 5-yr and 2020 is the latest; verified cell-for-cell for rs_2024; `population_total` = case-AOI sum, so `people_critical` < total is checkable) |
 | Black Marble | `NASA/VIIRS/002/VNP46A2` (`DNB_BRDF_Corrected_NTL`) | pre/post night-lights change |
 | OPERA DSWx | `OPERA/DSWX/L3_V1/HLS` (rs_2024), `OPERA/DSWX/L3_V1/S1` (wa_2025) | validation IoU/F1 (`B01_WTR`, ≤5 d after event, ruling L10b) |
 | HLS | `NASA/HLS/HLSL30/v002`, `NASA/HLS/HLSS30/v002` | scar candidates, cloud fraction |
+| OPERA DIST-ALERT-HLS | LP DAAC `OPERA_L3_DIST-ALERT-HLS_V1` (`VEG-DIST-STATUS`/`VEG-DIST-DATE`) | landslide scar candidates (Now + rs_2024/wa_2025 replays) |
 
 Replay-case caveat: the published TPI frames are a **hindcast** — IMERG_V07
 and SMAP L4 as archived in GEE, with no real-time latency modelled. A frame
@@ -160,13 +170,18 @@ Manifest `cases.<id>.data_basis` carries this label for the app.
 
 Off-GEE fetches: NISAR GCOV (below), SWOT Hydrocron (reach ids in
 `events/*.json`), NOAA GFS forecast (AWS open data), OPERA DSWx-S1 (CMR /
-PO.DAAC), GLC/UFRGS-Cemaden landslide inventories.
+PO.DAAC), GLC/UFRGS-Cemaden landslide inventories. The per-reach SWOT WSE
+chart series is rebuilt with `tools/wa_swot_series.py --case {rs_2024,wa_2025}`
+→ `data/<case>/series/swot.json` (`products.swot_series`).
 
 Declared non-NASA inputs: **NOAA GFS** forecast precipitation (the only
 forecast with an archive for the replay windows; L22) and three
 **context/reference layers that never enter the TPI**: JRC Global Surface
 Water v1.4 (seasonal-water confidence in R1), IBGE country/municipality
 outlines (Brazil clip, priority zones), and the landslide inventories.
+**INMET** automatic-station gauges are a validation-only input (L19): they
+check IMERG daily rain at rs_2024 station cells (`imerg_vs_gauge` in
+metrics.json, `series/imerg_vs_gauge.json`) and never feed the index.
 
 ## Response products (Modo Agora, ruling L27)
 
@@ -243,6 +258,10 @@ index input.
   reduce but do not remove this. The rain-support rule has no flow routing.
 - GUNW/coherence landslide detection is moot for wa_2025 (no event-crossing
   pair); candidates are HLS optical and stay "candidates", never confirmed.
+- WA 2025 DIST-ALERT scar candidates (window 2025-12-05..2026-02-28,
+  176 candidates, 1.25 km²): none lies within 500 m of the 15 WGS inventory
+  points. Winter cloud and snow limit HLS looks, and 15 points cannot
+  measure precision; they stay "candidates" and are shown as such.
 - WA landslide hit-rate rests on n = 15 undated WGS inventory points:
   66.7 % (10 of 15) are Critical on the case peak day 2025-12-12 —
   small-sample; per-day values in metrics `landslide_hit.per_day`.
@@ -255,10 +274,32 @@ index input.
 - NISAR frames are BETA pre-calibration products; use relative
   before/after change on the same frame.
 
+- "Did the alert come before?" (Modo 3, `tools/warned_before.py`, metrics
+  `flood_warned*` / `slide_warned*`): RS 2024 — 88.1 % of the 16,027
+  inventory landslides were Alto+ (69.1 % Crítico) in the NOAA GFS frames
+  issued 24-48 h before 2024-05-01 (observed frames 88.8 % / 73.5 %).
+  WA 2025 — only 0.1 % of the 27.9 km² NISAR-confirmed flood was Alto+
+  24-48 h before the first damage report (0.0 % observed); the flooded
+  valley floors went Alto+ only from the 2025-12-10 frame (41 %, then 89 %
+  and 99 %). The TPI is pixel-local: those pixels had high T_flood but no
+  local extreme rain; the river flood came from rain upstream in the
+  Cascades, which R does not route. RS 2024 has no flood reference map, so
+  its flood equivalent is null.
+
+## Use of AI
+
+Built with AI coding assistants (Anthropic Claude via Claude Code, Cognition
+Devin, OpenAI Codex/GPT) under human direction: they wrote and reviewed code
+and drafted docs. The idea, method and data choices come from the team's own
+project document (`docs/PLAN.md`); every source, threshold and reported number
+was reviewed by the team. AI-assisted commits carry a `Co-Authored-By` trailer.
+
 ## Rules
 
 - Inputs are NASA (or challenge-partner) data only. MERIT Hydro is a
-  validation reference, never an index input.
+  validation reference, never an index input — the HAND-proxy check lands
+  as `hand_validation_iou`/`hand_validation_r`/`hand_validation_radii`
+  (0-1 IoU + Pearson r per radius on one 90 m grid; `gee/hand.py`).
 - Secrets live in `.env` / `~/.netrc` / CI secrets — never committed.
 - NISAR products are HDF5 — subset to the AOI before writing COGs.
 - Manifests are written LAST (`data/now/manifest.json` per run,

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T05:26:03Z",
+  "updated_at": "2026-11-15T12:35:31Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -2983,12 +2983,11 @@
         "flood_confirmed": null,
         "landslide_candidates": "rs_2024/geojson/landslide_candidates.geojson",
         "swot_reference": "rs_2024/series/swot_reference.json",
-        "swot_series": null
+        "swot_series": "rs_2024/series/swot.json"
       },
       "_null_reasons": {
         "permanent_water": "not yet produced",
-        "flood_confirmed": "No NISAR coverage — event predates launch (Jul 2025)",
-        "swot_series": "no SWOT reach series for this case"
+        "flood_confirmed": "No NISAR coverage — event predates launch (Jul 2025)"
       }
     },
     "wa_2025": {
@@ -3075,6 +3074,26 @@
             -121.455602,
             48.509603
           ],
+          "kind": "observed"
+        },
+        {
+          "id": "opera_validation",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/opera_validation_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_opera_validation_20251216.tif",
+          "legend": [
+            "Sem dados",
+            "TP — ambos",
+            "FP — só NISAR",
+            "FN — só OPERA"
+          ],
+          "bounds": [
+            -122.6,
+            46.999843,
+            -121.499877,
+            48.501347
+          ],
+          "forecast": false,
           "kind": "observed"
         },
         {
@@ -6921,13 +6940,11 @@
         "priority_zones": "wa_2025/geojson/priority_zones.geojson",
         "permanent_water": "wa_2025/geojson/permanent_water.geojson",
         "flood_confirmed": "wa_2025/geojson/flood_confirmed.geojson",
-        "landslide_candidates": null,
+        "landslide_candidates": "wa_2025/geojson/landslide_candidates.geojson",
         "swot_reference": "wa_2025/series/swot_reference.json",
         "swot_series": "wa_2025/series/swot.json"
       },
-      "_null_reasons": {
-        "landslide_candidates": "no landslide candidate product yet"
-      }
+      "_null_reasons": {}
     },
     "now": {
       "schema": "tipping-point/now@2",

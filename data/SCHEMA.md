@@ -134,7 +134,12 @@ the app uses it for layer hints).
   the single root metrics file), `data_dates`, `products`,
   `forecast_source`, `_null_reasons`.
 - `data_dates`: the freshest date of each input actually used —
-  `{imerg, smap, gfs_issued?, nisar_pre?, nisar_post?, ...}`.
+  `{imerg, smap, gfs_issued?, nisar_pre?, nisar_post?, ...}`. In the `now`
+  bundle `smap` is the SPL4SMGP granule stamp as ISO UTC
+  (`"2026-11-10T22:30:00Z"`, the raw granule id when unparseable), with
+  `smap_granule` (file name, no CMR suffix), `smap_age_days` (whole days on
+  the America/Sao_Paulo calendar) and `smap_label` (pt-BR
+  `"SMAP de dd/mm, N dias"`).
 - `forecast_source`: `"perfect-forecast"` for replay cases (D+1..D+3 =
   observed IMERG as forecast), `"noaa-gfs"` for the live bundle. The app must
   render forecast days differently (never like observed).
@@ -188,7 +193,10 @@ forecast_source?, kind?, upper_bound?}`:
 forecast variants `tpi_slide_d1..d3`, `tpi_flood_d1..d3` carry
 `forecast: true`. Reference/validation layers: `hillshade` (NASADEM terrain
 shade), `nisar_pre`, `nisar_post` (NISAR GCOV backscatter),
-`opera_validation` (OPERA DSWx water map used for flood validation),
+`opera_validation` (3-class NISAR-vs-OPERA DSWx-S1 like-for-like agreement
+map: 1=TP both, 2=FP NISAR-only, 3=FN OPERA-only, 0=nodata; PNG palette TP
+#1a9850 / FP #f46d43 / FN #4575b4, nodata transparent; legend/class areas in
+`data/<case>/opera_validation.json`, definition = `validation_method`),
 `night_lights_pre`, `night_lights_post` (VIIRS Black Marble composites),
 `t_ml` (XGBoost-modeled hazard; same class legend).
 
@@ -219,7 +227,9 @@ path or `null`:
   "priority_zones":       "rs_2024/geojson/priority_zones.geojson",
   "permanent_water":      "rs_2024/geojson/permanent_water.geojson",
   "flood_confirmed":      "rs_2024/geojson/flood_confirmed.geojson",
-  "landslide_candidates": "rs_2024/geojson/landslide_candidates.geojson"
+  "landslide_candidates": "rs_2024/geojson/landslide_candidates.geojson",
+  "swot_reference":       "rs_2024/series/swot_reference.json",
+  "swot_series":          "rs_2024/series/swot.json"
 },
 "_null_reasons": {
   "flood_confirmed": "no NISAR coverage — event predates launch (Jul 2025)"
@@ -262,11 +272,76 @@ The chart series per event:
 - `rain_p95_mm` — the p95 daily-rain climatology used for the rain axis;
   `tpi_threshold` — the Alto cut (config.yaml `tpi_classes`).
 
+### `series/imerg_vs_gauge.json`
+
+Per-station daily pairs for the IMERG-vs-gauge validation check (rs_2024,
+ruling L19 — INMET gauges validate IMERG, never feed the index). Written by
+`tools/imerg_vs_gauge.py`: gauge daily mm summed from the INMET hourly
+archive on the CSV's own UTC `Data` day; `imerg_mm` is the GPM_3IMERGDF V07
+daily *Final* value of the 0.1° cell containing the station, fetched per
+day via GES DISC OPeNDAP ascii subsets (`.npy`-cached under gitignored
+`data/raw/imerg_vs_gauge/`). A station-day is skipped (`stations[].skipped[]`
+carries the reason) when > `max_missing_hours` (default 2) of its 24
+hourly values are missing, when the station has no rows that UTC day, or
+when IMERG has no value.
+
+```json
+{ "source": "...", "gauge_source": "...",
+  "imerg_product": "GPM_3IMERGDF V07 daily Final",
+  "window": {"start": "2024-04-20", "end": "2024-05-15"},
+  "event_total_window": {"start": "2024-04-27", "end": "2024-05-06"},
+  "max_missing_hours": 2,
+  "caveat": "point gauge vs 0.1 deg cell",
+  "stations": [
+    { "id": "A801", "name": "...", "lat": -30.05, "lon": -51.17,
+      "imerg_cell": {"i": 1288, "j": 599, "lon": -51.15, "lat": -30.05},
+      "n_days": 26, "r": 0.98, "bias_pct": 5.5,
+      "event_total_gauge_mm": 382.6, "event_total_imerg_mm": 425.3,
+      "event_total_ratio": 1.112,
+      "skipped": [{"date": "...", "reason": "..."}],
+      "days": [{"date": "2024-04-20", "gauge_mm": 0.0,
+                "gauge_hours": 24, "imerg_mm": 0.0}] } ] }
+```
+
 ### `series/<caso>_swot_<AAAAMMDD>.json`
 
 Dated SWOT river-level series per reach (pipeline output, e.g.
 `rs_2024_swot_20240502.json`); the publisher merges it into
 `imerg_smap_daily.json`'s `river_m`.
+
+### `series/swot.json`
+
+Per-reach SWOT water-surface-elevation chart series built by
+`tools/wa_swot_series.py --case <case>` from PO.DAAC Hydrocron
+(SWOT L2 HR RiverSP); `products.swot_series` points here:
+
+```json
+{ "case": "rs_2024",
+  "source": "SWOT L2 HR RiverSP via PO.DAAC Hydrocron",
+  "window": ["2024-04-01", "2024-06-30"],
+  "event_dates": { "start": "2024-04-29", "peak": "2024-05-05" },
+  "quality_legend": {"0": "good", "1": "suspect", "2": "degraded", "3": "bad"},
+  "reaches": [
+    { "reach_id": "64120300041", "name": null,
+      "lon": -52.021467, "lat": -29.9419171,
+      "series": [
+        { "time": "2024-05-06T11:46:38Z", "wse_m": 14.2538,
+          "wse_u_m": 0.10084, "quality": 2 } ],
+      "dropped_fill": 0, "dropped_out_of_window": 0 } ],
+  "_null_reasons": { "64120300024": "no valid SWOT pass in window" } }
+```
+
+- `window` / `event_dates` come from the event's `swot.window` /
+  `swot.event_dates` when present, else `window` and
+  `start_date`/`reference_date` in `events/<event>.json`.
+- `reaches[].name` is the SWORD `river_name` (`null` when `no_data`);
+  `lon`/`lat` the reach centroid.
+- `series[]` entries carry UTC `time`, `wse_m`, `wse_u_m` (uncertainty,
+  `null` at fill), `quality` (SWORD `reach_q`, `null` at fill). Fill
+  rows are dropped and counted in `dropped_fill`; observations outside
+  `window` in `dropped_out_of_window`.
+- A reach with no Hydrocron timeseries keeps `series: []` and a
+  `_null_reasons` entry keyed by reach id — values are never invented.
 
 ## GeoJSON feature shapes
 
@@ -339,15 +414,41 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   optical DSWx-HLS all-water, mostly cloud (`hls_method`, `cloud_pct`,
   `cloud_pct_source`). `tools/validation_metrics.py` writes only `*_raw` and
   `hls_*`; the headline keys are never overwritten by the all-water run.
-- `hand_validation` is a scalar 0–100 percentage: the HAND<5 m zone IoU
-  against MERIT at the selected radius, suitable for the app `MetricsV4`
-  percentage renderer. `hand_validation_radii` preserves per-radius `{r, iou}`
-  ratios; `hand_best_radius_m` is selected by maximum `r + iou` and written
-  back to `config.yaml` `thresholds.hand_proxy_radius_m`. No valid comparison
-  produces null plus `_null_reasons`, not an object in `hand_validation`.
+- rs_2024 optical cloud (`tools/validation_metrics.py` task B): `cloud_pct`
+  (100 − `cloud_free_pct`), `hls_scenes` (count), `hls_scene_dates` (UTC dates
+  of those HLS L30/S30 scenes over the AOI) and `cloud_pct_source` (product,
+  Fmask bits, scene count + dates, union rule) — what the app cites for
+  'clouds hid X%'.
+- `hand_validation` is the HAND<5 m zone IoU in 0–1 against MERIT Hydro 'hnd'
+  at the selected radius (unit: fraction; before the G2 schema fix it was an
+  ambiguous 0–100 percent, which the app read as "98%"). The unambiguous keys:
+  `hand_validation_iou` (IoU 0–1), `hand_validation_r` (Pearson r, -1..1),
+  `hand_validation_radius_m` (best radius = highest IoU, ties -> smallest;
+  reported only, `thresholds.hand_proxy_radius_m` is NOT rewritten),
+  `hand_validation_radii` {radius_m: iou 0-1}; `hand_validation_by_radius`
+  {radius_m: {iou, r, r_5k, n_px, low_proxy_pct,
+  low_merit_pct}} and `hand_validation_definition` (method text). Everything
+  is computed locally on ONE common grid: MERIT 'hnd' plus the three proxy
+  bands (NASADEM z − focalMin(radius)) downloaded together via
+  `getDownloadURL` (NPY, 90 m, EPSG:4326, clipped to the case AOI, tiled over
+  its bounding box). `r` covers all pixels valid on both bands, `r_5k` a
+  5000-px sample (seed 1); `low_*_pct` is each HAND<5 m zone's share of the
+  compared pixels. MERIT is a reference only — never an index input. No valid
+  comparison produces null plus `_null_reasons`.
+  (`tools/validation_metrics.py` Task C compares the same proxy against the
+  NISAR flood mask — a different question — and publishes `hand_nisar_*`
+  keys in `data/<case>/validation_metrics.json`, never `hand_validation*`.)
 - `rf_auc` is the XGBoost model AUC — the key name stays for contract
   stability; public text says "XGBoost". Detailed sub-results may nest under
   extra sections (e.g. `landslide_ml`); the keys above stay flat.
+- `imerg_vs_gauge` — nested IMERG-vs-INMET-gauge validation summary
+  (rs_2024; L19, validation-only — gauges never feed the index):
+  `{source, imerg_product, window, n_stations, n_station_days,
+  pearson_r_median, bias_pct_median, event_total_ratio_median, caveat,
+  stations[]}` where `bias_pct` is 100·(ΣIMERG − Σgauge)/Σgauge over paired
+  UTC days and `event_total_*` sums Apr 27–May 6. Written by
+  `tools/imerg_vs_gauge.py`; per-day pairs in
+  `series/imerg_vs_gauge.json`. Caveat: point gauge vs 0.1° cell.
 
 Writers (merge via `tp.metrics.merge_metrics` into the case's blob in the
 root file, never `write_text` on the file): `04_validation.py` (iou, f1,
@@ -359,6 +460,47 @@ night_light_drop_pct — merge its CSV printout), `gee/04_hand_vs_merit.js` /
 (rf_auc = learned-model AUC, rule_auc = manual slope rule,
 feature_importance; XGBoost stands in for the doc's in-GEE Random Forest —
 see ml/README.md), `07_forecast.py` (forecast_source).
+
+### Impact bookkeeping — `gpw_year`, `gpw_product`, `population_total`
+
+`gpw_year` 2020 (GPW v4.11 count, latest epoch, nearest both events);
+`population_total` (persons) = sum of the case GPW COG over the case AOI
+(`population_total_scope`); `people_critical` must be smaller. rs
+`lead_time_mean_h` is exact from `lead_time_hist` (`lead_time_mean_note`).
+Producer `tools/fill_impact_lead_keys.py`.
+
+### "Did the alert come before?" — `flood_warned*` (wa_2025), `slide_warned*` (rs_2024)
+
+Producer `tools/warned_before.py` (Modo 3 row 1). Share of the damage that the
+TPI already flagged **Alto or higher (>= 0.4)** — and Crítico (> 0.6) — in the
+frames available **24-48 h before the damage anchor**; each damage location
+takes the ~90 m TPI cell that contains it; max over the window frames.
+
+| key | unit | compares |
+|---|---|---|
+| `flood_warned_pct` (wa) | % of NISAR-confirmed new-flood **area** (27.9 km²) | Alto+ in the L22 issued-GFS TPI_flood frames from 00Z runs 24-48 h before the anchor (headline) |
+| `flood_warned_observed_pct` | same | Alto+ in observed TPI_flood bands dated anchor-2d..anchor-1d (latency ignored = upper bound) |
+| `flood_warned_critical_pct` | same | Crítico share of the headline window |
+| `slide_warned_pct` / `_observed_pct` / `_critical_pct` (rs) | % of the 16,027 inventory **points** | same rules with TPI_slide |
+| `flood_warned` / `slide_warned` | object | `definition`, `anchor_utc` + `anchor_source`, `observed`, `forecast_gfs`, `best_issued_gfs_before_anchor`, `by_issue_gfs[]`, `by_date_observed[]` (per-date curve), WA `explanation` |
+
+Anchors (L37): the documented event **ONSET**, not the peak —
+`*_warned.anchor_basis = "onset"`, `*_warned_anchor_{basis,utc,source}` flat.
+rs = 2024-04-29 00:00 BRT (03:00Z; first deaths of the event, MetSul laudo +
+press); wa = 2025-12-08 00:00 PST (08:00Z; onset day, WA EMD SEOC sitrep).
+`*_warned.sensitivity[]` repeats the window + per-lead numbers for other
+anchors (rs: 2024-04-30 first landslide deaths, 2024-05-01 00Z previous fixed
+dating; wa: King County FWC update 2025-12-09 00:35Z). Per-lead flat keys
+`{slide|flood}_warned_{gfs|observed}_{24|48|72}h[_critical]_pct` +
+`_gfs_{h}h_issue`: the 00Z run of the UTC date (onset − h) — issued at least
+h hours before the onset. rs `flood_warned_pct` is null with a reason (no RS
+flood map). `no_tpi_pct` = locations on TPI no-data, kept in the denominator.
+
+`forecast_lead_time_onset` (both cases): the L22/L28b forecast lead time
+re-anchored on the onset — issue day warned if any frame depicting a date <=
+the onset day has an AOI-max TPI (slide or flood) > 0.6 anywhere in the AOI
+(not at the damage locations); `lead_h` = onset − issue 00Z; `issue_days[]`,
+`sensitivity[]`. The older `forecast_lead_time` block keeps its own anchor.
 
 ## data/now/ — the live bundle
 
@@ -374,7 +516,10 @@ everything else. Overwritten every 3 h by `live/run_now.py` via
 { "schema": "tipping-point/now@2",
   "mode": "live", "updated_at": "2026-11-15T09:00:00Z",
   "bounds": [-58.0, -34.0, -48.0, -22.5],
-  "data_dates": { "imerg": "...", "smap": "...", "gfs_issued": "..." },
+  "data_dates": { "imerg": "...", "smap": "2026-11-10T22:30:00Z",
+    "smap_granule": "SMAP_L4_SM_gph_20261110T223000_Vv8013_001.h5",
+    "smap_age_days": 5, "smap_label": "SMAP de 10/11, 5 dias",
+    "gfs_issued": "..." },
   "layers": [
     { "id": "tpi_slide_d0", "date": "2026-11-15",
       "png": "png/tpi_slide_d0.png", "cog": "cog/tpi_slide_today.tif",
@@ -402,7 +547,8 @@ Paths inside this file are relative to `data/now/`. Layers are
   "people_exposed": 0,
   "forecast_source": "noaa-gfs",
   "classes_km2": { "Baixo": 0.0, "Moderado": 0.0, "Alto": 0.0, "Crítico": 0.0 },
-  "data_dates": { "imerg": "...", "smap": "...", "gfs_issued": "..." } }
+  "data_dates": { "imerg": "...", "smap": "...", "smap_granule": "...",
+    "smap_age_days": 5, "smap_label": "...", "gfs_issued": "..." } }
 ```
 
 `people_critical` and `people_exposed` are both emitted with the same value
@@ -519,6 +665,14 @@ Always `status: "candidate"`.
   `products.landslide_candidates`) + metrics `scar_*` (candidates n/km²/people,
   inventory hit rate within 100/500 m, precision proxy within 500 m,
   `scar_sensitivity` table).
+- Replay wa_2025: `wa_2025/geojson/landslide_candidates.geojson` + `scar_*`.
+  The Brazil static masks do not cover WA, so gates come from the gitignored
+  `static/cache/wa/` cache: slope > 15° from the case T_slide COG (GEE
+  NASADEM, 90 m export) and MCD12Q1 tile h09v04
+  (`tools/convert_mcd12q1.py --bbox`); people from the case GPW count COG;
+  municipalities = US Census TIGER county subdivisions (`name` only — no
+  IBGE `code`/`uf`). Window 2025-12-05 … 2026-02-28 (the storm plus the
+  first cloud-free looks, ~12 weeks).
 
 #### R3 — response summary + priority zones (`pipeline/scripts/15_response_summary.py`)
 
@@ -642,16 +796,19 @@ last overall).
 | stable `geojson/*.geojson`, `png/<layer>_<YYYYMMDD>.png`, `series/imerg_smap_daily.json` | `tools/publish_case.py` / `tp/bundle.py` — PNGs via `live/render.layer_png_3857` + `tpi.classify` |
 | `geojson/municipal_boundaries.geojson`, `geojson/landslide_catalog.geojson` | lead-gathering fetchers (IBGE / US Census TIGER; GLC / UFRGS-Cemaden) |
 | `data/<case>/series/<caso>_swot_<AAAAMMDD>.json` | `pipeline/scripts/05_swot.py` / `tp/swot.py` |
+| `data/<case>/series/swot.json` | `tools/wa_swot_series.py --case <case>` (Hydrocron per-reach WSE chart series) |
 | `data/<case>/nisar_products.json` | `pipeline/scripts/01_get_nisar.py` / `tp/nisar.py` (granule ids → `collections`) |
 | `data/now/*` | `live/run_now.py` (static grid `static/sul_static.npz` from `live/build_static.py`) |
 | `projects/<GEE_PROJECT>/assets/tipping-point/**` | `python -m gee.tpi` (static/<case>), `live/run_now.py` (now/), publish ingest (`tools/publish_case.py`) |
 | `data/<case>/assets.json` | lead-gathering ingest tool — records extra ingested asset ids per case |
+| `data/<case>/cog/<caso>_opera_validation_<AAAAMMDD>.tif`, `png/opera_validation_<AAAAMMDD>.png`, `opera_validation.json` | `tools/wa_opera_layer.py` (wa_2025) — TP/FP/FN agreement grid via getDownloadURL |
 | `data/raw/**` | fetch scripts (NISAR, OPERA DSWx, HLS, MODIS NRT) — gitignored |
 | `simular.json` | `tools/build_simular.py` — an **app-side fixture** for the Telegram `/simular` demo, NOT a contract product |
 
 ## Conventions
 
-- Nodata: rasters carry a written nodata value (uint8 class grids use 255);
+- Nodata: rasters carry a written nodata value (uint8 class grids use 255;
+  the `opera_validation` grid uses 0);
   PNG renders mask nodata transparent; GeoJSON omits empty geometries.
 - `data/raw/` is gitignored — never commit downloads; commit only clipped
   outputs.

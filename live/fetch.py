@@ -13,6 +13,7 @@ import datetime as dt
 import os
 import re
 import sys
+from zoneinfo import ZoneInfo
 
 import numpy as np
 
@@ -226,6 +227,46 @@ def fetch_smap_l4(bounds, days_back: int = 10):
         sl = np.s_[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
         return lats[sl], lons[sl], sm.values[sl], str(latest["meta"]["native-id"])
     return lats[m], lons[m], sm.values[m], str(latest["meta"]["native-id"])
+
+
+_SMAP_TS_RE = re.compile(r"_(\d{8}T\d{6})_")
+_SMAP_CMR_SUFFIX_RE = re.compile(r"(\.h5)_.*$")
+
+
+def smap_date_fields(granule: str, now_utc: dt.datetime) -> dict:
+    """data_dates SMAP keys from a SPL4SMGP granule native-id like
+    'SMAP_L4_SM_gph_20261110T223000_Vv8013_001.h5_u9loH5HD'.
+
+    smap          ISO UTC 'YYYY-MM-DDTHH:MM:SSZ' from the _YYYYMMDDTHHMMSS_
+                  segment — the raw granule string when it carries none
+    smap_granule  file name without the CMR '_<hash>' suffix after '.h5'
+    smap_age_days whole days between the granule stamp and `now_utc`, counted
+                  on America/Sao_Paulo calendar days (None when unparseable)
+    smap_label    pt-BR 'SMAP de dd/mm, N dias' ('hoje' at 0, '1 dia' at 1)
+    """
+    granule = str(granule)
+    out = {"smap": granule,
+           "smap_granule": _SMAP_CMR_SUFFIX_RE.sub(r"\1", granule),
+           "smap_age_days": None,
+           "smap_label": None}
+    m = _SMAP_TS_RE.search(granule)
+    if not m:
+        return out
+    try:
+        ts = dt.datetime.strptime(m.group(1), "%Y%m%dT%H%M%S").replace(
+            tzinfo=dt.UTC)
+    except ValueError:
+        return out
+    out["smap"] = ts.strftime("%Y-%m-%dT%H:%M:%SZ")
+    if now_utc.tzinfo is None:
+        now_utc = now_utc.replace(tzinfo=dt.UTC)
+    sp = ZoneInfo("America/Sao_Paulo")
+    smap_day = ts.astimezone(sp).date()
+    age = (now_utc.astimezone(sp).date() - smap_day).days
+    out["smap_age_days"] = age
+    tail = "hoje" if age == 0 else ("1 dia" if age == 1 else f"{age} dias")
+    out["smap_label"] = f"SMAP de {smap_day:%d/%m}, {tail}"
+    return out
 
 
 _GEOSFP_BASE = ("https://opendap.nccs.nasa.gov/dods/GEOS-5/fp/0.25_deg/fcast/"

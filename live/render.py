@@ -42,6 +42,26 @@ def classes_png_bytes(class_arr: np.ndarray, valid: np.ndarray | None = None) ->
         return mf.read()
 
 
+def palette_png_bytes(class_arr: np.ndarray, valid: np.ndarray | None = None,
+                      palette: dict[int, str] | None = None) -> bytes:
+    """Encode a class array as a 4-band RGBA PNG keyed by palette
+    ({class_value: '#rrggbb'}); invalid/unlisted classes render transparent."""
+    import rasterio
+
+    class_arr = np.asarray(class_arr, dtype=np.uint8)
+    if valid is None:
+        valid = np.isfinite(class_arr)
+    rgba = np.zeros((*class_arr.shape, 4), dtype=np.uint8)
+    for cls, hexcol in (palette or {}).items():
+        rgb = tuple(int(hexcol[i:i + 2], 16) for i in (1, 3, 5))
+        rgba[(class_arr == cls) & valid] = (*rgb, 255)
+    with rasterio.MemoryFile() as mf:
+        with mf.open(driver="PNG", height=class_arr.shape[0],
+                     width=class_arr.shape[1], count=4, dtype="uint8") as dst:
+            dst.write(np.moveaxis(rgba, -1, 0))
+        return mf.read()
+
+
 def cog_bytes(arr: np.ndarray, transform, crs: str = "EPSG:4326") -> bytes:
     """Encode a float TPI grid as a single-band float32 COG.
 

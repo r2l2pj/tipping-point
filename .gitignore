@@ -24,6 +24,9 @@ data/raw/
 # local subscriber store (sqlite default backend)
 .data/
 
+# pipeline scratch outputs (large, rebuilt by tools/)
+intermediate/
+
 # never commit credential keys
 *-service-account*.json
 hermes-*.json
@@ -47,3 +50,6 @@ data/tipping_point.sqlite
 # L30-clim whole-year IMERG 0.1 climatology (Release static-v1 asset; never commit)
 data/static/south_brazil/clim/clim_imerg_0p1.tif
 *.tmp.tif
+
+# L35 upstream-basin rain cubes + IMERG per-day cache (large, re-downloadable)
+intermediate/

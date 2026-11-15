@@ -20,8 +20,11 @@ observed it with Fmask bits1-4 unset — the "optical saw X%" number).
 
 Task C (wa_2025): HAND proxy flood extent (NASADEM - focalMin(radius) < 5m)
 vs the rasterized NISAR flood mask across radii 1000/1500/3000m. Emits
-hand_validation (best IoU*100), hand_validation_radii {radius_m: iou} and
-hand_best_radius_m.
+hand_nisar_iou (best IoU 0-1), hand_nisar_iou_radii {radius_m: iou 0-1} and
+hand_nisar_radius_m. Keys carry the `hand_nisar_*` prefix on purpose: this is
+an observed-flood-extent comparison, NOT the MERIT Hydro hand_validation_*
+schema in data/metrics.json (gee/hand.py) — the bare names once polluted the
+root metrics with an ambiguous percent.
 
 Read-only: interactive ee + reduceRegion only — no Export tasks.
 """
@@ -48,6 +51,7 @@ from gee.opera import (
 
 POST_DATE_WA = "2025-12-16"          # NISAR post date — no OPERA granule exists
 OPERA_WINDOW_WA = ("2025-12-15", "2025-12-18")  # nearest DSWx days: 15th + 17th
+OPERA_PRE_WINDOW_WA = ("2025-12-01", "2025-12-08")  # like-for-like pre-water days: 1st..7th
 PEAK_RS = ("2024-05-01", "2024-05-04")  # filterDate end is exclusive -> ..03
 SCALE = 30
 HAND_SCALE = 90            # focalMin cost scales with radius/resolution (gee.hand)
@@ -76,17 +80,28 @@ def _nisar_mask(case_id: str):
     return mask, res
 
 
-def _opera_counts(collection: str, start: str, end: str, aoi, nisar) -> dict:
-    """Server-side tp/fp/fn + cloud/valid counts for an OPERA date window."""
+def _opera_wtr(collection: str, start: str, end: str, aoi):
+    """(mosaicked WTR image, filtered collection) for an OPERA date window."""
     col = (ee.ImageCollection(collection).filterBounds(aoi)
            .filterDate(start, end))
     empty = ee.Image.constant(NODATA_CLASS).rename(WTR_BAND).updateMask(ee.Image.constant(0))
     wtr = ee.Image(ee.Algorithms.If(col.size(), col.select(WTR_BAND).mosaic(), empty))
-    classes = WATER_CLASSES[collection]
+    return wtr, col
+
+
+def _opera_ref_obs(wtr, classes):
+    """(ref=water mask, obs=observed mask) for a WTR mosaic — the same
+    expressions the like-for-like layer builds on (tools/wa_opera_layer.py)."""
     ref = ee.Image.constant(0)
     for c in classes:
         ref = ref.Or(wtr.eq(c))
-    obs = wtr.eq(0).Or(ref)
+    return ref, wtr.eq(0).Or(ref)
+
+
+def _opera_counts(collection: str, start: str, end: str, aoi, nisar) -> dict:
+    """Server-side tp/fp/fn + cloud/valid counts for an OPERA date window."""
+    wtr, col = _opera_wtr(collection, start, end, aoi)
+    ref, obs = _opera_ref_obs(wtr, WATER_CLASSES[collection])
     pred = nisar.And(obs)
     img = ee.Image.cat([
         ref.And(pred).rename("tp"),
@@ -114,8 +129,8 @@ def task_wa2025() -> tuple[dict, dict, dict]:
     collections["nisar_flood"] = res["nisar"]
     if nisar is None:
         why = "NISAR flood polygons asset not found in data/wa_2025/assets.json"
-        for k in ("iou", "f1", "hls_iou", "hls_f1", "hand_validation",
-                  "hand_best_radius_m"):
+        for k in ("iou", "f1", "hls_iou", "hls_f1", "hand_nisar_iou",
+                  "hand_nisar_radius_m"):
             flat[k] = None
             reasons[k] = why
         return flat, reasons, collections
@@ -176,14 +191,14 @@ def task_wa2025() -> tuple[dict, dict, dict]:
         radii[str(r)] = iou
         if iou > best_iou:
             best_r, best_iou = r, iou
-    flat["hand_validation_radii"] = radii
+    flat["hand_nisar_iou_radii"] = radii
     if best_r is None:
-        flat["hand_validation"] = flat["hand_best_radius_m"] = None
-        reasons["hand_validation"] = reasons["hand_best_radius_m"] = (
+        flat["hand_nisar_iou"] = flat["hand_nisar_radius_m"] = None
+        reasons["hand_nisar_iou"] = reasons["hand_nisar_radius_m"] = (
             "no valid HAND/NISAR overlap samples")
     else:
-        flat["hand_validation"] = 100 * best_iou
-        flat["hand_best_radius_m"] = best_r
+        flat["hand_nisar_iou"] = best_iou
+        flat["hand_nisar_radius_m"] = best_r
     collections["HAND_proxy"] = f"{IMG_NASADEM} elev - focalMin(radius) < {LOW_HAND_M}m"
     return flat, reasons, collections
 
@@ -206,10 +221,19 @@ def task_rs2024() -> tuple[dict, dict, dict]:
     union = col.map(_flags).max()  # pixel seen/clear in ANY scene
     stats = union.reduceRegion(reducer=ee.Reducer.sum(), geometry=aoi,
                                scale=SCALE, maxPixels=MAX_PIXELS)
-    stats = stats.set("hls_scenes", col.size()).getInfo()
+    stats = (stats.set("hls_scenes", col.size())
+             .set("hls_times", col.aggregate_array("system:time_start")).getInfo())
     stats = stats if isinstance(stats, dict) else {}
     valid = stats.get("valid") or 0
     flat["hls_scenes"] = int(stats.get("hls_scenes") or 0)
+    dates = sorted({datetime.fromtimestamp(t / 1000, UTC).date().isoformat()
+                    for t in (stats.get("hls_times") or [])})
+    flat["hls_scene_dates"] = dates
+    flat["cloud_pct_source"] = (
+        f"HLS v2.0 Fmask (HLSL30 Landsat + HLSS30 Sentinel-2), cloud/adjacent/"
+        f"shadow/snow bits 1-4; {flat['hls_scenes']} scenes on "
+        f"{', '.join(dates) or 'none'} ({PEAK_RS[0]}..2024-05-03) over the AOI; "
+        f"a pixel counts clear if clear in ANY scene")
     flat["hls_observed_px"] = valid
     if valid:
         clear = stats.get("clear") or 0

@@ -288,38 +288,83 @@ def test_flood_keys_null_for_rs(tmp_path, commons):
 # ---------- hand: radii + best pick ----------
 
 
-def test_hand_three_radii(tmp_path, commons):
-    config = tmp_path / "config.yaml"
-    config.write_text("thresholds:\n  hand_proxy_radius_m: 1500\n")
-    hand.run("rs_2024", metrics_path=tmp_path / "m.json", config_path=config)
+def _hand_npy() -> bytes:
+    """Canned NPY tile: merit 0..15, pR = merit scaled so IoU falls with radius."""
+    import io
+
+    import numpy as np
+
+    a = np.zeros((4, 4), dtype=np.dtype(
+        [("merit", "<f4"), ("p1000", "<f4"), ("p1500", "<f4"), ("p3000", "<f4")]))
+    a["merit"] = np.arange(16, dtype="float32").reshape(4, 4)
+    a["p1000"] = a["merit"] / 2
+    a["p1500"] = a["merit"] / 3
+    a["p3000"] = a["merit"] / 10
+    buf = io.BytesIO()
+    np.save(buf, a)
+    return buf.getvalue()
+
+
+class _GeomStub:
+    """aoi stand-in whose bounds().getInfo() returns real bbox coordinates."""
+
+    def __init__(self, coords):
+        self._coords = coords
+
+    def bounds(self):
+        return SimpleNamespace(getInfo=lambda: {"coordinates": [self._coords]})
+
+
+def test_hand_three_radii(tmp_path, commons, monkeypatch):
+    monkeypatch.setattr(
+        hand, "aoi_geom",
+        lambda cid: _GeomStub([[0, 0], [2, 0], [2, 1], [0, 1], [0, 0]]))
+    monkeypatch.setattr(hand, "_fetch", lambda url: _hand_npy())
+    hand.run("rs_2024", metrics_path=tmp_path / "m.json")
     radii = {
         k["radius"] for p, a, k in LOG if p.endswith(".focalMin") and k.get("units") == "meters"
     }
     assert radii == {1000, 1500, 3000}
     assert _called("ee.Image", [hand.IMG_NASADEM])
     assert _called("ee.Image", ["MERIT/Hydro/v1_0_1"])
-    assert _called("ee.Reducer.pearsonsCorrelation")
-    assert _called(".sample", scale=90, numPixels=5000, seed=1)
+    assert _called(".clip")  # stats clipped to the AOI, not the bbox
+    downloads = [a[0] for p, a, k in LOG if p.endswith(".getDownloadURL")]
+    assert len(downloads) == hand.GRID_TILES ** 2
+    assert all(d["format"] == "NPY" and d["scale"] == 90
+               and d["crs"] == "EPSG:4326" for d in downloads)
     blob = json.loads((tmp_path / "m.json").read_text())["cases"]["rs_2024"]
     assert set(blob["hand_validation_radii"]) == {"1000", "1500", "3000"}
+    assert isinstance(blob["hand_validation_radii"]["1000"], float)
+    per = blob["hand_validation_by_radius"]["1000"]
+    assert set(per) == {"iou", "r", "r_5k", "n_px", "low_proxy_pct", "low_merit_pct"}
+    # 9 identical 4x4 tiles: low_merit = 5/16 of px, iou(1000) = 5/10
+    assert per["iou"] == 0.5 and per["r"] == pytest.approx(1.0) and per["n_px"] == 144
+    assert per["low_merit_pct"] == 31.25
+    assert blob["hand_validation_iou"] == 0.5
+    assert blob["hand_validation"] == 0.5  # legacy key = IoU 0-1, not percent
+    assert blob["hand_validation_r"] == pytest.approx(1.0)
+    assert blob["hand_validation_radius_m"] == 1000
+    assert "MERIT Hydro hnd" in blob["hand_validation_definition"]
     assert blob["collections"]["MERIT_Hydro"] == "MERIT/Hydro/v1_0_1"
 
 
-def test_best_radius_picks_highest_combined(tmp_path, commons, monkeypatch):
+def test_best_radius_picks_highest_iou(tmp_path, commons, monkeypatch):
     canned = {
-        1000: {"r": 0.5, "iou": 0.4},
-        1500: {"r": 0.7, "iou": 0.6},
-        3000: {"r": 0.75, "iou": 0.3},
+        1000: {"r": 0.9, "iou": 0.3, "r_5k": 0.9, "n_px": 10,
+               "low_proxy_pct": 1.0, "low_merit_pct": 2.0},
+        1500: {"r": 0.1, "iou": 0.5, "r_5k": 0.1, "n_px": 10,
+               "low_proxy_pct": 1.0, "low_merit_pct": 2.0},
+        3000: {"r": 0.8, "iou": 0.2, "r_5k": 0.8, "n_px": 10,
+               "low_proxy_pct": 1.0, "low_merit_pct": 2.0},
     }
-    assert hand.best_radius(canned) == 1500
-    monkeypatch.setattr(hand, "_radius_stats", lambda dem, merit, aoi, r: canned[r])
-    config = tmp_path / "config.yaml"
-    config.write_text("thresholds:\n  hand_proxy_radius_m: 1000\n")
-    out = hand.run("rs_2024", metrics_path=tmp_path / "m.json", config_path=config)
-    assert "hand_proxy_radius_m: 1500" in config.read_text()
-    assert out["metrics"]["hand_validation"] == 60
-    assert out["metrics"]["hand_best_radius_m"] == 1500
-    assert out["merged"]["cases"]["rs_2024"]["hand_validation_radii"]["1500"] == {"r": 0.7, "iou": 0.6}
+    assert hand.best_radius(canned) == 1500  # highest IoU, not r + iou
+    monkeypatch.setattr(hand, "compute", lambda _: canned)
+    out = hand.run("rs_2024", metrics_path=tmp_path / "m.json")
+    assert out["metrics"]["hand_validation"] == 0.5
+    assert out["metrics"]["hand_validation_iou"] == 0.5
+    assert out["metrics"]["hand_validation_r"] == 0.1
+    assert out["metrics"]["hand_validation_radius_m"] == 1500
+    assert out["merged"]["cases"]["rs_2024"]["hand_validation_by_radius"]["1500"]["iou"] == 0.5
 
 
 # ---------- dry-run: plan without init ----------
@@ -335,14 +380,15 @@ def test_dry_run_impact_no_init(capsys, monkeypatch):
 
 
 def test_hand_no_samples_is_null_with_reason(tmp_path, commons, monkeypatch):
-    monkeypatch.setattr(hand, "compute", lambda _: {r: {"r": None, "iou": None} for r in hand.RADII_M})
-    config = tmp_path / "config.yaml"
-    config.write_text("thresholds:\n  hand_proxy_radius_m: 1500\n")
-    out = hand.run("rs_2024", metrics_path=tmp_path / "m.json", config_path=config)
+    empty = {"iou": None, "r": None, "r_5k": None, "n_px": 0,
+             "low_proxy_pct": None, "low_merit_pct": None}
+    monkeypatch.setattr(hand, "compute", lambda _: {r: dict(empty) for r in hand.RADII_M})
+    out = hand.run("rs_2024", metrics_path=tmp_path / "m.json")
     blob = out["merged"]["cases"]["rs_2024"]
-    assert blob["hand_validation"] is None
-    assert blob["_null_reasons"]["hand_validation"]
-    assert config.read_text() == "thresholds:\n  hand_proxy_radius_m: 1500\n"
+    for k in ("hand_validation", "hand_validation_iou",
+              "hand_validation_r", "hand_validation_radius_m"):
+        assert blob[k] is None
+        assert blob["_null_reasons"][k]
 
 
 def test_dry_run_hand_prints_radii(capsys, monkeypatch):

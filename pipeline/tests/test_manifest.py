@@ -4,6 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from tp import manifest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -258,12 +259,16 @@ def test_dry_run_prints_valid_json_and_writes_nothing(tmp_path):
     assert not (root / "manifest.json").exists()
 
 
-def test_swot_series_product(tmp_path):
-    root = _data_root(tmp_path, "wa_2025")
-    node = manifest.build_case_node("wa-2025-12", root)
+@pytest.mark.parametrize("event_id,case_id", [
+    ("rs-2024-05", "rs_2024"),
+    ("wa-2025-12", "wa_2025"),
+])
+def test_swot_series_product(tmp_path, event_id, case_id):
+    root = _data_root(tmp_path, case_id)
+    node = manifest.build_case_node(event_id, root)
     assert node["products"]["swot_series"] is None
     assert node["_null_reasons"]["swot_series"]
-    (root / "wa_2025" / "series" / "swot.json").write_text("{}")
-    node = manifest.build_case_node("wa-2025-12", root)
-    assert node["products"]["swot_series"] == "wa_2025/series/swot.json"
+    (root / case_id / "series" / "swot.json").write_text("{}")
+    node = manifest.build_case_node(event_id, root)
+    assert node["products"]["swot_series"] == f"{case_id}/series/swot.json"
     assert "swot_series" not in node["_null_reasons"]

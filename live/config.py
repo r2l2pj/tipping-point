@@ -33,6 +33,11 @@ FORECAST_DAYS = 3
 LABELS = ["Baixo", "Moderado", "Alto", "Crítico"]
 PALETTE_HEX = ["ffffb2", "fecc5c", "fd8d3c", "bd0026"]
 
+# opera_validation layer (wa_2025): NISAR new-flood vs OPERA DSWx-S1 new flood
+# — class values 1=TP, 2=FP, 3=FN, 0=nodata; labels indexed by class value.
+OPERA_CONFUSION_LABELS = ["Sem dados", "TP — ambos", "FP — só NISAR", "FN — só OPERA"]
+OPERA_CONFUSION_PALETTE = {1: "#1a9850", 2: "#f46d43", 3: "#4575b4"}
+
 _cfg = yaml.safe_load(CONFIG_PATH.read_text())["thresholds"]
 
 RAIN_PERCENTILES = tuple(_cfg["rain_percentiles"])          # (90, 95, 99)

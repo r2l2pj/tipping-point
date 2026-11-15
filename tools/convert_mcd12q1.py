@@ -46,6 +46,8 @@ def main() -> None:
     ap.add_argument("--src", type=Path,
                     default=Path.home() / "code/r2l2pj/tipping-point-data/data/now/static/mcd12q1")
     ap.add_argument("--out", type=Path, default=Path("data/now/static/mcd12q1/lc_type1_2025.tif"))
+    ap.add_argument("--bbox", type=float, nargs=4, default=None, metavar=("W", "S", "E", "N"),
+                    help="clip bbox (default: config.yaml domains.now)")
     args = ap.parse_args()
 
     files = sorted(args.src.glob("MCD12Q1.A2025001.*.hdf"))
@@ -64,7 +66,7 @@ def main() -> None:
         print(f"{f.name}: h{h:02d}v{v:02d} classes {np.unique(lc).tolist()}")
     src_tf = from_origin(X0 + h0 * TILE_M, Y0 - v0 * TILE_M, TILE_M / NPX, TILE_M / NPX)
 
-    w, s, e, n = now_bounds()
+    w, s, e, n = args.bbox or now_bounds()
     shape = (round((n - s) / RES), round((e - w) / RES))
     dst_tf = from_origin(w, n, RES, RES)
     out = np.full(shape, 255, np.uint8)

@@ -40,7 +40,9 @@
       "64120500021",
       "64120500031"
     ],
-    "note": "Jacui main stem downstream->upstream into terminal reach 64110700015 at the Jacui delta / Guaiba head by Porto Alegre. SWORD names this stem no_data/'Taquari River', so FTS name search for 'Rio Jacui'/'Guaiba' fails; ids found via SWOT_L2_HR_RiverSP_reach_vD_Attributes FeatureServer bbox query on the AOI, ordered by dist_out via FTS /v1/rivers/reach/<id>. Hydrocron timeseries per reach."
+    "window": { "start": "2024-04-01", "end": "2024-06-30" },
+    "event_dates": { "start": "2024-04-29", "peak": "2024-05-05" },
+    "note": "Jacui main stem downstream->upstream into terminal reach 64110700015 at the Jacui delta / Guaiba head by Porto Alegre. SWORD names this stem no_data/'Taquari River', so FTS name search for 'Rio Jacui'/'Guaiba' fails; ids found via SWOT_L2_HR_RiverSP_reach_vD_Attributes FeatureServer bbox query on the AOI, ordered by dist_out via FTS /v1/rivers/reach/<id>. Hydrocron timeseries per reach. window/event_dates here are the chart window (wider than the event window: pre-flood April baseline through the June recession) and the flood start / Guaiba-Jacui crest dates for the series chart (tools/wa_swot_series.py --case rs_2024)."
   },
   "official_warning": {
     "at": "2024-04-25T20:40:20Z",

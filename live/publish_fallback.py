@@ -16,8 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 
 
-def git(*args: str, cwd: Path = ROOT, allowed: tuple[int, ...] = (0,)):
-    result = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False)
+def git(*args: str, cwd: Path | None = None, allowed: tuple[int, ...] = (0,)):
+    # ROOT resolved per call (not a def-time default) so tests can point it
+    # at a sandbox repo
+    result = subprocess.run(["git", *args], cwd=cwd or ROOT, capture_output=True,
+                            text=True, check=False)
     if result.returncode not in allowed:
         operation = "commit" if "commit" in args else args[0]
         raise SystemExit(f"ERROR: git {operation} failed (exit {result.returncode})")
@@ -86,6 +89,39 @@ def sync_data(source: Path, target: Path, max_mb: float) -> int:
     return len(released)
 
 
+def _rel_app_facing(rel: str) -> bool:
+    parts = Path(rel).parts
+    return (rel.startswith("data/") and not {"raw", "static"} & set(parts)
+            and Path(rel).suffix.lower() in APP_FACING_SUFFIXES)
+
+
+def main_head_paths() -> set[str]:
+    """data/ paths on main HEAD: origin/main freshly fetched (main may have
+    moved since this CI checkout — the targeted-publish race), else HEAD."""
+    git("fetch", "origin", "main", allowed=tuple(range(256)))
+    for ref in ("origin/main", "HEAD"):
+        res = git("ls-tree", "-r", "--name-only", ref, "--", "data",
+                  allowed=tuple(range(256)))
+        if res.returncode == 0:
+            return set(res.stdout.split())
+    return set()
+
+
+def dropped_paths(worktree: Path, on_main: set[str]) -> list[str]:
+    """App-facing paths the staged snapshot deletes from the current
+    fallback that main HEAD also has (conductor rule 2026-11-15: never
+    wipe a file that is committed on main). FALLBACK_ALLOW_DROP: space-
+    separated globs for an intended removal."""
+    import fnmatch
+    import os
+    res = git("diff", "--cached", "--name-only", "--diff-filter=D", cwd=worktree,
+              allowed=(0, 1))
+    allow = os.environ.get("FALLBACK_ALLOW_DROP", "").split()
+    return sorted(rel for rel in res.stdout.split()
+                  if _rel_app_facing(rel) and rel in on_main
+                  and not any(fnmatch.fnmatch(rel, g) for g in allow))
+
+
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--dry-run", action="store_true")
@@ -111,6 +147,14 @@ def main(argv=None) -> None:
                 git("rm", "-rf", ".", cwd=worktree, allowed=tuple(range(256)))
             sync_data(DATA, worktree / "data", args.max_mb)
             git("add", "-A", cwd=worktree)
+            if exists:
+                dropped = dropped_paths(worktree, main_head_paths())
+                if dropped:
+                    for rel in dropped:
+                        print(f"DROPPED (on fallback and main HEAD): {rel}")
+                    raise SystemExit(
+                        f"ERROR: snapshot would drop {len(dropped)} app-facing "
+                        "path(s) that main HEAD has; refusing to publish")
             if git("diff", "--cached", "--quiet", cwd=worktree, allowed=(0, 1)).returncode == 0:
                 print("no changes")
                 return
