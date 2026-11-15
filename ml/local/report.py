@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
 
 # --------------------------------------------------------------------------- v2
-V2_MODELS = ("xgb_rain_soil", "direct_rain", "xgb_all", "rf_all", "rule_tpi")
+V2_MODELS = ("xgb_rain_soil", "direct_rain", "xgb_all", "rf_all", "rule_tpi", "climatology")
 V2_COLS = ("n", "n_pos", "precision", "recall", "f1", "accuracy", "pr_auc", "roc_auc", "pr_auc_raw")
 
 

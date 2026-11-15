@@ -250,33 +250,32 @@ def compact_md(res: dict, scope: str = "rs_2024", negs: str = "both") -> str:
 
 def recall_line(res: dict, model: str = "xgb_rain_soil", scope: str = "rs_2024") -> str:
     blk = res["scopes"][scope]
-    parts = [f"{k} d {blk[k]['both'][model]['recall'] * 100:.0f} %" for k in blk]
-    return "Recall vs lead days (" + model + ", RS 2024, GFS): " + " · ".join(parts)
+    f = lambda v: "—" if v is None else f"{v * 100:.0f} %"
+    parts = [f"{k} d {f(blk[k]['both'][model].get('recall'))}" for k in blk]
+    return f"Recall vs lead days ({model}, {scope}, GFS): " + " · ".join(parts)
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--fetch", action="store_true", help="fetch missing SMAP for elsewhere rows")
+    ap.add_argument("--merge", action="store_true", help="merge by_lead_v2.json into metrics_ml.json")
     a = ap.parse_args(argv)
+    if a.merge:
+        path = S.MODEL_DIR / "metrics_ml.json"
+        met = json.loads(path.read_text())
+        met["by_lead"] = json.loads((S.MODEL_DIR / "by_lead_v2.json").read_text())
+        path.write_text(json.dumps(met, indent=2, default=str))
+        return 0
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
     res = run(fetch=a.fetch)
-    path = S.MODEL_DIR / "metrics_ml.json"
-    met = json.loads(path.read_text()) if path.exists() else {}
-    met["by_lead"] = res
-    path.write_text(json.dumps(met, indent=2, default=str))
-    print(compact_md(res))
+    # own file (merged into metrics_ml.json["by_lead"] by --merge), so by_lead can run
+    # next to `evaluate`, which rewrites metrics_ml.json
+    (S.MODEL_DIR / "by_lead_v2.json").write_text(json.dumps(res, indent=2, default=str))
+    for scope in ("pooled", "pooled_clean3a", *sorted(k for k in res["scopes"] if k not in ("pooled", "pooled_clean3a"))):
+        print(f"\n== {scope}")
+        print(compact_md(res, scope))
     print()
-    print(recall_line(res))
-    print(recall_line(res, "xgb_all_perfect"))
-    print()
-    print(compact_md(res, "wa_2025"))
-    print()
-    print("T_ML-clean RS positives:", res["n_pos_clean3a"])
-    print(compact_md(res, "rs_2024_clean3a"))
-    for negs in ("elsewhere", "same_point"):
-        print()
-        print(f"rs_2024_clean3a / {negs}")
-        print(compact_md(res, "rs_2024_clean3a", negs))
+    print(recall_line(res, scope="pooled"))
     return 0
 
 

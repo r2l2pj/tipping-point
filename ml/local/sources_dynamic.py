@@ -1403,7 +1403,73 @@ def fetch_gfs(issue_dates, bbox: tuple[float, ...] = settings.REGION_TRAIN,
     return out_root
 
 
+_GFS_DAY_CACHE: dict = {}
+
+
+def _gfs_day_grids(bbox, issue: dt.date, lead_days: int) -> dict:
+    """Daily (D+k) forecast grids of one archived run, cached per (bbox, issue):
+    the sum of the 4 six-hour buckets labelled day D+k (L28b), NaN if any is missing."""
+    from live import fetch as lf
+
+    key = (tuple(bbox), issue)
+    c = _GFS_DAY_CACHE.get(key)
+    if c is not None and c["n"] >= lead_days:
+        return c
+    meta_p = _gfs_issue_dir(bbox, issue) / "meta.json"
+    c = {"ok": False, "n": 10 ** 6}
+    if meta_p.exists():
+        meta = json.loads(meta_p.read_text())
+        if meta.get("cycle") and meta.get("fh"):
+            cday = dt.date.fromisoformat(meta["cycle"][:10])
+            chh = int(meta["cycle"][11:13])
+            cycle0 = dt.datetime.combine(cday, dt.time(chh))
+            idir = _gfs_issue_dir(bbox, issue)
+            grids = []
+            for k in range(lead_days):
+                label = issue + dt.timedelta(days=k)
+                fhs = [fh for fh in sorted(meta["fh"])
+                       if lf._gfs_day_label(cycle0 + dt.timedelta(hours=fh)) == label]
+                paths = [idir / f"f{fh:03d}.npy" for fh in fhs]
+                if len(fhs) < 4 or not all(q.exists() for q in paths):
+                    grids.append(None)
+                    continue
+                grids.append(np.sum([np.load(q) for q in paths], axis=0))
+            c = {"ok": True, "n": lead_days, "grids": grids,
+                 "lats": np.asarray(meta["lats"], float), "lons": np.asarray(meta["lons"], float)}
+    _GFS_DAY_CACHE[key] = c
+    return c
+
+
 def gfs_daily(lon, lat, issue_dates, lead_days: int,
+              bbox: tuple[float, ...] = settings.REGION_TRAIN
+              ) -> np.ndarray:
+    """(n, lead_days) daily forecast rain (mm).
+
+    Column k covers the UTC window (issue+k 00Z, issue+k+1 00Z] — live's
+    ``_gfs_day_label`` D+k (L28b) — from the picked run (issue-day 00Z when
+    archived). NaN where the run or any bucket is unavailable. Grouped by issue
+    day (one meta/bucket read per run, cached): the v1 per-row loop re-read every
+    bucket file for each of ~350k v2 issue rows.
+    """
+    issues = _as_dates(issue_dates)
+    lon = np.asarray(lon, float)
+    lat = np.asarray(lat, float)
+    out = np.full((len(issues), lead_days), np.nan)
+    for d in np.unique(issues):
+        idx = np.flatnonzero(issues == d)
+        c = _gfs_day_grids(bbox, d.tolist(), lead_days)
+        if not c["ok"] or not len(c["lats"]) or not len(c["lons"]):
+            continue
+        iy = _nearest(c["lats"], lat[idx])
+        ix = _nearest(c["lons"], lon[idx])
+        for k in range(lead_days):
+            g = c["grids"][k]
+            if g is not None:
+                out[idx, k] = g[iy, ix]
+    return out
+
+
+def _gfs_daily_slow(lon, lat, issue_dates, lead_days: int,
               bbox: tuple[float, ...] = settings.REGION_TRAIN
               ) -> np.ndarray:
     """(n, lead_days) daily forecast rain (mm).
@@ -1447,6 +1513,8 @@ def gfs_daily(lon, lat, issue_dates, lead_days: int,
                 vals.append(np.load(p)[iy, ix] if p.exists() else np.nan)
             out[i, k] = np.nansum(vals) if np.isfinite(vals).all() else np.nan
     return out
+
+
 
 
 # --- CLI ------------------------------------------------------------------------------

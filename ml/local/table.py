@@ -171,9 +171,32 @@ def _date_pool(start: dt.date, end: dt.date, n: int, rng) -> np.ndarray:
     return np.sort(np.datetime64(start) + pick.astype("timedelta64[D]"))
 
 
+def power_last_valid_day(sample: int = 40) -> dt.date | None:
+    """Last day with a real (non-fill) POWER IMERG_PRECTOT value in the cache.
+    POWER serves IMERG *Final* (~2-3 month latency): later days are -999 fill."""
+    import json
+    import random
+    files = sorted((S.DATA_DIR / "power").glob("*.json"))
+    if not files:
+        return None
+    last = []
+    for f in random.Random(0).sample(files, min(sample, len(files))):
+        d = json.loads(f.read_text()).get("daily", {})
+        ks = [k for k, v in d.items() if v is not None and v > -900]
+        if ks:
+            last.append(max(ks))
+    if not last:
+        return None
+    k = min(last)
+    return dt.date(int(k[:4]), int(k[4:6]), int(k[6:]))
+
+
 def last_data_day() -> dt.date:
-    """Latest day with IMERG + SMAP for training rows (POWER/IMERG lag ~ days)."""
-    return dt.date.today() - dt.timedelta(days=10)
+    """Latest day with IMERG + SMAP for training rows. v1 used today-10, but POWER's
+    IMERG Final lags ~2 months, so recent negatives had NaN rain (v2 fix)."""
+    lv = power_last_valid_day()
+    cap = dt.date.today() - dt.timedelta(days=10)
+    return min(cap, lv - dt.timedelta(days=7)) if lv else cap
 
 
 def sample_3b(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> pd.DataFrame:
@@ -480,10 +503,18 @@ def build_table_3b() -> tuple[pd.DataFrame, pd.DataFrame]:
     tab = tab.loc[:, ~tab.columns.duplicated()]
     # elsewhere-negatives that fell in water / no DEM are not valid land rows
     bad = (tab.neg_type == "elsewhere_same_day") & tab["elevation"].isna()
-    tab = tab[~bad].reset_index(drop=True)
+    # rows after POWER's last real IMERG Final day have fill (NaN) rain: not valid rows
+    lv = power_last_valid_day()
+    late = (pd.to_datetime(tab["date"]) > pd.Timestamp(lv)) if lv else pd.Series(False, index=tab.index)
+    log.info("3b table: dropping %d no-DEM elsewhere rows, %d rows after POWER last valid day %s (%s)",
+             int(bad.sum()), int(late.sum()), lv, tab.loc[late, "split"].value_counts().to_dict())
+    tab = tab[~(bad | late)].reset_index(drop=True)
     tab.to_csv(tables_dir() / "table_3b.csv", index=False)
 
     hz = load_rows("horizon_3b")
+    if lv:   # issue day + 7 d window must end before POWER's last real day (perfect source)
+        hz = hz[pd.to_datetime(hz["issue_date"]) <= pd.Timestamp(lv) - pd.Timedelta(days=7)]
+        hz = hz.reset_index(drop=True)
     hz_static = ST.sample_static_points(hz.lon.to_numpy(), hz.lat.to_numpy()).reset_index(drop=True)
     hz_smap = smap.sample(hz.lon.to_numpy(), hz.lat.to_numpy(),
                           hz.issue_date.values.astype("datetime64[D]")).reset_index(drop=True)

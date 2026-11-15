@@ -18,7 +18,7 @@ import numpy as np
 
 from . import settings as S
 
-MODELS = ("xgb_rain_soil", "xgb_all", "rf_all", "direct_rain", "rule_tpi")
+MODELS = ("xgb_rain_soil", "xgb_all", "rf_all", "direct_rain", "rule_tpi", "climatology")
 MIN_POS_EVENT = 20   # per-event metrics on fewer positives are listed, not summarised
 
 
