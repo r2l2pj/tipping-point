@@ -172,12 +172,36 @@ def export_metrics(case: str = "rs_2024") -> dict:
         return ((am.get(name) or {}).get("test") or {}).get("roc_auc")
 
     b3a = joblib.load(S.path("models", "bundle_3a.joblib")) if S.path("models", "bundle_3a.joblib").exists() else None
+    served = best_val_model(b3a["entries"]) if b3a else "xgb_all"
+    served_test = (am.get(served) or {}).get("test") or {}
     fi = {}
-    if b3a and a.get("importance"):
-        fi = {r["feature"]: r["gain_share"] for r in importance_rows(a["importance"], b3a["groups"])}
+    if b3a:   # importance of the SERVED T_ML model (gain share TRAIN fit + permutation on TEST)
+        from .trainer import _load_table, group_importance
+        te = _load_table("table_3a")
+        te = te[te.split == "test"]
+        groups = {g: c for g, c in b3a["groups"].items()
+                  if g in (b3a["entries"][served].get("groups") or b3a["groups"])}
+        imp = group_importance(b3a["entries"][served], te, groups)
+        fi = {r["feature"]: r["gain_share"] for r in importance_rows(imp, groups)
+              if r["gain_share"] is not None}
+        a["importance_served"] = imp
+    rf, xs = auc("rf_all"), auc(served)
     blob = {
-        "rf_auc": auc("rf_all"), "xgb_auc": auc("xgb_all"), "rule_auc": auc("rule_slope"),
+        # doc contract keys — all on the SAME 3a TEST set (n, n_pos below)
+        "xgb_auc": xs, "rf_auc": rf, "rule_auc": auc("rule_slope"),
+        "xgb_model": served, "xgb_model_selected_by": "best VAL PR-AUC",
+        "xgb_pr_auc": served_test.get("pr_auc"),
+        "rf_pr_auc": ((am.get("rf_all") or {}).get("test") or {}).get("pr_auc"),
+        "xgb_all_auc": auc("xgb_all"),
+        "t_ml_test_n": served_test.get("n"), "t_ml_test_n_pos": served_test.get("n_pos"),
+        "t_ml_test_base_rate": served_test.get("base_rate"),
+        "t_ml_note": (f"rf_auc = RandomForest(200) on all 3a features; xgb_auc = served T_ML ({served}). "
+                      + ("RandomForest beats the served XGBoost on ROC. " if rf and xs and rf > xs
+                         else "The served XGBoost beats RandomForest on ROC. ")
+                      + ("With all features RandomForest beats XGBoost (xgb_all_auc)."
+                         if rf and auc("xgb_all") and rf > auc("xgb_all") else "")),
         "feature_importance": fi,
+        "feature_importance_model": served,
         "landslide_ml": {
             "split": "TEST only (50 km blocks for 3a; held-out events for 3b: RS 2024 + WA 2025, never seen)",
             "detail": "ml/ml_card.json (every model / horizon / forecast source / event)",
@@ -200,9 +224,12 @@ def export_metrics(case: str = "rs_2024") -> dict:
     mp.write_text(json.dumps(json.loads(mp.read_text()), indent=2, ensure_ascii=False) + "\n")
     mldir = DATA_OUT / "ml"
     mldir.mkdir(parents=True, exist_ok=True)
-    if b3a and a.get("importance"):
+    if b3a and a.get("importance_served"):
+        g_served = {g: c for g, c in b3a["groups"].items()
+                    if g in (b3a["entries"][served].get("groups") or b3a["groups"])}
         (mldir / "feature_importance.json").write_text(json.dumps(
-            {"model": "xgb_all (3a T_ML)", "rows": importance_rows(a["importance"], b3a["groups"]),
+            {"model": f"{served} (3a T_ML, served)", "group_labels": GROUP_LABELS,
+             "rows": importance_rows(a["importance_served"], g_served),
              "rf_permutation": a.get("importance_rf", {}).get("permutation_pr_auc_drop_test")}, indent=2))
     (mldir / "model_metrics.json").write_text(json.dumps(met, indent=2, default=str))
     b3b_path = S.path("models", "bundle_3b.joblib")

@@ -1064,6 +1064,27 @@
         "soil_texture": 0.30236359669164
       },
       "test_pr_auc_base": 0.5483755420420208
+    },
+    "importance_served": {
+      "gain_share": {
+        "terrain": 0.8459924055514315,
+        "landcover": 0.1540075944485685
+      },
+      "gain_share_feature": {
+        "elevation": 0.062064652497842925,
+        "slope": 0.25491190413829856,
+        "aspect_sin": 0.00988021194225255,
+        "aspect_cos": 0.010957726394322348,
+        "curvature": 0.014584125413631792,
+        "relief": 0.49359378516508334,
+        "landcover": 0.025434187282568133,
+        "ndvi": 0.12857340716600038
+      },
+      "permutation_pr_auc_drop_test": {
+        "terrain": 0.4415992058272856,
+        "landcover": 0.23096021273008055
+      },
+      "test_pr_auc_base": 0.5289698686469451
     }
   },
   "3b": {

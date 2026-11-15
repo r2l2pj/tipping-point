@@ -399,19 +399,14 @@
       "gpw_year": null,
       "lead_time_mean_h": null,
       "feature_importance": {
-        "relief": 0.514736135012051,
-        "slope": 0.1889142286835462,
-        "sand": 0.1015901294114314,
-        "rain_mean": 0.08573637965814515,
-        "ndvi": 0.057757398693667625,
-        "elevation": 0.025564543820664445,
-        "porosity": 0.007927299940253183,
-        "clay": 0.007463321297993333,
-        "soil_mean": 0.005049327260058655,
-        "curvature": 0.004064711136926417,
-        "landcover": 0.0007544132923691879,
-        "aspect_sin": 0.0004149671643390107,
-        "aspect_cos": 2.7144628554452176e-05
+        "relief": 0.49359378516508334,
+        "slope": 0.25491190413829856,
+        "ndvi": 0.12857340716600038,
+        "elevation": 0.062064652497842925,
+        "landcover": 0.025434187282568133,
+        "curvature": 0.014584125413631792,
+        "aspect_cos": 0.010957726394322348,
+        "aspect_sin": 0.00988021194225255
       },
       "forecast_source": "noaa-gfs",
       "landslide_hit_pct": 85.855,
@@ -464,7 +459,7 @@
           "precision_500m_pct": 48.1
         }
       ],
-      "xgb_auc": 0.871135629109551,
+      "xgb_auc": 0.9739719157472416,
       "landslide_ml": {
         "split": "TEST only (50 km blocks for 3a; held-out events for 3b: RS 2024 + WA 2025, never seen)",
         "detail": "ml/ml_card.json (every model / horizon / forecast source / event)",
@@ -810,7 +805,17 @@
         "ml_terrain": "NASADEM_HGT 001",
         "ml_landcover": "MCD12Q1 061",
         "ml_ndvi": "VNP13C2 002"
-      }
+      },
+      "xgb_model": "xgb_terrain_landcover",
+      "xgb_model_selected_by": "best VAL PR-AUC",
+      "xgb_pr_auc": 0.490248434119594,
+      "rf_pr_auc": 0.1556176082426079,
+      "xgb_all_auc": 0.871135629109551,
+      "t_ml_test_n": 2039,
+      "t_ml_test_n_pos": 45,
+      "t_ml_test_base_rate": 0.022069641981363415,
+      "t_ml_note": "rf_auc = RandomForest(200) on all 3a features; xgb_auc = served T_ML (xgb_terrain_landcover). The served XGBoost beats RandomForest on ROC. With all features RandomForest beats XGBoost (xgb_all_auc).",
+      "feature_importance_model": "xgb_terrain_landcover"
     }
   }
 }
