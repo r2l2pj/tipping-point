@@ -64,3 +64,24 @@ def test_m4_calibrate_picks_lowest_cut_meeting_both_rules():
     c = m4.calibrate(m4.Scorer(tpi, t, np.array([99])))
     assert c["critico_area_only"] == c["critico_area_and_ratio"]
     assert c["curve"][0]["area_pct"] > 2.0
+
+
+def test_ablation_compose_reproduces_tpi_and_masks_wetland(tmp_path):
+    import tpi_v3_ablation as ab
+    rng = np.random.default_rng(1)
+    r, s = rng.random((3, 4, 5)).astype(np.float32), rng.random((3, 4, 5)).astype(np.float32)
+    t2, t3 = rng.random((4, 5)).astype(np.float32), rng.random((4, 5)).astype(np.float32)
+    tpi2 = np.cbrt(r * s * t2)
+    tpi2[:, 0, 0] = np.nan  # water
+    wet = np.zeros((4, 5), bool)
+    wet[1, 1] = True
+    tpi3 = np.cbrt(r * s * t3)
+    tpi3[:, 0, 0] = np.nan
+    tpi3[:, 1, 1] = np.nan
+    np.savez(tmp_path / "f.npz", tpi_v2_flood=tpi2, tpi_v3_flood=tpi3, t_v2_flood=t2, t_v3_flood=t3, wetland=wet)
+    np.savez(tmp_path / "c.npz", r_v2=r, r_v3=r, s_v2=s, s_v3=s)
+    fr, co = np.load(tmp_path / "f.npz"), np.load(tmp_path / "c.npz")
+    sel = np.array([True, True, False])
+    chk = ab.check_reproduces(fr, co, "flood", sel)
+    assert chk["v2"]["max_abs_err"] < 1e-6 and chk["v2"]["nan_mismatch_cells"] == 0
+    assert chk["v3"]["max_abs_err"] < 1e-6 and chk["v3"]["nan_mismatch_cells"] == 0
