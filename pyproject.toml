@@ -24,6 +24,8 @@ dependencies = [
     "shap>=0.47",
     "geopandas>=1.0",
     "h5netcdf>=1.8.3",
+    "cfgrib>=0.9.15.1",
+    "eccodes==2.42.0",
 ]
 
 [dependency-groups]

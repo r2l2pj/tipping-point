@@ -1,75 +1,101 @@
-# L22 — REAL GFS-forecast replay frames
+# L25 — live GFS fetcher from NOAA AWS (no GEE)
+
+Branch: `unit/gfsaws`. No push/merge.
 
 ## What changed
 
-- `.herdr/gfs_replay_run.py` (new, one-off runner — same pattern as
-  `asavail_run.py`). Per issue day D, horizons k=1..3, hazards slide/flood:
-  `TPI_fcst(D+k) = R_fc^wR · S_held(D)^wS · T^wT` (config.yaml
-  `tpi_weights` [0.3333,0.3333,0.3334]), combined **on the 90 m T grid**
-  like `gee.tpi._combine_case_tpi` (R/S resampled UP with bilinear
-  reproject; terrain never flattened).
-  - **R_fc**: `live.tpi.projected_rain3` — observed IMERG daily mm for
-    days ≤ D (tail of the 3-day window) + GFS `forecast_rain/<case>_gfs_<D>.tif`
-    bands d1..dk (native 0.25°, reprojected onto the 0.1° IMERG grid) —
-    then `live.tpi.rain_score` vs the case rain3 climatology p90/p95/p99.
-    Observed daily mm comes from `pipeline.fetch.imerg.fetch_daily`
-    (IMERG Early, Earthdata token from `.env`) — the same basis the
-    as-available run used; raw granules are streamed and deleted.
-    Climatology: rs_2024 reuses `intermediate/asavail/clim_rain3.tif`;
-    wa_2025 had no local clim COG so it was downloaded once via
-    `gee_tpi.climatology(..., assets=False)` + `tp.fallback._write_cog`
-    into `intermediate/forecast_replay/wa_2025_clim_rain3.tif`.
-  - **S_held**: published `s_series` band for day D (held across all 3
-    horizons; the s-series is ~1 km — resampled up to 90 m, same as
-    `_combine_case_tpi` does for coarse inputs).
-  - **T**: static `t_slide`/`t_flood` COGs.
-- Outputs per issue day D (37 issue days total):
-  - `data/<case>/cog/<case>_tpi_gfs_<YYYYMMDD>.tif` — 6-band float32 COG,
-    bands `d1_slide,d1_flood,d2_slide,d2_flood,d3_slide,d3_flood`.
-  - `data/<case>/png/tpi_{slide,flood}_gfs_d<k>_<D+k YYYYMMDD>.png` —
-    rendered via `tp.bundle._class_png_3857` + `live.tpi.classify`
-    (classes 0.2/0.4/0.6, class 0 transparent).
-  - `data/<case>/png/_index.json` — appended (existing entries preserved):
-    `{id: tpi_{haz}_gfs_d<k>, date: D+k, issued: D, png, cog, bounds,
-    forecast: true, forecast_source: "noaa-gfs", kind: "forecast"}`.
-  - `data/<case>/forecast_lead_time.json`.
+- `live/fetch.py` — new `fetch_gfs_daily(bounds, issued=None) ->
+  (daily xarray(time,lat,lon) 3 steps D+1..D+3, issued_iso)`, mirroring
+  `fetch_geosfp_daily`'s contract; `fetch_geosfp_daily` kept untouched as
+  the named fallback. New module-private helpers:
+  - `_gfs_key` — `gfs.YYYYMMDD/HH/atmos/gfs.tHHz.pgrb2.<res>.fFFF`
+  - `_gfs_head_ok` / `_gfs_get_text` / `_gfs_get_range` — HTTP layer
+    (anonymous GET/HEAD/Range against
+    `https://noaa-gfs-bdp-pds.s3.amazonaws.com`)
+  - `_gfs_apcp_range` — parses the sibling `.idx`, returns the byte range
+    of the *trailing 6h* APCP message (`(fh-6)-(fh) hour acc fcst`),
+    rejecting the since-issuance message (`0-N day acc fcst`)
+  - `_gfs_decode_message` — writes the byte-ranged GRIB2 message to a temp
+    file, opens with cfgrib/eccodes (`tp`), returns (arr, lats asc,
+    lons asc in -180..180)
+  - `_gfs_apcp_grid` — 0p25 with 0p50 fallback (+interp) if an hour's idx
+    or APCP message is missing at 0.25 deg
+  - `_gfs_candidates` / `_gfs_pick_run` — prefer issued-day 00Z, else
+    newest cycle at/before issued end-of-day whose `f072.idx` HEADs 200
+    (probes back 4 days, 16 candidates)
+  - `_gfs_day_label` — a bucket ending at valid time `t` belongs to the
+    day `(label-1, label]`, so a 00Z run issued on D gives D+1 = fh 6..24,
+    matching `pipeline/fetch/gfs.py::day_sum` exactly (verified against
+    its unit tests, incl. non-00Z cycles)
+- `live/tests/test_fetch_gfs.py` — 10 offline tests: key layout, idx
+  range selection (recorded `.idx` fixtures), day-boundary labelling,
+  real-message decode (recorded APCP bytes), run-pick preferences/
+  fallback/raise, full fetch bucketing+subset, partial-day 06Z run.
+- `live/tests/fixtures/` — `gfs_f006.idx`, `gfs_f024.idx` (recorded idx
+  text), `gfs_f006_apcp.grib` (367 KB, one real byte-ranged APCP message
+  from `gfs.20240429/00`).
+- `pyproject.toml` / `uv.lock` — `cfgrib>=0.9.15.1` +
+  `eccodes==2.42.0` (pinned: last release shipping manylinux wheels with
+  the bundled C library; 2.50.1 is bindings-only and raised
+  "Cannot find the ecCodes library").
 
-## Judgment calls / deviations
+## Commands and results
 
-- R_fc is the piecewise `rain_score` (0/0.5/1.0 anchors at p90/p95/p99),
-  not a literal `mm/clim` ratio — that's what the published R series is
-  and what the geomean needs ([0,1]).
-- PNG filenames carry the **depicted** date (D+k), matching the existing
-  `tpi_*_d<k>` perfect-forecast convention; `issued` is on the index entry.
-- "Damage cluster / AOI max": implemented as AOI max over
-  max(TPI_slide, TPI_flood) (no dated landslide inventory exists in
-  either case). An issue day "warns" if some horizon's AOI max > 0.6 for
-  a depicted date ≤ anchor date. `lead_h` = anchor − issue 00Z.
-- `wa_2025` forecast_rain covers all 21 issue days (runs.json 21/21 ok).
+- `uv add cfgrib` then `uv add "eccodes==2.42.0"` (uv at
+  `~/.local/share/mise/installs/uv/0.13.8/uv-x86_64-unknown-linux-gnu/uv`;
+  the mise shim is broken in this shell) — resolved, installed.
+- Reachability verified: `gfs.20240429/00/atmos/gfs.t00z.pgrb2.0p25.f006.idx`
+  and `f072.idx` both 200; Range GET of the APCP message returns a
+  self-contained `GRIB` blob that cfgrib decodes (721x1440 `tp`).
+- `.venv/bin/pytest live/tests/test_fetch_gfs.py -x -q` -> **10 passed**.
+- `.venv/bin/pytest live/tests -x -q` -> 91 passed, **1 pre-existing
+  failure** `test_publish_fallback.py::test_oversized_and_stale_files` —
+  caused by the uncommitted L26 edit to `live/publish_fallback.py`
+  already in the worktree (not mine); confirmed unrelated.
+- `.venv/bin/ruff check live/fetch.py live/tests/test_fetch_gfs.py` ->
+  clean.
 
-## Commands run + results
+## Real verification vs `rs_2024_gfs_20240429.tif`
 
-```
-set -a; . ./.env; set +a
-PYTHONPATH=.:pipeline .venv/bin/python .herdr/gfs_replay_run.py
-```
+`fetch_gfs_daily((-52.5,-30.5,-50.5,-29.0), 2024-04-29)` -> issued
+`2024-04-29T00:00:00Z`, steps `2024-04-30/05-01/05-02`, grid 9x7 at exact
+0.25 deg centres.
 
-- rs_2024: IMERG daily 2024-04-19..05-08 (20 days, 0.1° grid 15×20);
-  16 COGs `rs_2024_tpi_gfs_20240422..0507.tif`, 96 PNGs, +96 index layers
-  (index now 136 entries → 522→? lines grew as expected, valid JSON).
-- wa_2025: IMERG daily 2025-11-27..12-21 (25 days, 15×11); GEE clim
-  download ok; 21 COGs `wa_2025_tpi_gfs_20251130..1220.tif`, 126 PNGs,
-  +126 index layers.
-- Spot checks: rs issue 2024-04-30 d1/d2 → TPI max 1.0 (GFS had the
-  deluge); issue 2024-04-24 all-zero (dry forecast). wa issue 2025-12-05
-  d1..d3 slide max 0.29→0.67→0.73 (ramping AR). PNGs RGBA, correct size.
-- Harmless `NotGeoreferencedWarning` from `classes_png_bytes` PNG writer.
+**Result: bit-exact match (0.00 mm on all 63 cells, all 3 bands) — but
+only when the tif rows are read one grid row north of their stamped
+transform.** Direct same-label comparison fails (d1 max diff 7.19 mm,
+mean 2.26). Sampling our d1 field at `tif_lat + 0.25` gives max diff
+**0.0** for d1, d2, d3; the same +0.25-row rule reproduces
+`rs_2024_gfs_20240428.tif` d1 exactly too, so it is systematic, not a
+fluke.
 
-## Headline metric
+Comparison table (d1, tif row at stated lat L vs AWS field at L+0.25):
 
-| case | issue days | warned | earliest critical issue | would_have_warned_h | lead median [IQR] |
-|---|---|---|---|---|---|
-| rs_2024 | 16 | 2 | 2024-04-22 | **135.0 h** | 123 h [117, 129] |
-| wa_2025 | 21 | 6 | 2025-12-03 | **144.6 h** | 84.6 h [54.6, 114.6] |
+| lon | lat (tif-stated) | aws mm | gee mm | diff |
+|-----|------------------|--------|--------|------|
+| -51.50 | -29.50 | 10.625 | 10.625 | 0.00000 |
+| -52.50 | -30.50 | 17.625 | 17.625 | 0.00000 |
+| -50.50 | -29.00 | 4.375  | 4.375  | 0.00000 |
+| -51.00 | -30.00 | 13.500 | 13.500 | 0.00000 |
 
-(anchor: rs 2024-04-27T15Z date-level; wa 2025-12-09T00:35Z timestamped.)
+Diagnosis: our georeference is provably correct — eccodes reports
+`La1=90, La2=-90, Dj=0.25, jScansPositively=0` on the message itself, so
+our lat values are the true NCEP grid centres. The GEE tif payload rows
+instead hold data one row north of the transform written by
+`write_cog`'s `expected_transform` snap (the pipeline already documents
+GEE stamping WKT-crs downloads "one row too far north"; the recompute
+apparently leaves the payload one row south of its true position).
+Everything else — run choice, day bucketing, cell values, units — is
+identical to the GEE replay, so `fetch_gfs_daily` is verified correct
+and the residual is the tif's geotransform quirk, not a data
+difference. Also verified: PRATE*21600 gives the same field, and
+neighbouring cycles (28/18Z, 29/06Z, 29/12Z) do not match, ruling out a
+run-selection discrepancy.
+
+## Notes for lead-live
+
+- Non-00Z fallback runs can only partially cover D+1 (e.g. a D 18Z run
+  contributes just the (D 18:00, D+1 00:00] bucket) — same caveat the
+  GEE path has; `RuntimeError` if no probed cycle covers to D+3.
+- Each fetch pulls 12 Range requests (~370 KB each) + 12 idx files —
+  ~5 MB total per call, no full ~300 MB files.

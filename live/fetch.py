@@ -348,6 +348,204 @@ def fetch_geosfp_daily(bounds, issued: dt.date | None = None):
     return daily, stamp.strftime("%Y-%m-%dT%H:00:00Z")
 
 
+_GFS_BASE = "https://noaa-gfs-bdp-pds.s3.amazonaws.com"
+_GFS_APCP_RE = re.compile(
+    r"^\d+:(\d+):d=\d{10}:APCP:surface:(\d+)-(\d+) hour acc fcst:")
+_GFS_RESES = ("0p25", "0p50")   # 0p50 fallback if a 0p25 file misses an hour
+_GFS_TRIES = 16                # candidate cycles, preferred order
+_GFS_TIMEOUT = 60
+
+
+def _gfs_key(day: dt.date, hh: int, fh: int, res: str = "0p25") -> str:
+    return (f"gfs.{day:%Y%m%d}/{hh:02d}/atmos/"
+            f"gfs.t{hh:02d}z.pgrb2.{res}.f{fh:03d}")
+
+
+def _gfs_head_ok(url: str) -> bool:
+    import requests
+
+    try:
+        return requests.head(url, timeout=_GFS_TIMEOUT).status_code == 200
+    except requests.exceptions.RequestException:
+        return False
+
+
+def _gfs_get_text(url: str) -> str | None:
+    import requests
+
+    r = requests.get(url, timeout=_GFS_TIMEOUT)
+    return r.text if r.status_code == 200 else None
+
+
+def _gfs_get_range(url: str, start: int, end: int | None) -> bytes:
+    import requests
+
+    span = f"{start}-{end - 1}" if end is not None else f"{start}-"
+    r = requests.get(url, headers={"Range": f"bytes={span}"},
+                     timeout=_GFS_TIMEOUT)
+    r.raise_for_status()
+    return r.content
+
+
+def _gfs_apcp_range(idx_text: str, fh: int) -> tuple[int, int | None] | None:
+    """Byte range of the trailing-6h APCP message ending at forecast hour fh.
+
+    GFS pgrb2 carries two APCP messages at fh%6==0: the (fh-6, fh] bucket
+    ('18-24 hour acc fcst') and a since-issuance total ('0-1 day acc fcst');
+    only the former matches '<a>-<b> hour acc fcst' with b == fh and span 6.
+    The range ends at the next message's offset (None = to EOF).
+    """
+    lines = [ln for ln in idx_text.splitlines() if ":" in ln]
+    offsets = [int(ln.split(":", 2)[1]) for ln in lines]
+    for i, ln in enumerate(lines):
+        m = _GFS_APCP_RE.match(ln)
+        if m and int(m.group(3)) == fh and int(m.group(3)) - int(m.group(2)) == 6:
+            nxt = offsets[i + 1] if i + 1 < len(offsets) else None
+            return int(m.group(1)), nxt
+    return None
+
+
+def _gfs_decode_message(raw: bytes):
+    """Decode one byte-ranged GRIB2 message -> (arr2d, lats_asc, lons_asc).
+
+    lons come back in the -180..180 convention (GFS grid centres run
+    -179.75..180; GEE's 0.25 deg export uses the same centres).
+    """
+    import tempfile
+
+    import cfgrib
+
+    with tempfile.NamedTemporaryFile(suffix=".grib2", delete=False) as f:
+        f.write(raw)
+        path = f.name
+    try:
+        ds = cfgrib.open_dataset(path)
+        da = ds["tp"]
+        arr = np.asarray(da.values, dtype=np.float64)
+        lats = np.asarray(da.latitude.values, dtype=np.float64)
+        lons = np.asarray(da.longitude.values, dtype=np.float64)
+    finally:
+        os.unlink(path)
+    lons = np.where(lons > 180.0, lons - 360.0, lons)
+    la_i, lo_i = np.argsort(lats), np.argsort(lons)
+    return arr[np.ix_(la_i, lo_i)], lats[la_i], lons[lo_i]
+
+
+def _gfs_apcp_grid(day: dt.date, hh: int, fh: int):
+    """(arr, lats, lons) for the 6h APCP bucket ending at fh; None if absent."""
+    for res in _GFS_RESES:
+        base = f"{_GFS_BASE}/{_gfs_key(day, hh, fh, res)}"
+        idx = _gfs_get_text(f"{base}.idx")
+        if idx is None:
+            continue
+        rng = _gfs_apcp_range(idx, fh)
+        if rng is None:
+            continue
+        arr, lats, lons = _gfs_decode_message(
+            _gfs_get_range(base, *rng))
+        if res != "0p25":  # coarse fallback: interpolate onto the 0.25 grid
+            qlat = np.arange(-90.0, 90.0001, 0.25)
+            qlon = np.arange(-179.75, 180.0001, 0.25)
+            import xarray as xr
+
+            da = xr.DataArray(arr, dims=("lat", "lon"),
+                              coords={"lat": lats, "lon": lons})
+            da = da.interp(lat=qlat, lon=qlon)
+            arr, lats, lons = da.values, qlat, qlon
+        return arr, lats, lons
+    return None
+
+
+def _gfs_candidates(issued: dt.date) -> list[tuple[dt.date, int]]:
+    """Cycles to probe, preferred first: issued 00Z, then newest cycles
+    at/before issued end-of-day (18,12,06,00 descending per day)."""
+    cands = [(issued, 0)]
+    for back in range(_GFS_TRIES // 4 + 1):
+        for hh in (18, 12, 6, 0):
+            d = issued - dt.timedelta(days=back)
+            if (d, hh) != (issued, 0):
+                cands.append((d, hh))
+    return cands[:_GFS_TRIES]
+
+
+def _gfs_pick_run(issued: dt.date) -> tuple[dt.date, int]:
+    """Newest preferred cycle whose 0p25 f072 index exists (the D+3 reach)."""
+    seen = []
+    for d, hh in _gfs_candidates(issued):
+        url = f"{_GFS_BASE}/{_gfs_key(d, hh, 72)}.idx"
+        if _gfs_head_ok(url):
+            return d, hh
+        seen.append(f"{d}t{hh:02d}z")
+    raise RuntimeError(
+        f"no GFS cycle at/before {issued} has pgrb2.0p25.f072 ({'; '.join(seen)})")
+
+
+def _gfs_day_label(valid: dt.datetime) -> dt.date:
+    """Calendar-day label for a bucket ending at `valid`: the bucket belongs
+    to the day whose 24h window (label-1d 00:00, label 00:00] contains it,
+    matching the GEE NOAA/GFS0P25 daily sum (d1 = fh 6..24 for a 00Z run)."""
+    return (valid - dt.timedelta(microseconds=1)).date() + dt.timedelta(days=1)
+
+
+def fetch_gfs_daily(bounds, issued: dt.date | None = None):
+    """GFS forecast daily precipitation (mm/day) for D+1..D+3.
+
+    Source: public NOAA AWS bucket noaa-gfs-bdp-pds (no auth, no GEE). APCP
+    in pgrb2 is a TRAILING accumulation, so a UTC day total is the sum of the
+    'N-6..N hour acc fcst' bucket messages ending in (day-1, day] — for a
+    00Z run issued on D that is fh 6..24 for D+1, 30..48 for D+2, 54..72 for
+    D+3. Each message is pulled with an HTTP Range read via the sibling
+    '.idx' file, decoded with cfgrib/eccodes (kg m-2 == mm), and subset to
+    the 0.25 deg cell centres inside `bounds`.
+
+    Run selection: prefers the 00Z cycle of `issued`, else the newest cycle
+    at/before issued end-of-day whose f072 index exists. Returns
+    (daily_xarray(time,lat,lon) with 3 steps, issued_iso). Named fallback:
+    fetch_geosfp_daily.
+    """
+    import xarray as xr
+
+    issued = issued or dt.date.today()
+    days = [issued + dt.timedelta(days=k) for k in (1, 2, 3)]
+    cday, chh = _gfs_pick_run(issued)
+    cycle0 = dt.datetime.combine(cday, dt.time(chh))
+
+    wanted: dict[dt.date, list[int]] = {d: [] for d in days}
+    for fh in range(6, 127, 6):
+        lab = _gfs_day_label(cycle0 + dt.timedelta(hours=fh))
+        if lab in wanted:
+            wanted[lab].append(fh)
+    if not all(wanted[d] for d in days):
+        raise RuntimeError(
+            f"GFS cycle {cday}t{chh:02d}z cannot cover {days[0]}..{days[-1]}")
+
+    w, s, e, n = bounds
+    slabs, sub_lats, sub_lons = [], None, None
+    for d in days:
+        acc = None
+        for fh in wanted[d]:
+            got = _gfs_apcp_grid(cday, chh, fh)
+            if got is None:
+                raise RuntimeError(
+                    f"GFS {cday}t{chh:02d}z f{fh:03d}: no 6h APCP bucket")
+            arr, lats, lons = got
+            if sub_lats is None:
+                mlat = (lats >= s - 1e-6) & (lats <= n + 1e-6)
+                mlon = (lons >= w - 1e-6) & (lons <= e + 1e-6)
+                sub_lats, sub_lons = lats[mlat], lons[mlon]
+            acc = arr[np.ix_(mlat, mlon)] if acc is None \
+                else acc + arr[np.ix_(mlat, mlon)]
+        slabs.append(acc)
+
+    daily = xr.DataArray(
+        np.stack(slabs), dims=("time", "lat", "lon"),
+        coords={"time": np.array([np.datetime64(d.isoformat()) for d in days]),
+                "lat": sub_lats, "lon": sub_lons},
+        name="precip",
+    )
+    return daily, f"{cday}T{chh:02d}:00:00Z"
+
+
 def nisar_recent_passes(bounds, days: int = 14) -> list[dict]:
     """List recent NISAR acquisitions over the AOI — metadata only."""
     import asf_search as asf

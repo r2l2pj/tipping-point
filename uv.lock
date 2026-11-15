@@ -415,6 +415,22 @@ wheels = [
 ]
 
 [[package]]
+name = "cfgrib"
+version = "0.9.15.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "click" },
+    { name = "eccodes" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4a/51/cace2747a517667bbbe5fcab1f35958ad05c778251a452c461b8b3649dbe/cfgrib-0.9.15.1.tar.gz", hash = "sha256:d959d8b97e55a63646fa86686b297905ff7f2918a91e3a11d6292dab09598e4d", size = 9746591, upload-time = "2025-09-30T22:46:14.133Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6d/e8/16c58c57c9ce1474dd1e50090ebd78b008c70fc4f06793da65f9a0aba391/cfgrib-0.9.15.1-py3-none-any.whl", hash = "sha256:f1bee90e86917389be9f767051bf32d00f95f6f4e4312b344567511b3cfd62d2", size = 49123, upload-time = "2025-09-30T22:46:12.206Z" },
+]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.5.2"
 source = { registry = "https://pypi.org/simple" }
@@ -811,12 +827,49 @@ wheels = [
 ]
 
 [[package]]
+name = "eccodes"
+version = "2.42.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "cffi" },
+    { name = "findlibs" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0f/bb/e45f61ec5d5d8034099eb3597f3d5def36f6fe3b9de902314e527d94baad/eccodes-2.42.0.tar.gz", hash = "sha256:0abb2bc6c6f4e83749c4e9c313d5428c62b15dc6c5b47d2807943e3a5ffd5291", size = 2268756, upload-time = "2025-06-25T13:49:51.742Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/c8/dcfbf328bde88da72124510b3c7f8735c0e1096c7b869d8cc2afafde614d/eccodes-2.42.0-cp311-cp311-macosx_13_0_arm64.whl", hash = "sha256:5b185c99ee4265ebb3d46e99584c0701536d62db5dcd159c097d20ff4c9a9cc4", size = 7369898, upload-time = "2025-06-25T10:05:45.157Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/54/890bbecbf711286c23692f0f45eb0f51f3c4d6214520208886154b0c50cd/eccodes-2.42.0-cp311-cp311-macosx_13_0_x86_64.whl", hash = "sha256:d3416372f65f8fe27107e6406f62de205a0ebc837472230965c4407a41ddd0cb", size = 7469290, upload-time = "2025-06-25T10:07:55.153Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/4f/71ef960835d057d5cc882baad8e2846f057d98f89fdfe0f017519c2ef774/eccodes-2.42.0-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:7932b1b113144c7eacb61326a15f259231ac280aeb311c86119757125b9e4e2b", size = 8165097, upload-time = "2025-06-25T10:16:42.05Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/0e/3fd36fcc97c987c20d4b7941074d7816926e4e3622e42c56e8d43a952284/eccodes-2.42.0-cp311-cp311-win_amd64.whl", hash = "sha256:6cf463bc1da46c1302158da4a7fb88a71b7cd46d410de8fd2c6217667ecc92e7", size = 6968414, upload-time = "2025-06-25T13:12:46.594Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/39/d722564463530a30cf8633f8e390eb91d436ba85a96195273480044e1c38/eccodes-2.42.0-cp312-cp312-macosx_13_0_arm64.whl", hash = "sha256:d2beb205bf44abe875c5d7df067fd98ffaa42d38ee53ec40795ed2b3a356697e", size = 7370124, upload-time = "2025-06-25T10:06:08.663Z" },
+    { url = "https://files.pythonhosted.org/packages/32/79/a9b85327421de8969168308ffc49151ec0c4ead99cc11d0bdc407d799caa/eccodes-2.42.0-cp312-cp312-macosx_13_0_x86_64.whl", hash = "sha256:742834bab3cb2ed0b9cdf4213890cc2b46d9cf9f34852d5efc1a1ddc46d64faa", size = 7469509, upload-time = "2025-06-25T10:08:25.671Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/60/ac11c442d83246df8cadd09b7754535ad5be0e65a5fa5f88d453a62340fc/eccodes-2.42.0-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:767e0317580fa639cf1cfac2fefb2252b354d33a67744971fe24a0dad5f7757a", size = 8165282, upload-time = "2025-06-25T10:16:21.106Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/a6/e80b83967dbd85adc7238541af3863e8306b44a58f41dc2af13e4180694e/eccodes-2.42.0-cp312-cp312-win_amd64.whl", hash = "sha256:32231b381f62deddd1bdfbd89ec87b653a0c0de35c30b3a9f71005d8a838b4b7", size = 6968490, upload-time = "2025-06-25T13:12:43.554Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/44/6d3b284b8cf26272c02acf941b5d8745a63f5c79d792c86c5caddf5fac82/eccodes-2.42.0-cp313-cp313-macosx_13_0_arm64.whl", hash = "sha256:2099e1fe8c578e9de1e1a32d55d61db1c111ef4d9544d689e3ebaf50fe7ab939", size = 7370125, upload-time = "2025-06-25T10:06:29.578Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/02/cda61c1287b4477aa1c530f94fb93aad7ad201dd3ca77b81d8ed55dbe969/eccodes-2.42.0-cp313-cp313-macosx_13_0_x86_64.whl", hash = "sha256:47650c4da5d26c18a2b6b776a30e4727399c79628899d75113a66ec3c4ef72cc", size = 7469513, upload-time = "2025-06-25T10:08:50.589Z" },
+    { url = "https://files.pythonhosted.org/packages/32/2c/5527966678a986daad8c5f4f2f0d5b11271a280b1c2d87098c0fd6dd82d7/eccodes-2.42.0-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:2020b25a820efd1f0f45d42d4d90f57202b00c0f52960f79821dfcf96c36fe78", size = 8167764, upload-time = "2025-06-25T10:08:21.89Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/29/bea865885ff0b1760b3e9470749a6285691f806e29d72938bd97415d0663/eccodes-2.42.0-cp313-cp313-win_amd64.whl", hash = "sha256:9b6fa6612448b8652f78eb3baa8e9fdcf5c5921e6aa7e70ce097792c7df7d933", size = 6968492, upload-time = "2025-06-25T13:12:47.895Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/c6/3e2b53ce1b0531c21126283d0739c1685b4a5586ec60c80e87859bb23e8f/eccodes-2.42.0-py3-none-any.whl", hash = "sha256:cff7533d447c76fd96ae742d70329bb9b29f2de05f8fd3603c844eb6c4240b00", size = 44162, upload-time = "2025-06-25T13:49:50.51Z" },
+]
+
+[[package]]
 name = "executing"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/52/92/8a611141e42930c0f194f7504063ab87dfe970cf1a5af28e7703df448734/executing-2.3.0.tar.gz", hash = "sha256:15919cb5d667e5cb4e099511971d00d659573fff2dd5c4e6cd8b71636c7858d2", size = 1338003, upload-time = "2026-10-10T14:06:04.64Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4d/dd/8bc67e7d5ffc1d88aa5af511189dfb76dc4e1e5b808fab186146ef2663e5/executing-2.3.0-py3-none-any.whl", hash = "sha256:736e859c9f8701f11fcf516856f26f562e04776387824b43a35a1dfe21c84122", size = 29393, upload-time = "2026-10-10T14:06:02.777Z" },
+]
+
+[[package]]
+name = "findlibs"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/21/60/3199cd48cd54a7cefd0a501654021ac8e8a82f2e6daebe990e8a1d9a8896/findlibs-0.1.5.tar.gz", hash = "sha256:68bc98d26cbd73ea2a20ee11920f60d8ad29c504e2ce82191aafd8ef734cb865", size = 11559, upload-time = "2026-11-04T16:30:22.886Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/de/2c0e2b1dfbcbf745f58652c4b67da9a7b57fe5d1b7ac684703c8a3848d4a/findlibs-0.1.5-py3-none-any.whl", hash = "sha256:48088b276ea3699422fb3921934db05f9eddfb3cd3fb689c39f5127a97350661", size = 10859, upload-time = "2026-11-04T16:30:21.303Z" },
 ]
 
 [[package]]
@@ -3681,9 +3734,11 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "asf-search" },
+    { name = "cfgrib" },
     { name = "earthaccess", version = "0.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "earthaccess", version = "0.19.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "earthengine-api" },
+    { name = "eccodes" },
     { name = "geopandas" },
     { name = "h5netcdf" },
     { name = "h5py" },
@@ -3718,8 +3773,10 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "asf-search", specifier = ">=8" },
+    { name = "cfgrib", specifier = ">=0.9.15.1" },
     { name = "earthaccess", specifier = ">=0.14" },
     { name = "earthengine-api", specifier = ">=1.5" },
+    { name = "eccodes", specifier = "==2.42.0" },
     { name = "geopandas", specifier = ">=1.0" },
     { name = "h5netcdf", specifier = ">=1.8.3" },
     { name = "h5py", specifier = ">=3.12" },
