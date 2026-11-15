@@ -48,6 +48,7 @@ from gee.opera import (
 
 POST_DATE_WA = "2025-12-16"          # NISAR post date — no OPERA granule exists
 OPERA_WINDOW_WA = ("2025-12-15", "2025-12-18")  # nearest DSWx days: 15th + 17th
+OPERA_PRE_WINDOW_WA = ("2025-12-01", "2025-12-08")  # like-for-like pre-water days: 1st..7th
 PEAK_RS = ("2024-05-01", "2024-05-04")  # filterDate end is exclusive -> ..03
 SCALE = 30
 HAND_SCALE = 90            # focalMin cost scales with radius/resolution (gee.hand)
@@ -76,17 +77,28 @@ def _nisar_mask(case_id: str):
     return mask, res
 
 
-def _opera_counts(collection: str, start: str, end: str, aoi, nisar) -> dict:
-    """Server-side tp/fp/fn + cloud/valid counts for an OPERA date window."""
+def _opera_wtr(collection: str, start: str, end: str, aoi):
+    """(mosaicked WTR image, filtered collection) for an OPERA date window."""
     col = (ee.ImageCollection(collection).filterBounds(aoi)
            .filterDate(start, end))
     empty = ee.Image.constant(NODATA_CLASS).rename(WTR_BAND).updateMask(ee.Image.constant(0))
     wtr = ee.Image(ee.Algorithms.If(col.size(), col.select(WTR_BAND).mosaic(), empty))
-    classes = WATER_CLASSES[collection]
+    return wtr, col
+
+
+def _opera_ref_obs(wtr, classes):
+    """(ref=water mask, obs=observed mask) for a WTR mosaic — the same
+    expressions the like-for-like layer builds on (tools/wa_opera_layer.py)."""
     ref = ee.Image.constant(0)
     for c in classes:
         ref = ref.Or(wtr.eq(c))
-    obs = wtr.eq(0).Or(ref)
+    return ref, wtr.eq(0).Or(ref)
+
+
+def _opera_counts(collection: str, start: str, end: str, aoi, nisar) -> dict:
+    """Server-side tp/fp/fn + cloud/valid counts for an OPERA date window."""
+    wtr, col = _opera_wtr(collection, start, end, aoi)
+    ref, obs = _opera_ref_obs(wtr, WATER_CLASSES[collection])
     pred = nisar.And(obs)
     img = ee.Image.cat([
         ref.And(pred).rename("tp"),

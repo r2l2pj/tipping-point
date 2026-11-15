@@ -193,7 +193,10 @@ forecast_source?, kind?, upper_bound?}`:
 forecast variants `tpi_slide_d1..d3`, `tpi_flood_d1..d3` carry
 `forecast: true`. Reference/validation layers: `hillshade` (NASADEM terrain
 shade), `nisar_pre`, `nisar_post` (NISAR GCOV backscatter),
-`opera_validation` (OPERA DSWx water map used for flood validation),
+`opera_validation` (3-class NISAR-vs-OPERA DSWx-S1 like-for-like agreement
+map: 1=TP both, 2=FP NISAR-only, 3=FN OPERA-only, 0=nodata; PNG palette TP
+#1a9850 / FP #f46d43 / FN #4575b4, nodata transparent; legend/class areas in
+`data/<case>/opera_validation.json`, definition = `validation_method`),
 `night_lights_pre`, `night_lights_post` (VIIRS Black Marble composites),
 `t_ml` (XGBoost-modeled hazard; same class legend).
 
@@ -785,12 +788,14 @@ last overall).
 | `data/now/*` | `live/run_now.py` (static grid `static/sul_static.npz` from `live/build_static.py`) |
 | `projects/<GEE_PROJECT>/assets/tipping-point/**` | `python -m gee.tpi` (static/<case>), `live/run_now.py` (now/), publish ingest (`tools/publish_case.py`) |
 | `data/<case>/assets.json` | lead-gathering ingest tool — records extra ingested asset ids per case |
+| `data/<case>/cog/<caso>_opera_validation_<AAAAMMDD>.tif`, `png/opera_validation_<AAAAMMDD>.png`, `opera_validation.json` | `tools/wa_opera_layer.py` (wa_2025) — TP/FP/FN agreement grid via getDownloadURL |
 | `data/raw/**` | fetch scripts (NISAR, OPERA DSWx, HLS, MODIS NRT) — gitignored |
 | `simular.json` | `tools/build_simular.py` — an **app-side fixture** for the Telegram `/simular` demo, NOT a contract product |
 
 ## Conventions
 
-- Nodata: rasters carry a written nodata value (uint8 class grids use 255);
+- Nodata: rasters carry a written nodata value (uint8 class grids use 255;
+  the `opera_validation` grid uses 0);
   PNG renders mask nodata transparent; GeoJSON omits empty geometries.
 - `data/raw/` is gitignored — never commit downloads; commit only clipped
   outputs.

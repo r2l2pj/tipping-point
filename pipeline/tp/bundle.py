@@ -31,7 +31,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))  # `live` is importable only from the repo root
 
-from live.render import classes_png_bytes, warp_to_3857
+from live.config import OPERA_CONFUSION_LABELS, OPERA_CONFUSION_PALETTE
+from live.render import classes_png_bytes, palette_png_bytes, warp_to_3857
 from live.tpi import classify
 from tp.events import DATA_DIR, load_event
 from tp.metrics import merge_metrics
@@ -50,7 +51,7 @@ SINGLE_LAYERS = {
     "night_lights_pre": (("*_night_lights_pre_*.tif",), "gray"),
     "night_lights_post": (("*_night_lights_post_*.tif",), "gray"),
     "t_ml": (("*_t_ml_*.tif", "*_hazard_classes_*.tif"), "class"),
-    "opera_validation": (("*_opera_validation_*.tif", "*_opera_*.tif"), "gray"),
+    "opera_validation": (("*_opera_validation_*.tif", "*_opera_*.tif"), "confusion"),
 }
 
 # product -> (cog glob patterns, mask values, feature "status" label,
@@ -210,6 +211,16 @@ def _class_png_3857(class_arr: np.ndarray, valid: np.ndarray, transform, crs) ->
     cls3857, _, bounds = warp_to_3857(np.asarray(class_arr, dtype=np.uint8), transform, src_crs=crs)
     val3857, _, _ = warp_to_3857(np.asarray(valid, dtype=np.uint8), transform, src_crs=crs)
     return classes_png_bytes(cls3857, val3857.astype(bool)), bounds
+
+
+def _confusion_png_3857(arr: np.ndarray, transform, crs, nodata) -> tuple[bytes, list]:
+    """opera_validation 3-class TP/FP/FN grid -> RGBA PNG in 3857 with the
+    pinned palette (0/nodata transparent)."""
+    arr = np.asarray(arr)
+    valid = _valid(arr, nodata) & (arr != 0)
+    cls3857, _, bounds = warp_to_3857(np.asarray(arr, dtype=np.uint8), transform, src_crs=crs)
+    val3857, _, _ = warp_to_3857(np.asarray(valid, dtype=np.uint8), transform, src_crs=crs)
+    return palette_png_bytes(cls3857, val3857.astype(bool), OPERA_CONFUSION_PALETTE), bounds
 
 
 def _gray_png_3857(arr: np.ndarray, transform, crs, nodata) -> tuple[bytes, list]:
@@ -415,11 +426,15 @@ def publish_case(event_id: str, dry_run: bool = False,
     def null(target: str, reason: str) -> None:
         out["nulls"].append({"target": target, "reason": reason})
 
-    def record(layer: str, date_iso: str, png_rel: str, cog: Path, bounds, forecast: bool):
+    def record(layer: str, date_iso: str, png_rel: str, cog: Path, bounds,
+               forecast: bool, extra: dict | None = None):
         # pinned _index.json entry shape for U8b's manifest consumer
-        out["layers"].append({"id": layer, "date": date_iso, "png": png_rel,
-                              "cog": str(cog.relative_to(data_dir)),
-                              "bounds": bounds, "forecast": forecast})
+        entry = {"id": layer, "date": date_iso, "png": png_rel,
+                 "cog": str(cog.relative_to(data_dir)),
+                 "bounds": bounds, "forecast": forecast}
+        if extra:
+            entry.update(extra)
+        out["layers"].append(entry)
 
     def emit_png(layer: str, day: dt.date, cog: Path, band: int, forecast: bool):
         png_path = png_dir / f"{layer}_{day:%Y%m%d}.png"
@@ -524,9 +539,10 @@ def publish_case(event_id: str, dry_run: bool = False,
         day = _stem_date(cog) or ref
         png_path = png_dir / f"{layer}_{day:%Y%m%d}.png"
         rel = str(png_path.relative_to(data_dir))
+        extra = {"legend": list(OPERA_CONFUSION_LABELS)} if kind == "confusion" else None
         if dry_run:
             out["planned"].append(rel)
-            record(layer, day.isoformat(), rel, cog, None, False)
+            record(layer, day.isoformat(), rel, cog, None, False, extra)
             continue
         try:
             with rasterio.open(cog) as src:
@@ -538,12 +554,14 @@ def publish_case(event_id: str, dry_run: bool = False,
         if kind == "class":
             valid = _valid(arr, nodata)
             png, bounds = _class_png_3857(arr, valid, transform, crs)
+        elif kind == "confusion":
+            png, bounds = _confusion_png_3857(arr, transform, crs, nodata)
         else:
             png, bounds = _gray_png_3857(arr, transform, crs, nodata)
         png_path.parent.mkdir(parents=True, exist_ok=True)
         png_path.write_bytes(png)
         out["written"].append(rel)
-        record(layer, day.isoformat(), rel, cog, bounds, False)
+        record(layer, day.isoformat(), rel, cog, bounds, False, extra)
 
     # ---- geojson: mask products ---------------------------------------
     for product, (patterns, values, status, min_area, simplify) in MASK_PRODUCTS.items():

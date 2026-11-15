@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T11:16:55Z",
+  "updated_at": "2026-11-15T12:35:31Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -3074,6 +3074,26 @@
             -121.455602,
             48.509603
           ],
+          "kind": "observed"
+        },
+        {
+          "id": "opera_validation",
+          "date": "2025-12-16",
+          "png": "wa_2025/png/opera_validation_20251216.png",
+          "cog": "wa_2025/cog/wa_2025_opera_validation_20251216.tif",
+          "legend": [
+            "Sem dados",
+            "TP — ambos",
+            "FP — só NISAR",
+            "FN — só OPERA"
+          ],
+          "bounds": [
+            -122.6,
+            46.999843,
+            -121.499877,
+            48.501347
+          ],
+          "forecast": false,
           "kind": "observed"
         },
         {

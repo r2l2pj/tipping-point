@@ -2833,6 +2833,26 @@
       "kind": "forecast",
       "critical_km2": 0.0,
       "people_critical": 0
+    },
+    {
+      "id": "opera_validation",
+      "date": "2025-12-16",
+      "png": "wa_2025/png/opera_validation_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_opera_validation_20251216.tif",
+      "bounds": [
+        -122.6,
+        46.999843,
+        -121.499877,
+        48.501347
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "Sem dados",
+        "TP \u2014 ambos",
+        "FP \u2014 s\u00f3 NISAR",
+        "FN \u2014 s\u00f3 OPERA"
+      ]
     }
   ]
 }
