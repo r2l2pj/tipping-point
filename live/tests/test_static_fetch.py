@@ -280,3 +280,26 @@ def test_hand_block_mean_nests_12x12(tmp_path):
                        crs="EPSG:4326", transform=from_origin(-57.9, -22.5, res, res)) as ds:
         ds.write(arr, 1)
     assert hand_block_mean(off) is None
+
+
+def test_domain_switch_outside_static_cover_is_unverified(tmp_path):
+    """L9/L9b fail-safe: editing config.yaml domains.now.bbox to a place the
+    static-v1 climatology does not cover must publish verified=false (no
+    alerts) until the statics are rebuilt — docs/GLOBAL_RELEASE.md."""
+    import json
+
+    from live.run_now import run_checks
+    from live.static_fetch import clim_checks
+    ref = {"doy": 320, "tolerance_mm": 1.0, "tolerance_rel": 0.03, "points": {
+        "a": {"lon": -51.25, "lat": -30.05, "p90": 30.05, "p95": 31.05, "p99": 32.05},
+        "b": {"lon": -49.25, "lat": -25.45, "p90": 25.45, "p95": 26.45, "p99": 27.45},
+        "c": {"lon": -52.05, "lat": -23.45, "p90": 23.45, "p95": 24.45, "p99": 25.45}}}
+    rp = tmp_path / "ref.json"
+    rp.write_text(json.dumps(ref))
+    tif = _clim_tif(tmp_path / "g.tif", lambda lats, b: -lats + b)
+    inside = clim_checks(tif, reference=rp)
+    assert inside["clim_covers_domain"]
+    assert run_checks({"terrain_checked": True, **inside}, 0)["passed"]
+    elsewhere = clim_checks(tif, bounds=(-80.0, -10.0, -70.0, 0.0), reference=rp)
+    assert not elsewhere["clim_covers_domain"]
+    assert not run_checks({"terrain_checked": True, **elsewhere}, 0)["passed"]
