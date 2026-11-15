@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T15:48:36Z",
+  "updated_at": "2026-11-15T15:59:50Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7071,7 +7071,7 @@
         -29.05
       ],
       "forecast_source": null,
-      "data_basis": "v0: radar flood candidates from a teammate pair (sensor unconfirmed, likely Sentinel-1, 2026-09-30 -> 10-12); our NISAR GCOV frames (2026-10-24, 11-05) and the TPI replay are in progress",
+      "data_basis": "v0: NISAR flood candidates from a teammate pair (GCOV provisional 010D, 2026-09-30 -> 10-12); our own NISAR GCOV stack and the TPI replay are in progress",
       "layers": [
         {
           "id": "radar_post",
@@ -7091,10 +7091,10 @@
           ],
           "forecast": false,
           "kind": "observed",
-          "sensor": "unconfirmed (likely Sentinel-1)",
+          "sensor": "NISAR (GCOV provisional)",
           "source": "teammate",
-          "label": "Radar after (sensor unconfirmed, likely Sentinel-1)",
-          "note": "v0 teammate render (EPSG:3857 false-colour), teammate radar pair (sensor unconfirmed, likely Sentinel-1: relative orbit 10, 12-day repeat; no NISAR GCOV exists for these dates), 2026-09-30 -> 2026-10-12; not NISAR"
+          "label": "NISAR radar after (teammate render)",
+          "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it"
         },
         {
           "id": "radar_pre",
@@ -7114,10 +7114,10 @@
           ],
           "forecast": false,
           "kind": "observed",
-          "sensor": "unconfirmed (likely Sentinel-1)",
+          "sensor": "NISAR (GCOV provisional)",
           "source": "teammate",
-          "label": "Radar before (sensor unconfirmed, likely Sentinel-1)",
-          "note": "v0 teammate render (EPSG:3857 false-colour), teammate radar pair (sensor unconfirmed, likely Sentinel-1: relative orbit 10, 12-day repeat; no NISAR GCOV exists for these dates), 2026-09-30 -> 2026-10-12; not NISAR"
+          "label": "NISAR radar before (teammate render)",
+          "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it"
         }
       ],
       "metrics": "metrics.json#rs_uruguai_2026",

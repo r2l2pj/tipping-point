@@ -18,9 +18,9 @@
         "green = vegetation",
         "bright = urban"
       ],
-      "note": "v0 teammate render (EPSG:3857 false-colour), teammate radar pair (sensor unconfirmed, likely Sentinel-1: relative orbit 10, 12-day repeat; no NISAR GCOV exists for these dates), 2026-09-30 -> 2026-10-12; not NISAR",
-      "label": "Radar before (sensor unconfirmed, likely Sentinel-1)",
-      "sensor": "unconfirmed (likely Sentinel-1)",
+      "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it",
+      "label": "NISAR radar before (teammate render)",
+      "sensor": "NISAR (GCOV provisional)",
       "source": "teammate"
     },
     {
@@ -41,9 +41,9 @@
         "green = vegetation",
         "bright = urban"
       ],
-      "note": "v0 teammate render (EPSG:3857 false-colour), teammate radar pair (sensor unconfirmed, likely Sentinel-1: relative orbit 10, 12-day repeat; no NISAR GCOV exists for these dates), 2026-09-30 -> 2026-10-12; not NISAR",
-      "label": "Radar after (sensor unconfirmed, likely Sentinel-1)",
-      "sensor": "unconfirmed (likely Sentinel-1)",
+      "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it",
+      "label": "NISAR radar after (teammate render)",
+      "sensor": "NISAR (GCOV provisional)",
       "source": "teammate"
     }
   ]

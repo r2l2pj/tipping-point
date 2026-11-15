@@ -24,11 +24,15 @@
         "frame": 103
       }
     ],
-    "passes": [
+    "passes_010D": [
+      "2026-09-18",
+      "2026-09-30",
+      "2026-10-12",
       "2026-10-24",
       "2026-11-05"
     ],
-    "note": "our NISAR GCOV over Uruguaiana: only 2026-10-24 and 2026-11-05 on 010D f103 (swath west of ~-56.85: Uruguaiana yes, Itaqui no); next ~2026-11-17"
+    "collections": "NISAR_L2_GCOV_PROVISIONAL_V1 (to cycle 033) + NISAR_L2_GCOV_V1 (034+); other tracks 082D, 060A, 132A (see .crew/research/uruguai-nisar-granules.md)",
+    "note": "v0 polygons from a teammate render of the 010D Sep 30 -> Oct 12 pair; our own GCOV stack in progress"
   },
   "impacts": [
     {
@@ -48,12 +52,6 @@
     }
   ],
   "status": "v0 — flood candidates from a teammate pair, to be reproduced; candidates, never confirmed",
-  "data_basis": "v0: radar flood candidates from a teammate pair (sensor unconfirmed, likely Sentinel-1, 2026-09-30 -> 10-12); our NISAR GCOV frames (2026-10-24, 11-05) and the TPI replay are in progress",
-  "forecast_source": null,
-  "teammate_radar_pair": {
-    "pre": "2026-09-30",
-    "post": "2026-10-12",
-    "sensor": "unconfirmed — likely Sentinel-1 (relative orbit 10, 12-day repeat); no NISAR GCOV exists for 010D f103 on these dates (CMR)",
-    "polygons": 7
-  }
+  "data_basis": "v0: NISAR flood candidates from a teammate pair (GCOV provisional 010D, 2026-09-30 -> 10-12); our own NISAR GCOV stack and the TPI replay are in progress",
+  "forecast_source": null
 }
