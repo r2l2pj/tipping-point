@@ -21,6 +21,9 @@ describe("one drawer", () => {
     expect(tabs(html)).toEqual(["overview", "map", "forecast", "radar", "places"]);
     expect(render("command", "map")).toContain('aria-label="Map layers"');
   });
+  test("8/8: no duplicate 'Satellite' view card in the Map tab (the basemap button has it)", () => {
+    expect(render("command", "map")).not.toContain('data-view-id="satellite"');
+  });
   test("the old footer credits are in the Sources tab", () => {
     expect(render()).not.toContain("<footer");
     const src = render(); // Overview ends with "Sources & credits"

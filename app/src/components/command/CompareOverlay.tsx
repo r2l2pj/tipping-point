@@ -474,8 +474,8 @@ function CompareMaps({
       <div className={tag} style={{ left: "calc(var(--cc-il, 0px) + 14px)", top: 58 }} data-swipe-tag="L">{pair.before.label}</div>
       <div className={tag} style={{ right: "calc(var(--cc-ir, 0px) + 68px)", top: 58 }} data-swipe-tag="R">{pair.after.label}</div>
       {pair.flood && (
-        <div data-swipe-legend className="pointer-events-none absolute bottom-12 z-10 flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-semibold text-cc-ink shadow"
-          style={{ left: "calc(var(--cc-il, 0px) + 56px)" }}>
+        <div data-swipe-legend className="pointer-events-none absolute z-10 flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-semibold text-cc-ink shadow"
+          style={{ left: "calc(var(--cc-il, 0px) + 56px)", bottom: "calc(var(--cc-ib, 0px) + 12px)" }}>
           <span className="inline-block h-3 w-4 rounded-sm border border-white" style={{ background: FLOODED_FILL, outline: "1px solid #5b6870" }} />
           {pair.flood.label}
         </div>

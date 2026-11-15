@@ -545,10 +545,7 @@ export function CommandCenterView({
                 onToggle={(id) => dispatch({ type: "toggleLayer", id })}
                 onProbHorizon={(horizon) => dispatch({ type: "setProbHorizon", horizon })}
                 onView={(v) => dispatch({ type: "setView", view: v })}
-                satellite={{
-                  on: state.basemap === "satellite",
-                  toggle: () => dispatch({ type: "setBasemap", basemap: state.basemap === "satellite" ? "dark" : "satellite" }),
-                }}
+                // lead-ux 8/8: no "Satellite" view card — the basemap button on the map has it.
                 opacity={state.overlayOpacity}
                 onOpacity={(value) => dispatch({ type: "setOpacity", value })}
                 changeCyan={state.changeCyan}
