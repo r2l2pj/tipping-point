@@ -18,4 +18,4 @@ events:
     citation: "Hao et al. 2020, Earth Syst. Sci. Data 12, 2899-2918, doi:10.5194/essd-12-2899-2020; dataset: van Westen 2020, DANS doi:10.17026/dans-x6c-y7x2"
     license: "CC-BY-4.0"
     notes: "Initiation points (not polygons); undated -> fixed D from the paper. ~17 GLC Kerala reports in the current VAL split are this event -> leak filter (+-3 d, 100 km) must drop them."
-    enabled: false
+    enabled: true

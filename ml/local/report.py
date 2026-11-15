@@ -63,7 +63,7 @@ def render(met: dict) -> str:
         for src in ("gfs", "perfect"):
             blk = d.get(src)
             tag = "NOAA GFS 00Z (operational)" if src == "gfs" else "perfect forecast (upper bound)"
-            low = " — LOW FORECAST SKILL" if h in ("7d", "14d") else ""
+            low = " — LOW FORECAST SKILL" if h == "7d" else ""
             L += ["", f"### 3b P(landslide within {h}) — TEST, {tag}{low}", ""]
             if not isinstance(blk, dict) or "reason" in blk:
                 L.append(f"not available: {(blk or {}).get('reason')}")

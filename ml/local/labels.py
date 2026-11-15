@@ -324,7 +324,9 @@ def report_region(lon, lat) -> np.ndarray:
 # Only geometry + the configured date field are read; polygons -> representative
 # point (inside the polygon, unlike a centroid).
 def _resolve_source(ev, *, get: Callable = requests.get):
-    """Local path (repo-relative ok) or URL downloaded once to DATA_DIR/events/<id>/."""
+    """Local path (repo-relative ok) or URL downloaded once to DATA_DIR/events/<id>/.
+    A ``.rar`` is extracted once under ``events/<id>/rar_x/``; the ``.shp`` inside
+    becomes the source path (geopandas reads zip:// but not rar)."""
     from pathlib import Path
     from urllib.parse import urlparse
 
@@ -347,9 +349,41 @@ def _resolve_source(ev, *, get: Callable = requests.get):
                     return dest
             dest.write_bytes(resp.content)
             log.info("%s: downloaded %s (%d bytes)", ev.event_id, src, len(resp.content))
-        return dest
-    p = Path(src).expanduser()
-    return p if p.is_absolute() else S.REPO_ROOT / p
+        p = dest
+    else:
+        p = Path(src).expanduser()
+        p = p if p.is_absolute() else S.REPO_ROOT / p
+    if str(p).lower().endswith(".rar"):
+        p = _extract_rar(p, ev)
+    return p
+
+
+def _extract_rar(path, ev):
+    """RAR archive -> the single ``.shp`` inside, extracted once under
+    ``events/<id>/rar_x/`` with a system tool (unrar / bsdtar / 7z)."""
+    import shutil
+    import subprocess
+
+    out = S.path("events", ev.event_id, "rar_x")
+    out.mkdir(parents=True, exist_ok=True)   # S.path only makes the parent
+    shps = sorted(out.rglob("*.shp"))
+    if not shps:
+        tried = []
+        for exe, args in (("unrar", ["x", "-o+", str(path), f"{out}/"]),
+                          ("bsdtar", ["-xf", str(path), "-C", str(out)]),
+                          ("7z", ["x", f"-o{out}", str(path)])):
+            if not shutil.which(exe):
+                continue
+            tried.append(exe)
+            if subprocess.run([exe, *args], capture_output=True).returncode == 0:
+                shps = sorted(out.rglob("*.shp"))
+                break
+        if not shps:
+            raise RuntimeError(f"{ev.event_id}: cannot extract {path} "
+                               f"(tried: {tried or 'no unrar/bsdtar/7z on PATH'})")
+    if len(shps) != 1:
+        raise RuntimeError(f"{ev.event_id}: {path.name} holds {len(shps)} .shp files, expected 1")
+    return shps[0]
 
 
 def _parse_dates(vals, fmt: str | None) -> pd.Series:

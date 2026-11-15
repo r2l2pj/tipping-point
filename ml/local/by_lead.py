@@ -4,7 +4,7 @@ For lead k = 0..13 days, forecasts are issued on D-k (NOAA GFS 00Z run of
 D-k, L28b day labels) and scored on the SHORTEST horizon whose window
 [D-k, D-k+H-1] still reaches the event day D::
 
-    k = 0 -> 24h · 1 -> 48h · 2 -> 72h · 3-6 -> 7d · 7-13 -> 14d
+    k = 0 -> 24h · 1-2 -> 72h · 3-6 -> 7d   (v2 horizons; 48h/14d dropped)
 
 Event day D: RS 2024 = 2024-05-01 (fixed, never rain-dated; settings.RS2024_DATE);
 WA 2025 = each point's reported date. Rows per k:
@@ -39,7 +39,7 @@ from .table import gfs_jobs, gfs_reader, load_rows
 from .trainer import _load_table, _rain
 
 log = logging.getLogger(__name__)
-LEADS = range(14)
+LEADS = range(7)   # longest horizon 7 d (v2)
 MODELS_GFS = ("xgb_all", "xgb_rain_soil", "rf_all", "rule_tpi")
 CLEAN_3A_KM = 5.0  # T_ML-clean: >= 5 km from every 3a TRAIN/VAL positive
 

@@ -702,7 +702,7 @@ def test_sample_3b_and_horizon_files(data_dir, monkeypatch):
     assert "same_point_other_date" in types and "elsewhere_same_day" in types
     assert rows["split"].isin(list(SP.SPLITS) + ["buffer"]).all()
     hz = T.load_rows("horizon_3b")
-    assert {"label_24h", "label_14d", "issue_date", "lead_days"} <= set(hz.columns)
+    assert {"label_24h", "label_7d", "issue_date", "lead_days"} <= set(hz.columns)
     assert "horizon" not in hz.columns
     # same_point_other_date negatives are >= NEG_DATE_GAP_DAYS from event days
     for ev_id, grp in rows[rows.neg_type == "same_point_other_date"].groupby("event_id"):
@@ -952,13 +952,12 @@ def test_trigger_model_monotone_with_crossing_calibrators(tmp_path):
 
 def test_by_lead_horizon_mapping():
     from ml.local.by_lead import horizon_for_lead
-    got = {k: horizon_for_lead(k) for k in range(14)}
-    assert got[0] == "24h" and got[1] == "48h" and got[2] == "72h"
+    got = {k: horizon_for_lead(k) for k in range(7)}
+    assert got[0] == "24h" and got[1] == got[2] == "72h"
     assert all(got[k] == "7d" for k in range(3, 7))
-    assert all(got[k] == "14d" for k in range(7, 14))
     import pytest
     with pytest.raises(ValueError):
-        horizon_for_lead(14)
+        horizon_for_lead(7)
 
 
 # ---------------------------------------------------------------- TEST events
@@ -1069,6 +1068,28 @@ def test_resolve_source_uses_content_disposition_name(tmp_path, monkeypatch):
     p3 = L._resolve_source(_ev(source="https://x/other/noext"),
                            get=lambda url, timeout=None: R2())
     assert p3.name == "noext"
+
+def test_resolve_source_rar_extracts_shp(tmp_path, monkeypatch):
+    """A .rar source is extracted once under events/<id>/rar_x/; the .shp inside
+    becomes the path. Offline: the 'rar' is a tar — libarchive (bsdtar) reads
+    content not suffix, and unrar failing on it exercises the tool fallback."""
+    import shutil
+    import tarfile
+    from ml.local import labels as L
+    from ml.local import settings as S
+    if not shutil.which("bsdtar"):
+        pytest.skip("needs bsdtar to read the fake rar")
+    monkeypatch.setattr(S, "DATA_DIR", tmp_path)
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "inv.shp").write_bytes(b"fake")
+    arc = tmp_path / "inv.rar"
+    with tarfile.open(arc, "w") as tf:
+        tf.add(src / "inv.shp", arcname="inv.shp")
+    ev = _ev(format="vector", source=str(arc))
+    p = L._resolve_source(ev)
+    assert p == tmp_path / "events" / "x_2024" / "rar_x" / "inv.shp"
+    assert L._resolve_source(ev) == p                     # second call reuses it
 
 
 def test_leak_mask_days_and_km():

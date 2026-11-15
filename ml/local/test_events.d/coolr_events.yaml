@@ -14,7 +14,7 @@ events:
     where: "event_title = 'Manual inventory of landslides in Brazil, 2023-02-19'"
     citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
     license: "NASA open data"
-    enabled: false
+    enabled: true
   - event_id: petropolis_2022
     name: "Petrópolis RJ, 15 Feb 2022 (NASA COOLR manual inventory)"
     country: BR
@@ -26,7 +26,7 @@ events:
     where: "event_title = 'Manual inventory of landslides in Brazil, 2022-02-15'"
     citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
     license: "NASA open data"
-    enabled: false
+    enabled: true
   - event_id: angra_2022
     name: "Angra dos Reis / Paraty RJ, 1-2 Apr 2022 (NASA COOLR manual inventory)"
     country: BR
@@ -38,7 +38,7 @@ events:
     where: "event_title = 'Manual inventory of landslides in Brazil, 2022-04-02'"
     citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
     license: "NASA open data"
-    enabled: false
+    enabled: true
   - event_id: recife_2022
     name: "Greater Recife PE, 28 May 2022 (NASA COOLR manual inventory)"
     country: BR
@@ -62,7 +62,7 @@ events:
     where: "event_title = 'Manual inventory of landslides in India, 2023-07-09'"
     citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
     license: "NASA open data"
-    enabled: false
+    enabled: true
   - event_id: rwanda_2023
     name: "Western/Northern Rwanda, 2-3 May 2023 (NASA COOLR manual inventory)"
     country: RW
@@ -74,7 +74,7 @@ events:
     where: "event_title = 'Manual inventory of landslides in Rwanda, 2023-05-02'"
     citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
     license: "NASA open data"
-    enabled: false
+    enabled: true
   - event_id: fiona_2022
     name: "Puerto Rico, Hurricane Fiona, Sep 2022 (NASA COOLR manual inventory)"
     country: PR

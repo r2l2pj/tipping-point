@@ -1,0 +1,22 @@
+# RER2023: landslide inventory of the May 2023 Emilia-Romagna (Italy) event.
+# Zenodo doi:10.5281/zenodo.13742643 — 43.6 MB RAR holding an ESRI shapefile of
+# 80,997 polygons (EPSG:7791, reprojected to 4326 by the loader; the RAR is
+# extracted once under $ML_DATA_DIR/events/emilia_2023/rar_x/).
+# Polygons carry NO episode/date attribute (fields: OBJECTID IDC Lito GLI NFS
+# ClassMan ClassNew) -> dating: fixed. Rain episodes were 1-3 May and 15-17 May
+# 2023 (per episode, not per slide); D = main episode start, 16-17 May.
+events:
+  - event_id: emilia_2023
+    name: "Emilia-Romagna, Italy, May 2023 (RER2023 landslide inventory)"
+    country: IT
+    date: 2023-05-16            # main triggering episode 16-17 May 2023
+    trigger_window: [2023-05-15, 2023-05-17]
+    inventory_window: [2023-04-24, 2023-05-24]   # both episodes (1-3 + 15-17 May) kept out of same-point negative dates
+    dating: fixed               # inventory has no per-point date/episode field
+    format: vector
+    source: "https://zenodo.org/records/13742643/files/RER2023_V1.rar?download=1"
+    citation: "RER2023 v1, doi:10.5281/zenodo.13742643 — Regione Emilia-Romagna / University of Bologna / UniMoRe / Po River Basin Authority"
+    license: "CC-BY-4.0"
+    notes: "Some slides are from the 1-3 May episode but are labelled D=05-16 (label noise; no per-slide date). 80,997 polygons -> representative points; episodes 1-3 + 15-17 May 2023, D = main episode start. Fixed dating chosen because the shapefile has no date attribute."
+    max_points: 3000
+    enabled: true

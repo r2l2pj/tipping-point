@@ -144,7 +144,8 @@ SPLIT_FRACS = {"train": 0.6, "val": 0.2, "test": 0.2}  # by positive count
 # --- Horizons (3b) --------------------------------------------------------------
 # Issue time = 00 UTC of day D. Horizon window = UTC days D .. D+H-1.
 # Observed rain = IMERG days <= D-1; forecast rain = GFS 00Z run of D.
-HORIZONS: dict[str, int] = {"24h": 1, "48h": 2, "72h": 3, "7d": 7, "14d": 14}
+# 48 h and 14 d dropped (Lucas, 2026-11-15 v2): 24 h, 72 h, 7 d only.
+HORIZONS: dict[str, int] = {"24h": 1, "72h": 3, "7d": 7}
 GFS_MAX_LEAD_DAYS = 16     # GFS runs to 384 h
 
 # --- Features -------------------------------------------------------------------

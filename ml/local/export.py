@@ -294,7 +294,7 @@ def ml_card(met: dict) -> dict:
         "t_ml": {k: _slim((v or {}).get("test")) for k, v in (a.get("models") or {}).items()},
         "t_ml_ranking_note": t_ml_ranking_note(a),
         "trigger": {},
-        "low_skill_horizons": ["7d", "14d"],
+        "low_skill_horizons": ["7d"],
         "models": {"xgb_all": "XGBoost (all features)", "rf_all": "RandomForest(200)",
                    "rule_tpi": "TPI > 0.6 rule", "xgb_rain_only": "XGBoost rain only",
                    "xgb_terrain_landcover": "XGBoost terrain + land cover (served T_ML)",
