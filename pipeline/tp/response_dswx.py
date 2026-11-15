@@ -23,9 +23,17 @@ Method
   Counts are halved when ``obs_n`` reaches ROLL_MAX - a cheap rolling
   window that keeps recent seasons dominant.
 * Flood candidate = latest obs is water, acquired within ``window_h`` of
-  the newest acquisition, baseline has >= ``min_obs`` observations and
+  the newest acquisition, baseline has >= ``min_obs`` (default 3) observations and
   baseline water frequency < ``base_max``. Pixels with too little baseline
   are reported as ``unbaselined_water_km2``, never as candidates.
+* Context (lead-analysis review): raw candidates on MCD12Q1 2025 LC_Type1
+  classes 11 (permanent wetland) / 17 (water body), dilated 1 LC cell, are
+  EXCLUDED (Ibera, river margins, reservoirs); candidates outside the IBGE
+  Brazil outline are dropped from polygons/headline (outside_brazil_km2);
+  cropland 12/14 (e.g. RS rice paddies flooded for planting) is kept as
+  confidence "lower". Headline flooded_km2/people_flooded = standard only.
+  Missing land cover or outline -> headline null + reason (unfiltered water
+  is never published).
 * change: "new" = candidate now and not in the previous run's candidate
   mask (``prev_flood``); "persisting" otherwise. receded = previous
   candidate whose latest (recent) observation is dry.
@@ -317,9 +325,80 @@ def people_grid(gpw_sources: list[str], grid: Grid) -> tuple[np.ndarray | None, 
     return None, None, "GPW population raster unavailable (" + "; ".join(errors or ["no source"]) + ")"
 
 
+# --- context: land cover exclusion/confidence + Brazil clip ---------------
+
+IGBP = {1: "evergreen needleleaf forest", 2: "evergreen broadleaf forest",
+        3: "deciduous needleleaf forest", 4: "deciduous broadleaf forest", 5: "mixed forest",
+        6: "closed shrubland", 7: "open shrubland", 8: "woody savanna", 9: "savanna",
+        10: "grassland", 11: "permanent wetland", 12: "cropland", 13: "urban",
+        14: "cropland/natural mosaic", 15: "snow/ice", 16: "barren", 17: "water body"}
+LC_EXCLUDE = (11, 17)        # permanent wetlands + water bodies (dilated 1 LC cell)
+LC_LOWER = (12, 14)          # croplands: e.g. RS rice paddies flooded for planting
+
+
+def landcover_grid(path, grid: Grid):
+    """(lc uint8, exclude bool) on the grid from the MCD12Q1 LC_Type1 COG.
+
+    Exclusion = classes LC_EXCLUDE dilated by 1 LC cell (3x3) at the COG's
+    native resolution, then nearest onto the grid. Returns (None, None, reason)
+    when the file is unreadable.
+    """
+    import rasterio
+    from rasterio.warp import Resampling, reproject
+    from scipy.ndimage import binary_dilation
+
+    try:
+        with rasterio.open(path) as src:
+            lc_src = src.read(1)
+            excl_src = binary_dilation(np.isin(lc_src, LC_EXCLUDE), structure=np.ones((3, 3), bool))
+            kw = {"src_transform": src.transform, "src_crs": src.crs, "dst_transform": grid.transform,
+                  "dst_crs": "EPSG:4326", "resampling": Resampling.nearest}
+            lc = np.full(grid.shape, 255, np.uint8)
+            reproject(lc_src, lc, src_nodata=255, dst_nodata=255, **kw)
+            excl = np.zeros(grid.shape, np.uint8)
+            reproject(excl_src.astype(np.uint8), excl, **kw)
+        return lc, excl.astype(bool), None
+    except Exception as e:  # noqa: BLE001
+        return None, None, f"land cover raster unavailable ({Path(str(path)).name}: {type(e).__name__})"
+
+
+def brazil_grid(path, grid: Grid):
+    """(bool mask of grid cells whose centre is inside Brazil, None) or (None, reason)."""
+    from rasterio.features import rasterize
+
+    try:
+        fc = json.loads(Path(path).read_text())
+        geoms = [f["geometry"] for f in fc["features"]]
+        m = rasterize(((g, 1) for g in geoms), out_shape=grid.shape, transform=grid.transform,
+                      fill=0, dtype="uint8")
+        return m.astype(bool), None
+    except Exception as e:  # noqa: BLE001
+        return None, f"Brazil outline unavailable ({Path(str(path)).name}: {type(e).__name__})"
+
+
+def apply_context(masks: dict, lc: np.ndarray, excl: np.ndarray, br: np.ndarray, prev: np.ndarray) -> dict:
+    """Split raw candidates into excluded / outside Brazil / standard / lower."""
+    flood = masks["flood"]
+    kept = flood & ~excl
+    inbr = kept & br
+    lower = inbr & np.isin(lc, LC_LOWER)
+    std = inbr & ~lower
+    return {
+        **masks,
+        "excluded": flood & excl,
+        "outside": kept & ~br,
+        "candidate": inbr,
+        "standard": std,
+        "lower": lower,
+        "std_new": std & ~prev,
+        "lower_new": lower & ~prev,
+        "receded": masks["receded"] & br,
+    }
+
+
 # --- outputs ---------------------------------------------------------------
 
-def polygonize(state: State, masks: dict, pop: np.ndarray | None, out_path: Path,
+def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray, out_path: Path,
                min_area_km2: float, simplify_m: float, max_bytes: int = 5_000_000) -> dict:
     """flood_dswx.geojson with per-polygon props; returns summary stats."""
     import rasterio
@@ -329,9 +408,12 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, out_path: Path
     from tp.polygonize import mask_to_geojson
 
     grid = state.grid
+    # 1 new/standard, 2 persisting/standard, 3 new/lower, 4 persisting/lower
     cls = np.zeros(grid.shape, np.uint8)
-    cls[masks["new"]] = 1
-    cls[masks["persisting"]] = 2
+    cls[masks["standard"]] = 2
+    cls[masks["std_new"]] = 1
+    cls[masks["lower"]] = 4
+    cls[masks["lower_new"]] = 3
     out_path = Path(out_path)
     with tempfile.TemporaryDirectory() as td:
         tif = Path(td) / "dswx_flood_class.tif"
@@ -342,7 +424,7 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, out_path: Path
         del cls
         raw = Path(td) / "raw.geojson"
         while True:
-            mask_to_geojson(tif, raw, values=(1, 2), min_area_km2=min_area_km2,
+            mask_to_geojson(tif, raw, values=(1, 2, 3, 4), min_area_km2=min_area_km2,
                             simplify_m=simplify_m, kind="flood_candidate", date="")
             fc = json.loads(raw.read_text())
             feats = fc["features"]
@@ -358,6 +440,10 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, out_path: Path
             np.maximum.at(t_max, fid, state.cur_t[sel].astype(np.int64))
             people = np.bincount(fid, weights=pop[sel], minlength=n) if pop is not None else None
             pairs = np.unique(np.stack([fid, state.cur_g[sel].astype(np.int64)]), axis=1)
+            lc_counts = np.zeros((n, 256), np.int64)
+            np.add.at(lc_counts, (fid, lc[sel]), 1)
+            lc_major = lc_counts.argmax(axis=1)
+            del lc_counts
             del ids, sel, fid
             gran: dict[int, list[str]] = {}
             for f_i, g_i in pairs.T:
@@ -374,7 +460,9 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, out_path: Path
                     "area_km2": round(float(f["properties"]["area_km2"]), 4),
                     "people": None if people is None else round(float(people[i]), 1),
                     "status": "candidate",
-                    "change": "new" if f["properties"]["value"] == 1 else "persisting",
+                    "change": "new" if f["properties"]["value"] in (1, 3) else "persisting",
+                    "confidence": "lower" if f["properties"]["value"] in (3, 4) else "standard",
+                    "landcover": IGBP.get(int(lc_major[i]), "unclassified"),
                 }})
             feats = out_feats
             text = json.dumps({"type": "FeatureCollection", "features": feats}, allow_nan=False,
@@ -418,11 +506,14 @@ def run(
     search,                  # (start_iso, end_iso|None) -> list[granule dict]
     fetch,                   # (granule dict) -> bytes
     gpw_sources: list[str],
+    gpw_label: str = "GPW v4.11 Population Count 2020",
+    landcover_path=None,
+    outline_path=None,
     now: datetime | None = None,
-    bootstrap_days: int = 30,
+    bootstrap_days: int = 60,
     overlap_h: int = 24,
     window_h: int = 144,
-    min_obs: int = 2,
+    min_obs: int = 3,
     base_max: float = 0.2,
     min_area_km2: float = 0.25,
     simplify_m: float = 150.0,
@@ -509,25 +600,49 @@ def run(
     if pop_reason:
         reasons["people"] = pop_reason
 
+    lc, excl, lc_reason = (landcover_grid(landcover_path, grid) if landcover_path
+                           else (None, None, "no land cover raster configured"))
+    br, br_reason = brazil_grid(outline_path, grid) if outline_path else (None, "no Brazil outline configured")
+    for k, r in (("landcover", lc_reason), ("brazil", br_reason)):
+        if r:
+            reasons[k] = r
+
+    def ppl(m, pop=pop):
+        return None if pop is None else round(float(pop[m].sum()), 1)
+
     valid = state.bootstrap.get("ok", False) and state.last_acquired is not None
     flood_path = out_dir / "flood_dswx.geojson"
-    if valid:
-        poly = polygonize(state, masks, pop, flood_path, min_area_km2, simplify_m)
-        people = None if pop is None else round(float(pop[masks["flood"]].sum()), 1)
+    stat_keys = ("flooded_km2", "new_km2", "receded_km2", "people_flooded", "lower_confidence_km2",
+                 "lower_confidence_new_km2", "lower_confidence_people", "excluded_water_wetland_km2",
+                 "outside_brazil_km2")
+    if valid and lc is not None and br is not None:
+        prev = state.prev_flood.astype(bool) if state.has_prev else np.zeros(grid.shape, bool)
+        masks = apply_context(masks, lc, excl, br, prev)
+        del excl, br
+        poly = polygonize(state, masks, pop, lc, flood_path, min_area_km2, simplify_m)
         stats = {
-            "flooded_km2": km2(masks["flood"]), "new_km2": km2(masks["new"]),
+            "flooded_km2": km2(masks["standard"]), "new_km2": km2(masks["std_new"]),
             "receded_km2": km2(masks["receded"]) if state.has_prev else None,
-            "people_flooded": people,
+            "people_flooded": ppl(masks["standard"]),
+            "lower_confidence_km2": km2(masks["lower"]),
+            "lower_confidence_new_km2": km2(masks["lower_new"]),
+            "lower_confidence_people": ppl(masks["lower"]),
+            "excluded_water_wetland_km2": km2(masks["excluded"]),
+            "outside_brazil_km2": km2(masks["outside"]),
         }
         if not state.has_prev:
             reasons["receded_km2"] = "first pass: no previous candidate mask to compare"
-        state.prev_flood = masks["flood"].astype(np.uint8)
+        state.prev_flood = masks["candidate"].astype(np.uint8)
         state.has_prev = True
     else:
         _atomic_write(flood_path, json.dumps({"type": "FeatureCollection", "features": []}) + "\n")
         poly = {"features": 0}
-        stats = {"flooded_km2": None, "new_km2": None, "receded_km2": None, "people_flooded": None}
-        reasons.setdefault("flooded_km2", "no valid baseline/observations (see bootstrap)")
+        stats = dict.fromkeys(stat_keys)
+        reasons.setdefault("flooded_km2", "no valid baseline/observations (see bootstrap)" if not valid
+                           else "land cover or Brazil outline missing: unfiltered water is not published")
+    if pop is None:
+        for k in ("people_flooded", "lower_confidence_people"):
+            stats[k] = None
 
     # latency of the newest pass only (a bootstrap backlog would inflate it)
     newest = max((parse_iso(g["acquired"]) for g in ingested), default=None)
@@ -546,6 +661,7 @@ def run(
         "n_failed": len(failed),
         "n_granules_total": state.n_ingested,   # granules that added observations, all runs
         **stats,
+        "raw_candidate_km2": km2(masks["flood"]),
         "unbaselined_water_km2": km2(masks["unbaselined"]),
         "observed_km2": km2(masks["observed"]),
         "coverage_pct": round(100 * float((masks["observed"] * area).sum() / (area.sum() * grid.shape[1])), 2),
@@ -557,10 +673,12 @@ def run(
                    "simplify_m": poly.get("simplify_m", simplify_m),
                    "water_classes": list(WTR_WATER), "bootstrap_days": bootstrap_days},
         "bootstrap": state.bootstrap,
-        "people_source": pop_src,
+        "people_source": gpw_label if pop_src else None,
+        "landcover_source": None if lc is None else "MCD12Q1.061 2025 LC_Type1 (IGBP)",
+        "brazil_outline_source": None if br_reason else "IBGE malhas v3 paises/BR",
         "_null_reasons": reasons,
     }
-    del masks, pop
+    del masks, pop, lc
     state.save(state_path)
     write_meta(out_dir / "dswx_meta.json", meta)      # meta last
     return meta

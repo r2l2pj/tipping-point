@@ -21,27 +21,29 @@ from fetch.edl import edl_token
 from tp.config import REPO_ROOT, now_bounds
 from tp.response_dswx import Grid, run
 
-NEON_GPW = ("https://br-lively-poetry-bdub0r34.storage.c-8.us-east-2.aws.neon.tech/"
-            "tipping-point-data/data/static/south_brazil/static/gpw_pop.tif")
-LOCAL_GPW = REPO_ROOT / "data/static/south_brazil/static/gpw_pop.tif"
+# GPW v4.11 2020 30" population COUNT (persons/cell), lead-gathering's
+# data/now/static/gpw/manifest.json. Gitignored: CI must fetch it first.
+GPW = REPO_ROOT / "data/now/static/gpw/gpw_popcount_2020_30sec.tif"
+GPW_LABEL = "GPW v4.11 Population Count 2020, 30 arc-sec (CIESIN/SEDAC, doi:10.7927/H4JW8BX5)"
 
 
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=REPO_ROOT / "data/now/response")
     ap.add_argument("--res", type=float, default=0.0025, help="grid resolution (deg)")
-    ap.add_argument("--bootstrap-days", type=int, default=30)
+    ap.add_argument("--bootstrap-days", type=int, default=60)
     ap.add_argument("--overlap-h", type=int, default=24)
     ap.add_argument("--window-h", type=int, default=144,
                     help="latest obs must be within this many hours of the newest acquisition")
-    ap.add_argument("--min-obs", type=int, default=2,
+    ap.add_argument("--min-obs", type=int, default=3,
                     help="earlier obs required before a pixel can be a candidate")
     ap.add_argument("--base-max", type=float, default=0.2)
     ap.add_argument("--min-area-km2", type=float, default=0.25)
     ap.add_argument("--simplify-m", type=float, default=150.0)
     ap.add_argument("--workers", type=int, default=4)
-    ap.add_argument("--gpw", action="append", default=None,
-                    help="GPW raster path/URL (repeatable; default: local then public Neon copy)")
+    ap.add_argument("--gpw", type=Path, default=GPW, help="GPW v4.11 2020 30-arc-sec count raster")
+    ap.add_argument("--landcover", type=Path, default=REPO_ROOT / "data/now/static/mcd12q1/lc_type1_2025.tif")
+    ap.add_argument("--outline", type=Path, default=REPO_ROOT / "data/now/static/brazil_outline.geojson")
     ap.add_argument("--dry-run", action="store_true", help="print the grid + CMR query only")
     args = ap.parse_args(argv)
 
@@ -54,19 +56,20 @@ def main(argv=None) -> None:
     if not edl_token():
         sys.exit("EARTHDATA_TOKEN is required for PO.DAAC DSWx-S1 downloads")
 
-    gpw = args.gpw or [str(LOCAL_GPW), f"/vsicurl/{NEON_GPW}"]
     session = requests.Session()
     meta = run(
         args.out, grid,
         search=lambda start, end: opera.search_dswx_s1((w, s, e, n), start, end, session=session),
         fetch=lambda g: opera.download_wtr(g["wtr_url"], session=session),
-        gpw_sources=gpw, bootstrap_days=args.bootstrap_days, overlap_h=args.overlap_h,
+        gpw_sources=[str(args.gpw)], gpw_label=GPW_LABEL, landcover_path=args.landcover, outline_path=args.outline,
+        bootstrap_days=args.bootstrap_days, overlap_h=args.overlap_h,
         window_h=args.window_h, min_obs=args.min_obs, base_max=args.base_max,
         min_area_km2=args.min_area_km2, simplify_m=args.simplify_m, workers=args.workers,
     )
     print(json.dumps({k: meta[k] for k in (
-        "latest_acquired", "latency_h", "n_granules", "n_failed", "flooded_km2", "new_km2",
-        "receded_km2", "people_flooded", "coverage_pct", "features", "_null_reasons")}, indent=2))
+        "latest_acquired", "latency_h", "n_granules", "n_failed", "raw_candidate_km2", "flooded_km2",
+        "new_km2", "receded_km2", "people_flooded", "lower_confidence_km2", "lower_confidence_people",
+        "excluded_water_wetland_km2", "outside_brazil_km2", "unbaselined_water_km2", "coverage_pct", "features", "_null_reasons")}, indent=2))
 
 
 if __name__ == "__main__":

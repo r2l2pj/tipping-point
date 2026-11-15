@@ -440,7 +440,14 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
   newest obs in the polygon), `granules` (DSWx-S1 GranuleURs), `area_km2`,
   `people` (GPW 2020 sum, or `null` when GPW is unavailable), `status`
   `"candidate"` (never "confirmed"), `change` `"new"|"persisting"` (vs the
-  previous run's candidate mask).
+  previous run's candidate mask), `confidence` `"standard"|"lower"` (lower =
+  MCD12Q1 cropland 12/14, e.g. rice paddies), `landcover` (majority IGBP
+  class name). Only cells inside Brazil (IBGE outline) and outside MCD12Q1
+  permanent wetland/water (11/17, dilated 1 cell) become polygons.
+- Static inputs (committed): `data/now/static/mcd12q1/lc_type1_2025.tif`
+  (MCD12Q1.061 2025 LC_Type1, EPSG:4326 0.005°, uint8 COG, nodata 255; built
+  by `tools/convert_mcd12q1.py`) and `data/now/static/brazil_outline.geojson`
+  (IBGE malhas v3 BR, clipped to the Now bbox + 0.5°).
 - `response/dswx_state.npz` — internal rolling state, not app-read. Grid
   EPSG:4326 at 0.0025° over `domains.now.bbox` (4600×4000): `water_n`/`obs_n`
   uint16 baseline counts (halved at 60 obs), `cur` uint8 latest obs (0 dry,
@@ -449,10 +456,15 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
 - `response/dswx_meta.json` — `source`, `status`, `generated_at`,
   `latest_acquired`, `latency_h` (median CMR insert − acquisition of this
   run's granules), `n_granules` (this run), `n_failed`, `n_granules_total`,
-  `flooded_km2`, `new_km2`, `receded_km2`, `people_flooded`,
+  `flooded_km2`, `new_km2`, `people_flooded` (headline: Brazil, standard
+  confidence only), `receded_km2`, `lower_confidence_km2`,
+  `lower_confidence_new_km2`, `lower_confidence_people`,
+  `excluded_water_wetland_km2`, `outside_brazil_km2`, `raw_candidate_km2`
+  (before land cover / Brazil filtering),
   `unbaselined_water_km2` (water with < `min_obs` baseline obs — never a
   candidate), `observed_km2`, `coverage_pct`, `features`, `grid`, `params`,
-  `bootstrap`, `people_source`, `_null_reasons` (every null key explained;
+  `bootstrap`, `people_source`, `landcover_source`,
+  `brazil_outline_source`, `_null_reasons` (every null key explained;
   a failed baseline bootstrap nulls the km2/people keys and says so).
 
 ## GEE assets

@@ -46,7 +46,27 @@ def granule(i, when, arr):
             "available": rd.iso(when + timedelta(hours=6)), "wtr_url": f"mem://{i}", "_arr": arr}
 
 
-def make_run(tmp_path, catalogue, now, gpw=None, **kw):
+def write_lc(path, rows=None):
+    """LC_Type1 raster on GRID: grassland (10) unless rows={row: class}."""
+    a = np.full((10, 10), 10, np.uint8)
+    for r, c in (rows or {}).items():
+        a[r] = c
+    with rasterio.open(path, "w", driver="GTiff", height=10, width=10, count=1, dtype="uint8",
+                       crs="EPSG:4326", transform=GRID.transform, nodata=255) as dst:
+        dst.write(a, 1)
+    return path
+
+
+def write_outline(path, west=GRID.west):
+    """Brazil outline: everything east of `west`."""
+    poly = [[west, GRID.south - 1], [GRID.east + 1, GRID.south - 1], [GRID.east + 1, GRID.north + 1],
+            [west, GRID.north + 1], [west, GRID.south - 1]]
+    path.write_text(json.dumps({"type": "FeatureCollection", "features": [
+        {"type": "Feature", "properties": {}, "geometry": {"type": "Polygon", "coordinates": [poly]}}]}))
+    return path
+
+
+def make_run(tmp_path, catalogue, now, gpw=None, lc=None, outline=None, **kw):
     def search(start, end):
         s = rd.parse_iso(start)
         return [g for g in catalogue if rd.parse_iso(g["acquired"]) >= s]
@@ -62,6 +82,9 @@ def make_run(tmp_path, catalogue, now, gpw=None, **kw):
     kw.setdefault("min_area_km2", 0.0)
     kw.setdefault("simplify_m", 0.0)
     kw.setdefault("workers", 2)
+    kw.setdefault("min_obs", 3)
+    kw.setdefault("landcover_path", lc or write_lc(tmp_path / "lc.tif"))
+    kw.setdefault("outline_path", outline or write_outline(tmp_path / "br.geojson"))
     meta = rd.run(tmp_path, GRID, search, fetch, gpw or [], now=now, log=lambda *_: None, **kw)
     return meta, calls
 
@@ -110,12 +133,14 @@ def test_end_to_end_bootstrap_incremental_change(tmp_path):
     assert meta["latency_h"] == 6.0
     assert meta["people_flooded"] == 40.0                      # 20 cells x 2
     assert 0 < meta["coverage_pct"] <= 100
+    assert meta["people_source"].startswith("GPW v4.11")
     assert meta["flooded_km2"] == pytest.approx(meta["new_km2"]) and meta["flooded_km2"] > 0
     assert meta["receded_km2"] is None and "receded_km2" in meta["_null_reasons"]
     fc = json.loads((tmp_path / "flood_dswx.geojson").read_text())
     props = [f["properties"] for f in fc["features"]]
     assert props and all(p["status"] == "candidate" and p["change"] == "new" for p in props)
     assert all(p["source"] == "opera-dswx-s1" and p["granules"] == ["G004"] for p in props)
+    assert all(p["confidence"] == "standard" and p["landcover"] == "grassland" for p in props)
     assert sum(p["people"] for p in props) == pytest.approx(40.0)
     assert "confirmed" not in (tmp_path / "flood_dswx.geojson").read_text()
     assert (tmp_path / "dswx_state.npz").is_file()
@@ -201,3 +226,31 @@ def test_download_wtr_never_leaks_token(monkeypatch):
     with pytest.raises(RuntimeError) as exc:
         opera.download_wtr("https://h/x_B01_WTR.tif", session=S())
     assert "SECRET" not in str(exc.value) and "401" in str(exc.value)
+
+
+def test_landcover_exclusion_confidence_and_brazil_clip(tmp_path):
+    # new water on rows 2 (next to a wetland row 1 -> excluded by dilation),
+    # 5 (cropland -> lower confidence), 8 (grassland -> standard); columns
+    # west of -49.95 are outside "Brazil"
+    cat = [granule(i, T0 + timedelta(days=4 * i), tile()) for i in range(4)]
+    cat.append(granule(4, T0 + timedelta(days=16), tile(water_rows=(2, 5, 8))))
+    lc = write_lc(tmp_path / "lc.tif", {0: 10, 1: 11, 5: 12})
+    meta, _ = make_run(tmp_path, cat, T0 + timedelta(days=17), lc=lc,
+                       outline=write_outline(tmp_path / "br.geojson", west=-49.95))
+    cell = meta["raw_candidate_km2"] / 30            # 3 rows x 10 cols, ~equal-area cells
+    assert meta["excluded_water_wetland_km2"] == pytest.approx(10 * cell, rel=0.01)
+    assert meta["outside_brazil_km2"] == pytest.approx(10 * cell, rel=0.01)   # 5 W cols x rows 5, 8
+    assert meta["flooded_km2"] == pytest.approx(5 * cell, rel=0.01)
+    assert meta["lower_confidence_km2"] == pytest.approx(5 * cell, rel=0.01)
+    fc = json.loads((tmp_path / "flood_dswx.geojson").read_text())
+    by_conf = {f["properties"]["confidence"]: f["properties"]["landcover"] for f in fc["features"]}
+    assert by_conf == {"standard": "grassland", "lower": "cropland"}
+    for f in fc["features"]:
+        assert min(x for x, _ in f["geometry"]["coordinates"][0]) >= -49.95 - 1e-9
+
+
+def test_missing_landcover_nulls_headline(tmp_path):
+    cat = [granule(i, T0 + timedelta(days=4 * i), tile(water_rows=(5,) if i == 3 else ())) for i in range(4)]
+    meta, _ = make_run(tmp_path, cat, T0 + timedelta(days=13), landcover_path=tmp_path / "nope.tif")
+    assert meta["flooded_km2"] is None and "landcover" in meta["_null_reasons"]
+    assert json.loads((tmp_path / "flood_dswx.geojson").read_text())["features"] == []
