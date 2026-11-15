@@ -60,10 +60,13 @@ def test_rolling_keeps_newest_and_rebuilds_restored_rows(tmp_path: Path):
     for i in range(10):
         _run(now, t0 + dt.timedelta(hours=3 * i), crit=float(i))
         nh.update(now, keep=8)
-    runs = sorted(p.name for p in (now / "history").iterdir() if p.is_dir())
-    assert len(runs) == 8 and runs[0] == "20261114T061700Z"
     idx = json.loads((now / "history" / "index.json").read_text())
+    runs = sorted(r["id"] for r in idx["runs"])
+    assert len(runs) == 8 and runs[0] == "20261114T061700Z"   # 8 playable runs
     assert [r["id"] for r in idx["runs"]] == sorted(runs, reverse=True)
+    # older runs (archive, no places_tpi.npz here -> no COGs) keep no PNGs
+    for old in ("20261114T001700Z", "20261114T031700Z"):
+        assert not (now / "history" / old / "png").exists()
     # rows of restored (earlier) runs are rebuilt from their own files
     assert idx["runs"][1]["critical_km2_any"] == 8.0
     assert idx["runs"][-1]["critical_km2_any"] == 2.0
@@ -103,4 +106,21 @@ def test_flood_cogs_archived_for_agreement_leads(tmp_path: Path):
     hm = json.loads((d / "manifest.json").read_text())
     assert hm["flood_cogs"] == [f"cog/tpi_flood_d{k}.tif" for k in range(4)]
     with rasterio.open(d / "cog" / "tpi_flood_d2.tif") as s:
-        assert s.descriptions[0] == "2026-11-17" and abs(float(s.read(1)[0, 0]) - 0.3) < 1e-3
+        assert s.descriptions[0] == "2026-11-17" and s.dtypes[0] == "uint8"
+        assert abs(float(s.read(1)[0, 0]) * s.scales[0] - 0.3) < 0.005
+
+
+def test_archive_keeps_cogs_beyond_playable_runs(tmp_path: Path):
+    import numpy as np
+    now = tmp_path / "now"
+    fl = np.full((4, 3, 3), 0.5, np.float16)
+    t0 = dt.datetime(2026, 11, 14, 0, 17, 0)
+    for i in range(12):
+        _run(now, t0 + dt.timedelta(hours=3 * i))
+        np.savez(now / "places_tpi.npz", flood=fl, slide=fl, bounds=np.array([-58.0, -34.0, -48.0, -22.5]),
+                 dates=np.array(["2026-11-15"] * 4))
+        idx = nh.update(now, keep=8)
+    assert len(idx["runs"]) == 8 and len(idx["archive"]) == 4
+    a = idx["archive"][0]
+    d = now / "history" / a["id"]
+    assert (d / "cog" / "tpi_flood_d0.tif").is_file() and not (d / "png").exists()

@@ -30,6 +30,8 @@ from pathlib import Path
 import numpy as np
 
 KEEP = 8
+KEEP_COG = 32             # runs 9..32 keep only cog/ + manifest (NISAR agreement leads, ~4 d)
+COG_SCALE = 250           # uint8 TPI: value / 250; 255 = no data
 SCHEMA = "tipping-point/now-history@1"
 NOTE = ("Past Now runs (every 3 h), newest first, rolling: the last {keep} runs "
         "(~{hours} h). Map frames (PNG) + summary + TPI_flood d0..d3 COGs (for NISAR agreement leads); "
@@ -122,14 +124,17 @@ def _flood_cogs(now_dir: Path, dst: Path) -> list[str]:
     (dst / "cog").mkdir(parents=True, exist_ok=True)
     out = []
     for k in range(k_):
-        a = np.round(z["flood"][k].astype(np.float32), 3)
-        prof = {"driver": "GTiff", "height": h, "width": wd, "count": 1, "dtype": "float32",
-                "crs": "EPSG:4326", "transform": tr, "nodata": np.nan, "compress": "deflate",
-                "predictor": 3, "tiled": True, "blockxsize": 256, "blockysize": 256}
+        f = z["flood"][k].astype(np.float32)
+        a = np.where(np.isfinite(f), np.clip(np.round(f * COG_SCALE), 0, 250), 255).astype(np.uint8)
+        prof = {"driver": "GTiff", "height": h, "width": wd, "count": 1, "dtype": "uint8",
+                "crs": "EPSG:4326", "transform": tr, "nodata": 255, "compress": "deflate",
+                "tiled": True, "blockxsize": 256, "blockysize": 256}
         name = f"cog/tpi_flood_d{k}.tif"
         with rasterio.open(dst / name, "w", **prof) as d:
             d.write(a, 1)
             d.set_band_description(1, str(z["dates"][k]))
+            d.scales = (1 / COG_SCALE,)      # TPI = value * scale; 255 = no data
+            d.update_tags(tpi_scale=str(1 / COG_SCALE), nodata="255")
         out.append(name)
     return out
 
@@ -174,9 +179,22 @@ def update(now_dir: Path, keep: int = KEEP) -> dict:
 
     runs = sorted((d for d in hist.iterdir() if _is_run_dir(d)),
                   key=lambda d: d.name, reverse=True)
-    for old in runs[keep:]:
+    keep_cog = max(keep, KEEP_COG)
+    for old in runs[keep_cog:]:
         shutil.rmtree(old)
         print(f"now_history: dropped {old.name}")
+    archive = []
+    for old in runs[keep:keep_cog]:             # archive-only: TPI COGs + manifest
+        for sub in ("png", "response"):
+            shutil.rmtree(old / sub, ignore_errors=True)
+        try:
+            am = json.loads((old / "manifest.json").read_text())
+        except (OSError, ValueError):
+            continue
+        if am.get("flood_cogs"):
+            archive.append({"run": _iso(old.name), "id": old.name,
+                            "manifest": f"now/history/{old.name}/manifest.json",
+                            "flood_cogs": [f"now/history/{old.name}/{c}" for c in am["flood_cogs"]]})
     rows = []
     for d in runs[:keep]:
         row = current if current and current["id"] == d.name else _row_from_dir(d)
@@ -189,7 +207,10 @@ def update(now_dir: Path, keep: int = KEEP) -> dict:
              "note": NOTE.format(keep=keep, hours=keep * 3),
              "paths_relative_to": "data/ (same as the root manifest); a run's own "
                                   "manifest paths resolve under its run directory",
-             "runs": rows}
+             "runs": rows,
+             "archive": archive,
+             "archive_note": ("runs 9..32 (~4 d): TPI_flood d0..d3 COGs only (uint8, TPI = value/250, "
+                              "255 = no data) for NISAR agreement leads; not playable")}
     _write_json(hist / "index.json", index)
     # point the live manifest at the index (after the snapshot, so run
     # snapshots never list it); manifest rewritten last
