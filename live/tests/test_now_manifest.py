@@ -50,3 +50,30 @@ def test_finalize_without_fragment_keeps_manifest(tmp_path):
     m = now_manifest.finalize(tmp_path)
     assert m["products"] == {"summary": "summary.json"}
     assert "response" not in m
+
+
+def test_observed_floods_grouped_never_tpi(tmp_path):
+    sq = lambda x0: {"type": "Polygon", "coordinates": [[[x0, -29.9], [x0 + 0.01, -29.9],
+                     [x0 + 0.01, -29.89], [x0, -29.89], [x0, -29.9]]]}
+    _write(tmp_path / "geojson/municipal_boundaries.geojson", {
+        "type": "FeatureCollection", "features": [{
+            "type": "Feature",
+            "geometry": {"type": "Polygon", "coordinates": [[[-52, -30], [-51, -30],
+                         [-51, -29], [-52, -29], [-52, -30]]]},
+            "properties": {"name": "Canoas",
+                           "url": "https://x/api/v3/malhas/estados/RS"}}]})
+    _write(tmp_path / "response/flood_dswx.geojson", {"type": "FeatureCollection", "features": [
+        {"type": "Feature", "geometry": sq(-51.5), "properties": {
+            "source": "opera-dswx-s1", "acquired": "2026-11-10T08:00:00Z", "area_km2": 1.0, "people": 3}},
+        {"type": "Feature", "geometry": sq(-51.4), "properties": {
+            "source": "opera-dswx-s1", "acquired": "2026-11-14T09:00:00Z", "area_km2": 2.0, "people": None}}]})
+    _write(tmp_path / "alerts.json", {"candidates": [], "paused": False})
+    now_manifest.add_observed_to_alerts(tmp_path)
+    a = json.loads((tmp_path / "alerts.json").read_text())
+    assert a["candidates"] == []
+    (o,) = a["observed"]
+    assert o["kind"] == "observed" and o["hazard"] == "flood"
+    assert o["municipality"] == "Canoas" and o["uf"] == "RS"
+    assert o["area_km2"] == 3.0 and o["people"] == 3 and o["polygons"] == 2
+    assert o["acquired"] == "2026-11-14T09:00:00Z"
+    assert "class" not in o and "EMERGENCY" not in json.dumps(o).upper()

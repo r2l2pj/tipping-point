@@ -165,3 +165,23 @@ def test_no_upload_flag_removed():
         parse_args(["--no-upload"])
     assert not hasattr(live.publish, "upload_gcs")
     assert "NOW_GCS_BUCKET" not in Path(live.run_now.__file__).read_text()
+
+
+def test_write_imerg_cogs_lat_first(tmp_path):
+    import rasterio
+    import xarray as xr
+    from live.run_now import write_imerg_cogs
+    lons = np.arange(-57.95, -56.0, 0.1)      # 20 lon
+    lats = np.arange(-33.95, -32.0, 0.1)      # 20 lat, ascending (south-up)
+    vals = np.zeros((2, lons.size, lats.size - 5), dtype=np.float32)  # (time, lon, lat)
+    lats = lats[:15]
+    vals[:, 0, -1] = 7.0                      # west-most lon, north-most lat
+    da = xr.DataArray(vals, dims=("time", "lon", "lat"), coords={
+        "time": np.array(["2026-11-13", "2026-11-14"], dtype="datetime64[ns]"),
+        "lon": lons, "lat": lats})
+    paths = write_imerg_cogs(da, tmp_path)
+    assert [p.name for p in paths] == ["imerg_early_20261113.tif", "imerg_early_20261114.tif"]
+    with rasterio.open(paths[1]) as ds:
+        assert ds.shape == (15, 20)           # rows = lat
+        assert ds.read(1)[0, 0] == 7.0        # north-west corner
+        assert abs(ds.bounds.left - (-58.0)) < 1e-6

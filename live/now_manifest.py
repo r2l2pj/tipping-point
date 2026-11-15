@@ -43,7 +43,76 @@ def prune_products(manifest: dict, out_dir: Path) -> dict:
     return manifest
 
 
+OBSERVED_SOURCES = ("response/flood_dswx.geojson",
+                    "response/flood_nisar.geojson")
+
+
+def observed_floods(out_dir: Path) -> list[dict]:
+    """R1/R2 polygons grouped per (source, municipality): OBSERVATIONS of
+    flood candidates (satellite water), never TPI alerts — no class, no
+    emergency wording. Sorted by people then area."""
+    from shapely.geometry import shape
+
+    from live.now_geojson import municipality_lookup
+
+    where = municipality_lookup(out_dir / "geojson")
+    groups: dict[tuple, dict] = {}
+    for rel in OBSERVED_SOURCES:
+        p = out_dir / rel
+        if not p.is_file():
+            continue
+        for f in json.loads(p.read_text()).get("features", []):
+            pr = f.get("properties") or {}
+            try:
+                pt = shape(f["geometry"]).representative_point()
+            except (KeyError, ValueError, TypeError):
+                continue
+            muni = where(pt.x, pt.y) or {"municipality": None, "uf": None}
+            key = (pr.get("source"), muni["municipality"], muni["uf"])
+            g = groups.setdefault(key, {
+                "kind": "observed", "hazard": "flood",
+                "label": "observed flood candidate", "status": "candidate",
+                "source": pr.get("source"), **muni,
+                "acquired": None, "area_km2": 0.0, "people": None,
+                "polygons": 0, "centroid": [round(pt.x, 4), round(pt.y, 4)],
+                "_best": -1.0})
+            area = float(pr.get("area_km2") or 0.0)
+            g["area_km2"] += area
+            g["polygons"] += 1
+            if pr.get("people") is not None:
+                g["people"] = (g["people"] or 0) + float(pr["people"])
+            acq = pr.get("acquired")
+            if acq and (g["acquired"] is None or acq > g["acquired"]):
+                g["acquired"] = acq
+            if area > g["_best"]:   # label the group at its largest polygon
+                g["_best"], g["centroid"] = area, [round(pt.x, 4), round(pt.y, 4)]
+    out = []
+    for g in groups.values():
+        g.pop("_best")
+        g["area_km2"] = round(g["area_km2"], 3)
+        if g["people"] is not None:
+            g["people"] = int(round(g["people"]))
+        out.append(g)
+    out.sort(key=lambda g: (-(g["people"] or 0), -g["area_km2"]))
+    return out
+
+
+def add_observed_to_alerts(out_dir: Path) -> None:
+    apath = out_dir / "alerts.json"
+    if not apath.is_file():
+        return
+    alerts = json.loads(apath.read_text())
+    alerts["observed"] = observed_floods(out_dir)
+    alerts["observed_note"] = ("satellite flood-water candidates (OPERA "
+                               "DSWx-S1, NISAR GCOV) - observations, not "
+                               "TPI alerts")
+    tmp = apath.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(alerts, ensure_ascii=False, indent=2))
+    os.replace(tmp, apath)
+
+
 def finalize(out_dir: Path) -> dict:
+    add_observed_to_alerts(out_dir)
     mpath = out_dir / "manifest.json"
     manifest = json.loads(mpath.read_text())
     frag_path = out_dir / FRAGMENT

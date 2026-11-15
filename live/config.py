@@ -26,7 +26,7 @@ STATIC_NPZ = "sul_static.npz"
 # Sul do Brasil inteiro (RS, SC, PR) — doc v4 manifest "now".bounds
 NOW_BOUNDS = tuple(_now_bounds())          # west, south, east, north — config.yaml domains.now
 NOW_RES_DEG = 0.01                          # ~1 km
-IMERG_LOOKBACK_DAYS = 7
+IMERG_LOOKBACK_DAYS = 8   # >= 8: R1's rain-context rule reads 8 daily COGs
 NISAR_LOOKBACK_DAYS = 14
 FORECAST_DAYS = 3
 

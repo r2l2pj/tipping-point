@@ -50,7 +50,7 @@ def test_now_runs_steps_in_locked_order(calls):
     imerg = calls[0]
     assert imerg[0] == sys.executable
     assert imerg[imerg.index("--bounds") + 1:imerg.index("--bounds") + 5] == [w, s, e, n]
-    assert imerg[imerg.index("--days") + 1] == "7"
+    assert imerg[imerg.index("--days") + 1] == "8"
     assert calls[2][calls[2].index("--days") + 1] == "3"
     nisar = calls[3]
     assert nisar[nisar.index("nisar-passes") - 2:nisar.index("nisar-passes")] == [

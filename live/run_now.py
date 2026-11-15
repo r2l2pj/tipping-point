@@ -111,6 +111,27 @@ def build_manifest(bounds, updated_at, data_dates, layers, nisar_passes) -> dict
     }
 
 
+def write_imerg_cogs(daily, out_dir: Path) -> list[Path]:
+    """One north-up lat-first COG per IMERG day (imerg_early_YYYYMMDD.tif):
+    R1's rain-context rule reads them. Additive — never fails the run."""
+    written = []
+    try:
+        from pipeline.fetch.imerg import write_cog
+
+        lat = next(d for d in daily.dims if "lat" in d.lower())
+        lon = next(d for d in daily.dims if "lon" in d.lower())
+        da = daily.transpose("time", lat, lon)
+        for i in range(da.sizes["time"]):
+            day = np.datetime_as_string(da.time.values[i], unit="D")
+            path = out_dir / f"imerg_early_{day.replace('-', '')}.tif"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            written.append(write_cog(path, da.isel(time=i).values,
+                                     da[lat].values, da[lon].values))
+    except Exception as exc:
+        print(f"[now] imerg daily COGs failed: {exc!r}", file=sys.stderr)
+    return written
+
+
 def run_checks(terrain: dict | None, r_zero_violations: int) -> dict:
     """Run-level sanity gates; alerts are published only when all pass.
     terrain: static_fetch.terrain_checks() (None on the legacy npz path)."""
@@ -155,6 +176,7 @@ def run(args) -> dict:
                       file=sys.stderr)
             raise
         imerg_source = "gesdisc-early"
+    write_imerg_cogs(imerg_daily, args.out_dir / "cog" / "imerg_early")
     sm_lats, sm_lons, sm_vals, smap_date = fetch.fetch_smap_l4(tuple(args.bounds))
     fc_daily_da, gfs_issued = fetch.fetch_gfs_daily(tuple(args.bounds), today)
     nisar = [] if args.no_nisar else fetch.nisar_recent_passes(
