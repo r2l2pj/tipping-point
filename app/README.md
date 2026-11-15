@@ -242,6 +242,7 @@ replays; the index adds where and who, not an earlier warning.
 
 ## Limitations
 
+- Flood terrain term: the flood index uses height above the nearest river (HAND) up to 15 m, but the Rio Grande do Sul 2024 Taquari-valley floods reached ground about 16 m above the river (median), so the index under-flags those deep-valley floods (ROC 0.61 against the independent EU emergency maps). A wider, valley-depth-dependent HAND range is the next test: it helped there (0.85) but hurt Washington's shallow floodplain (0.93 → 0.83), so it is not switched on ([../docs/t-flood-fix-eval.md](../docs/t-flood-fix-eval.md)).
 - Thresholds are not yet calibrated for Brazil; validated on 2 replay events + 11 disaster events for the ML.
 - IMERG and SMAP inputs are ~10 km; the detail comes from terrain. The HAND
   proxy is a simplified NASADEM product validated against MERIT Hydro
