@@ -36,6 +36,7 @@ EVENT_TO_CASE = {"rs-2024-05": "rs_2024", "wa-2025-12": "wa_2025",
 LEGEND = ["Baixo", "Moderado", "Alto", "Crítico"]
 
 PRODUCTS = [
+    "upstream_basin",
     "municipal_boundaries",
     "landslide_catalog",
     "places",
@@ -141,7 +142,8 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
     for extra in ("issued", "forecast_source", "kind",
                   "critical_km2", "people_critical", "_null_reasons",
                   "legend", "db_range",
-                  "sensor", "source", "label", "note", "attribution", "polarization"):
+                  "sensor", "source", "label", "note", "attribution", "polarization",
+                  "window", "product"):
         if extra in index_entry:
             entry[extra] = index_entry[extra]
     if entry.get("forecast") and "forecast_source" not in entry:

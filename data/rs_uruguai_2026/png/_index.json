@@ -181,6 +181,90 @@
       "sensor": "NISAR (GCOV)",
       "source": "NISAR GCOV (ASF)",
       "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    },
+    {
+      "id": "hand_low",
+      "kind": "static",
+      "png": "rs_uruguai_2026/png/hand_low.png",
+      "cog": null,
+      "bounds": [
+        -57.25,
+        -29.850098,
+        -56.449607,
+        -29.05
+      ],
+      "forecast": false,
+      "legend": {
+        "stops": [
+          {
+            "color": "#009ebd",
+            "label": "HAND \u2264 5 m"
+          }
+        ]
+      },
+      "label": "Low ground (HAND \u2264 5 m)",
+      "note": "Height Above Nearest Drainage <= 5 m (90 m HAND): holds 54 % of the area NISAR later saw newly flooded at Uruguaiana (7 candidate polygons, ~29 people) in 36 % of the AOI land (lift 1.5) - the river corridor, not specific neighbourhoods."
+    },
+    {
+      "id": "imerg_20260930",
+      "date": "2026-09-30",
+      "window": [
+        "2026-09-28",
+        "2026-09-30"
+      ],
+      "product": "IMERG Early",
+      "kind": "observed",
+      "png": "rs_uruguai_2026/png/imerg_20260930.png",
+      "cog": null,
+      "bounds": [
+        -57.7,
+        -31.507567,
+        -49.198792,
+        -26.2
+      ],
+      "forecast": false,
+      "legend": {
+        "unit": "mm",
+        "stops": [
+          {
+            "v": 0,
+            "color": "#f7fbff",
+            "label": "0"
+          },
+          {
+            "v": 10,
+            "color": "#c6dbef",
+            "label": "10"
+          },
+          {
+            "v": 25,
+            "color": "#9ecae1",
+            "label": "25"
+          },
+          {
+            "v": 50,
+            "color": "#6baed6",
+            "label": "50"
+          },
+          {
+            "v": 75,
+            "color": "#3182bd",
+            "label": "75"
+          },
+          {
+            "v": 100,
+            "color": "#08519c",
+            "label": "100"
+          },
+          {
+            "v": 150,
+            "color": "#3f007d",
+            "label": "150"
+          }
+        ]
+      },
+      "label": "Rain, 3 days (NASA GPM IMERG Early)",
+      "note": "Observed NASA IMERG Early (Final not yet released), Sep 28-30 2026, Uruguay River basin upstream of Uruguaiana; basin mean 96 mm (season 3-day p99 100 mm). The Sep 30 warning used Sep 28-29 observed + the NOAA GFS run of Sep 30."
     }
   ]
 }

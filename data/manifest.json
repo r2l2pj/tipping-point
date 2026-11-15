@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T16:22:02Z",
+  "updated_at": "2026-11-15T16:25:34Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -779,6 +779,7 @@
         "swot": "2024-05-06"
       },
       "products": {
+        "upstream_basin": null,
         "municipal_boundaries": "rs_2024/geojson/municipal_boundaries.geojson",
         "landslide_catalog": "rs_2024/geojson/landslide_catalog.geojson",
         "places": "rs_2024/geojson/places.geojson",
@@ -796,6 +797,7 @@
         "products.flood_confirmed": "alias of products.flood_candidates (NISAR polygons are candidates); removed next cycle"
       },
       "_null_reasons": {
+        "upstream_basin": "not yet produced",
         "permanent_water": "not yet produced",
         "flood_confirmed": "No NISAR coverage — event predates launch (Jul 2025)",
         "nisar_timeseries": "no NISAR 3-date time series yet",
@@ -1849,6 +1851,7 @@
         "nisar_post": "2025-12-16"
       },
       "products": {
+        "upstream_basin": null,
         "municipal_boundaries": "wa_2025/geojson/municipal_boundaries.geojson",
         "landslide_catalog": "wa_2025/geojson/landslide_catalog.geojson",
         "places": "wa_2025/geojson/places.geojson",
@@ -1865,7 +1868,9 @@
       "_deprecated": {
         "products.flood_confirmed": "alias of products.flood_candidates (NISAR polygons are candidates); removed next cycle"
       },
-      "_null_reasons": {}
+      "_null_reasons": {
+        "upstream_basin": "not yet produced"
+      }
     },
     "rs_uruguai_2026": {
       "event_id": "rs_uruguai_2026",
@@ -1879,6 +1884,91 @@
       "forecast_source": null,
       "data_basis": "v0: NISAR flood candidates from a teammate pair (GCOV provisional 010D, 2026-09-30 -> 10-12); our own NISAR GCOV stack and the TPI replay are in progress",
       "layers": [
+        {
+          "id": "hand_low",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/hand_low.png",
+          "cog": null,
+          "legend": {
+            "stops": [
+              {
+                "color": "#009ebd",
+                "label": "HAND ≤ 5 m"
+              }
+            ]
+          },
+          "bounds": [
+            -57.25,
+            -29.850098,
+            -56.449607,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "static",
+          "label": "Low ground (HAND ≤ 5 m)",
+          "note": "Height Above Nearest Drainage <= 5 m (90 m HAND): holds 54 % of the area NISAR later saw newly flooded at Uruguaiana (7 candidate polygons, ~29 people) in 36 % of the AOI land (lift 1.5) - the river corridor, not specific neighbourhoods."
+        },
+        {
+          "id": "imerg_20260930",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/imerg_20260930.png",
+          "cog": null,
+          "legend": {
+            "unit": "mm",
+            "stops": [
+              {
+                "v": 0,
+                "color": "#f7fbff",
+                "label": "0"
+              },
+              {
+                "v": 10,
+                "color": "#c6dbef",
+                "label": "10"
+              },
+              {
+                "v": 25,
+                "color": "#9ecae1",
+                "label": "25"
+              },
+              {
+                "v": 50,
+                "color": "#6baed6",
+                "label": "50"
+              },
+              {
+                "v": 75,
+                "color": "#3182bd",
+                "label": "75"
+              },
+              {
+                "v": 100,
+                "color": "#08519c",
+                "label": "100"
+              },
+              {
+                "v": 150,
+                "color": "#3f007d",
+                "label": "150"
+              }
+            ]
+          },
+          "bounds": [
+            -57.7,
+            -31.507567,
+            -49.198792,
+            -26.2
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "label": "Rain, 3 days (NASA GPM IMERG Early)",
+          "note": "Observed NASA IMERG Early (Final not yet released), Sep 28-30 2026, Uruguay River basin upstream of Uruguaiana; basin mean 96 mm (season 3-day p99 100 mm). The Sep 30 warning used Sep 28-29 observed + the NOAA GFS run of Sep 30.",
+          "window": [
+            "2026-09-28",
+            "2026-09-30"
+          ],
+          "product": "IMERG Early"
+        },
         {
           "id": "nisar_hh_20260923",
           "date": "2026-09-23",
@@ -2113,6 +2203,7 @@
       "metrics": "metrics.json#rs_uruguai_2026",
       "data_dates": {},
       "products": {
+        "upstream_basin": "rs_uruguai_2026/geojson/upstream_basin.geojson",
         "municipal_boundaries": null,
         "landslide_catalog": null,
         "places": null,

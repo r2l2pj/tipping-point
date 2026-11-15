@@ -20,7 +20,7 @@ PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
                  "swot_reference", "swot_series",
                  "priority_zones", "permanent_water", "flood_confirmed", "flood_candidates",
                  "landslide_candidates", "nisar_timeseries",
-                 "nisar_polarization"}
+                 "nisar_polarization", "upstream_basin"}
 
 
 def _data_root(tmp_path, *case_ids):
