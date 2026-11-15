@@ -107,12 +107,14 @@ export default function TimelineBar({
     return (i - eventIndex) % 2 === 0 && Math.abs(i - eventIndex) !== 1;
   };
   // Quiet controls: the steps and the map are the subject, not the buttons.
-  const small = "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-cc-line bg-cc-surface text-cc-muted hover:border-cc-line-strong hover:text-cc-ink disabled:cursor-not-allowed disabled:opacity-50";
+  const small = "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-cc-line bg-cc-surface text-cc-muted hover:border-cc-line-strong hover:text-cc-ink disabled:cursor-not-allowed disabled:text-cc-line-strong";
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border border-cc-line bg-cc-surface px-4 py-2 shadow-[0_4px_18px_rgba(0,0,0,0.28)]">
+    // Only the steps sit on a card (Lucas). The controls float above it over
+    // the map, so each control carries its own surface and shadow.
+    <div className="flex shrink-0 flex-col gap-1.5" data-timeline>
       {/* The controls take their own row above the steps (Lucas), and wrap
           on a narrow screen so the card, not the page, holds them. */}
-      <div className="flex w-full min-w-0 flex-wrap items-center gap-2" data-timeline-controls>
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-1.5 px-1 [&_button]:shadow-[0_1px_6px_rgba(0,0,0,0.3)] [&_select]:shadow-[0_1px_6px_rgba(0,0,0,0.3)]" data-timeline-controls>
         <button type="button" onClick={onPlayToggle} disabled={n < 2} aria-label={playing ? "Pause" : "Play"}
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-cc-accent-line bg-cc-accent-soft text-cc-accent hover:border-cc-accent disabled:cursor-not-allowed disabled:opacity-50">
           <Icon d={playing ? ICON.pause : ICON.play} size={14} fill={!playing} strokeWidth={playing ? 3 : 2.2} />
@@ -143,10 +145,10 @@ export default function TimelineBar({
         )}
         {runs && (
           <div role="group" aria-label="Now run (BRT)" className="flex flex-wrap items-center gap-1" data-runs>
-            <span className="text-xs font-semibold text-cc-muted">Run</span>
+            <span className="rounded-md bg-cc-surface px-1.5 py-1 text-xs font-semibold text-cc-muted shadow-[0_1px_6px_rgba(0,0,0,0.3)]">Run</span>
             {runs.list.map((r, i) => (
               <button key={r.id} type="button" aria-pressed={runs.picked === r.id} onClick={() => runs.onPick(i === 0 ? null : r.id)}
-                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${runs.picked === r.id ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line text-cc-muted hover:text-cc-ink"}`}>
+                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${runs.picked === r.id ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>
                 {i === 0 ? `Latest · ${r.label}` : r.label}
               </button>
             ))}
@@ -155,10 +157,10 @@ export default function TimelineBar({
         {hours && hours.available.length > 0 && (
           <div role="group" aria-label="Hour (UTC)" className="flex flex-wrap items-center gap-1" data-hours>
             <button type="button" aria-pressed={hours.hour === null} onClick={() => hours.onHour(null)}
-              className={`rounded-md px-2 py-1 text-xs font-semibold ${hours.hour === null ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line text-cc-muted hover:text-cc-ink"}`}>Day</button>
+              className={`rounded-md px-2 py-1 text-xs font-semibold ${hours.hour === null ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>Day</button>
             {HOURS.filter((h) => hours.available.includes(h)).map((h) => (
               <button key={h} type="button" aria-pressed={hours.hour === h} onClick={() => hours.onHour(h)}
-                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${hours.hour === h ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line text-cc-muted hover:text-cc-ink"}`}>{h}Z</button>
+                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${hours.hour === h ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>{h}Z</button>
             ))}
           </div>
         )}
@@ -169,6 +171,7 @@ export default function TimelineBar({
         )}
       </div>
 
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border border-cc-line bg-cc-surface px-4 py-2 shadow-[0_4px_18px_rgba(0,0,0,0.28)]" data-timeline-card>
       <div className="relative min-w-0 flex-[1_1_460px]">
       {/* Without a forecast chip, the band above the steps is free: the day
           labels go there at full width. Either way they take no row of their
@@ -224,6 +227,7 @@ export default function TimelineBar({
       </div>
       </div>
       {children}
+      </div>
     </div>
   );
 }
