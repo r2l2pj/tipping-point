@@ -1099,13 +1099,15 @@ def _terrain_at_point(dem: np.ndarray, lon0: int, lat0: int, lon: float,
     return {b: float(bands[b][ri, ci]) for b in settings.TERRAIN}
 
 
-def _points_terrain(lon: np.ndarray, lat: np.ndarray, keep_dem: bool
-                    ) -> dict[str, np.ndarray]:
-    """Terrain bands for point arrays, grouped per 1 deg NASADEM cell."""
+def _points_terrain(lon: np.ndarray, lat: np.ndarray, keep_dem: bool,
+                    workers: int = 8) -> dict[str, np.ndarray]:
+    """Terrain bands for point arrays, grouped per 1 deg NASADEM cell
+    (cells in parallel: download-bound, ~26 MB DEM per worker)."""
     out = {b: np.full(lon.shape, np.nan) for b in settings.TERRAIN}
     cells = np.floor(lon).astype(int), np.floor(lat).astype(int)
     keys = cells[0] * 100000 + cells[1]
-    for key in np.unique(keys):
+
+    def one(key):
         sel = np.where(keys == key)[0]
         clon, clat = int(cells[0][sel[0]]), int(cells[1][sel[0]])
         try:
@@ -1113,18 +1115,25 @@ def _points_terrain(lon: np.ndarray, lat: np.ndarray, keep_dem: bool
         except Exception as exc:  # noqa: BLE001 - ocean cell / dead download -> NaN
             if not isinstance(exc, RuntimeError):
                 print(f"WARNING static points cell {clon},{clat}: {exc}", file=sys.stderr)
-            continue
+            return sel, None
         try:
             with rasterio.open(hgt) as ds:
                 dem = ds.read(1)
-            for i in sel:
-                b = _terrain_at_point(dem, clon, clat, lon[i], lat[i])
-                for name, v in b.items():
-                    out[name][i] = v
+            return sel, [_terrain_at_point(dem, clon, clat, lon[i], lat[i]) for i in sel]
         finally:
             if not keep_dem:
                 hgt.unlink(missing_ok=True)
                 zip_path.unlink(missing_ok=True)
+
+    uniq = np.unique(keys)
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        for k, (sel, vals) in enumerate(ex.map(one, uniq), start=1):
+            if vals is not None:
+                for i, b in zip(sel, vals, strict=True):
+                    for name, v in b.items():
+                        out[name][i] = v
+            if k % 100 == 0:
+                print(f"static points: {k}/{len(uniq)} DEM cells", file=sys.stderr, flush=True)
     return out
 
 
