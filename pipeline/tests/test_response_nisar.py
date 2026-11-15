@@ -380,3 +380,35 @@ def test_run_response_rejects_mismatched_modes(synthetic, tmp_path):
     meta = _run(synthetic, tmp_path / "m")
     assert meta["status"] == "no_usable_pair" and meta["rejected_pairs"]
     assert meta["flooded_km2"] is None and not (tmp_path / "m" / "flood_nisar.geojson").exists()
+
+
+def test_guard_accepts_adaptive_threshold(synthetic, tmp_path, monkeypatch):
+    real = rn.detect
+
+    def fake(*a, **k):
+        d = real(*a, **k)
+        d["stats"]["threshold_method"] = "adaptive"
+        return d
+    monkeypatch.setattr(rn, "detect", fake)
+    meta = rn.run_response(synthetic["bbox"], tmp_path / "a",
+                           search=lambda bb, s, e: synthetic["granules"],
+                           pair=lambda gs, bb: fn.pair_latest_pass(gs, bb, min_overlap_km2=1.0),
+                           gpw_src=synthetic["gpw"], now=datetime(2026, 11, 15, 3, 0, tzinfo=UTC),
+                           log=lambda m: None, edge_buffer_m=0.0, require_otsu=True)
+    assert not meta["rejected_pairs"] and meta["pairs"]
+
+
+def test_guard_rejects_fallback_threshold(synthetic, tmp_path, monkeypatch):
+    real = rn.detect
+
+    def fake(*a, **k):
+        d = real(*a, **k)
+        d["stats"]["threshold_method"] = "fallback"
+        return d
+    monkeypatch.setattr(rn, "detect", fake)
+    meta = rn.run_response(synthetic["bbox"], tmp_path / "f",
+                           search=lambda bb, s, e: synthetic["granules"],
+                           pair=lambda gs, bb: fn.pair_latest_pass(gs, bb, min_overlap_km2=1.0),
+                           gpw_src=synthetic["gpw"], now=datetime(2026, 11, 15, 3, 0, tzinfo=UTC),
+                           log=lambda m: None, edge_buffer_m=0.0, require_otsu=True)
+    assert meta["status"] == "no_usable_pair" and "fell back" in meta["rejected_pairs"][0]["reason"]

@@ -748,7 +748,9 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
             continue
         grid = data["grid"]
         det = detect(data["pre"], data["post"], grid, hand_path)
-        if require_otsu and det["stats"].get("threshold_method") != "otsu":
+        # flood_mask emits 'adaptive' when the per-scene Otsu fired and
+        # 'fallback' for the fixed -15 dB clamp: reject only the fallback
+        if require_otsu and det["stats"].get("threshold_method") not in ("adaptive", "otsu"):
             why = (f"water threshold fell back to {det['stats'].get('threshold_db')} dB "
                    f"({det['stats'].get('threshold_method')}): per-scene calibration failed, "
                    "pair not used")
@@ -865,8 +867,8 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
         meta["status"] = "no_new_flooding"
         meta["status_label"] = ("No new flooding detected this pass (comparable pair, per-scene "
                                 "threshold, edge and RS/SC/PR filters applied)")
-    meta["filters"] = {"pair": "same looks + acquisition mode", "threshold": "per-scene Otsu only "
-                       "(fallback -> pair rejected)" if require_otsu else "any",
+    meta["filters"] = {"pair": "same looks + acquisition mode", "threshold": "per-scene Otsu only ('adaptive'; "
+                       "'fallback' -> pair rejected)" if require_otsu else "any",
                        "edge_buffer_m": edge_buffer_m,
                        "states": list(ufs) if region is not None else None}
     return _finish(features)
