@@ -35,3 +35,21 @@ def test_ew_rows(monkeypatch):
     # elsewhere Apr 28 kept, Apr 30 (after onset) dropped
     assert got == {"positive": 1, "pre_event": 2, "same_season": 1, "elsewhere": 1}
     assert r.y.sum() == 1
+
+
+def test_source_mask_gfs_finite_and_positive_events():
+    """Review 04: rows need a finite GFS window; events left without positives drop out."""
+    import numpy as np
+
+    from ml.local import scoring as SC
+    df = pd.DataFrame({"issue_date": pd.to_datetime(["2020-01-01", "2022-02-14", "2022-02-15",
+                                                     "2023-05-01", "2023-05-02"]),
+                       "lon": 0.0, "lat": 0.0, "label": [1, 1, 0, 1, 0],
+                       "event_id": ["a", "b", "b", "c", "c"]})
+
+    def gd(lon, lat, iss, H):
+        v = {np.datetime64("2022-02-14"): np.nan}
+        return np.array([[v.get(np.datetime64(d, "D"), 1.0)] * H for d in iss])
+
+    assert SC.source_mask(df, "perfect").all()
+    assert list(SC.source_mask(df, "gfs", gd, 2)) == [False, False, False, True, True]
