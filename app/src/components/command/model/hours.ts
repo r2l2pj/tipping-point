@@ -3,6 +3,7 @@
 // rain window in UTC, e.g. "2026-09-30T06:00Z"). Only cases that publish
 // them show the hour chips.
 import type { ManifestLayer } from "@/lib/types";
+import { fmtMonthDayClock } from "@/lib/dateParts";
 import { isGfsFrame } from "@/lib/layers";
 import type { CcBundle, Hazard } from "./types";
 
@@ -29,7 +30,7 @@ export function hourLabel(l: ManifestLayer): string {
   if (!d) return "";
   const t = new Date(d.replace(/Z?$/, "Z").replace(/T(\d\d):(\d\d)Z$/, "T$1:$2:00Z"));
   if (Number.isNaN(t.getTime())) return d;
-  return t.toLocaleString("en-US", { timeZone: "America/Sao_Paulo", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }) + " BRT";
+  return `${fmtMonthDayClock(t, "America/Sao_Paulo", "24h")} BRT`;
 }
 
 // Forecast view + hour chip (conductor): the 6-hourly NOAA GFS frame valid at

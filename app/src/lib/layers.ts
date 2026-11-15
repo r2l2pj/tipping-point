@@ -3,6 +3,7 @@
 
 import { readCogPixel, readCogRST, type CogRSTUrls } from "./cog";
 import { resolveAsset } from "./contract";
+import { fmtClock, fmtMonthDayClock } from "./dateParts";
 import { rstFor } from "./tpi";
 import type { DayPoint, ManifestLayer, PriorityZone } from "./types";
 
@@ -489,12 +490,7 @@ export function fmtDateTime(iso?: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    timeZone: BRT,
-  });
+  return fmtClock(d, BRT, "24h");
 }
 
 // A data_dates value rendered for the popup/panels: date-only values get the
@@ -512,16 +508,7 @@ export function fmtDataStamp(iso?: string | null): string {
   if (!/T|\d:\d/.test(iso)) return fmtDate(iso);
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return (
-    d.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-      timeZone: BRT,
-    }) + " BRT"
-  );
+  return `${fmtMonthDayClock(d, BRT, "24h")} BRT`;
 }
 
 // --- doc v4 palettes ------------------------------------------------------------
