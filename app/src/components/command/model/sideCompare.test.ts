@@ -66,8 +66,8 @@ test("each side's day list depends on its layer: only dates that exist", () => {
   expect(sideDays(uy, steps, "flood", { layer: "nisar", date: "" }).map((d) => d.date)).toEqual(["2026-09-18", "2026-09-30", "2026-10-12", "2026-10-24", "2026-11-05"]);
   // Satellite lists the case days (steps ∪ layer dates).
   expect(sideDays(uy, steps, "flood", { layer: "satellite", date: "" }).map((d) => d.date)).toContain("2026-09-30");
-  // A NISAR day shows its mode: 'Sep 30 · 4005'.
-  expect(nisarSideDays(uy)[1].label).toBe("Sep 30 · 4005");
+  // A NISAR pass shows date · track · mode: 'Sep 30, 2026 · 010D · 4005'.
+  expect(nisarSideDays(uy)[1].label).toMatch(/^Sep 30, 2026( · \w+)? · 4005$/);
 });
 
 test("compareLayers: only layers the case has are offered; live offers ml", () => {
@@ -175,7 +175,7 @@ test("parseSideSpec: <layer>:<YYYY-MM-DD>[:<lead|pol|horizon>[:<track>]]", () =>
 
 test("normSide: clamps the day to the layer's own days; fills lead/pol/horizon", () => {
   expect(normSide(uy, steps, "flood", { layer: "rain", date: "2026-09-30" })).toEqual({ layer: "rain", date: "2026-09-28" });
-  expect(normSide(uy, steps, "flood", { layer: "nisar", date: "2026-10-05" })).toEqual({ layer: "nisar", date: "2026-09-30", pol: "HH" });
+  expect(normSide(uy, steps, "flood", { layer: "nisar", date: "2026-10-05" })).toMatchObject({ layer: "nisar", date: "2026-09-30", pol: "HH" });
   expect(normSide(uy, steps, "flood", { layer: "flood", date: "2026-09-30" })).toEqual({ layer: "flood", date: "2026-09-30", lead: 0 });
 });
 
@@ -196,8 +196,29 @@ test("nisarTracks: one stack per track; pairs only within the same track + pol",
   });
   expect(a.pair?.before.label).toBe("NISAR HH — Oct 20, 2026 (track 154D)");
   expect(a.pair?.after.url).toContain("nisar_hh_20261103_154D.png");
-  // The day list of a side follows its own track.
-  expect(nisarSideDays(now, "010D").map((d) => d.date)).toEqual(["2026-10-19", "2026-11-02"]);
+  // Lucas: each side lists EVERY pass of every track (date · track), any order.
+  expect(nisarSideDays(now).map((d) => `${d.date}|${d.track}`)).toEqual([
+    "2026-10-08|154D", "2026-10-19|010D", "2026-10-20|154D", "2026-11-02|010D", "2026-11-03|154D",
+  ]);
+  // Different tracks: allowed, with a non-blocking note; only identical picks are flagged.
+  const mixed = sidesCompare(now, {
+    L: { layer: "nisar", date: "2026-10-19", pol: "HH", track: "010D" },
+    R: { layer: "nisar", date: "2026-11-03", pol: "HH", track: "154D" },
+  });
+  expect(mixed.pair).toBeDefined();
+  expect(mixed.note).toBe("Different tracks — viewing angle differs, brightness not directly comparable");
+  expect(mixed.warning).toBeUndefined();
+  // Any order: the later pass on the left is fine.
+  const reversed = sidesCompare(now, {
+    L: { layer: "nisar", date: "2026-11-03", pol: "HH", track: "154D" },
+    R: { layer: "nisar", date: "2026-10-20", pol: "HH", track: "154D" },
+  });
+  expect(reversed.pair && !reversed.warning && !reversed.note).toBe(true);
+  const same = sidesCompare(now, {
+    L: { layer: "nisar", date: "2026-11-03", pol: "HH", track: "154D" },
+    R: { layer: "nisar", date: "2026-11-03", pol: "HH", track: "154D" },
+  });
+  expect(same.warning).toBe("Pick a different date");
   // Live offers every track; the compare lists them.
   expect(compareLayers(now, steps, "flood").find((l) => l.id === "nisar")?.tracks?.map((t) => t.id).sort()).toEqual(["010D", "154D"]);
   // A date the other track lacks resolves that side's own track frame.
@@ -249,4 +270,31 @@ test("Compare opens on the map's own layer: risk index over NISAR outlines → t
   const st = ["2026-09-30", "2026-10-12"].map((date, index) => ({ index, date, forecast: false, top: date, sub: "" })) as never[];
   expect(viewCompareLayer(uyB, st, ["tpi", "flood"], "flood")).toBe("flood");
   expect(viewCompareLayer(uyB, st, ["flood"], "flood")).toBe("nisar");
+});
+
+test("Radar tab 'Before / after' opens NISAR vs NISAR only (no layer chooser / presets); the map's Compare stays generic", async () => {
+  const { reduce, initialState } = await import("../state");
+  const s0 = initialState([uy], "rs_uruguai_2026");
+  const radar = reduce(s0, { type: "openCompare", kind: "radar" }, [uy]);
+  expect(radar.compareNisarOnly).toBe(true);
+  expect(radar.compareSides?.L.layer).toBe("nisar");
+  expect(radar.compareSides?.R.layer).toBe("nisar");
+  const generic = reduce({ ...s0, layers: ["tpi", "flood"] }, { type: "openCompare", kind: "forecast" }, [uy]);
+  expect(generic.compareNisarOnly).toBe(false);
+  const link = initialState([uy], "rs_uruguai_2026", undefined, { compare: "radar", before: "2026-09-30", after: "2026-10-12", pol: "HH" });
+  expect(link.compareNisarOnly).toBe(true);
+});
+
+test("Now: a rejected flood pair still offers NISAR Before / after once the Now stack has ≥ 2 passes", async () => {
+  const { radarCard } = await import("./radar");
+  const { liveBundle } = await import("./fixtures");
+  const stack = [
+    { id: "nisar_hh_20261103_154D", kind: "nisar_frame", date: "2026-11-03", track: "154D", polarization: "HH", png: "nisar_stack/png/a.png", bounds: [-55, -30, -53, -28] },
+    { id: "nisar_hh_20261022_154D", kind: "nisar_frame", date: "2026-10-22", track: "154D", polarization: "HH", png: "nisar_stack/png/b.png", bounds: [-55, -30, -53, -28] },
+  ];
+  const response = { pairs: 1, flooded_km2: null, polygons: null, null_reasons: { pairs: "per-scene threshold at the clamp" } };
+  const without = radarCard(liveBundle({ response, manifest: { layers: [] } } as never));
+  const withStack = radarCard(liveBundle({ response, manifest: { event: "now", layers: stack } } as never));
+  expect(withStack.compare.reason).toBeUndefined();
+  expect(without.compare.reason === undefined || /no comparable/.test(without.compare.reason ?? "")).toBe(true);
 });

@@ -462,7 +462,12 @@ function responseCard(bundle: CcBundle, base: RadarCard): RadarCard {
       ...base,
       // No usable pair (R2: mixed acquisition modes): the rejected pair's
       // images and backscatter series are not shown as evidence.
-      ...(none.computed ? {} : { series: undefined, compare: { kind: "radar" as const, reason: "no comparable NISAR pair this pass" } }),
+      // Lucas: with lead-analysis's Now NISAR stack (≥ 2 passes) the radar
+      // images can still be compared side by side (not a flood map); the
+      // rejected pair's own series stays hidden (R2).
+      ...(none.computed ? {} : nisarTracks(bundle).reduce((n, t) => n + t.dates.length, 0) >= 2
+        ? { series: undefined }
+        : { series: undefined, compare: { kind: "radar" as const, reason: "no comparable NISAR pair this pass" } }),
       pair: false,
       headline: `${none.label}${dates}`,
       flooded: { label: RESPONSE_AREA_LABEL, value: none.computed ? "none detected" : "not computed" },

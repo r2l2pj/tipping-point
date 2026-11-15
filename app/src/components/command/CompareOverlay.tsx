@@ -50,9 +50,12 @@ export default function CompareOverlay({
   sidesCtl?: {
     sides: Sides;
     layers: CompareLayerInfo[];
-    days: Record<"L" | "R", { date: string; label: string }[]>;
+    days: Record<"L" | "R", { date: string; label: string; value?: string; track?: string }[]>;
     presets: { id: ComparePresetId; label: string }[];
     warning?: string;
+    note?: string;
+    // Radar tab / NISAR view: NISAR vs NISAR only — no layer chooser, no presets.
+    nisarOnly?: boolean;
     missing?: { L?: string; R?: string };
     onSide: (side: "L" | "R", patch: {
       layer?: CompareLayer; date?: string; lead?: IssueLead;
@@ -73,7 +76,7 @@ export default function CompareOverlay({
           style={{ left: "calc(var(--cc-il, 0px) + (100% - var(--cc-il, 0px) - var(--cc-ir, 0px)) / 2)",
             maxWidth: "calc(100% - var(--cc-il, 0px) - var(--cc-ir, 0px) - 24px)" }}>
           <div className="flex flex-col gap-1 rounded-xl border border-cc-line-strong bg-white/95 px-2 py-1.5 text-xs shadow" data-compare-sides>
-            {sidesCtl.presets.length > 0 && (
+            {!sidesCtl.nisarOnly && sidesCtl.presets.length > 0 && (
               <div role="group" aria-label="Compare presets" data-compare-presets className="flex flex-wrap items-center gap-1">
                 {sidesCtl.presets.map((p) => (
                   <button key={p.id} type="button" onClick={() => sidesCtl.onPreset(p.id)}
@@ -92,23 +95,21 @@ export default function CompareOverlay({
               return (
                 <div key={side} role="group" aria-label={`${name} side`} className="flex flex-wrap items-center gap-1" data-side={side}>
                   <span className="w-9 font-semibold text-cc-muted">{name}</span>
-                  <select aria-label={`${name} layer`} value={s.layer}
+                  {!sidesCtl.nisarOnly && <select aria-label={`${name} layer`} value={s.layer}
                     onChange={(e) => sidesCtl.onSide(side, { layer: e.target.value as CompareLayer })}
                     className={sel} data-layer-select>
                     {!info && <option value={s.layer}>{COMPARE_LAYER_LABEL[s.layer]}</option>}
                     {sidesCtl.layers.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
-                  </select>
-                  {s.layer === "nisar" && info?.tracks?.length ? (
-                    <select aria-label={`${name} track`} value={s.track ?? info.tracks[0].id}
-                      onChange={(e) => sidesCtl.onSide(side, { track: e.target.value })}
-                      className={sel} data-track-select>
-                      {info.tracks.map((t) => <option key={t.id} value={t.id}>Track {t.id || "—"}</option>)}
-                    </select>
-                  ) : null}
-                  <select aria-label={`${name} day`} value={s.date}
-                    onChange={(e) => sidesCtl.onSide(side, { date: e.target.value })}
+                  </select>}
+                  {/* NISAR: one list of every pass (date · track · mode), any order. */}
+                  <select aria-label={`${name} day`}
+                    value={s.layer === "nisar" && dayOpts.some((d) => d.value) ? `${s.date}|${s.track ?? ""}` : s.date}
+                    onChange={(e) => {
+                      const [date, track] = e.target.value.split("|");
+                      sidesCtl.onSide(side, track !== undefined ? { date, track } : { date });
+                    }}
                     className={sel} data-day-select>
-                    {dayOpts.map((d) => <option key={d.date} value={d.date}>{d.label}</option>)}
+                    {dayOpts.map((d) => <option key={d.value ?? d.date} value={d.value ?? d.date}>{d.label}</option>)}
                   </select>
                   {isRiskLayer(s.layer) && info?.canForecast && (
                     <>
@@ -139,6 +140,7 @@ export default function CompareOverlay({
               );
             })}
             {sidesCtl.warning && <p className="m-0 font-semibold text-cc-warn" role="status" data-compare-warning>{sidesCtl.warning}</p>}
+            {sidesCtl.note && <p className="m-0 text-cc-muted" data-compare-note>{sidesCtl.note}</p>}
           </div>
         </div>
       )}

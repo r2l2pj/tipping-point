@@ -18,7 +18,8 @@ import {
 } from "./model/layerRegistry";
 import type { ComparePair } from "./model/radar";
 import { viewLayers, type ViewId } from "./model/views";
-import { defaultSides, normSide, nisarDefaults, parseSideSpec, presetSides, sideDays, viewCompareLayer, type ComparePresetId, type Sides } from "./model/sideCompare";
+import { defaultSides, mainTrackDays, normSide, nisarDefaults, parseSideSpec, presetSides, sideDays, viewCompareLayer, type ComparePresetId, type Sides } from "./model/sideCompare";
+import { nisarTracks } from "./model/radar";
 import { caseHasHazard, defaultStepIndex, floodPostDate, stepsFor, type IssueLead } from "./model/steps";
 import type { CcBundle, Hazard } from "./model/types";
 
@@ -46,6 +47,7 @@ export interface ScreenState {
   // Lucas (step 2): the generic Compare ⇆ — LEFT / RIGHT layer + day +
   // Observed | Forecast k | pol | track | horizon each.
   compareSides?: Sides;
+  compareNisarOnly?: boolean; // Radar tab / NISAR view: NISAR vs NISAR only
   fitTo?: [number, number, number, number]; // deep link ?fit=<layer>: initial map bounds
   // L52: Dark / Satellite / Streets chip on the map. The featured replay
   // opens on Satellite (case default); a ?basemap= link wins.
@@ -239,12 +241,13 @@ export function initialState(
     const seed = { layer: viewCompareLayer(first, steps, st.layers, st.hazard), horizon: st.probHorizon };
     if (link.compare === "radar") {
       const pol = link.pol === "HV" ? "HV" as const : "HH" as const;
-      const days = sideDays(first, steps, st.hazard, { layer: "nisar", date: "" }).map((d) => d.date);
-      const def = nisarDefaults(days, steps[st.dayIndex]?.date);
+      const def = nisarDefaults(mainTrackDays(first), steps[st.dayIndex]?.date);
+      const track = nisarTracks(first)[0]?.track || undefined;
       st.compareSides = {
-        L: normSide(first, steps, st.hazard, { layer: "nisar", date: link.before ?? def.before ?? "", pol }),
-        R: normSide(first, steps, st.hazard, { layer: "nisar", date: link.after ?? def.after ?? "", pol }),
+        L: normSide(first, steps, st.hazard, { layer: "nisar", date: link.before ?? def.before ?? "", pol, track }),
+        R: normSide(first, steps, st.hazard, { layer: "nisar", date: link.after ?? def.after ?? "", pol, track }),
       };
+      st.compareNisarOnly = true;
     } else if (link.compare === "1") {
       const l = parseSideSpec(link.l), r = parseSideSpec(link.r);
       st.compareSides = l && r
@@ -456,7 +459,10 @@ export function reduce(
         ? (presetSides(bundle, steps, state.dayIndex, state.hazard, "nisar-pair")
           ?? defaultSides(bundle, steps, state.dayIndex, state.hazard, state.issueLead, { ...seed, layer: "nisar" }))
         : defaultSides(bundle, steps, state.dayIndex, state.hazard, state.issueLead, seed);
-      return { ...state, compareOpen: "forecast", playing: false, compareSides };
+      // Lucas: from the Radar tab / NISAR view the compare is NISAR vs NISAR
+      // only (no layer chooser, no presets).
+      const nisarOnly = compareSides?.L.layer === "nisar" && compareSides?.R.layer === "nisar" && (action.kind === "radar" || seed.layer === "nisar");
+      return { ...state, compareOpen: "forecast", playing: false, compareSides, compareNisarOnly: nisarOnly };
     }
     case "closeCompare":
       return { ...state, compareOpen: null };
