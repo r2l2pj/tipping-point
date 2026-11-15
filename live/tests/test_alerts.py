@@ -68,6 +68,7 @@ def test_hazard_alerts_tag_and_cluster():
     assert len(scatter) == 1 and scatter[0]["pixels"] == 3
     slide = [c for c in cands if c["hazard"] == "landslide"][0]
     assert slide["when"] == "d1" and slide["area_km2"] > 0
+    assert slide["class_today"] == 0
     w, s, e, n = slide["bbox"]
     assert w < slide["centroid"][0] < e and s < slide["centroid"][1] < n
 
@@ -113,6 +114,16 @@ def test_municipality_lookup(tmp_path):
     assert where(-50.95, -29.5)["municipality"] == "Porto Alegre"   # 5 km off: snaps
     assert where(-45.0, -29.5) is None                               # far: none
     assert municipality_lookup(tmp_path / "nope")(-51.5, -29.5) is None
+
+
+def test_when_follows_the_day_of_the_worst_class():
+    """Alto today but Crítico only on D+1 -> class 3, when 'd1'."""
+    from live.alerts import emit_hazard_alerts
+    today, d1 = _classes(), _classes()
+    today[3:6, 3:6] = 2
+    d1[3:6, 3:6] = 3
+    (c,) = emit_hazard_alerts(None, {"landslide": (today, d1)}, NOON, TR)["candidates"]
+    assert c["class"] == 3 and c["class_today"] == 2 and c["when"] == "d1"
 
 
 def test_persisting_critico_stays_active_without_notification():

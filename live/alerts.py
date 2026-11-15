@@ -52,7 +52,10 @@ def _clusters(upgraded: np.ndarray, worst: np.ndarray, cls_today: np.ndarray,
             "critical_pixels": int((worst[rows, cols] == 3).sum()),
             "area_km2": round(float(rows.size * km * km
                                     * np.cos(np.deg2rad(lat))), 2),
-            "when": ("today" if (cls_today[rows, cols] >= ALERT_MIN_CLASS).any()
+            # the day the published (worst) class occurs: a Crítico that only
+            # exists on D+1 must not be labelled 'today'
+            "class_today": int(cls_today[rows, cols].max()),
+            "when": ("today" if int(cls_today[rows, cols].max()) >= cls
                      else "d1"),
             "centroid": [round(float(lon), 4), round(float(lat), 4)],
             "bbox": [round(float(v), 4) for v in (w, s_, e, n_)],
