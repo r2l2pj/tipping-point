@@ -147,8 +147,41 @@ def inputs(data_root: Path, suffix: str = "") -> dict:
     return out
 
 
-def run(data_root: Path, suffix: str = "") -> dict:
-    data = inputs(data_root, suffix)
+def npz_inputs(base: dict, cache: Path, variant: str, data_root: Path) -> dict:
+    """Swap TPI and T in the COG-based inputs for t1b8's frames.npz arrays (v2 rebuild or v3).
+
+    Same 90 m grid as the case COGs (checked). event = max over obs frames in the window;
+    gfs24 = max over the GFS frames valid on or before the onset UTC date (as run_frames).
+    The M1 baseline uses the T of the variant scored (v3 flood: HAND1000 T).
+    """
+    import rasterio
+    import warned_before as wb
+    out = {}
+    for (case, hz, frames), (_, _, idx, dom, ref) in base.items():
+        f = cache / case / "frames.npz"
+        if not f.exists():
+            continue
+        z = np.load(f, allow_pickle=False)
+        if case in WINDOWS:
+            with rasterio.open(data_root / case / "cog" / f"{case}_t_flood_{'20240502' if case == 'rs_2024' else '20251210'}.tif") as g:
+                assert np.allclose(np.asarray(g.transform)[:6], z["transform"]), f"{case}: frames.npz grid differs"
+        dates, kind = z["frame_dates"], z["frame_kind"]
+        if frames == "event":
+            lo, hi = WINDOWS.get(case, ("20260930", "20260930"))
+            sel = (kind == "obs") & (dates >= lo) & (dates <= hi)
+        else:
+            onset = wb.ANCHORS[case][0]["utc"].strftime("%Y%m%d")
+            sel = np.char.startswith(kind, "gfs") & (dates <= onset)
+        if not sel.any():
+            continue
+        stack = z[f"tpi_{variant}_{hz}"]
+        tpi = np.fmax.reduce(stack[sel].astype(np.float64))
+        out[(case, hz, frames)] = (tpi, z[f"t_{variant}_{hz}"].astype(np.float64), idx, dom, ref)
+    return out
+
+
+def run(data_root: Path, suffix: str = "", data: dict | None = None) -> dict:
+    data = data if data is not None else inputs(data_root, suffix)
     sc = {k: Scorer(*v[:4]) for k, v in data.items()}
     res = {"rule": f"Crítico cut = lowest cut with area <= {MAX_AREA_PCT} % and M1 ratio > 1, chosen on the "
                    "calibration case only", "suffix": suffix or "(served v2)", "references": {
@@ -188,7 +221,32 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--suffix", default="")
     ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--v3-cache", type=Path, default=None,
+                    help="t1b8's ~/.cache/lead-analysis/v3 (frames.npz per case): score v2 rebuild and v3")
     a = ap.parse_args(argv)
+    if a.v3_cache:
+        base = inputs(REPO / "data")
+        res = {"note": "v2 = t1b8 rebuild of the served formula on the same frames; v3 = M2 liquid IMERG + "
+                       "M3 R log2 cap at 4xP99 + M5 HAND1000 (wetland NaN) + M6 S ramp 0.3-0.9",
+               "cog_v2": run(REPO / "data", data=base)}
+        for v in ("v2", "v3"):
+            res[v] = run(REPO / "data", data=npz_inputs(base, a.v3_cache, v, REPO / "data") | {
+                k: x for k, x in base.items() if k[0] == "rs_uruguai_2026"
+                and not (a.v3_cache / "rs_uruguai_2026" / "frames.npz").exists()})
+        out = a.out or REPO / "ml/models/m4_cuts_v2_v3.json"
+        out.write_text(json.dumps(res, indent=1))
+        f = ("cut", "area_pct", "hit_pct", "lift", "ratio")
+        for v in ("cog_v2", "v2", "v3"):
+            print(f"\n===== {v}")
+            for k, c in res[v]["curves"].items():
+                old = [x for x in c if x["cut"] in (0.4, 0.6)]
+                print(k, [{x: o.get(x) for x in f} for o in old])
+            for r in res[v]["splits"]:
+                print(r["hazard"], r["frames"], "cal", r["calibrated_on"], "new", r["new_critico_cut"],
+                      "area_only", r["area_only_cut"], {e: {k: {x: d[k].get(x) for x in f} for k in d
+                                                            if isinstance(d[k], dict) and k != "old_alto_plus"}
+                                                        for e, d in r["evaluation"].items()})
+        return 0
     res = run(REPO / "data", a.suffix)
     out = a.out or REPO / f"ml/models/m4_cuts{a.suffix}.json"
     out.write_text(json.dumps(res, indent=1))

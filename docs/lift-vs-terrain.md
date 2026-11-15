@@ -65,3 +65,62 @@ From the external review (`.crew/review/10-correcoes-revisao-externa.md`), items
 - The "high Cascades" longitude band is mostly mid-slope valley terrain: **59 % of the Critical area sits below 1,000 m.**
 - Snow may still matter for the 41 % above 1,000 m. A phase split (M2) is still worth testing.
 - **"Most of the Critical area is snow-covered high terrain" should not be cited.**
+
+## M4: class cuts calibrated on one case, evaluated on the other (v2 vs v3 candidate)
+
+**Tool and data.**
+
+- Tool: `tools/m4_cut_calibration.py`.
+- Numbers: `ml/models/m4_cuts.json` (served COGs) and `ml/models/m4_cuts_v2_v3.json` (lead-analysis's `~/.cache/lead-analysis/v3/<case>/frames.npz`).
+- **The v2 rebuild in frames.npz reproduces the served COG numbers exactly**, so v2 and v3 are compared on identical frames, grids and references.
+
+**The v3 candidate** combines M2, M3, M5 and M6:
+
+- **M2:** liquid-phase IMERG.
+- **M3:** R grows past P99 on a log2 scale and caps at 4×P99, because the review's 2×P99 cap still saturated RS.
+- **M5:** T_flood from HAND with a 1000 m radius; GSW 10–50 % wetland set to NaN.
+- **M6:** the S ramp starts at 0.3 instead of 0.5.
+
+**Rule for the Critical cut (§M4).** On the calibration case only, take the lowest cut (0.30–0.99, step 0.01) that flags at most 2 % of the domain **and** has M1 ratio > 1. Then apply that cut unchanged to the other case. Flood cuts are also applied to the Uruguaiana corridor.
+
+**Frame sets.**
+
+- **event:** the observed replay, max over the event window.
+- **gfs24:** the GFS run issued ≥ 24 h before onset.
+
+### Current cuts (High+ 0.4 / Critical 0.6), v2 → v3, Critical
+
+| Case · frames | Area flagged | Truth hit | Lift | M1 ratio |
+|---|---|---|---|---|
+| RS slide · event | 10.7 % → 10.7 % | 85 % → 85 % | 7.9 → 8.0 | 1.00 → 1.00 |
+| RS slide · gfs24 | 0.11 % → 0.14 % | 0.18 % → 0.12 % | 1.6 → 0.85 | 0.08 → 0.04 |
+| RS flood (EMS) · event | 2.9 % → 4.3 % | 14.9 % → 21.1 % | 5.2 → 4.9 | 1.00 → 1.00 |
+| WA slide (15 points) · event | 22.6 % → 21.8 % | 60 % → 60 % | 2.65 → 2.76 | 1.00 → 1.29 |
+| WA slide · gfs24, **High+** | 3.8 % → 7.3 % | 0 → 20 % (3 of 15) | 0 → 2.7 | 0 → 1.75 |
+| WA flood (NISAR) · event | 6.2 % → 9.0 % | 74 % → 96 % | 11.8 → 10.6 | 0.78 → 1.01 |
+| Flood · gfs24 (RS and WA) | ≤ 0.1 % | 0 | — | — |
+
+### Cross-case calibration result
+
+**No split passes.** On the calibration case, no cut meets both rules, either for v2 or for v3, in any frame set.
+
+- **The one exception is degenerate:** v3 flood gfs24 calibrated on RS gives cut 0.30, with 0.18 % area and ratio 1.02 from 1 % of EMS cells. On WA the same cut hits 0.
+- **Area-only cuts (≤ 2 % area, ignoring the ratio) do not transfer.**
+  - v3 slide event: RS→WA 0.97 gives a WA ratio of 3.25, but it catches only 2 of 15 slides. WA→RS 0.98 gives a ratio of 1.00.
+  - v3 flood event: RS→WA 0.93 catches 0 % of the NISAR water. WA→RS 0.80 has ratio 1.00.
+- **The R·S·T product scale gives the same ranking** (product cut = geometric-mean cut³, so 0.6 ↔ 0.216 and 0.97 ↔ 0.91). The conclusion is identical.
+
+**Why.** Even with M3, the event-peak rain and soil terms are near 1 almost everywhere:
+
+| | Domain-mean R | Domain-mean S |
+|---|---|---|
+| RS, May 2–3 | 0.95–0.98 | 0.98–0.99 |
+
+So inside the flagged area, the TPI still ranks cells like T. Raising or lowering a cut cannot add information the formula does not carry.
+
+**Reading for v3.**
+
+- **Gains (flood):** v3 widens flood coverage in both cases (WA NISAR 74 % → 96 % at Critical, RS EMS 15 % → 21 %) for about 45–50 % more area. It moves the WA Critical ratio from 0.78 to 1.0.
+- **Gains (WA slides):** v3 helps slightly (ratio 1.29 at the event; 3 of 15 slides at High+ on gfs24), but n = 15.
+- **Loss:** v3 is worse for the RS slide forecast. On gfs24 at Critical, the lift drops from 1.6 to 0.85.
+- **§M4 acceptance:** not met. A new class-cut table cannot be adopted on this evidence.
