@@ -27,7 +27,7 @@ def test_card_v2_shape():
     g = c["generalise"]["gfs"]["24h"]["xgb_rain_soil"]
     assert g["events_n"] == 2 and abs(g["event_median"] - 0.45) < 1e-9 and g["worst_event"] == "helene_2024"
     assert g["loeo_min"] == 0.3 and g["loeo_max"] == 0.6
-    assert set(c["by_lead"]["scopes"]) == {"pooled"}
+    assert set(c["by_lead"]["scopes"]) == {"pooled", "rs_2024"}
     assert "extra" not in c["by_lead"]["scopes"]["pooled"]["1"]["both"]["x"]
 
 

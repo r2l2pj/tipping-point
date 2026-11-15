@@ -476,6 +476,12 @@ def ml_card_v2(met: dict) -> dict:
                 if isinstance(v, dict) and name in card["trigger"].get(h, {}).get(src, {}):
                     card["trigger"][h][src][name]["by_event"] = {
                         ev: _slim(m) for ev, m in (v.get("by_event") or {}).items()}
+    hv = (met.get("val_3b") or {}).get("horizon_val") or {}
+    for h, srcs in card["trigger"].items():
+        for src, ms in srcs.items():
+            for name, e in ms.items():
+                if isinstance(e, dict) and "test" in e:
+                    e["val"] = _slim((hv.get(h) or {}).get(name))
     try:
         reg = load_registry(S.TEST_EVENTS_FILE)
     except Exception:  # noqa: BLE001 - names are cosmetic
@@ -506,6 +512,12 @@ def ml_card_v2(met: dict) -> dict:
                        for src in ("gfs", "perfect")},
         "low_skill_horizons": ["7d"],
         "served": _served_v2(met),
+        "val_vs_test_note": ("VAL = held-out GLC/COOLR events (worldwide, mostly 2015-2018, perfect "
+                             "forecast); TEST = held-out disaster events. VAL PR-AUC (24h ~0.13) is "
+                             "~5x lower than TEST (~0.62): base rates differ and TEST events are large, "
+                             "well-defined storms. An independent overfit audit is checking whether "
+                             "TEST is easier by design; read TEST next to VAL."),
+        "headline_status": "held: independent overfit audit pending",
     })
     card["split"]["3a"] = ("v2 (L32): TRAIN/VAL = GLC landslides in ~50 km blocks, S+SE Brazil, "
                            "no RS 2024 points; TEST = held-out Brazilian event slides vs random land")
@@ -520,13 +532,15 @@ def ml_card_v2(met: dict) -> dict:
     return card
 
 
-def _slim_by_lead(bl: dict, scopes=("pooled", "pooled_clean3a")) -> dict:
-    """App-size by_lead: notes + the pooled scopes only, metric leaves cut to CARD_KEYS."""
+def _slim_by_lead(bl: dict, scopes=("pooled", "rs_2024"),
+                  negs=("both",)) -> dict:
+    """App-size by_lead: notes + a few scopes, headline negatives only, CARD_KEYS leaves."""
     def walk(v):
         if isinstance(v, dict):
             if "n_pos" in v:
                 return {k: v[k] for k in CARD_KEYS if k in v}
-            return {k: walk(x) for k, x in v.items()}
+            return {k: walk(x) for k, x in v.items()
+                    if k not in ("same_point", "elsewhere") or k in negs}
         return v
     out = {k: v for k, v in bl.items() if k != "scopes"}
     sc = bl.get("scopes") or {}
@@ -553,9 +567,17 @@ def export_card_v2() -> dict:
     met = json.loads((S.MODEL_DIR / "metrics_ml.json").read_text())
     mldir = DATA_OUT / "ml"
     mldir.mkdir(parents=True, exist_ok=True)
-    card = ml_card_v2(met)
-    (mldir / "ml_card_v2.json").write_text(json.dumps(card, indent=2, default=str))
-    (mldir / "model_metrics_v2.json").write_text(json.dumps(met, indent=2, default=str))
+    def rnd(v):
+        if isinstance(v, float):
+            return round(v, 4)
+        if isinstance(v, dict):
+            return {k: rnd(x) for k, x in v.items()}
+        if isinstance(v, list):
+            return [rnd(x) for x in v]
+        return v
+    card = rnd(ml_card_v2(met))
+    (mldir / "ml_card_v2.json").write_text(json.dumps(card, separators=(",", ":"), default=str))
+    (mldir / "model_metrics_v2.json").write_text(json.dumps(met, separators=(",", ":"), default=str))
     log.info("ml_card_v2: %d horizons, %d TEST events", len(card["trigger"]), len(card["test_events"]))
     return card
 
