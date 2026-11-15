@@ -64,7 +64,10 @@ export function tourStops(cases: readonly CcBundle[]): TourStop[] {
   if (wa) stops.push({
     key: "wa",
     what: "Replay: the landslide-risk forecast issued Dec 3 for Dec 6, as it was available then",
-    action: { type: "goTo", id: wa, day: -7, hazard: "slide", lead: 3 },
+    // The day is the TARGET day of the forecast (Dec 6 = D-4), and lead 3 means
+    // the run issued 3 days earlier (Dec 3). Picking the issue day (Dec 3 = D-7)
+    // asks for the run of Nov 30, which is not archived.
+    action: { type: "goTo", id: wa, day: "2025-12-06", hazard: "slide", lead: 3 },
   });
   const titles: Record<string, string> = {
     "uy-radar": `${uy?.title ?? "Uruguay River flood"} — ${uyNisar ? "NISAR radar" : "radar"}`,
