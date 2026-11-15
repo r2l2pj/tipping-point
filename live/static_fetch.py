@@ -7,9 +7,9 @@ data/static/ tree, then the legacy Neon object-storage copy:
   data/static/south_brazil/clim/doy_NNN.tif   3-band float32: p90/p95/p99
     (mm, 3-day IMERG accumulation percentiles) on the NOW_BOUNDS
     1150x1000 EPSG:4326 dst grid.
-  data/static/south_brazil/terrain/{slope_deg,hand_m,t_slide,t_flood}.tif
-    float32 on the same grid; t_* are precomputed products, slope/hand
-    the raw rasters they derive from.
+  terrain/{slope_deg,hand_m}.tif  float32 on the same grid; T_slide and
+    T_flood are DERIVED here (live/tpi.py formulas) and sanity-checked
+    (terrain_checks). Precomputed t_*.tif are never read.
 
 The COGs are exported once from the GEE assets (allowed one-off under
 L25) and republished by lead-analysis; the Now job only ever reads them.
@@ -68,21 +68,37 @@ def _clim_for_doy(doy: int) -> dict[str, np.ndarray] | None:
     return {"p90": arr[0], "p95": arr[1], "p99": arr[2]}
 
 
-def _terrain() -> tuple[np.ndarray, np.ndarray] | None:
-    ts = _read_cog("terrain/t_slide.tif")
-    tf = _read_cog("terrain/t_flood.tif")
-    if ts is not None and tf is not None:
-        return ts[0], tf[0]
-    # derive from raw rasters (same formulas as the EE export)
+# terrain sanity on the 0.01 deg NOW grid (static-v1 slope: p99 ~20.8 deg).
+# The stale pre-L26 rasters had p99 7.6 deg -> T_slide ~0 everywhere.
+SLOPE_P99_RANGE = (12.0, 45.0)
+T_SLIDE_MIN_FRAC = 0.01
+
+
+def terrain_checks(slope: np.ndarray, t_slide: np.ndarray) -> dict:
+    p99 = float(np.nanpercentile(slope, 99))
+    frac = float(np.mean(t_slide > 0))
+    return {
+        "slope_p99_deg": round(p99, 2),
+        "slope_p99_ok": SLOPE_P99_RANGE[0] <= p99 <= SLOPE_P99_RANGE[1],
+        "t_slide_nonzero_frac": round(frac, 4),
+        "t_slide_ok": frac >= T_SLIDE_MIN_FRAC,
+    }
+
+
+def _terrain() -> tuple[np.ndarray, np.ndarray, dict] | None:
+    """T_slide/T_flood DERIVED from the static-v1 slope_deg + hand_m COGs
+    (same formulas as live/tpi.py). Precomputed t_*.tif files are never
+    read: the committed ones were stale and silently zeroed landslide TPI."""
+    from live.tpi import terrain_flood, terrain_slide
+
     slope = _read_cog("terrain/slope_deg.tif")
     hand = _read_cog("terrain/hand_m.tif")
     if slope is None or hand is None:
         return None
     slope, hand = slope[0], hand[0]
-    t_slide = np.clip((slope - 15.0) / (30.0 - 15.0), 0.0, 1.0)
-    t_flood = np.clip(1.0 - (hand - 5.0) / (15.0 - 5.0), 0.0, 1.0)
-    t_flood[slope > 5.0] = 0.0
-    return t_slide, t_flood
+    t_slide = terrain_slide(slope)
+    t_flood = terrain_flood(hand, slope)
+    return t_slide, t_flood, terrain_checks(slope, t_slide)
 
 
 def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
@@ -109,7 +125,8 @@ def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
     if missing:
         print(f"[static_fetch] {missing} doy(s) missing — nearest "
               f"available will be used", file=sys.stderr)
-    return {"t_slide": terr[0], "t_flood": terr[1], "clim": clim}
+    return {"t_slide": terr[0], "t_flood": terr[1], "clim": clim,
+            "checks": terr[2]}
 
 
 def clim_for_day(static: dict, day: dt.date) -> dict[str, np.ndarray]:

@@ -111,6 +111,17 @@ def build_manifest(bounds, updated_at, data_dates, layers, nisar_passes) -> dict
     }
 
 
+def run_checks(terrain: dict | None, r_zero_violations: int) -> dict:
+    """Run-level sanity gates; alerts are published only when all pass.
+    terrain: static_fetch.terrain_checks() (None on the legacy npz path)."""
+    checks = dict(terrain or {"terrain_checked": False})
+    checks["r_zero_tpi_zero"] = r_zero_violations == 0
+    checks["r_zero_violations"] = r_zero_violations
+    checks["passed"] = all(v for k, v in checks.items()
+                           if isinstance(v, bool) and k != "passed")
+    return checks
+
+
 def _clim_for_day(static: dict, day: dt.date) -> dict[str, np.ndarray]:
     if "clim" in static:
         from live import static_fetch
@@ -170,10 +181,15 @@ def run(args) -> dict:
     t_slide, t_flood = static["t_slide"], static["t_flood"]
 
     days, slides, floods, slide_tpi, flood_tpi = [], [], [], [], []
+    r_zero_violations = 0   # pixels with R == 0 but TPI > 0 (must stay 0)
     for k in range(FORECAST_DAYS + 1):
         day = today + dt.timedelta(days=k)
         rain3 = rain3_today if k == 0 else tpi.projected_rain3(obs_stack[-3:], fc_stack, k)
         out = tpi.tpi(rain3, sm, _clim_for_day(static, day), t_slide, t_flood)
+        r0 = out["r"] == 0
+        r_zero_violations += int(np.count_nonzero(
+            r0 & ((np.nan_to_num(out["tpi_slide"]) > 0)
+                  | (np.nan_to_num(out["tpi_flood"]) > 0))))
         days.append(day)
         slide_tpi.append(out["tpi_slide"])
         flood_tpi.append(out["tpi_flood"])
@@ -254,10 +270,26 @@ def run(args) -> dict:
             # per-hazard keys since L27; older snapshots only have "worst"
             prev = {h: z[h] if h in z.files else z["worst"]
                     for h in ("landslide", "flood") if h in z.files or "worst" in z.files}
-    files["alerts.json"] = alerts.emit_hazard_alerts(
+    terrain = static.get("checks")
+    if terrain is None and "slope_deg" in static:   # legacy npz path
+        from live.static_fetch import terrain_checks
+        terrain = terrain_checks(np.asarray(static["slope_deg"]), t_slide)
+    checks = run_checks(terrain, r_zero_violations)
+    alerts_paused = not checks["passed"]
+    payload = alerts.emit_hazard_alerts(
         prev, {"landslide": (slides[0], slides[1]),
                "flood": (floods[0], floods[1])},
         dt.datetime.now(dt.UTC), transform)
+    where = now_geojson.municipality_lookup(gj_dir)
+    for c in payload["candidates"]:
+        c.update(where(*c["centroid"]) or {"municipality": None, "uf": None})
+        c["kind"] = "tpi"
+    payload["paused"] = alerts_paused
+    if alerts_paused:
+        payload["candidates"] = []
+        payload["paused_reason"] = "run checks failed: " + ", ".join(
+            k for k, v in checks.items() if v is False)
+    files["alerts.json"] = payload
     files["prev_classes.npz"] = render.npz_bytes(
         worst=np.maximum(np.maximum(slides[0], floods[0]),
                          np.maximum(slides[1], floods[1])),
@@ -276,6 +308,9 @@ def run(args) -> dict:
     present = {k: v for k, v in manifest["products"].items() if v in files}
     prune_products(manifest, args.out_dir)
     manifest["products"] = {**manifest["products"], **present}
+    manifest["checks"] = checks
+    manifest["alerts_paused"] = alerts_paused
+    manifest["verified"] = checks["passed"]   # app gates /alerts on this
     written = publish.write_outputs(args.out_dir, files, manifest)
     assert written[-1].name == "manifest.json"
     return manifest

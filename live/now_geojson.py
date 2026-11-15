@@ -110,3 +110,43 @@ def ensure_permanent_water(gj_dir: Path, bounds: tuple[float, ...],
         "features": feats}, separators=(",", ":")) + "\n")
     print(f"[now_geojson] permanent_water: {len(feats)} polygons")
     return out
+
+
+def municipality_lookup(gj_dir: Path, max_dist_deg: float = 0.1):
+    """-> fn(lon, lat) -> {"municipality", "uf"} | None, from
+    municipal_boundaries.geojson. A point outside every polygon snaps to
+    the nearest municipality within max_dist_deg (~10 km, coastline and
+    edge cases); farther away (Argentina/Uruguay/Paraguay/ocean) -> None."""
+    import re
+
+    from shapely import STRtree
+    from shapely.geometry import Point, shape
+
+    p = gj_dir / "municipal_boundaries.geojson"
+    if not p.exists():
+        return lambda lon, lat: None
+    geoms, props = [], []
+    for f in json.loads(p.read_text()).get("features", []):
+        try:
+            geoms.append(shape(f["geometry"]))
+        except (KeyError, ValueError, TypeError):
+            continue
+        pr = f.get("properties") or {}
+        m = re.search(r"estados/([A-Z]{2})", pr.get("url") or "")
+        props.append({"municipality": pr.get("name"),
+                      "uf": m.group(1) if m else None})
+    if not geoms:
+        return lambda lon, lat: None
+    tree = STRtree(geoms)
+
+    def lookup(lon: float, lat: float):
+        pt = Point(lon, lat)
+        hits = tree.query(pt, predicate="intersects")
+        if len(hits):
+            return dict(props[int(hits[0])])
+        i = tree.nearest(pt)
+        if i is not None and geoms[int(i)].distance(pt) <= max_dist_deg:
+            return dict(props[int(i)])
+        return None
+
+    return lookup

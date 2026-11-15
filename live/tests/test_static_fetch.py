@@ -57,3 +57,33 @@ def test_read_cog_prefers_release_then_local_then_neon(monkeypatch):
     assert arr is not None
     assert "releases/download/static-v1/doy_318.tif" in seen[0]
     assert seen[-1].endswith("/data/static/south_brazil/clim/doy_318.tif")
+
+
+def test_terrain_checks_reject_stale_flat_slope():
+    import numpy as np
+    from live.static_fetch import terrain_checks
+    from live.tpi import terrain_slide
+    rng = np.random.default_rng(0)
+    stale = rng.gamma(1.0, 1.2, (200, 200))           # p99 ~ 5.5 deg: the stale raster's shape
+    c = terrain_checks(stale, terrain_slide(stale))
+    assert not c["slope_p99_ok"] and not c["t_slide_ok"]
+    sane = rng.gamma(1.5, 4.0, (200, 200))            # p99 ~ 20 deg like static-v1
+    c = terrain_checks(sane, terrain_slide(sane))
+    assert c["slope_p99_ok"] and c["t_slide_ok"]
+
+
+def test_terrain_never_reads_precomputed_t_files(monkeypatch):
+    import numpy as np
+    from live import static_fetch
+    reads = []
+    slope = np.full((1, 4, 4), 22.5)
+    hand = np.full((1, 4, 4), 2.0)
+
+    def fake(rel):
+        reads.append(rel)
+        return {"terrain/slope_deg.tif": slope, "terrain/hand_m.tif": hand}.get(rel)
+    monkeypatch.setattr(static_fetch, "_read_cog", fake)
+    t_slide, t_flood, checks = static_fetch._terrain()
+    assert reads == ["terrain/slope_deg.tif", "terrain/hand_m.tif"]
+    assert np.allclose(t_slide, 0.5) and np.allclose(t_flood, 0.0)  # slope > 5 deg
+    assert checks["slope_p99_ok"]

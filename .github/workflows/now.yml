@@ -64,17 +64,27 @@ jobs:
           path: |
             data/now/static/gpw/gpw_popcount_2020_30sec.tif
             data/now/static/mcd12q1/lc_type1_2025.tif
+            data/now/static/jrc_gsw/gsw_occurrence_2021.tif
+            data/now/static/jrc_gsw/gsw_seasonality_2021.tif
             data/static/south_brazil/terrain/hand_m.tif
-          key: static-v1-response-1
+          key: static-v1-response-2
 
-      - name: Fetch static response inputs (cache miss only)
+      - name: Fetch static response inputs (cache miss only, sha256-checked)
         run: |
           set -euo pipefail
           rel="https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
-          get() { [ -s "$2" ] || { mkdir -p "$(dirname "$2")"; curl -fsSL --retry 3 -o "$2" "$rel/$1"; }; }
-          get gpw_popcount_2020_30sec.tif data/now/static/gpw/gpw_popcount_2020_30sec.tif
-          get lc_type1_2025.tif data/now/static/mcd12q1/lc_type1_2025.tif
-          get hand_m.tif data/static/south_brazil/terrain/hand_m.tif
+          get() {  # asset dest sha256
+            if [ ! -s "$2" ]; then
+              mkdir -p "$(dirname "$2")"
+              curl -fsSL --retry 3 -o "$2" "$rel/$1"
+            fi
+            echo "$3  $2" | sha256sum -c -
+          }
+          get gpw_popcount_2020_30sec.tif data/now/static/gpw/gpw_popcount_2020_30sec.tif 76dea7254b5b83147b9791fd2017df73ae8fb511eadaf00701b7dfa94dcbc203
+          get lc_type1_2025.tif data/now/static/mcd12q1/lc_type1_2025.tif 5606cd09ecf8ca00df62c1e9b39a89a5e1c4a9595c8f853555e324c497a1b68b
+          get gsw_occurrence_2021.tif data/now/static/jrc_gsw/gsw_occurrence_2021.tif a31b98c96856b1541b7a998bbbbcc00326d6bb61cdb8055245199d3ac9cf3c04
+          get gsw_seasonality_2021.tif data/now/static/jrc_gsw/gsw_seasonality_2021.tif 30cda153f75a687afd2421ef05337a5f392931a575431377bcf3ead65215c307
+          get hand_m.tif data/static/south_brazil/terrain/hand_m.tif 5445278f146e65dca6cfae21bf6d31a97dbaf79cac3fb8230a22eb39635a993d
 
       # R1 rolling state ("changed since last pass"): restore the newest
       # snapshot, save a new one after R1 (cache entries are immutable).
@@ -155,7 +165,9 @@ jobs:
           else echo "::notice::R3 script not on this branch yet"; fi
 
       - name: Finalize now manifest (merge response node, drop absent products)
-        run: uv run python -m live.now_manifest
+        run: |
+          uv run python -m live.now_manifest
+          uv run python tools/build_manifest.py
 
       # L26: GitHub 'fallback' branch is the primary data host (one
       # force-pushed orphan snapshot per run, app-facing files only,

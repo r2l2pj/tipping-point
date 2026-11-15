@@ -81,6 +81,40 @@ def test_hazard_alerts_prev_per_hazard_suppresses_repeats():
     assert out["candidates"] == []
 
 
+def test_no_high_or_critical_means_no_tpi_alerts():
+    """0 km2 Alto/Crítico (classes <= Moderado everywhere) => 0 TPI alerts."""
+    from live.alerts import emit_hazard_alerts
+    moderate = _classes(1)
+    out = emit_hazard_alerts(None, {"landslide": (moderate, moderate),
+                                    "flood": (_classes(), moderate)}, NOON, TR)
+    assert out["candidates"] == []
+
+
+def test_run_checks_pause_alerts():
+    from live.run_now import run_checks
+    ok = run_checks({"slope_p99_ok": True, "t_slide_ok": True}, 0)
+    assert ok["passed"] is True
+    assert run_checks({"slope_p99_ok": False, "t_slide_ok": True}, 0)["passed"] is False
+    assert run_checks({"slope_p99_ok": True, "t_slide_ok": True}, 3)["passed"] is False
+    assert run_checks(None, 0)["passed"] is False      # unchecked terrain
+
+
+def test_municipality_lookup(tmp_path):
+    import json as _json
+    from live.now_geojson import municipality_lookup
+    sq = [[[-52.0, -30.0], [-51.0, -30.0], [-51.0, -29.0], [-52.0, -29.0], [-52.0, -30.0]]]
+    (tmp_path / "municipal_boundaries.geojson").write_text(_json.dumps({
+        "type": "FeatureCollection", "features": [{
+            "type": "Feature", "geometry": {"type": "Polygon", "coordinates": sq},
+            "properties": {"name": "Porto Alegre",
+                           "url": "https://servicodados.ibge.gov.br/api/v3/malhas/estados/RS"}}]}))
+    where = municipality_lookup(tmp_path)
+    assert where(-51.5, -29.5) == {"municipality": "Porto Alegre", "uf": "RS"}
+    assert where(-50.95, -29.5)["municipality"] == "Porto Alegre"   # 5 km off: snaps
+    assert where(-45.0, -29.5) is None                               # far: none
+    assert municipality_lookup(tmp_path / "nope")(-51.5, -29.5) is None
+
+
 # --------------------------------------------------------------------------
 # L12b Neon subscriber store — exercised against a real fake HTTPS server
 # (stdlib http.server + self-signed cert on an ephemeral port), never with

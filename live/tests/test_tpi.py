@@ -105,3 +105,14 @@ def test_projected_rain3_blends_observed_and_forecast():
     assert projected_rain3(obs, fc, 3)[0, 0] == pytest.approx(30.0)
     with pytest.raises(ValueError):
         projected_rain3(obs, fc, 4)
+
+
+def test_r_zero_forces_tpi_zero():
+    """Geometric mean: no rain signal (R = 0) => TPI = 0, whatever S and T."""
+    import numpy as np
+    from live import tpi as t
+    rain3 = np.array([[0.0, 6.0, 30.0]])
+    clim = {k: np.full((1, 3), v) for k, v in (("p90", 41.0), ("p95", 54.0), ("p99", 78.0))}
+    out = t.tpi(rain3, np.full((1, 3), 0.95), clim, np.ones((1, 3)), np.ones((1, 3)))
+    assert (out["r"] == 0).all()
+    assert (out["tpi_slide"] == 0).all() and (out["tpi_flood"] == 0).all()
