@@ -63,3 +63,26 @@ def test_lead_from_history_archive(tmp_path):
     r = nna.run(now)
     assert r["forecast"]["lead_1d"]["critico"]["hit_pct"] == 100.0
     assert r["forecast"]["lead_2d"]["null_reason"] == nna.LEAD_REASON
+
+
+def test_lead_from_uint8_scaled_archive(tmp_path):
+    now = tmp_path / "now"
+    water = np.zeros((10, 10))
+    water[0, :4] = 1
+    obs = np.ones((10, 10))
+    tpi = np.full((10, 10), 0.1)
+    _cog(now / "cog" / "tpi_flood_nisar_today.tif", {"tpi": tpi, "water": water, "observed": obs})
+    _cog(now / "cog" / "tpi_flood_today.tif", {"tpi": tpi})
+    (now / "summary.json").write_text(json.dumps({"nisar_water": {"pass_date": "2026-11-17"}}))
+    q = np.full((10, 10), 25, np.uint8)       # 0.1
+    q[0, :2] = 200                             # 0.8 -> Critical
+    q[0, 2:4] = 255                            # nodata -> miss
+    path = now / "history" / "20261116T090000Z" / "cog" / "tpi_flood_d1.tif"
+    path.parent.mkdir(parents=True)
+    with rasterio.open(path, "w", driver="GTiff", height=10, width=10, count=1, dtype="uint8", nodata=255,
+                       crs="EPSG:4326", transform=from_origin(-55, -28, 0.01, 0.01)) as d:
+        d.write(q, 1)
+        d.set_band_description(1, "2026-11-17")
+        d.scales = (0.004,)
+    r = nna.run(now)
+    assert r["forecast"]["lead_1d"]["critico"]["hit_pct"] == 50.0

@@ -38,6 +38,15 @@ for p in (str(REPO), str(REPO / "pipeline"), str(REPO / "tools")):
 LEAD_REASON = "no archived Now run issued that many days before the pass (history/<run>/cog/tpi_flood_d<k>.tif)"
 
 
+def _scaled(src) -> np.ndarray:
+    """Band 1 as float TPI: nodata -> NaN, then value * scale + offset (archive COGs are uint8,
+    TPI = value / 250 with scale 0.004, nodata 255; float COGs have scale 1)."""
+    a = src.read(1).astype(np.float64)
+    if src.nodata is not None:
+        a[a == src.nodata] = np.nan
+    return a * (src.scales[0] or 1.0) + (src.offsets[0] or 0.0)
+
+
 def lead_frames(now: Path, pass_date: str | None, shape) -> dict:
     """{L: (array, [info]) | (None, reason)}: the latest archived run issued on pass_date - L whose
     tpi_flood_d<L>.tif targets pass_date (band description = target date)."""
@@ -55,7 +64,7 @@ def lead_frames(now: Path, pass_date: str | None, shape) -> dict:
             with rasterio.open(f) as s:
                 tgt = (s.descriptions[0] or "").replace("-", "")[:8]
                 if tgt == pd_.strftime("%Y%m%d") and s.shape == tuple(shape):
-                    hit = (s.read(1).astype(np.float64), [f"history/{f.parts[-3]}/cog/{f.name} -> {pass_date[:10]}"])
+                    hit = (_scaled(s), [f"history/{f.parts[-3]}/cog/{f.name} -> {pass_date[:10]}"])
                     break
         out[L] = hit or (None, LEAD_REASON)
     return out
