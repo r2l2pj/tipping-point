@@ -160,7 +160,9 @@ Manifest `cases.<id>.data_basis` carries this label for the app.
 
 Off-GEE fetches: NISAR GCOV (below), SWOT Hydrocron (reach ids in
 `events/*.json`), NOAA GFS forecast (AWS open data), OPERA DSWx-S1 (CMR /
-PO.DAAC), GLC/UFRGS-Cemaden landslide inventories.
+PO.DAAC), GLC/UFRGS-Cemaden landslide inventories. The per-reach SWOT WSE
+chart series is rebuilt with `tools/wa_swot_series.py --case {rs_2024,wa_2025}`
+→ `data/<case>/series/swot.json` (`products.swot_series`).
 
 Declared non-NASA inputs: **NOAA GFS** forecast precipitation (the only
 forecast with an archive for the replay windows; L22) and three

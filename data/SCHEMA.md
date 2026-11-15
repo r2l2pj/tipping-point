@@ -224,7 +224,9 @@ path or `null`:
   "priority_zones":       "rs_2024/geojson/priority_zones.geojson",
   "permanent_water":      "rs_2024/geojson/permanent_water.geojson",
   "flood_confirmed":      "rs_2024/geojson/flood_confirmed.geojson",
-  "landslide_candidates": "rs_2024/geojson/landslide_candidates.geojson"
+  "landslide_candidates": "rs_2024/geojson/landslide_candidates.geojson",
+  "swot_reference":       "rs_2024/series/swot_reference.json",
+  "swot_series":          "rs_2024/series/swot.json"
 },
 "_null_reasons": {
   "flood_confirmed": "no NISAR coverage — event predates launch (Jul 2025)"
@@ -272,6 +274,40 @@ The chart series per event:
 Dated SWOT river-level series per reach (pipeline output, e.g.
 `rs_2024_swot_20240502.json`); the publisher merges it into
 `imerg_smap_daily.json`'s `river_m`.
+
+### `series/swot.json`
+
+Per-reach SWOT water-surface-elevation chart series built by
+`tools/wa_swot_series.py --case <case>` from PO.DAAC Hydrocron
+(SWOT L2 HR RiverSP); `products.swot_series` points here:
+
+```json
+{ "case": "rs_2024",
+  "source": "SWOT L2 HR RiverSP via PO.DAAC Hydrocron",
+  "window": ["2024-04-01", "2024-06-30"],
+  "event_dates": { "start": "2024-04-29", "peak": "2024-05-05" },
+  "quality_legend": {"0": "good", "1": "suspect", "2": "degraded", "3": "bad"},
+  "reaches": [
+    { "reach_id": "64120300041", "name": null,
+      "lon": -52.021467, "lat": -29.9419171,
+      "series": [
+        { "time": "2024-05-06T11:46:38Z", "wse_m": 14.2538,
+          "wse_u_m": 0.10084, "quality": 2 } ],
+      "dropped_fill": 0, "dropped_out_of_window": 0 } ],
+  "_null_reasons": { "64120300024": "no valid SWOT pass in window" } }
+```
+
+- `window` / `event_dates` come from the event's `swot.window` /
+  `swot.event_dates` when present, else `window` and
+  `start_date`/`reference_date` in `events/<event>.json`.
+- `reaches[].name` is the SWORD `river_name` (`null` when `no_data`);
+  `lon`/`lat` the reach centroid.
+- `series[]` entries carry UTC `time`, `wse_m`, `wse_u_m` (uncertainty,
+  `null` at fill), `quality` (SWORD `reach_q`, `null` at fill). Fill
+  rows are dropped and counted in `dropped_fill`; observations outside
+  `window` in `dropped_out_of_window`.
+- A reach with no Hydrocron timeseries keeps `series: []` and a
+  `_null_reasons` entry keyed by reach id — values are never invented.
 
 ## GeoJSON feature shapes
 
@@ -651,6 +687,7 @@ last overall).
 | stable `geojson/*.geojson`, `png/<layer>_<YYYYMMDD>.png`, `series/imerg_smap_daily.json` | `tools/publish_case.py` / `tp/bundle.py` — PNGs via `live/render.layer_png_3857` + `tpi.classify` |
 | `geojson/municipal_boundaries.geojson`, `geojson/landslide_catalog.geojson` | lead-gathering fetchers (IBGE / US Census TIGER; GLC / UFRGS-Cemaden) |
 | `data/<case>/series/<caso>_swot_<AAAAMMDD>.json` | `pipeline/scripts/05_swot.py` / `tp/swot.py` |
+| `data/<case>/series/swot.json` | `tools/wa_swot_series.py --case <case>` (Hydrocron per-reach WSE chart series) |
 | `data/<case>/nisar_products.json` | `pipeline/scripts/01_get_nisar.py` / `tp/nisar.py` (granule ids → `collections`) |
 | `data/now/*` | `live/run_now.py` (static grid `static/sul_static.npz` from `live/build_static.py`) |
 | `projects/<GEE_PROJECT>/assets/tipping-point/**` | `python -m gee.tpi` (static/<case>), `live/run_now.py` (now/), publish ingest (`tools/publish_case.py`) |
