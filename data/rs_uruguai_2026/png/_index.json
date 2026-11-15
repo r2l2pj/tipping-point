@@ -1,9 +1,9 @@
 {
   "layers": [
     {
-      "id": "nisar_pre",
+      "id": "radar_pre",
       "date": "2026-09-30",
-      "png": "rs_uruguai_2026/png/nisar_pre_20260930.png",
+      "png": "rs_uruguai_2026/png/radar_pre_20260930.png",
       "cog": null,
       "bounds": [
         -57.079983,
@@ -18,12 +18,13 @@
         "green = vegetation",
         "bright = urban"
       ],
-      "note": "v0 teammate render (EPSG:3857 false-colour), to be replaced by our NISAR GCOV frames"
+      "note": "v0 teammate render (EPSG:3857 false-colour), teammate radar pair (sensor unconfirmed, likely Sentinel-1: relative orbit 10, 12-day repeat; no NISAR GCOV exists for these dates), 2026-09-30 -> 2026-10-12; not NISAR",
+      "label": "Radar before (sensor unconfirmed, likely Sentinel-1)"
     },
     {
-      "id": "nisar_post",
+      "id": "radar_post",
       "date": "2026-10-12",
-      "png": "rs_uruguai_2026/png/nisar_post_20261012.png",
+      "png": "rs_uruguai_2026/png/radar_post_20261012.png",
       "cog": null,
       "bounds": [
         -57.079983,
@@ -38,7 +39,8 @@
         "green = vegetation",
         "bright = urban"
       ],
-      "note": "v0 teammate render (EPSG:3857 false-colour), to be replaced by our NISAR GCOV frames"
+      "note": "v0 teammate render (EPSG:3857 false-colour), teammate radar pair (sensor unconfirmed, likely Sentinel-1: relative orbit 10, 12-day repeat; no NISAR GCOV exists for these dates), 2026-09-30 -> 2026-10-12; not NISAR",
+      "label": "Radar after (sensor unconfirmed, likely Sentinel-1)"
     }
   ]
 }

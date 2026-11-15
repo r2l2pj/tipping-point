@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T15:45:08Z",
+  "updated_at": "2026-11-15T15:46:40Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7071,12 +7071,12 @@
         -29.05
       ],
       "forecast_source": null,
-      "data_basis": "v0: radar flood candidates only (teammate NISAR-style GCOV pair 2026-09-30 -> 10-12, track 010 frame 103); our NISAR GCOV series and the TPI replay (IMERG Early/Late + NOAA GFS) are in progress",
+      "data_basis": "v0: radar flood candidates from a teammate pair (sensor unconfirmed, likely Sentinel-1, 2026-09-30 -> 10-12); our NISAR GCOV frames (2026-10-24, 11-05) and the TPI replay are in progress",
       "layers": [
         {
-          "id": "nisar_post",
+          "id": "radar_post",
           "date": "2026-10-12",
-          "png": "rs_uruguai_2026/png/nisar_post_20261012.png",
+          "png": "rs_uruguai_2026/png/radar_post_20261012.png",
           "cog": null,
           "legend": [
             "dark = smooth water",
@@ -7093,9 +7093,9 @@
           "kind": "observed"
         },
         {
-          "id": "nisar_pre",
+          "id": "radar_pre",
           "date": "2026-09-30",
-          "png": "rs_uruguai_2026/png/nisar_pre_20260930.png",
+          "png": "rs_uruguai_2026/png/radar_pre_20260930.png",
           "cog": null,
           "legend": [
             "dark = smooth water",
