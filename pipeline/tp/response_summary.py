@@ -406,7 +406,7 @@ def zone_features(boundaries_fc: dict | None, grid: Grid,
                            fill=0, dtype="int32", all_touched=False)
         n = len(rows) + 1
         sel = labels > 0
-        for key in ("flood", "flood_lower", "crit", "exposed"):
+        for key in ("flood", "flood_lower", "crit", "crit3", "exposed"):
             m = masks.get(key)
             if m is None:
                 p_by[key] = None
@@ -453,10 +453,13 @@ def zone_features(boundaries_fc: dict | None, grid: Grid,
             "code": p.get("code"), "uf": p.get("uf"),
             "people_flooded": _ppl("flood", k),
             "people_flooded_lower": _ppl("flood_lower", k),
-            "people_critical": _ppl("crit", k),
+            # A8: "critical" = Crítico (TPI > 0.6) only; Alto+ is "alert"
+            "people_critical": _ppl("crit3", k),
+            "people_alert": _ppl("crit", k),
             "flooded_km2": round(r["a_flood"], 3),
             "flooded_km2_lower": round(r["a_flood_lower"], 3),
-            "critical_km2": round(r["a_crit"], 3),
+            "critical_km2": round(r["a_crit3"], 3),
+            "alert_km2": round(r["a_crit"], 3),
             "rank": rank, "sources": srcs, "status": "candidate",
             "tpi": tpi, "class": cls,
             "hazard": "+".join(sorted(hz)) if hz else "flood",
@@ -605,7 +608,8 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
 
     flooded_km2 = km2(u_flood)
     flooded_km2_lower = km2(u_flood_lower)
-    critical_km2 = km2(u_crit)
+    critical_km2 = km2(u_crit3)          # A8: Crítico only
+    alert_km2 = km2(u_crit)              # Alto or Crítico
     exposed_km2 = km2(u_exposed)
     d_u, n_u = floods["dswx"]["u_std"], floods["nisar"]["u_std"]
     overlap_km2 = (km2(shapely.intersection(d_u, n_u))
@@ -618,12 +622,13 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
         m_low_any = f["m_low"] if m_low_any is None else (m_low_any | f["m_low"])
     m_flood_lower = (m_low_any & ~m_flood) if present else None
     m_crit = mask_of(crit_geoms, grid) if crit_fc is not None else None
+    m_crit3 = mask_of(crit3_geoms, grid) if crit_fc is not None else None
     if m_flood is not None and m_crit is not None:
         m_exposed = m_flood | m_crit
     else:
         m_exposed = m_flood if m_flood is not None else m_crit
     masks = {"flood": m_flood, "flood_lower": m_flood_lower,
-             "crit": m_crit, "exposed": m_exposed}
+             "crit": m_crit, "crit3": m_crit3, "exposed": m_exposed}
 
     # ---- people (GPW now-static raster only) -------------------------------
     pop = None
@@ -641,7 +646,8 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
 
     people_flooded = people_in(m_flood, pop)
     people_flooded_lower = people_in(m_flood_lower, pop)
-    people_critical = people_in(m_crit, pop)
+    people_critical = people_in(m_crit3, pop)   # A8: Crítico only
+    people_alert = people_in(m_crit, pop)       # Alto or Crítico
     people_exposed = people_in(m_exposed, pop)
     if m_flood is None:
         reasons.setdefault("people_flooded", "no flood-candidate inputs present")
@@ -681,7 +687,9 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
         "features": len(crit_geoms) if crit_fc is not None else None,
         "days": crit_days, "classes": crit_classes,
         "critical_km2": critical_km2,
+        "alert_km2": alert_km2,
         "people_critical": people_critical,
+        "people_alert": people_alert,
         "status": "ok" if crit_geoms else ("empty" if crit_fc is not None else "missing"),
     }
     nisar = _nisar_block(floods["nisar"]["meta"])
@@ -693,10 +701,13 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
         "people_flooded": people_flooded,
         "people_flooded_lower": people_flooded_lower,
         "people_critical": people_critical,
+        "people_alert": people_alert,
         "people_exposed": people_exposed,
         "flooded_km2": flooded_km2,
         "flooded_km2_lower": flooded_km2_lower,
         "critical_km2": critical_km2,
+        "alert_km2": alert_km2,
+        "critical_km2_def": "Crítico only (TPI > 0.6, A8); alert_km2 = Alto or Crítico (TPI > 0.4)",
         "exposed_km2": exposed_km2,
         "overlap_km2": overlap_km2,
         "sources": sources,
@@ -735,6 +746,8 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
         base["people_critical"] = people_critical
     if people_exposed is not None or "people_exposed" not in base:
         base["people_exposed"] = people_exposed
+    if people_alert is not None or "people_alert" not in base:
+        base["people_alert"] = people_alert
     dd = dict(base.get("data_dates") or {})
     dd.update(data_dates)
     base["data_dates"] = dd
