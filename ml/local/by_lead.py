@@ -76,27 +76,31 @@ def horizon_for_lead(k: int) -> str:
     raise ValueError(f"lead {k} d exceeds the longest horizon")
 
 
-def event_day(df: pd.DataFrame) -> pd.Series:
-    """D per row: the event's fixed day (S.EVENT_DAYS, e.g. RS 2024) else the row's date."""
+def event_day(df: pd.DataFrame, anchor: str = "event_day") -> pd.Series:
+    """D per row: the event's fixed day (S.EVENT_DAYS, e.g. RS 2024) else the row's date.
+    ``anchor="onset"`` (L37): the documented onset (S.EVENT_ONSETS) where one is given."""
     d = pd.to_datetime(df["date"]).dt.normalize()
-    for ev, day in S.EVENT_DAYS.items():
+    days = dict(S.EVENT_DAYS)
+    if anchor == "onset":
+        days.update(S.EVENT_ONSETS)
+    for ev, day in days.items():
         d[(df["event_id"] == ev).to_numpy()] = pd.Timestamp(day)
     return d
 
 
-def lead_rows() -> pd.DataFrame:
+def lead_rows(anchor: str = "event_day") -> pd.DataFrame:
     """TEST rows with ``k`` (lead days; -1 for same-point negatives) and ``neg_set``."""
     hz = _load_table("horizon_3b_features")
     hz = hz[hz.split == "test"].copy()
     pos = hz[hz.label == 1].copy()
-    pos["k"] = (event_day(pos) - pos["issue_date"]).dt.days
+    pos["k"] = (event_day(pos, anchor) - pos["issue_date"]).dt.days
     pos = pos[pos.k.isin(LEADS)]
     pos["neg_set"] = "positive"
     neg = hz[hz.label == 0].copy()
     neg["k"] = -1
     neg["neg_set"] = "same_point"
     el = elsewhere_issue_rows(_load_table("table_3b"))
-    el["k"] = (event_day(el) - el["issue_date"]).dt.days
+    el["k"] = (event_day(el, anchor) - el["issue_date"]).dt.days
     el = el[el.k.isin(LEADS)].reset_index(drop=True)
     el["neg_set"] = "elsewhere"
     rows = pd.concat([pos, neg, el], ignore_index=True, sort=False)
@@ -105,13 +109,13 @@ def lead_rows() -> pd.DataFrame:
     return rows
 
 
-def run(fetch: bool = False) -> dict:
+def run(fetch: bool = False, anchor: str = "event_day") -> dict:
     b = joblib.load(S.DATA_DIR / "models" / "bundle_3b.joblib")
     b3a = joblib.load(S.DATA_DIR / "models" / "bundle_3a.joblib")
     from .export import best_val_model
     tml = b3a["entries"][best_val_model(b3a["entries"])]
 
-    rows = lead_rows()
+    rows = lead_rows(anchor)
     el = rows.neg_set == "elsewhere"
     sm = _smap(rows[el].reset_index(drop=True), fetch)
     for c in sm.columns:
@@ -127,6 +131,9 @@ def run(fetch: bool = False) -> dict:
         "definition": ("lead k: forecast issued on D-k (GFS 00Z run of D-k), scored on the "
                        "shortest horizon whose window reaches the event day D; RS 2024 D = "
                        "2024-05-01 (fixed), WA 2025 D = reported date"),
+        "anchor": anchor,
+        "anchor_days": {ev: str(d) for ev, d in ({**S.EVENT_DAYS, **S.EVENT_ONSETS}
+                                                  if anchor == "onset" else S.EVENT_DAYS).items()},
         "horizon_for_lead": {str(k): horizon_for_lead(k) for k in LEADS},
         "negatives": {"same_point": "TEST positive points on event-free dates (>=30 d gap), "
                                     "scored with the horizon of k",
@@ -260,18 +267,23 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--fetch", action="store_true", help="fetch missing SMAP for elsewhere rows")
     ap.add_argument("--merge", action="store_true", help="merge by_lead_v2.json into metrics_ml.json")
+    ap.add_argument("--anchor", default="event_day", choices=["event_day", "onset"],
+                    help="L37: k to the fixed event day, or to the documented onset (ML_EVENT_ONSETS)")
     a = ap.parse_args(argv)
+    suffix = "" if a.anchor == "event_day" else "_onset"
     if a.merge:
         path = S.MODEL_DIR / "metrics_ml.json"
         met = json.loads(path.read_text())
-        met["by_lead"] = json.loads((S.MODEL_DIR / "by_lead_v2.json").read_text())
+        met["by_lead" + suffix] = json.loads((S.MODEL_DIR / f"by_lead_v2{suffix}.json").read_text())
         path.write_text(json.dumps(met, indent=2, default=str))
         return 0
+    if a.anchor == "onset" and not S.EVENT_ONSETS:
+        ap.error("--anchor onset needs ML_EVENT_ONSETS=<event_id>=<YYYY-MM-DD>,...")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
-    res = run(fetch=a.fetch)
+    res = run(fetch=a.fetch, anchor=a.anchor)
     # own file (merged into metrics_ml.json["by_lead"] by --merge), so by_lead can run
     # next to `evaluate`, which rewrites metrics_ml.json
-    (S.MODEL_DIR / "by_lead_v2.json").write_text(json.dumps(res, indent=2, default=str))
+    (S.MODEL_DIR / f"by_lead_v2{suffix}.json").write_text(json.dumps(res, indent=2, default=str))
     for scope in ("pooled", "pooled_clean3a", *sorted(k for k in res["scopes"] if k not in ("pooled", "pooled_clean3a"))):
         print(f"\n== {scope}")
         print(compact_md(res, scope))

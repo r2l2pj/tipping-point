@@ -114,6 +114,11 @@ for _e in EXTRA_TEST_EVENTS:
     if _e.dating == "fixed":
         LABEL_WINDOWS[_e.event_id] = _e.trigger_window
         EVENT_DAYS[_e.event_id] = _e.date
+# L37: documented event ONSET days (lead-analysis), for onset-anchored lead time.
+# ML_EVENT_ONSETS="rs_2024=2024-04-29,helene_2024=2024-09-25"; by_lead --anchor onset
+# measures k to these days (events without an onset keep EVENT_DAYS).
+EVENT_ONSETS = {k.strip(): dt.date.fromisoformat(v.strip()) for k, v in
+                (kv.split("=", 1) for kv in os.environ.get("ML_EVENT_ONSETS", "").split(",") if "=" in kv)}
 # Leakage guard: GLC/COOLR points within LEAK_DAYS of a TEST event's inventory window
 # and LEAK_KM of any of its points are removed from 3b TRAIN/VAL and 3a positives.
 LEAK_DAYS = 3

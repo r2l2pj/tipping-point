@@ -29,3 +29,18 @@ def test_card_v2_shape():
     assert g["loeo_min"] == 0.3 and g["loeo_max"] == 0.6
     assert set(c["by_lead"]["scopes"]) == {"pooled"}
     assert "extra" not in c["by_lead"]["scopes"]["pooled"]["1"]["both"]["x"]
+
+
+def test_by_lead_onset_anchor(monkeypatch):
+    import datetime as dt
+
+    import pandas as pd
+
+    from ml.local import by_lead as BL
+    from ml.local import settings as S
+    monkeypatch.setitem(S.EVENT_DAYS, "rs_2024", dt.date(2024, 5, 1))
+    monkeypatch.setattr(S, "EVENT_ONSETS", {"rs_2024": dt.date(2024, 4, 29)})
+    df = pd.DataFrame({"date": pd.to_datetime(["2024-05-01", "2025-12-10"]),
+                       "event_id": ["rs_2024", "wa_2025"]})
+    assert list(BL.event_day(df).dt.day) == [1, 10]
+    assert list(BL.event_day(df, "onset").dt.strftime("%m-%d")) == ["04-29", "12-10"]
