@@ -1,10 +1,11 @@
 # tipping-point-data
 
 Data & analysis pipeline for **Tipping Point** — NASA Space Apps Challenge 2026,
-"Dancing with the SARs". **GPM + SMAP predict; NISAR maps.** IMERG rain and
-SMAP soil wetness feed a daily Tipping Point Index (TPI) that warns of
-flood/landslide risk; NISAR radar acquisitions after the event map what
-actually flooded or slid.
+"Dancing with the SARs". **Rain warns. Radar sees through.** IMERG rain and
+SMAP soil wetness feed a daily Tipping Point Index (TPI) that shows where
+flood/landslide risk is rising; NISAR radar passes map where the ground newly
+flooded (flood candidates). Landslide scars come from NASA optical data and
+stay candidates.
 
 Produces the artifacts in `data/` consumed by
 [`r2l2pj/tipping-point-app`](https://github.com/r2l2pj/tipping-point-app).
@@ -14,11 +15,51 @@ never globs. Which calendar days a frame labelled X actually covers (the
 observed series ends at X−1; forecast and Now frames end at X) is in
 [`docs/conventions-dates.md`](docs/conventions-dates.md).
 
+**Live demo:** [APP URL] · **App:** [r2l2pj/tipping-point-app](https://github.com/r2l2pj/tipping-point-app) · **License:** Apache-2.0 · **Team:** [TEAM NAME] — NASA Space Apps 2026, challenge #5 "Dancing with the SARs"
+
+## What it is
+
+This repo turns NASA data into the files the Tipping Point app shows: when, where and who in floods and landslides. Main case: the **Uruguay River at Uruguaiana** (Rio Grande do Sul, Brazil), above its 8.50 m flood stage on Oct 5–21, 2026 (ANA gauge). In a **post-event test** (not in the live index), NASA GPM IMERG rain over the upstream basin was already extreme five days before flood stage, pointing to a river corridor where about 20,900 people live; NISAR passes every 12 days saw the river through cloud. Supporting cases: Washington State, December 2025 (NISAR flood candidates under 92.9% cloud) and Rio Grande do Sul, May 2024 (a replay with each NOAA GFS forecast as it was issued). The live "Now" job refreshes Southern Brazil every 3 hours.
+
+| Uruguaiana, Oct 2026 — NISAR | Washington, Dec 2025 — NISAR | Live public alerts (experimental) |
+|---|---|---|
+| ![Uruguaiana](https://raw.githubusercontent.com/r2l2pj/tipping-point-app/main/docs/img/1-uy-nisar.png) | ![Washington](https://raw.githubusercontent.com/r2l2pj/tipping-point-app/main/docs/img/2-wa-nisar-swipe.png) | ![Alerts](https://raw.githubusercontent.com/r2l2pj/tipping-point-app/main/docs/img/3-alerts.png) |
+
+## How it works (short)
+
+- **Inputs:** NISAR GCOV (L-band radar), GPM IMERG (rain), SMAP L4 (soil moisture), NASADEM + height above drainage (terrain), GPW v4.11 (people), VIIRS Black Marble (night lights), NASA OPERA DSWx / DIST-ALERT and HLS (water and scar candidates), SWOT (river levels). Forecast rain: NOAA GFS 0.25°, the only non-NASA input.
+- **Index:** TPI = (R·S·T)^(1/3), uniform weights; Critical > 0.6 only when rain, soil and terrain all agree ([Method and thresholds](#method-and-thresholds)).
+- **Radar:** HH backscatter drop > 3 dB below a per-scene threshold, low ground near rivers, ≥ 3 ha → flood candidates; pairs with mismatched modes, threshold fallbacks or swath-edge patches are rejected.
+- **ML (experimental):** XGBoost trigger model beside the index; an independent audit found it about as good as a simple forecast-rain-vs-local-extreme rule ([07-overfit-audit](docs/science-review/07-overfit-audit.md)).
+
+## Honest results
+
+| Check | Result | Caveat |
+|---|---|---|
+| Washington: NISAR flood candidates | 27.99 km² within the swath, about 950 people inside | post pass covers 74% of the area; BETA products |
+| Washington: NISAR vs NASA OPERA surface water (C-band), new flood | F1 0.15 (precision 0.19, recall 0.13) | double bounce: 45% of the missed flood is in towns or forest vs 5% of what was caught (`data/wa_2025/nisar_hypothesis.json`) |
+| Rio Grande do Sul 2024: landslides, forecast as issued | 5.8% of 16,027 mapped landslides High or Critical in the forecast issued 27 h before the first deaths, which flagged 2.1% of the area: 2.7× chance | runs issued 51 and 75 h before: 0% ([docs/replay-v2.md](docs/replay-v2.md)) |
+| Forecast lead (replays, horizon 0–3 days) | about 1 day in Rio Grande do Sul; none for Washington's flooded places (0% at 24/48/72 h) | official warnings came first in both replays |
+| Uruguaiana 2026 (post-event test, not live) | upstream IMERG extreme 5 days before flood stage; corridor of about 20,900 people holds 54% of a teammate's NISAR change map in 36% of the land | small sample; our stricter automatic check did not reproduce that map |
+| ML trigger model | median per-event ROC 0.93 over 9 held-out disasters | about as good as a simple rule; ~4–5 alarm-days per site per year |
+
+More: [Declared limitations](#declared-limitations), `data/metrics.json`, `docs/science-review/`.
+
+## Data products and where they are published
+
+`data/` (contract: [`data/SCHEMA.md`](data/SCHEMA.md)) holds per-case COG / PNG / GeoJSON / JSON plus `data/now/` and the root `data/manifest.json` (written last). The live workflow pushes `data/` to the orphan branch **`fallback`**, which the app reads from `https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`; tabular data is also packed into `tipping_point.sqlite`.
+
+## Credits and attributions
+
+NASA data: NISAR, GPM IMERG, SMAP, NASADEM, NASA OPERA DSWx and DIST-ALERT, HLS, VIIRS Black Marble, SWOT, GPW v4.11 (SEDAC), Global Landslide Catalog / COOLR. Forecast rain: NOAA GFS. Required attributions: NASA OPERA DSWx-S1 contains modified Copernicus Sentinel-1 data (ESA); Copernicus Emergency Management Service EMSR720 © European Union (independent validation maps); Washington Geological Survey landslide inventory; UFRGS/Cemaden landslide inventory; IBGE boundaries; ANA (Brazil) river-gauge telemetry; JRC Global Surface Water; MERIT Hydro (validation only).
+
+
 ## Quickstart
 
 ```bash
 uv sync                    # creates .venv (Python 3.12 via the Makefile)
-make test                  # pytest pipeline/ gee/ live/ + ruff — no creds needed
+uv run pytest pipeline/tests gee/tests live/tests ml/tests   # 1046 tests, no creds needed
+make test                  # the same tests + ruff (ruff currently reports lint findings)
 make all CASE=rs_2024      # replay chain for one case (rs_2024 | wa_2025)
 make now                   # live "modo agora" chain (live/jobs.py now)
 ```
@@ -36,7 +77,7 @@ manifest (always last — `data/SCHEMA.md` explains why).
 
 | Variable | Needed for |
 | --- | --- |
-| `EARTHDATA_TOKEN` | NASA Earthdata downloads: NISAR GCOV, OPERA DSWx, HLS, SWOT, IMERG/SMAP/GEOS-FP live fetches |
+| `EARTHDATA_TOKEN` | NASA Earthdata downloads: NISAR GCOV, OPERA DSWx, HLS, SWOT, IMERG/SMAP live fetches |
 | `GEE_PROJECT` | Google Earth Engine cloud project (shared, team) — all `gee/` and GEE-backed steps |
 | `GOOGLE_APPLICATION_CREDENTIALS` **or** `GCP_SA_KEY` | Earth Engine service-account JSON key (path, or raw JSON for `GCP_SA_KEY`). Keep the key out of the repo |
 
@@ -305,7 +346,7 @@ features only and is **not** a TPI index input.
   24/48/72 h before the 2025-12-08 onset (`flood_warned*`). The TPI is
   pixel-local: those pixels had high T_flood but no local extreme rain; the
   river flood came from rain upstream in the Cascades, which R does not
-  route. RS 2024 flood: scored against Copernicus EMS EMSR720 (Taquari
+  route. RS 2024 flood: scored against independent EU emergency maps (EMSR720) (Taquari
   valley only) in `flood_ems_*`.
 - **Known bias in the live Now job:** it scores IMERG *Early* rain against
   an IMERG *Final* climatology (`live/build_clim.py`), so Now R is likely
