@@ -49,13 +49,13 @@
       "critical_slide_km2": 2662.718,
       "critical_flood_km2": 1464.74,
       "_null_reasons": {
-        "lead_time_median_h": "WGS landslide inventory points are undated and data/wa_2025/geojson/landslide_catalog.geojson is an empty stub: point-level lead time is undefined",
-        "lead_time_iqr_h": "WGS landslide inventory points are undated and data/wa_2025/geojson/landslide_catalog.geojson is an empty stub: point-level lead time is undefined",
-        "lead_time_n": "WGS landslide inventory points are undated and data/wa_2025/geojson/landslide_catalog.geojson is an empty stub: point-level lead time is undefined",
-        "warned_before_pct": "WGS landslide inventory points are undated and data/wa_2025/geojson/landslide_catalog.geojson is an empty stub: point-level lead time is undefined",
-        "warned_24h_pct": "WGS landslide inventory points are undated and data/wa_2025/geojson/landslide_catalog.geojson is an empty stub: point-level lead time is undefined",
-        "never_critical_pct": "WGS landslide inventory points are undated and data/wa_2025/geojson/landslide_catalog.geojson is an empty stub: point-level lead time is undefined",
-        "lead_time_hist": "WGS landslide inventory points are undated and data/wa_2025/geojson/landslide_catalog.geojson is an empty stub: point-level lead time is undefined",
+        "lead_time_median_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
+        "lead_time_iqr_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
+        "lead_time_n": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
+        "warned_before_pct": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
+        "warned_24h_pct": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
+        "never_critical_pct": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
+        "lead_time_hist": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
         "rf_auc": "No local labeled WA feature CSV/parquet table or trained model exists. The ml pipeline is configured for RS-2024; no WA validation labels/features are available to compute case-specific AUC. Synthetic test fixtures are not validation data.",
         "rule_auc": "No local labeled WA feature CSV/parquet table or trained model exists. The ml pipeline is configured for RS-2024; no WA validation labels/features are available to compute case-specific AUC. Synthetic test fixtures are not validation data."
       },
@@ -66,20 +66,6 @@
       "warned_24h_pct": null,
       "never_critical_pct": null,
       "lead_time_hist": null,
-      "metrics": {
-        "cloud_pct": null,
-        "f1": null,
-        "hand_best_radius_m": 1000,
-        "hand_validation": 0.9751807438686789,
-        "hand_validation_radii": {
-          "1000": 0.00975180743868679,
-          "1500": 0.00938195579408305,
-          "3000": 0.0075653966720609705
-        },
-        "hls_f1": null,
-        "hls_iou": null,
-        "iou": null
-      },
       "rf_auc": null,
       "rule_auc": null,
       "night_light_drop_pct": 43.920046430346254,
@@ -88,13 +74,29 @@
       "people_flooded": 1150.8775801961883,
       "flood_source": "nisar",
       "cloud_pct": 92.89292282546754,
+      "iou": 0.08159565666049996,
+      "f1": 0.1508801485250636,
+      "precision": 0.18729061306361094,
+      "recall": 0.1263223039392064,
       "confusion": {
+        "tp": 8777,
+        "fp": 38086,
+        "fn": 60704
+      },
+      "validation_method": "like-for-like: NISAR new-flood mask vs OPERA DSWx-S1 new flood (water on 2025-12-15/17 AND NOT water 2025-12-01..07), cloud-free on both dates; NISAR swath ~ AOI",
+      "iou_raw": 0.007528697499424659,
+      "f1_raw": 0.014944879521764607,
+      "precision_raw": 0.1981733990568252,
+      "recall_raw": 0.007765240364435442,
+      "confusion_raw": {
         "fn": 1186683.7058823535,
         "fp": 37576,
         "observed_px": 16253323.654901965,
         "tp": 9287
       },
-      "f1": 0.014944879521764607,
+      "validation_method_raw": "all water: NISAR flood mask vs every OPERA DSWx-S1 water pixel 2025-12-15/17 over the AOI (includes permanent/pre-existing water, so FN is inflated)",
+      "hls_method": "all water, OPERA DSWx-HLS (optical) 2025-12-15/17, cloud-free pixels only; 92.9% cloud -> reference mostly unobserved; not comparable to iou/f1",
+      "cloud_pct_source": "OPERA DSWx-HLS cloud class (WTR 253) 2025-12-15/17 over the AOI",
       "hand_best_radius_m": 1000,
       "hand_validation": 0.9751807438686789,
       "hand_validation_radii": {
@@ -115,7 +117,6 @@
         "2025-12-17"
       ],
       "hls_opera_scenes": 6,
-      "iou": 0.007528697499424659,
       "opera_dates": [
         "2025-12-15",
         "2025-12-17"
@@ -133,26 +134,6 @@
         "n_warned": 6,
         "n_issue_days": 21,
         "basis": "GFS-forecast replay TPI: R_fc = score(obs IMERG daily <=D + GFS d1..dk) vs case climatology, S held at D, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
-      },
-      "opera_dswx_raw": {
-        "method": "all water, AOI, OPERA S1 DSWx 2025-12-15..18",
-        "tp": 9287,
-        "fp": 37576,
-        "fn": 1186683,
-        "iou": 0.0075,
-        "f1": 0.0149,
-        "precision": 0.1982,
-        "recall": 0.0078
-      },
-      "opera_dswx_like_for_like": {
-        "method": "new flood only (post-water AND NOT pre-water Dec1-7), cloud-free both dates, swath~AOI",
-        "tp": 8777,
-        "fp": 38086,
-        "fn": 60704,
-        "iou": 0.0816,
-        "f1": 0.1509,
-        "precision": 0.1873,
-        "recall": 0.1263
       },
       "opera_fn_diagnosis": "raw FN 1.19M px = permanent/pre-existing water (pre_water 1.21M px) which our new-flood mask correctly excludes; like-for-like FN drops to 60.7k px"
     },
@@ -200,11 +181,11 @@
       "critical_slide_km2": 430.081,
       "critical_flood_km2": 7646.837,
       "_null_reasons": {
-        "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog stub is empty (0 dated points)",
-        "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson is an empty stub (1 feature, 0 coordinates): no dated inventory points available; fell back to cluster-lead vs damage_anchor",
-        "people_flooded": "no NISAR coverage — event predates launch (Jul 2025)",
-        "flooded_km2": "no NISAR coverage — event predates launch (Jul 2025)",
-        "flood_source": "no NISAR coverage — event predates launch (Jul 2025)",
+        "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog has 16,027 points but none are dated",
+        "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson has 16,027 points but none are dated: point-level lead times are undefined; fell back to cluster-lead vs damage_anchor",
+        "people_flooded": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "flooded_km2": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "flood_source": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
         "rf_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data.",
         "rule_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data."
       },
@@ -313,8 +294,8 @@
         },
         "n_landslide_points": 0,
         "_null_reasons": {
-          "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog stub is empty (0 dated points)",
-          "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson is an empty stub (1 feature, 0 coordinates): no dated inventory points available; fell back to cluster-lead vs damage_anchor"
+          "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog has 16,027 points but none are dated",
+          "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson has 16,027 points but none are dated: point-level lead times are undefined; fell back to cluster-lead vs damage_anchor"
         }
       },
       "forecast_lead_time": {

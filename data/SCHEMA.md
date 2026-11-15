@@ -329,6 +329,16 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   never overwrites a written non-null value.
 - `iou`/`f1`/AUCs are 0–1 ratios; `*_pct` keys are 0–100 (the app normalizes
   `> 1` values to 0–1 for display).
+- Flood validation vs OPERA DSWx (wa_2025), one key set:
+  `iou`/`f1`/`precision`/`recall` + `confusion {tp,fp,fn}` = like-for-like
+  (NISAR new flood vs OPERA DSWx-S1 new flood = post water AND NOT pre water,
+  cloud-free on both dates), described by `validation_method`;
+  `iou_raw`/`f1_raw`/`precision_raw`/`recall_raw` + `confusion_raw` = the
+  all-water comparison (`validation_method_raw`, inflated FN from permanent
+  water, see `opera_fn_diagnosis`); `hls_iou`/`hls_f1`/`hls_confusion` =
+  optical DSWx-HLS all-water, mostly cloud (`hls_method`, `cloud_pct`,
+  `cloud_pct_source`). `tools/validation_metrics.py` writes only `*_raw` and
+  `hls_*`; the headline keys are never overwritten by the all-water run.
 - `hand_validation` is a scalar 0–100 percentage: the HAND<5 m zone IoU
   against MERIT at the selected radius, suitable for the app `MetricsV4`
   percentage renderer. `hand_validation_radii` preserves per-radius `{r, iou}`

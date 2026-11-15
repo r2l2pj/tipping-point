@@ -9,8 +9,10 @@ producers merge there and per-case files avoid the write race.
 Task A (wa_2025): rasterize the flood_nisar_polygons GEE table asset and
 compare against OPERA DSWx on the post date 2025-12-16 — catalog
 OPERA/DSWX/L3_V1/S1 (primary; radar sees through cloud) and
-OPERA/DSWX/L3_V1/HLS on cloud-free pixels only (WTR 253 = cloud). IoU, F1
-and the tp/fp/fn confusion counts land under flat keys.
+OPERA/DSWX/L3_V1/HLS on cloud-free pixels only (WTR 253 = cloud). These are
+all-water comparisons: S1 lands under iou_raw/f1_raw/confusion_raw, HLS under
+hls_*. The headline iou/f1/precision/recall are the like-for-like new-flood
+numbers (see data/SCHEMA.md) and are never written here.
 
 Task B (rs_2024): fraction of AOI pixels HLS Fmask-clear at the event peak
 2024-05-01..03 (L30+S30 union: a pixel counts cloud-free when any scene
@@ -119,7 +121,10 @@ def task_wa2025() -> tuple[dict, dict, dict]:
         return flat, reasons, collections
 
     # --- Task A: NISAR vs OPERA DSWx at the post date (nearest days) -------
-    for prefix, col in (("", S1_COLLECTION), ("hls_", HLS_COLLECTION)):
+    # All-water comparisons. S1 lands under *_raw: the headline iou/f1/
+    # precision/recall are the like-for-like new-flood numbers (post water
+    # AND NOT pre water), never overwritten by this all-water run.
+    for prefix, suffix, col in (("", "_raw", S1_COLLECTION), ("hls_", "", HLS_COLLECTION)):
         q = _opera_counts(col, *OPERA_WINDOW_WA, aoi, nisar)
         counts = q["stats"].getInfo()
         counts = counts if isinstance(counts, dict) else {}
@@ -127,20 +132,22 @@ def task_wa2025() -> tuple[dict, dict, dict]:
                        for d in (q["dates"].getInfo() or [])})
         collections["opera_dswx_s1" if col == S1_COLLECTION else "opera_dswx_hls"] = (
             f"catalog:{col} @ {','.join(days)} (no {POST_DATE_WA} granule exists)")
+        def key(name, prefix=prefix, suffix=suffix):
+            return f"{prefix}{name}{suffix}"
         flat[f"{prefix}opera_dates"] = days
         scenes = counts.get("scenes") or 0
         observed = counts.get("observed") or 0
         if not scenes or not observed:
             why = (f"no observed {col} coverage {OPERA_WINDOW_WA[0]}.."
                    f"{OPERA_WINDOW_WA[1]} in the AOI")
-            flat[f"{prefix}iou"] = flat[f"{prefix}f1"] = None
-            reasons[f"{prefix}iou"] = reasons[f"{prefix}f1"] = why
+            flat[key("iou")] = flat[key("f1")] = None
+            reasons[key("iou")] = reasons[key("f1")] = why
         else:
             tp, fp, fn = (counts.get(k, 0) or 0 for k in ("tp", "fp", "fn"))
-            flat[f"{prefix}iou"] = tp / (tp + fp + fn) if tp + fp + fn else 0.0
-            flat[f"{prefix}f1"] = 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else 0.0
-            flat[f"{prefix}confusion"] = {"tp": tp, "fp": fp, "fn": fn,
-                                          "observed_px": observed}
+            flat[key("iou")] = tp / (tp + fp + fn) if tp + fp + fn else 0.0
+            flat[key("f1")] = 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else 0.0
+            flat[key("confusion")] = {"tp": tp, "fp": fp, "fn": fn,
+                                      "observed_px": observed}
             flat[f"{prefix}opera_scenes"] = scenes
         if col == HLS_COLLECTION:
             valid = counts.get("valid") or 0

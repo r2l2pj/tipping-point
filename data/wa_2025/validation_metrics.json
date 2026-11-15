@@ -10,13 +10,20 @@
   "event_date": "2025-12-10",
   "metrics": {
     "cloud_pct": 92.89292282546754,
+    "cloud_pct_source": "OPERA DSWx-HLS cloud class (WTR 253) 2025-12-15/17 over the AOI",
     "confusion": {
+      "fn": 60704,
+      "fp": 38086,
+      "tp": 8777
+    },
+    "confusion_raw": {
       "fn": 1186683.7058823535,
       "fp": 37576,
       "observed_px": 16253323.654901965,
       "tp": 9287
     },
-    "f1": 0.014944879521764607,
+    "f1": 0.1508801485250636,
+    "f1_raw": 0.014944879521764607,
     "hand_best_radius_m": 1000,
     "hand_validation": 0.9751807438686789,
     "hand_validation_radii": {
@@ -32,16 +39,24 @@
     },
     "hls_f1": 0.02626041672625543,
     "hls_iou": 0.013304904531882858,
+    "hls_method": "all water, OPERA DSWx-HLS (optical) 2025-12-15/17, cloud-free pixels only; 92.9% cloud -> reference mostly unobserved; not comparable to iou/f1",
     "hls_opera_dates": [
       "2025-12-15",
       "2025-12-17"
     ],
     "hls_opera_scenes": 6,
-    "iou": 0.007528697499424659,
+    "iou": 0.08159565666049996,
+    "iou_raw": 0.007528697499424659,
     "opera_dates": [
       "2025-12-15",
       "2025-12-17"
     ],
-    "opera_scenes": 5
+    "opera_scenes": 5,
+    "precision": 0.18729061306361094,
+    "precision_raw": 0.1981733990568252,
+    "recall": 0.1263223039392064,
+    "recall_raw": 0.007765240364435442,
+    "validation_method": "like-for-like: NISAR new-flood mask vs OPERA DSWx-S1 new flood (water on 2025-12-15/17 AND NOT water 2025-12-01..07), cloud-free on both dates; NISAR swath ~ AOI",
+    "validation_method_raw": "all water: NISAR flood mask vs every OPERA DSWx-S1 water pixel 2025-12-15/17 over the AOI (includes permanent/pre-existing water, so FN is inflated)"
   }
 }

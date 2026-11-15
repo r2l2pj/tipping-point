@@ -68,7 +68,7 @@ def rs_2024():
     anchor, raw_anchor = anchor_ts(event, tz)
     reasons = {}
     flat = {}
-    # Inventory stub is empty (0 pts) -> cluster-lead vs anchor per brief.
+    # Inventory points are undated -> cluster-lead vs anchor per brief.
     clusters = cluster_lead_times(cube, times, CRITICAL, anchor, min_cluster_px=4)
     if clusters.empty:
         for k in ("lead_time_median_h", "lead_time_iqr_h", "lead_time_n",
@@ -81,7 +81,7 @@ def rs_2024():
     flat["never_critical_pct"] = None
     reasons["never_critical_pct"] = (
         "Cluster mode has no never-crossing denominator: clusters are defined "
-        "by ever crossing Critical; the landslide catalog stub is empty (0 dated points)")
+        "by ever crossing Critical; the landslide catalog has 16,027 points but none are dated")
     flat["mode"] = "cluster_lead_vs_damage_anchor"
     flat["n_clusters"] = int(len(clusters))
     flat["threshold_tpi"] = CRITICAL
@@ -96,8 +96,8 @@ def rs_2024():
     }
     flat["n_landslide_points"] = 0
     reasons["point_lead_times"] = (
-        "data/rs_2024/geojson/landslide_catalog.geojson is an empty stub "
-        "(1 feature, 0 coordinates): no dated inventory points available; "
+        "data/rs_2024/geojson/landslide_catalog.geojson has 16,027 points but "
+        "none are dated: point-level lead times are undefined; "
         "fell back to cluster-lead vs damage_anchor")
     out = {"case": "rs_2024", "metrics": flat, "_null_reasons": reasons}
     (REPO / "data/rs_2024/lead_time_metrics.json").write_text(
@@ -116,9 +116,9 @@ def wa_2025():
         "lead_time_median_h", "lead_time_iqr_h", "lead_time_n",
         "warned_before_pct", "warned_24h_pct", "never_critical_pct",
         "lead_time_hist")}
-    reasons = {k: ("WGS landslide inventory points are undated and "
-                   "data/wa_2025/geojson/landslide_catalog.geojson is an empty "
-                   "stub: point-level lead time is undefined")
+    reasons = {k: ("WGS landslide inventory has 15 points "
+                   "(data/wa_2025/geojson/landslide_catalog.geojson) but they are "
+                   "undated: point-level lead time is undefined")
                for k in flat}
     crossing = event_first_crossing(cube, times)
     flat["mode"] = "event_first_critical_only"

@@ -275,8 +275,8 @@ def lead_time_json():
     flat["never_critical_pct"] = None
     reasons["never_critical_pct"] = (
         "Cluster mode has no never-crossing denominator: clusters are "
-        "defined by ever crossing Critical; the landslide catalog stub is "
-        "empty (0 dated points)")
+        "defined by ever crossing Critical; the landslide catalog has "
+        "16,027 points but none are dated")
     flat["mode"] = "cluster_lead_vs_damage_anchor"
     flat["n_clusters"] = int(len(clusters))
     flat["threshold_tpi"] = CRITICAL
@@ -301,8 +301,8 @@ def lead_time_json():
     }
     flat["n_landslide_points"] = 0
     reasons["point_lead_times"] = (
-        "data/rs_2024/geojson/landslide_catalog.geojson is an empty stub "
-        "(1 feature, 0 coordinates): no dated inventory points available; "
+        "data/rs_2024/geojson/landslide_catalog.geojson has 16,027 points but "
+        "none are dated: point-level lead times are undefined; "
         "fell back to cluster-lead vs damage_anchor")
     out = {"case": CASE, "basis": "as-available", "metrics": flat,
            "_null_reasons": reasons}
