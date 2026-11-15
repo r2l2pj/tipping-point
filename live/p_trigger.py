@@ -111,9 +111,21 @@ def obs_series(out_dir: Path, today: dt.date, lats, lons) -> np.ndarray:
     return np.stack(out)
 
 
+def frame_stats(p: np.ndarray) -> dict | None:
+    """p50/p99/max of the published index over the cells that carry a value
+    (Brazilian land after the land mask); None when no cell has one."""
+    v = np.asarray(p, dtype=float)
+    v = v[np.isfinite(v)]
+    if v.size == 0:
+        return None
+    p50, p99 = np.percentile(v, [50, 99])
+    return {"p50": round(float(p50), 4), "p99": round(float(p99), 4),
+            "max": round(float(v.max()), 4), "n_cells": int(v.size)}
+
+
 def frame_layers(today: dt.date, gfs_issued: str, files: dict,
                  bounds: dict, model_meta: dict,
-                 horizons: dict | None = None) -> list[dict]:
+                 horizons: dict | None = None, stats: dict | None = None) -> list[dict]:
     layers = []
     issued = gfs_issued[:16].replace("T", " ") + " UTC"
     serve_label = model_meta.get("serve_label") or (
@@ -147,6 +159,9 @@ def frame_layers(today: dt.date, gfs_issued: str, files: dict,
                       "version": model_meta.get("version"),
                       "test_metrics": "data/ml/ml_card_v2.json"},
         })
+        if stats and stats.get(h):
+            # lead-app: p99 < 0.1 -> 'Low everywhere today', not a failed map
+            layers[-1]["stats"] = stats[h]
     return layers
 
 
@@ -199,14 +214,15 @@ def run(out_dir: Path, today: dt.date, bounds=NOW_BOUNDS, model_path=MODEL_PATH,
     land = now_land_mask(tuple(bounds), lats.size, lons.size)
     if land is not None:
         out = {k: np.where(land, v, np.nan).astype(np.float32) for k, v in out.items()}
-    files, bnds = {}, {}
+    files, bnds, stats = {}, {}, {}
     for h in horizons:
         p = out.get(f"p_trigger_{h}")
         if p is None:
             continue
         files[f"cog/p_trigger_{h}.tif"] = render.cog_bytes(p, transform)
         files[f"png/p_trigger_{h}.png"], bnds[h] = prob_png_3857(p, transform)
-    layers = frame_layers(today, gfs_issued or "", files, bnds, tm.meta, horizons)
+        stats[h] = frame_stats(p)
+    layers = frame_layers(today, gfs_issued or "", files, bnds, tm.meta, horizons, stats)
     out_dir = Path(out_dir)
     # frames of horizons the current model no longer serves must not linger
     # in the published snapshot (v1 48h/14d after the v2 swap)

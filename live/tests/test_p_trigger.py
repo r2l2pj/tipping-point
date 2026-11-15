@@ -69,6 +69,14 @@ def test_p_trigger_frames_and_manifest_flag(tmp_path, monkeypatch):
     assert "issued 2026-11-15 00:00 UTC" in l24["basis_label"]
     # the frames cite the v2 model card (ML v2 serving, L40/L48), not the v1 card
     assert all(l["model"]["test_metrics"] == "data/ml/ml_card_v2.json" for l in layers)
+    # per-frame stats of the published index (lead-app 'Low everywhere today' rule)
+    for l in layers:
+        st = l["stats"]
+        assert 0 <= st["p50"] <= st["p99"] <= st["max"] <= 1 and st["n_cells"] > 0
+    with rasterio.open(out / "cog" / "p_trigger_24h.tif") as ds:
+        a = ds.read(1)
+    assert layers[0]["stats"]["max"] == round(float(np.nanmax(a)), 4)
+
     with rasterio.open(out / "cog" / "p_trigger_24h.tif") as ds:
         p = ds.read(1)
     assert np.isnan(p[0, 0]) and np.nanmin(p) >= 0 and np.nanmax(p) <= 1
@@ -179,3 +187,9 @@ def test_horizons_follow_model_meta_and_stale_frames_go(tmp_path):
     assert sorted(p.name for p in (out / "cog").glob("p_trigger_*")) == [
         "p_trigger_24h.tif", "p_trigger_72h.tif", "p_trigger_7d.tif"]
     assert not (out / "png" / "p_trigger_14d.png").exists()
+
+
+def test_frame_stats_empty_and_values():
+    assert p_trigger.frame_stats(np.full((3, 3), np.nan)) is None
+    st = p_trigger.frame_stats(np.array([[0.0, 0.5], [1.0, np.nan]]))
+    assert st == {"p50": 0.5, "p99": 0.99, "max": 1.0, "n_cells": 3}
