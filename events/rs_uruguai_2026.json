@@ -1,0 +1,57 @@
+{
+  "id": "rs_uruguai_2026",
+  "name": "Uruguay River flood, Uruguaiana-Itaqui (RS), Sep-Nov 2026",
+  "country": "BR",
+  "start_date": "2026-10-08",
+  "reference_date": "2026-10-12",
+  "window": {
+    "start": "2026-09-20",
+    "end": "2026-11-15"
+  },
+  "aoi": {
+    "bbox": [
+      -57.25,
+      -29.85,
+      -56.45,
+      -29.05
+    ]
+  },
+  "nisar": {
+    "frames": [
+      {
+        "track": 10,
+        "direction": "descending",
+        "frame": 103
+      }
+    ],
+    "passes_010D": [
+      "2026-09-18",
+      "2026-09-30",
+      "2026-10-12",
+      "2026-10-24",
+      "2026-11-05"
+    ],
+    "collections": "NISAR_L2_GCOV_PROVISIONAL_V1 (to cycle 033) + NISAR_L2_GCOV_V1 (034+); other tracks 082D, 060A, 132A (see .crew/research/uruguai-nisar-granules.md)",
+    "note": "v0 polygons from a teammate render of the 010D Sep 30 -> Oct 12 pair; our own GCOV stack in progress"
+  },
+  "impacts": [
+    {
+      "date": "2026-10-08",
+      "what": "Itaqui: 29 people displaced by the Uruguay River",
+      "source": "agorars.com"
+    },
+    {
+      "date": "2026-10-29",
+      "what": "Uruguaiana: Uruguay River above flood stage",
+      "source": "press / Defesa Civil RS"
+    },
+    {
+      "date": "2026-11-12",
+      "what": "Uruguaiana: red alert, river 8.50 m (Nov 12-13)",
+      "source": "Defesa Civil RS"
+    }
+  ],
+  "status": "v0 — flood candidates from a teammate pair, to be reproduced; candidates, never confirmed",
+  "data_basis": "v0: NISAR flood candidates from a teammate pair (GCOV provisional 010D, 2026-09-30 -> 10-12); our own NISAR GCOV stack and the TPI replay are in progress",
+  "forecast_source": null
+}

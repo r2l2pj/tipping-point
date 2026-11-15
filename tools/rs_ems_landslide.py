@@ -186,10 +186,11 @@ def poly_shares(polys: list[dict], cell_lists, cent_idx, tpi_flat) -> dict:
     return out
 
 
-def gfs_slide_frames(cog: Path, case: str, issue: dt.date, upto: dt.date, shape, transform):
+def gfs_slide_frames(cog: Path, case: str, issue: dt.date, upto: dt.date, shape, transform,
+                     cog_suffix: str = ""):
     """Max over d1..d3 _slide frames of GFS issue `issue` depicting dates <= `upto`
     (rs_ems_validation.gfs_frames_until for the _flood frames, mirrored for _slide)."""
-    p = cog / f"{case}_tpi_gfs_{issue:%Y%m%d}.tif"
+    p = cog / f"{case}_tpi_gfs_{issue:%Y%m%d}{cog_suffix}.tif"
     if not p.exists():
         return [], None
     names, arrays = [], []
@@ -207,11 +208,11 @@ def gfs_slide_frames(cog: Path, case: str, issue: dt.date, upto: dt.date, shape,
 
 
 def score_tpi(data_root: Path, landslide_geojson: Path | None = None,
-              aoi_geojson: Path | None = None) -> dict:
+              aoi_geojson: Path | None = None, cog_suffix: str = "") -> dict:
     rs = data_root / "rs_2024"
     landslide_geojson = landslide_geojson or rs / "geojson" / "landslide_ems.geojson"
     aoi_geojson = aoi_geojson or rs / "geojson" / "flood_ems_aoi.geojson"
-    series = rs / "cog" / "rs_2024_tpi_slide_20240502.tif"
+    series = rs / "cog" / f"rs_2024_tpi_slide_20240502{cog_suffix}.tif"
     cog = rs / "cog"
 
     polys = ems_polygons(landslide_geojson)
@@ -248,7 +249,7 @@ def score_tpi(data_root: Path, landslide_geojson: Path | None = None,
 
     gfs_rows = []
     for lead_h, issue in GFS_ISSUES.items():
-        names, arr = gfs_slide_frames(cog, "rs_2024", issue, onset_day, shape, transform)
+        names, arr = gfs_slide_frames(cog, "rs_2024", issue, onset_day, shape, transform, cog_suffix)
         row = {
             "lead_h": lead_h,
             "gfs_issue": issue.isoformat(),
@@ -421,9 +422,10 @@ def score_scar(data_root: Path, polys: list[dict], aoi,
     }
 
 
-def inventory_comparison(data_root: Path) -> dict:
+def inventory_comparison(data_root: Path, cases: dict | None = None) -> dict:
     """Published 16,027-point inventory numbers for the same leads."""
-    m = json.loads((data_root / "metrics.json").read_text())
+    m = cases if cases is not None else json.loads(
+        (data_root / "metrics.json").read_text())
     rsb = m["cases"]["rs_2024"]
     return {
         "n_points": rsb.get("slide_warned_n"),
@@ -476,7 +478,8 @@ METHOD = (
 )
 
 
-def score(data_root: Path, seeds: int = SEEDS) -> dict:
+def score(data_root: Path, seeds: int = SEEDS, cog_suffix: str = "",
+          cases: dict | None = None) -> dict:
     rs = data_root / "rs_2024"
     landslide_geojson = rs / "geojson" / "landslide_ems.geojson"
     aoi_geojson = rs / "geojson" / "flood_ems_aoi.geojson"
@@ -484,13 +487,13 @@ def score(data_root: Path, seeds: int = SEEDS) -> dict:
 
     polys = ems_polygons(landslide_geojson)
     aoi = aoi_union(aoi_geojson)
-    tpi = score_tpi(data_root, landslide_geojson, aoi_geojson)
-    series = rs / "cog" / "rs_2024_tpi_slide_20240502.tif"
+    tpi = score_tpi(data_root, landslide_geojson, aoi_geojson, cog_suffix)
+    series = rs / "cog" / f"rs_2024_tpi_slide_20240502{cog_suffix}.tif"
     transform, shape, _ = emsv._tpi_grid(series)
     domain = emsv.rasterize_mask([aoi], transform, shape, all_touched=False).ravel()
     scar = score_scar(data_root, polys, aoi, aoi_domain_flat=domain,
                       shape=shape, transform=transform, seeds=seeds)
-    comp = inventory_comparison(data_root)
+    comp = inventory_comparison(data_root, cases)
     inv_vec = [comp["gfs_24h_pct"], comp["gfs_48h_pct"], comp["gfs_72h_pct"]]
     ems_vec = [
         (r.get("any_cell") or {}).get("alto_plus", {}).get("pct") for r in tpi["gfs_by_lead"]
@@ -531,11 +534,8 @@ def score(data_root: Path, seeds: int = SEEDS) -> dict:
     }
 
 
-def merge(data_root: Path, res: dict) -> None:
-    """json load/modify/dump — cases.rs_2024 only (same convention as
-    rs_ems_validation.merge)."""
-    path = data_root / "metrics.json"
-    m = json.loads(path.read_text())
+def apply(res: dict, m: dict) -> None:
+    """Merge `res` into an in-memory metrics dict (no file IO)."""
     rsb = m["cases"]["rs_2024"]
     rsb["landslide_ems_n"] = res["reference"]["n_polygons"]
     rsb["landslide_ems_km2"] = res["reference"]["area_km2"]
@@ -565,6 +565,14 @@ def merge(data_root: Path, res: dict) -> None:
     }
     rsb["landslide_ems"] = res
     rsb["landslide_ems_method"] = METHOD
+
+
+def merge(data_root: Path, res: dict) -> None:
+    """json load/modify/dump — cases.rs_2024 only (same convention as
+    rs_ems_validation.merge)."""
+    path = data_root / "metrics.json"
+    m = json.loads(path.read_text())
+    apply(res, m)
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(m, indent=2, ensure_ascii=False) + "\n")
     os.replace(tmp, path)
@@ -580,10 +588,14 @@ def main(argv=None) -> int:
     s = sub.add_parser("score", help="score landslide products vs the EMS reference")
     s.add_argument("--data-root", type=Path, default=REPO / "data")
     s.add_argument("--seeds", type=int, default=SEEDS)
+    s.add_argument("--cog-suffix", default="")
     s.add_argument("--write", action="store_true", help="merge into metrics.json")
     args = ap.parse_args(argv)
 
-    res = score(args.data_root, seeds=args.seeds)
+    if args.write and args.cog_suffix:
+        raise SystemExit("--write merges under the v1 keys only; re-scored "
+                         "(_v2) results are merged via tools/replay_v2_score.py")
+    res = score(args.data_root, seeds=args.seeds, cog_suffix=args.cog_suffix)
     t = res["tpi_warned"]
     print(f"EMS landslide polygons: {t['n_polygons']} ({t['area_km2']} km2) — {COVERAGE}")
     print("observed curve (any_cell alto+/critico pct | centroid alto+/critico):")

@@ -48,13 +48,17 @@ def _s_on_grid(s_path: Path, band: int, like) -> np.ndarray:
     return out
 
 
-def lagged_frames(cog: Path, case: str, ref: str, lag: int, out_dir: Path) -> list[str]:
-    """Write <case>_tpi_gfs_<I>.tif copies with S from band I-lag; returns skipped issues."""
+def lagged_frames(cog: Path, case: str, ref: str, lag: int, out_dir: Path,
+                  cog_suffix: str = "") -> list[str]:
+    """Write <case>_tpi_gfs_<I><cog_suffix>.tif copies with S from band I-lag; returns skipped issues."""
     s_path = cog / f"{case}_s_series_{ref}.tif"
     sdesc = list(rasterio.open(s_path).descriptions)
     skipped = []
-    for p in sorted(cog.glob(f"{case}_tpi_gfs_*.tif")):
-        issue = wb._day(p.stem.rsplit("_", 1)[1])
+    for p in sorted(cog.glob(f"{case}_tpi_gfs_*{cog_suffix}.tif")):
+        tail = p.stem.removesuffix(cog_suffix).rsplit("_", 1)[1]
+        if not (len(tail) == 8 and tail.isdigit()):
+            continue
+        issue = wb._day(tail)
         d_now = f"{issue - dt.timedelta(days=1):%Y%m%d}"
         d_lag = f"{issue - dt.timedelta(days=lag):%Y%m%d}"
         with rasterio.open(p) as src:
@@ -76,27 +80,27 @@ def lagged_frames(cog: Path, case: str, ref: str, lag: int, out_dir: Path) -> li
     return skipped
 
 
-def run(data_root: Path) -> dict:
+def run(data_root: Path, cog_suffix: str = "") -> dict:
     out = {}
     for case, (ref, hazard, key) in REFS.items():
         cog = data_root / case / "cog"
         anchors = wb.ANCHORS[case]
         if case == "wa_2025":
-            series = cog / "wa_2025_tpi_flood_20251210.tif"
+            series = cog / f"wa_2025_tpi_flood_20251210{cog_suffix}.tif"
             with rasterio.open(series) as g:
                 idx, w = wb.flood_pixels(cog / "wa_2025_flood_nisar_20251210.tif", g)
         else:
-            series = cog / "rs_2024_tpi_slide_20240502.tif"
+            series = cog / f"rs_2024_tpi_slide_20240502{cog_suffix}.tif"
             with rasterio.open(series) as g:
                 idx, w = wb.inventory_points(data_root / case / "geojson" / "landslide_catalog.geojson", g)
         rows = []
         for lag in (1, *S_LAGS):
             with tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR_LA")) as td:
                 td = Path(td)
-                skipped = [] if lag == 1 else lagged_frames(cog, case, ref, lag, td)
+                skipped = [] if lag == 1 else lagged_frames(cog, case, ref, lag, td, cog_suffix)
                 src = cog if lag == 1 else td
                 for a in anchors[:1]:          # onset anchor only
-                    r = wb.evaluate(src, case, hazard, series, idx, w, a["utc"])
+                    r = wb.evaluate(src, case, hazard, series, idx, w, a["utc"], cog_suffix)
                     bl = wb.by_lead(r, a["utc"])
                     rows.append({
                         "s_band": f"I-{lag}", "s_age_days_at_issue": lag,
@@ -131,9 +135,13 @@ def merge(data_root: Path, res: dict) -> None:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--data-root", type=Path, default=REPO / "data")
+    ap.add_argument("--cog-suffix", default="")
     ap.add_argument("--write", action="store_true")
     args = ap.parse_args(argv)
-    res = run(args.data_root)
+    if args.write and args.cog_suffix:
+        raise SystemExit("--write merges under the v1 keys only; re-scored "
+                         "(_v2) results are merged via tools/replay_v2_score.py")
+    res = run(args.data_root, args.cog_suffix)
     for case, r in res.items():
         for row in r["rows"]:
             print(case, row)

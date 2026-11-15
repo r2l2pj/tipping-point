@@ -290,17 +290,27 @@ features only and is **not** a TPI index input.
 
 - "Did the alert come before?" (Modo 3, `tools/warned_before.py`, metrics
   `flood_warned*` / `slide_warned*`, anchored on the documented event onset
-  per L37): RS 2024 — 36.45 % of the 16,027 inventory landslides were Alto+
-  (1.87 % Crítico) in the NOAA GFS 00Z run issued 2024-04-28, **27 h before
-  the 2024-04-29 onset**; the runs issued 48 h and 72 h before showed 0 %,
-  and the observed band 24 h before onset had 0.25 % (`slide_warned*`).
+  per L37; **served replay = v2**, L46: R at 90 m from IMERG Final with
+  bilinear rain + percentiles, permanent water masked — `docs/replay-v2.md`):
+  RS 2024 — 5.77 % of the 16,027 inventory landslides were Alto+ (0.18 %
+  Crítico) in the NOAA GFS 00Z run issued 2024-04-28, **27 h before the
+  2024-04-29 onset**, while that run flagged only 2.13 % of the RS case area
+  (lift 2.7×); the runs issued 48 h and 72 h before showed 0 %; the observed
+  band 24 h before onset had 0.59 %. v1 (published until 13:00 BRT
+  2026-11-15) said 36.45 % / lift 8.8×: it mixed near-real-time IMERG
+  *Early* rain (1.34× wetter than Final over the Serra on 2024-04-27) with a
+  *Final*-based climatology — kept only as the "as-available" sensitivity in
+  `docs/replay-v2.md`, never as the headline.
   WA 2025 — 0 % of the 27.9 km² NISAR-mapped flood candidates was Alto+ at
-  24/48 h and 0.14 % at 72 h before the 2025-12-08 onset (0 % observed;
-  `flood_warned*`): the flooded valley floors went Alto+ only from the
-  2025-12-10 frame (41 %, then 89 % and 99 %). The TPI is pixel-local:
-  those pixels had high T_flood but no local extreme rain; the river flood
-  came from rain upstream in the Cascades, which R does not route. RS 2024
-  has no flood reference map, so its flood equivalent is null.
+  24/48/72 h before the 2025-12-08 onset (`flood_warned*`). The TPI is
+  pixel-local: those pixels had high T_flood but no local extreme rain; the
+  river flood came from rain upstream in the Cascades, which R does not
+  route. RS 2024 flood: scored against Copernicus EMS EMSR720 (Taquari
+  valley only) in `flood_ems_*`.
+- **Known bias in the live Now job:** it scores IMERG *Early* rain against
+  an IMERG *Final* climatology (`live/build_clim.py`), so Now R is likely
+  inflated (Early was 1.34× Final in the RS 2024 test); a Final-consistent
+  or Early-based climatology is the fix after submission.
 
 ## Use of AI
 

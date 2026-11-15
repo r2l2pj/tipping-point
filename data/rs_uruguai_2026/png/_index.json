@@ -1,0 +1,186 @@
+{
+  "layers": [
+    {
+      "id": "radar_pre",
+      "date": "2026-09-30",
+      "png": "rs_uruguai_2026/png/radar_pre_20260930.png",
+      "cog": null,
+      "bounds": [
+        -57.079983,
+        -29.757373,
+        -57.008572,
+        -29.700131
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "dark = smooth water",
+        "green = vegetation",
+        "bright = urban"
+      ],
+      "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it",
+      "label": "NISAR radar before (teammate render)",
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "teammate"
+    },
+    {
+      "id": "radar_post",
+      "date": "2026-10-12",
+      "png": "rs_uruguai_2026/png/radar_post_20261012.png",
+      "cog": null,
+      "bounds": [
+        -57.079983,
+        -29.757373,
+        -57.008572,
+        -29.700131
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "dark = smooth water",
+        "green = vegetation",
+        "bright = urban"
+      ],
+      "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it",
+      "label": "NISAR radar after (teammate render)",
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "teammate"
+    },
+    {
+      "id": "nisar_hh_20260923",
+      "date": "2026-09-23",
+      "kind": "nisar_frame",
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_hh_20260923_082D.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20260923_082D_60m.tif",
+      "bounds": [
+        -57.252403,
+        -29.851198,
+        -56.445749,
+        -29.048826
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR GCOV (ASF)",
+      "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    },
+    {
+      "id": "nisar_hv_20260923",
+      "date": "2026-09-23",
+      "kind": "nisar_frame",
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_hv_20260923_082D.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20260923_082D_60m.tif",
+      "bounds": [
+        -57.252403,
+        -29.851198,
+        -56.445749,
+        -29.048826
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR GCOV (ASF)",
+      "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    },
+    {
+      "id": "nisar_hh_20261005",
+      "date": "2026-10-05",
+      "kind": "nisar_frame",
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_hh_20261005_082D.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261005_082D_60m.tif",
+      "bounds": [
+        -57.252403,
+        -29.851198,
+        -56.445749,
+        -29.048826
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR GCOV (ASF)",
+      "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    },
+    {
+      "id": "nisar_hv_20261005",
+      "date": "2026-10-05",
+      "kind": "nisar_frame",
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_hv_20261005_082D.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261005_082D_60m.tif",
+      "bounds": [
+        -57.252403,
+        -29.851198,
+        -56.445749,
+        -29.048826
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR GCOV (ASF)",
+      "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    },
+    {
+      "id": "nisar_hh_20261017",
+      "date": "2026-10-17",
+      "kind": "nisar_frame",
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_hh_20261017_082D.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261017_082D_60m.tif",
+      "bounds": [
+        -57.252403,
+        -29.851198,
+        -56.445749,
+        -29.048826
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR GCOV (ASF)",
+      "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    },
+    {
+      "id": "nisar_hv_20261017",
+      "date": "2026-10-17",
+      "kind": "nisar_frame",
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_hv_20261017_082D.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261017_082D_60m.tif",
+      "bounds": [
+        -57.252403,
+        -29.851198,
+        -56.445749,
+        -29.048826
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR GCOV (ASF)",
+      "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    },
+    {
+      "id": "nisar_hh_20261029",
+      "date": "2026-10-29",
+      "kind": "nisar_frame",
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_hh_20261029_082D.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261029_082D_60m.tif",
+      "bounds": [
+        -57.252403,
+        -29.851198,
+        -56.445749,
+        -29.048826
+      ],
+      "sensor": "NISAR (GCOV)",
+      "source": "NISAR GCOV (ASF)",
+      "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    },
+    {
+      "id": "nisar_hv_20261029",
+      "date": "2026-10-29",
+      "kind": "nisar_frame",
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_hv_20261029_082D.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261029_082D_60m.tif",
+      "bounds": [
+        -57.252403,
+        -29.851198,
+        -56.445749,
+        -29.048826
+      ],
+      "sensor": "NISAR (GCOV)",
+      "source": "NISAR GCOV (ASF)",
+      "note": "track 082 D frame 103; context track (082 D) \u2014 HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it"
+    }
+  ]
+}

@@ -29,7 +29,8 @@ from pathlib import Path
 from tp.config import case as config_case
 from tp.events import DATA_DIR, load_event
 
-EVENT_TO_CASE = {"rs-2024-05": "rs_2024", "wa-2025-12": "wa_2025"}
+EVENT_TO_CASE = {"rs-2024-05": "rs_2024", "wa-2025-12": "wa_2025",
+                 "rs_uruguai_2026": "rs_uruguai_2026"}
 
 # pt-BR class names pinned by contract (live/config.py LABELS); order fixed.
 LEGEND = ["Baixo", "Moderado", "Alto", "Crítico"]
@@ -139,7 +140,8 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
         entry["forecast"] = forecast
     for extra in ("issued", "forecast_source", "kind",
                   "critical_km2", "people_critical", "_null_reasons",
-                  "legend", "db_range"):
+                  "legend", "db_range",
+                  "sensor", "source", "label", "note", "attribution", "polarization"):
         if extra in index_entry:
             entry[extra] = index_entry[extra]
     if entry.get("forecast") and "forecast_source" not in entry:
@@ -282,13 +284,17 @@ def build_case_node(event_id: str, data_root: Path | str = DATA_DIR) -> dict:
     if metrics is None:
         reasons["metrics"] = "metrics.json not yet written"
 
+    try:
+        ev = load_event(event_id)
+    except (OSError, ValueError):
+        ev = {}
     return {
         "event_id": event_id,
         "mode": "replay",
         "bounds": config_case(case_id)["aoi"],
-        "forecast_source": "perfect-forecast",
-        "data_basis": ("hindcast — IMERG_V07 + SMAP SPL4SMGP as archived in GEE "
-                       "(no real-time latency modelled); not as-available"),
+        "forecast_source": ev.get("forecast_source", "perfect-forecast"),
+        "data_basis": ev.get("data_basis", "hindcast — IMERG_V07 + SMAP SPL4SMGP as archived in GEE "
+                                           "(no real-time latency modelled); not as-available"),
         "layers": layers,
         "metrics": metrics,
         "data_dates": _data_dates(event_id, case_dir),

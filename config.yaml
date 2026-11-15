@@ -13,6 +13,11 @@ cases:
     event_date: 2025-12-10
     window_before_days: 10
     window_after_days: 10
+  rs_uruguai_2026:
+    aoi: [-57.25, -29.85, -56.45, -29.05]   # Uruguaiana-Itaqui Uruguay River corridor
+    event_date: 2026-10-12
+    window_before_days: 22
+    window_after_days: 34
 
 domains:
   now:

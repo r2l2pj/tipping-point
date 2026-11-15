@@ -10,17 +10,12 @@
       "kind": "observed",
       "imerg_mm": 26.639725248057726,
       "smap": 0.6385696590030138,
-      "tpi": 0.5742376446723938,
-      "critical_km2": 0.016,
+      "tpi": 0.5190039277076721,
+      "critical_km2": 0.0,
       "critical_slide_km2": 0.0,
-      "critical_flood_km2": 0.016,
-      "people_critical": 9,
-      "river_m": null,
-      "gfs_mm": null,
-      "gfs_mm_lead0": 0.12857142857142856,
-      "gfs_issued": null,
-      "gfs_rain3_mm": null,
-      "gfs_rain3_issued": null
+      "critical_flood_km2": 0.0,
+      "people_critical": 0,
+      "river_m": null
     },
     {
       "date": "2025-12-01",
@@ -28,17 +23,12 @@
       "kind": "observed",
       "imerg_mm": 14.313149383910236,
       "smap": 0.6333041483067504,
-      "tpi": 0.41890811920166016,
+      "tpi": 0.24481715261936188,
       "critical_km2": 0.0,
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": 426.7229,
-      "gfs_mm": 0.0,
-      "gfs_mm_lead0": 0.3875,
-      "gfs_issued": "2025-11-30",
-      "gfs_rain3_mm": null,
-      "gfs_rain3_issued": null
+      "river_m": 426.7229
     },
     {
       "date": "2025-12-02",
@@ -51,12 +41,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": null,
-      "gfs_mm": 6.630357142857143,
-      "gfs_mm_lead0": 4.208928571428571,
-      "gfs_issued": "2025-12-01",
-      "gfs_rain3_mm": 3.4660714285714285,
-      "gfs_rain3_issued": "2025-11-30"
+      "river_m": null
     },
     {
       "date": "2025-12-03",
@@ -69,12 +54,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": null,
-      "gfs_mm": 0.02142857142857143,
-      "gfs_mm_lead0": 0.16428571428571428,
-      "gfs_issued": "2025-12-02",
-      "gfs_rain3_mm": 7.228571428571429,
-      "gfs_rain3_issued": "2025-12-01"
+      "river_m": null
     },
     {
       "date": "2025-12-04",
@@ -87,12 +67,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": 43.2752,
-      "gfs_mm": 10.371428571428572,
-      "gfs_mm_lead0": 13.432142857142857,
-      "gfs_issued": "2025-12-03",
-      "gfs_rain3_mm": 10.294642857142858,
-      "gfs_rain3_issued": "2025-12-02"
+      "river_m": 43.2752
     },
     {
       "date": "2025-12-05",
@@ -105,12 +80,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": null,
-      "gfs_mm": 14.408928571428572,
-      "gfs_mm_lead0": 12.041071428571428,
-      "gfs_issued": "2025-12-04",
-      "gfs_rain3_mm": 36.30535714285714,
-      "gfs_rain3_issued": "2025-12-03"
+      "river_m": null
     },
     {
       "date": "2025-12-06",
@@ -123,12 +93,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": null,
-      "gfs_mm": 15.594642857142857,
-      "gfs_mm_lead0": 19.228571428571428,
-      "gfs_issued": "2025-12-05",
-      "gfs_rain3_mm": 46.989285714285714,
-      "gfs_rain3_issued": "2025-12-04"
+      "river_m": null
     },
     {
       "date": "2025-12-07",
@@ -141,12 +106,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": null,
-      "gfs_mm": 8.314285714285715,
-      "gfs_mm_lead0": 11.948214285714286,
-      "gfs_issued": "2025-12-06",
-      "gfs_rain3_mm": 37.683928571428574,
-      "gfs_rain3_issued": "2025-12-05"
+      "river_m": null
     },
     {
       "date": "2025-12-08",
@@ -159,12 +119,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": null,
-      "gfs_mm": 22.689285714285713,
-      "gfs_mm_lead0": 18.735714285714284,
-      "gfs_issued": "2025-12-07",
-      "gfs_rain3_mm": 50.99821428571428,
-      "gfs_rain3_issued": "2025-12-06"
+      "river_m": null
     },
     {
       "date": "2025-12-09",
@@ -173,16 +128,11 @@
       "imerg_mm": 43.18598104630097,
       "smap": 0.6831992059106435,
       "tpi": 0.9724833965301514,
-      "critical_km2": 1021.663,
-      "critical_slide_km2": 1001.47,
-      "critical_flood_km2": 20.193,
-      "people_critical": 294,
-      "river_m": null,
-      "gfs_mm": 23.410714285714285,
-      "gfs_mm_lead0": 26.958928571428572,
-      "gfs_issued": "2025-12-08",
-      "gfs_rain3_mm": 54.60357142857143,
-      "gfs_rain3_issued": "2025-12-07"
+      "critical_km2": 1088.192,
+      "critical_slide_km2": 1081.38,
+      "critical_flood_km2": 6.812,
+      "people_critical": 272,
+      "river_m": null
     },
     {
       "date": "2025-12-10",
@@ -191,16 +141,11 @@
       "imerg_mm": 87.95405514606931,
       "smap": 0.7332764353049467,
       "tpi": 1.0,
-      "critical_km2": 2269.29,
-      "critical_slide_km2": 2069.197,
-      "critical_flood_km2": 200.094,
-      "people_critical": 41693,
-      "river_m": null,
-      "gfs_mm": 50.17321428571429,
-      "gfs_mm_lead0": 47.732142857142854,
-      "gfs_issued": "2025-12-09",
-      "gfs_rain3_mm": 80.46785714285714,
-      "gfs_rain3_issued": "2025-12-08"
+      "critical_km2": 2302.893,
+      "critical_slide_km2": 2135.497,
+      "critical_flood_km2": 167.395,
+      "people_critical": 37727,
+      "river_m": null
     },
     {
       "date": "2025-12-11",
@@ -209,16 +154,11 @@
       "imerg_mm": 144.5334261516383,
       "smap": 0.7519042744414258,
       "tpi": 1.0,
-      "critical_km2": 3673.405,
-      "critical_slide_km2": 2600.28,
-      "critical_flood_km2": 1073.126,
-      "people_critical": 186235,
-      "river_m": 424.3532,
-      "gfs_mm": 34.08571428571429,
-      "gfs_mm_lead0": 36.86785714285714,
-      "gfs_issued": "2025-12-10",
-      "gfs_rain3_mm": 113.10892857142858,
-      "gfs_rain3_issued": "2025-12-09"
+      "critical_km2": 3174.591,
+      "critical_slide_km2": 2630.05,
+      "critical_flood_km2": 544.541,
+      "people_critical": 174340,
+      "river_m": 424.3532
     },
     {
       "date": "2025-12-12",
@@ -227,16 +167,11 @@
       "imerg_mm": 137.46117312809824,
       "smap": 0.8007433350255911,
       "tpi": 1.0,
-      "critical_km2": 4129.437,
-      "critical_slide_km2": 2663.825,
-      "critical_flood_km2": 1465.612,
-      "people_critical": 254263,
-      "river_m": 9.101,
-      "gfs_mm": 4.0625,
-      "gfs_mm_lead0": 6.410714285714286,
-      "gfs_issued": "2025-12-11",
-      "gfs_rain3_mm": 83.40535714285714,
-      "gfs_rain3_issued": "2025-12-10"
+      "critical_km2": 3428.689,
+      "critical_slide_km2": 2690.04,
+      "critical_flood_km2": 738.649,
+      "people_critical": 225583,
+      "river_m": 9.101
     },
     {
       "date": "2025-12-13",
@@ -245,16 +180,11 @@
       "imerg_mm": 88.66183842160108,
       "smap": 0.7944290809805041,
       "tpi": 1.0,
-      "critical_km2": 2845.466,
-      "critical_slide_km2": 2107.976,
-      "critical_flood_km2": 737.49,
-      "people_critical": 64829,
-      "river_m": null,
-      "gfs_mm": 0.3125,
-      "gfs_mm_lead0": 0.24642857142857144,
-      "gfs_issued": "2025-12-12",
-      "gfs_rain3_mm": 41.232142857142854,
-      "gfs_rain3_issued": "2025-12-11"
+      "critical_km2": 2402.129,
+      "critical_slide_km2": 2138.718,
+      "critical_flood_km2": 263.411,
+      "people_critical": 47256,
+      "river_m": null
     },
     {
       "date": "2025-12-14",
@@ -267,12 +197,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": 46.0451,
-      "gfs_mm": 1.9875,
-      "gfs_mm_lead0": 1.9142857142857144,
-      "gfs_issued": "2025-12-13",
-      "gfs_rain3_mm": 10.228571428571428,
-      "gfs_rain3_issued": "2025-12-12"
+      "river_m": 46.0451
     },
     {
       "date": "2025-12-15",
@@ -285,12 +210,7 @@
       "critical_slide_km2": 0.0,
       "critical_flood_km2": 0.0,
       "people_critical": 0,
-      "river_m": null,
-      "gfs_mm": 27.125,
-      "gfs_mm_lead0": 33.27142857142857,
-      "gfs_issued": "2025-12-14",
-      "gfs_rain3_mm": 28.4375,
-      "gfs_rain3_issued": "2025-12-13"
+      "river_m": null
     },
     {
       "date": "2025-12-16",
@@ -298,17 +218,12 @@
       "kind": "forecast",
       "imerg_mm": 25.2592239414525,
       "smap": 0.7718889770801232,
-      "tpi": 0.7936263680458069,
-      "critical_km2": 26.574,
-      "critical_slide_km2": 0.267,
-      "critical_flood_km2": 26.307,
-      "people_critical": 424,
-      "river_m": null,
-      "gfs_mm": 16.807142857142857,
-      "gfs_mm_lead0": 14.7125,
-      "gfs_issued": "2025-12-15",
-      "gfs_rain3_mm": 47.15535714285714,
-      "gfs_rain3_issued": "2025-12-14"
+      "tpi": 0.83692467212677,
+      "critical_km2": 2.603,
+      "critical_slide_km2": 0.219,
+      "critical_flood_km2": 2.384,
+      "people_critical": 101,
+      "river_m": null
     },
     {
       "date": "2025-12-17",
@@ -316,17 +231,12 @@
       "kind": "forecast",
       "imerg_mm": 30.566556394849002,
       "smap": 0.7868362579693637,
-      "tpi": 0.8415110111236572,
-      "critical_km2": 33.139,
-      "critical_slide_km2": 0.39,
-      "critical_flood_km2": 32.749,
-      "people_critical": 503,
-      "river_m": null,
-      "gfs_mm": 32.55535714285714,
-      "gfs_mm_lead0": 30.321428571428573,
-      "gfs_issued": "2025-12-16",
-      "gfs_rain3_mm": 83.9625,
-      "gfs_rain3_issued": "2025-12-15"
+      "tpi": 0.9201399683952332,
+      "critical_km2": 3.51,
+      "critical_slide_km2": 0.422,
+      "critical_flood_km2": 3.088,
+      "people_critical": 134,
+      "river_m": null
     },
     {
       "date": "2025-12-18",
@@ -334,17 +244,12 @@
       "kind": "forecast",
       "imerg_mm": 37.42505067349661,
       "smap": 0.8095359258870668,
-      "tpi": 0.7946183085441589,
-      "critical_km2": 119.646,
-      "critical_slide_km2": 91.623,
-      "critical_flood_km2": 28.023,
-      "people_critical": 472,
-      "river_m": null,
-      "gfs_mm": 12.191071428571428,
-      "gfs_mm_lead0": 13.9375,
-      "gfs_issued": "2025-12-17",
-      "gfs_rain3_mm": 56.27857142857143,
-      "gfs_rain3_issued": "2025-12-16"
+      "tpi": 0.857650101184845,
+      "critical_km2": 181.389,
+      "critical_slide_km2": 178.391,
+      "critical_flood_km2": 2.997,
+      "people_critical": 193,
+      "river_m": null
     },
     {
       "date": "2025-12-19",
@@ -352,17 +257,12 @@
       "kind": "forecast",
       "imerg_mm": 35.28641727057259,
       "smap": 0.805043406155029,
-      "tpi": 0.6811320185661316,
-      "critical_km2": 104.675,
-      "critical_slide_km2": 94.988,
-      "critical_flood_km2": 9.687,
-      "people_critical": 2191,
-      "river_m": null,
-      "gfs_mm": 22.821428571428573,
-      "gfs_mm_lead0": 18.96607142857143,
-      "gfs_issued": "2025-12-18",
-      "gfs_rain3_mm": 69.26428571428572,
-      "gfs_rain3_issued": "2025-12-17"
+      "tpi": 0.786871612071991,
+      "critical_km2": 183.266,
+      "critical_slide_km2": 183.012,
+      "critical_flood_km2": 0.254,
+      "people_critical": 95,
+      "river_m": null
     },
     {
       "date": "2025-12-20",
@@ -370,18 +270,12 @@
       "kind": "forecast",
       "imerg_mm": 32.51973018132035,
       "smap": 0.8074735331953363,
-      "tpi": 0.797904372215271,
-      "critical_km2": 79.542,
-      "critical_slide_km2": 79.537,
-      "critical_flood_km2": 0.005,
-      "people_critical": 4,
-      "river_m": null,
-      "gfs_mm": 11.351785714285715,
-      "gfs_mm_lead0": 12.692857142857143,
-      "gfs_issued": "2025-12-19",
-      "gfs_rain3_mm": 47.29107142857143,
-      "gfs_rain3_issued": "2025-12-18"
+      "tpi": 0.8042420148849487,
+      "critical_km2": 68.163,
+      "critical_slide_km2": 68.163,
+      "critical_flood_km2": 0.0,
+      "people_critical": 2,
+      "river_m": null
     }
-  ],
-  "gfs_source": "NOAA GFS 0.25 deg 00Z runs via AWS noaa-gfs-bdp-pds; AOI mean of native cells; gfs_mm = 1-day forecast for the day (issued day-1); gfs_rain3_mm = 3-day forecast total ending the day (issued day-2), compare with imerg_mm (observed 3-day total)"
+  ]
 }

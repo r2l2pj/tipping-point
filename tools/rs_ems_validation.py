@@ -456,10 +456,11 @@ def _aoi_by_date(flood_geojson: Path) -> dict[str, set]:
     return by
 
 
-def gfs_frames_until(cog: Path, case: str, issue: dt.date, upto: dt.date, shape, transform):
+def gfs_frames_until(cog: Path, case: str, issue: dt.date, upto: dt.date, shape, transform,
+                     cog_suffix: str = ""):
     """Max over d1..d3 _flood frames of issue `issue` depicting dates <= `upto`.
     Returns (frame names, array or None)."""
-    p = cog / f"{case}_tpi_gfs_{issue:%Y%m%d}.tif"
+    p = cog / f"{case}_tpi_gfs_{issue:%Y%m%d}{cog_suffix}.tif"
     if not p.exists():
         return [], None
     names, arrays = [], []
@@ -481,13 +482,14 @@ def score(
     flood_geojson: Path | None = None,
     meta_path: Path | None = None,
     aoi_geojson: Path | None = None,
+    cog_suffix: str = "",
 ) -> dict:
     rs = data_root / "rs_2024"
     flood_geojson = flood_geojson or rs / "geojson" / "flood_ems.geojson"
     meta_path = meta_path or rs / "flood_ems_meta.json"
     aoi_geojson = aoi_geojson or rs / "geojson" / "flood_ems_aoi.geojson"
     meta = json.loads(Path(meta_path).read_text())
-    series = rs / "cog" / "rs_2024_tpi_flood_20240502.tif"
+    series = rs / "cog" / f"rs_2024_tpi_flood_20240502{cog_suffix}.tif"
     cog = rs / "cog"
     transform, shape, bands = _tpi_grid(series)
     km2 = pixel_km2(transform, shape)
@@ -509,7 +511,7 @@ def score(
         obs_band = bands.get(day.replace("-", ""))
         obs_arr = obs.read(obs_band) if obs_band else None
         g_issue = e - dt.timedelta(days=1)
-        g_names, g_arr = gfs_frames_until(cog, "rs_2024", g_issue, e, shape, transform)
+        g_names, g_arr = gfs_frames_until(cog, "rs_2024", g_issue, e, shape, transform, cog_suffix)
         for vname, ems_mask in variants.items():
             truth = ems_mask & domain
             truth_km2 = float(km2[truth].sum())
@@ -555,7 +557,7 @@ def score(
     ems_all = rasterize_mask([all_flood], transform, shape, all_touched=False) & domain_all
     rows_idx = np.nonzero(ems_all.ravel())[0]
     w = km2.ravel()[rows_idx]
-    ev = wb.evaluate(cog, "rs_2024", "flood", series, rows_idx, w, ONSET)
+    ev = wb.evaluate(cog, "rs_2024", "flood", series, rows_idx, w, ONSET, cog_suffix)
     bl = wb.by_lead(ev, ONSET)
     obs_band_row = next((c for c in ev["by_date_observed"] if c["date"] == "2024-04-29"), None)
     gfs_rows = {}
@@ -680,9 +682,8 @@ METHOD = (
 )
 
 
-def merge(data_root: Path, res: dict) -> None:
-    path = data_root / "metrics.json"
-    m = json.loads(path.read_text())
+def apply(res: dict, m: dict) -> None:
+    """Merge `res` into an in-memory metrics dict (no file IO)."""
     rsb = m["cases"]["rs_2024"]
     h = res["headline"]
     rsb["flood_ems_iou"] = h["iou"]
@@ -698,6 +699,12 @@ def merge(data_root: Path, res: dict) -> None:
     ]
     rsb["flood_ems"] = res
     rsb["flood_ems_method"] = METHOD
+
+
+def merge(data_root: Path, res: dict) -> None:
+    path = data_root / "metrics.json"
+    m = json.loads(path.read_text())
+    apply(res, m)
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(m, indent=2, ensure_ascii=False) + "\n")
     os.replace(tmp, path)
@@ -718,6 +725,7 @@ def main(argv=None) -> int:
     )
     s = sub.add_parser("score", help="score TPI_flood vs the EMS reference")
     s.add_argument("--data-root", type=Path, default=REPO / "data")
+    s.add_argument("--cog-suffix", default="")
     s.add_argument("--write", action="store_true", help="merge into metrics.json")
     args = ap.parse_args(argv)
     if args.cmd == "build":
@@ -730,7 +738,10 @@ def main(argv=None) -> int:
         if size > 5:
             print("WARNING >5 MB — rerun with --simplify-m 20")
         return 0
-    res = score(args.data_root)
+    if args.write and args.cog_suffix:
+        raise SystemExit("--write merges under the v1 keys only; re-scored "
+                         "(_v2) results are merged via tools/replay_v2_score.py")
+    res = score(args.data_root, cog_suffix=args.cog_suffix)
     h = res["headline"]
     print("headline", json.dumps(h))
     for r in res["rows"]:

@@ -206,7 +206,7 @@ def test_root_shape_and_now_verbatim(tmp_path):
     out = manifest.build_root(root)
     assert set(out) == {"updated_at", "cases"}
     assert out["updated_at"].endswith("Z")
-    assert set(out["cases"]) == {"rs_2024", "wa_2025", "now"}
+    assert set(out["cases"]) == {"rs_2024", "wa_2025", "rs_uruguai_2026", "now"}
     assert out["cases"]["now"] == now_manifest
     assert out["cases"]["rs_2024"]["event_id"] == "rs-2024-05"
     assert out["cases"]["wa_2025"]["event_id"] == "wa-2025-12"
@@ -256,7 +256,7 @@ def test_dry_run_prints_valid_json_and_writes_nothing(tmp_path):
          "--dry-run", "--data-root", str(root)],
         capture_output=True, text=True, check=True)
     out = json.loads(result.stdout)
-    assert set(out["cases"]) == {"rs_2024", "wa_2025", "now"}
+    assert set(out["cases"]) == {"rs_2024", "wa_2025", "rs_uruguai_2026", "now"}
     assert not (root / "manifest.json").exists()
 
 
