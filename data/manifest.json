@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-11-15T23:39:12Z",
-  "version": "2026-11-15T23:39:12Z",
+  "updated_at": "2026-11-15T23:52:04Z",
+  "version": "2026-11-15T23:52:04Z",
   "version_note": "ISO UTC build time of this manifest; use as a cache key (?v=) for every data URL",
   "cases": {
     "rs_2024": {
@@ -13513,6 +13513,780 @@
             103,
             104
           ]
+        },
+        {
+          "id": "nisar_mosaic_hh_20260918",
+          "date": "2026-09-18",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hh_20260918_e2586202.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HH · 2026-09-18 → 2026-09-23",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HH",
+          "window": [
+            "2026-09-18",
+            "2026-09-23"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "passes": [
+            {
+              "date": "2026-09-18",
+              "track": "010D",
+              "share_pct": 40.2
+            },
+            {
+              "date": "2026-09-22",
+              "track": "060A",
+              "share_pct": 20.2
+            },
+            {
+              "date": "2026-09-23",
+              "track": "082D",
+              "share_pct": 39.6
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20260918_bf2bb00e.png",
+          "source_legend": [
+            {
+              "label": "2026-09-18 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-09-22 060A",
+              "color": "#d95f02"
+            },
+            {
+              "label": "2026-09-23 082D",
+              "color": "#7570b3"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20260918.geojson"
+        },
+        {
+          "id": "nisar_mosaic_hh_20260930",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hh_20260930_94c44157.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HH · 2026-09-27 → 2026-10-05",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HH",
+          "window": [
+            "2026-09-27",
+            "2026-10-05"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "passes": [
+            {
+              "date": "2026-09-30",
+              "track": "010D",
+              "share_pct": 40.2
+            },
+            {
+              "date": "2026-09-27",
+              "track": "132A",
+              "share_pct": 55.8
+            },
+            {
+              "date": "2026-10-04",
+              "track": "060A",
+              "share_pct": 4.0
+            },
+            {
+              "date": "2026-10-05",
+              "track": "082D",
+              "share_pct": 0.0
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20260930_314c2c3c.png",
+          "source_legend": [
+            {
+              "label": "2026-09-30 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-09-27 132A",
+              "color": "#d95f02"
+            },
+            {
+              "label": "2026-10-04 060A",
+              "color": "#7570b3"
+            },
+            {
+              "label": "2026-10-05 082D",
+              "color": "#e7298a"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20260930.geojson"
+        },
+        {
+          "id": "nisar_mosaic_hh_20261012",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hh_20261012_41a725b6.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HH · 2026-10-09 → 2026-10-17",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HH",
+          "window": [
+            "2026-10-09",
+            "2026-10-17"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "passes": [
+            {
+              "date": "2026-10-12",
+              "track": "010D",
+              "share_pct": 40.2
+            },
+            {
+              "date": "2026-10-09",
+              "track": "132A",
+              "share_pct": 55.8
+            },
+            {
+              "date": "2026-10-16",
+              "track": "060A",
+              "share_pct": 4.0
+            },
+            {
+              "date": "2026-10-17",
+              "track": "082D",
+              "share_pct": 0.0
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20261012_367d5226.png",
+          "source_legend": [
+            {
+              "label": "2026-10-12 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-10-09 132A",
+              "color": "#d95f02"
+            },
+            {
+              "label": "2026-10-16 060A",
+              "color": "#7570b3"
+            },
+            {
+              "label": "2026-10-17 082D",
+              "color": "#e7298a"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20261012.geojson"
+        },
+        {
+          "id": "nisar_mosaic_hh_20261024",
+          "date": "2026-10-24",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hh_20261024_6bdb82b6.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HH · 2026-10-21 → 2026-10-29",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HH",
+          "window": [
+            "2026-10-21",
+            "2026-10-29"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "passes": [
+            {
+              "date": "2026-10-24",
+              "track": "010D",
+              "share_pct": 40.2
+            },
+            {
+              "date": "2026-10-21",
+              "track": "132A",
+              "share_pct": 55.8
+            },
+            {
+              "date": "2026-10-28",
+              "track": "060A",
+              "share_pct": 4.0
+            },
+            {
+              "date": "2026-10-29",
+              "track": "082D",
+              "share_pct": 0.0
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20261024_863a656f.png",
+          "source_legend": [
+            {
+              "label": "2026-10-24 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-10-21 132A",
+              "color": "#d95f02"
+            },
+            {
+              "label": "2026-10-28 060A",
+              "color": "#7570b3"
+            },
+            {
+              "label": "2026-10-29 082D",
+              "color": "#e7298a"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20261024.geojson"
+        },
+        {
+          "id": "nisar_mosaic_hh_20261105",
+          "date": "2026-11-05",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hh_20261105_3c1176f1.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HH · 2026-11-02 → 2026-11-05",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HH",
+          "window": [
+            "2026-11-02",
+            "2026-11-05"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 96.0,
+          "passes": [
+            {
+              "date": "2026-11-05",
+              "track": "010D",
+              "share_pct": 41.9
+            },
+            {
+              "date": "2026-11-02",
+              "track": "132A",
+              "share_pct": 58.1
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20261105_26505518.png",
+          "source_legend": [
+            {
+              "label": "2026-11-05 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-11-02 132A",
+              "color": "#d95f02"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20261105.geojson"
+        },
+        {
+          "id": "nisar_mosaic_hv_20260930",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hv_20260930_3db986ee.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HV · 2026-09-27 → 2026-10-05",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HV",
+          "window": [
+            "2026-09-27",
+            "2026-10-05"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "passes": [
+            {
+              "date": "2026-09-30",
+              "track": "010D",
+              "share_pct": 40.2
+            },
+            {
+              "date": "2026-09-27",
+              "track": "132A",
+              "share_pct": 55.8
+            },
+            {
+              "date": "2026-10-04",
+              "track": "060A",
+              "share_pct": 4.0
+            },
+            {
+              "date": "2026-10-05",
+              "track": "082D",
+              "share_pct": 0.0
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20260930_314c2c3c.png",
+          "source_legend": [
+            {
+              "label": "2026-09-30 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-09-27 132A",
+              "color": "#d95f02"
+            },
+            {
+              "label": "2026-10-04 060A",
+              "color": "#7570b3"
+            },
+            {
+              "label": "2026-10-05 082D",
+              "color": "#e7298a"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20260930.geojson"
+        },
+        {
+          "id": "nisar_mosaic_hv_20261012",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hv_20261012_489f4c7a.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HV · 2026-10-09 → 2026-10-17",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HV",
+          "window": [
+            "2026-10-09",
+            "2026-10-17"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "passes": [
+            {
+              "date": "2026-10-12",
+              "track": "010D",
+              "share_pct": 40.2
+            },
+            {
+              "date": "2026-10-09",
+              "track": "132A",
+              "share_pct": 55.8
+            },
+            {
+              "date": "2026-10-16",
+              "track": "060A",
+              "share_pct": 4.0
+            },
+            {
+              "date": "2026-10-17",
+              "track": "082D",
+              "share_pct": 0.0
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20261012_367d5226.png",
+          "source_legend": [
+            {
+              "label": "2026-10-12 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-10-09 132A",
+              "color": "#d95f02"
+            },
+            {
+              "label": "2026-10-16 060A",
+              "color": "#7570b3"
+            },
+            {
+              "label": "2026-10-17 082D",
+              "color": "#e7298a"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20261012.geojson"
+        },
+        {
+          "id": "nisar_mosaic_hv_20261024",
+          "date": "2026-10-24",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hv_20261024_60ade5ea.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HV · 2026-10-21 → 2026-10-29",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HV",
+          "window": [
+            "2026-10-21",
+            "2026-10-29"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "passes": [
+            {
+              "date": "2026-10-24",
+              "track": "010D",
+              "share_pct": 40.2
+            },
+            {
+              "date": "2026-10-21",
+              "track": "132A",
+              "share_pct": 55.8
+            },
+            {
+              "date": "2026-10-28",
+              "track": "060A",
+              "share_pct": 4.0
+            },
+            {
+              "date": "2026-10-29",
+              "track": "082D",
+              "share_pct": 0.0
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20261024_863a656f.png",
+          "source_legend": [
+            {
+              "label": "2026-10-24 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-10-21 132A",
+              "color": "#d95f02"
+            },
+            {
+              "label": "2026-10-28 060A",
+              "color": "#7570b3"
+            },
+            {
+              "label": "2026-10-29 082D",
+              "color": "#e7298a"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20261024.geojson"
+        },
+        {
+          "id": "nisar_mosaic_hv_20261105",
+          "date": "2026-11-05",
+          "png": "rs_uruguai_2026/png/nisar_mosaic_hv_20261105_351ce8ef.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.599926,
+            -55.300507,
+            -28.2
+          ],
+          "kind": "nisar_mosaic",
+          "sensor": "NISAR",
+          "label": "NISAR radar mosaic HV · 2026-11-02 → 2026-11-05",
+          "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map.",
+          "polarization": "HV",
+          "window": [
+            "2026-11-02",
+            "2026-11-05"
+          ],
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 96.0,
+          "passes": [
+            {
+              "date": "2026-11-05",
+              "track": "010D",
+              "share_pct": 41.9
+            },
+            {
+              "date": "2026-11-02",
+              "track": "132A",
+              "share_pct": 58.1
+            }
+          ],
+          "source_png": "rs_uruguai_2026/png/nisar_mosaic_src_20261105_26505518.png",
+          "source_legend": [
+            {
+              "label": "2026-11-05 010D",
+              "color": "#1b9e77"
+            },
+            {
+              "label": "2026-11-02 132A",
+              "color": "#d95f02"
+            }
+          ],
+          "footprints": "rs_uruguai_2026/geojson/nisar_mosaic_footprints_20261105.geojson"
         },
         {
           "id": "nisar_post",
