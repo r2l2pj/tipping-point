@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T18:17:18Z",
+  "updated_at": "2026-11-15T18:23:44Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7103,7 +7103,8 @@
         "swot_series": "wa_2025/series/swot.json",
         "nisar_timeseries": "wa_2025/nisar_timeseries.json",
         "flood_candidates": "wa_2025/geojson/flood_confirmed.geojson",
-        "nisar_polarization": "wa_2025/nisar_polarization.json"
+        "nisar_polarization": "wa_2025/nisar_polarization.json",
+        "places_daily": "wa_2025/places_daily.json"
       },
       "_deprecated": {
         "products.flood_confirmed": "alias of products.flood_candidates (NISAR polygons are candidates); removed next cycle"
