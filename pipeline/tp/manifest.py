@@ -329,7 +329,13 @@ def build_root(data_root: Path | str = DATA_DIR) -> dict:
         for event_id, case_key in EVENT_TO_CASE.items()
     }
     cases["now"] = now_node
-    return {"updated_at": _now_z(), "cases": cases}
+    now = _now_z()
+    # version: changes on EVERY build/publish — the app appends ?v=<version> to
+    # data/PNG/COG URLs so a re-render under the same filename never serves a
+    # stale cached image (conductor 2026-11-15, the 'stretched NISAR frames' bug)
+    return {"updated_at": now, "version": now,
+            "version_note": "ISO UTC build time of this manifest; use as a cache key (?v=) for every data URL",
+            "cases": cases}
 
 
 def _prune_missing(root: dict, data_root: Path) -> list[str]:

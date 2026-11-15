@@ -189,11 +189,14 @@ def render_pass(key, gs, bbox, token, pdir: Path, rel_dir: str, *, read=_read_db
         db, tr = mosaic(parts, bbox, deg, fixed)
         png, bounds = gray_png(db, tr, pol)
         lid = f"nisar_{pol.lower()}_{day.replace('-', '')}_{tag(t, lk)}"
-        (pdir / f"{lid}.png").write_bytes(png)
+        # never overwrite a published filename (browser/CDN caches): content hash suffix
+        import hashlib
+        fname = f"{lid}_{hashlib.sha256(png).hexdigest()[:8]}.png"
+        (pdir / fname).write_bytes(png)
         out.append({
             "id": lid, "date": day, "pass": pid, "kind": "nisar_frame", "track": tag(t, lk),
             "frames": [int(g["frame"]) for g in gs], "mode": modes[0] if len(modes) == 1 else modes,
-            "polarization": pol, "png": f"{rel_dir}/{lid}.png", "cog": None,
+            "polarization": pol, "png": f"{rel_dir}/{fname}", "cog": None,
             "bounds": bounds, "legend": LEGEND[pol],
             "sensor": "NISAR" if colls == ["V1"] else "NISAR (GCOV provisional)",
             "source": source or ("NISAR L2 GCOV (ASF, " + ", ".join(

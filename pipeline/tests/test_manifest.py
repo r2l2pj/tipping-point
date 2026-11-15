@@ -237,7 +237,8 @@ def test_root_shape_and_now_verbatim(tmp_path):
     (root / "now").mkdir()
     (root / "now" / "manifest.json").write_text(json.dumps(now_manifest))
     out = manifest.build_root(root)
-    assert set(out) == {"updated_at", "cases"}
+    assert set(out) == {"updated_at", "version", "version_note", "cases"}
+    assert out["version"] == out["updated_at"]
     assert out["updated_at"].endswith("Z")
     assert set(out["cases"]) == {"rs_2024", "wa_2025", "rs_uruguai_2026", "now"}
     assert out["cases"]["now"] == now_manifest
