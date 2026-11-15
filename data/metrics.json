@@ -139,7 +139,19 @@
         "skipped_reason": "no SMAP S for D-1 (series starts at the window start)",
         "anchor_utc": "2025-12-09 00:35:00+00:00",
         "alignment": "L28b: issue D 00Z; observed IMERG days <= D-1 only; GFS D 00Z run calendar days D..D+3; frame D+k = 3-day sum ending D+k",
-        "basis": "GFS-forecast replay TPI: R_fc = score(3-day sum ending D+k: obs IMERG days <= D-1 + GFS days D..D+k) vs case climatology, S held at D-1, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
+        "basis": "GFS-forecast replay TPI: R_fc = score(3-day sum ending D+k: obs IMERG days <= D-1 + GFS days D..D+k) vs case climatology, S held at D-1, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor",
+        "n_eligible_issue_days": 8,
+        "eligible_issue_days": [
+          "2025-12-01",
+          "2025-12-02",
+          "2025-12-03",
+          "2025-12-04",
+          "2025-12-05",
+          "2025-12-06",
+          "2025-12-07",
+          "2025-12-08"
+        ],
+        "denominator_note": "quote n_warned of n_eligible_issue_days; issue days after the anchor cannot warn by definition"
       },
       "opera_fn_diagnosis": "raw FN 1.19M px = permanent/pre-existing water (pre_water 1.21M px) which our new-flood mask correctly excludes; like-for-like FN drops to 60.7k px"
     },
@@ -321,7 +333,15 @@
         "skipped_reason": "no SMAP S for D-1 (series starts at the window start)",
         "anchor_utc": "2024-04-27 15:00:00+00:00",
         "alignment": "L28b: issue D 00Z; observed IMERG days <= D-1 only; GFS D 00Z run calendar days D..D+3; frame D+k = 3-day sum ending D+k",
-        "basis": "GFS-forecast replay TPI: R_fc = score(3-day sum ending D+k: obs IMERG days <= D-1 + GFS days D..D+k) vs case climatology, S held at D-1, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
+        "basis": "GFS-forecast replay TPI: R_fc = score(3-day sum ending D+k: obs IMERG days <= D-1 + GFS days D..D+k) vs case climatology, S held at D-1, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor",
+        "n_eligible_issue_days": 4,
+        "eligible_issue_days": [
+          "2024-04-23",
+          "2024-04-24",
+          "2024-04-25",
+          "2024-04-26"
+        ],
+        "denominator_note": "quote n_warned of n_eligible_issue_days; issue days after the anchor cannot warn by definition"
       }
     }
   }

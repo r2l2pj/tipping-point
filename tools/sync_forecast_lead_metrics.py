@@ -10,6 +10,7 @@ never rewritten here).
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 from pathlib import Path
@@ -34,6 +35,15 @@ def main(argv=None) -> int:
             continue
         lt = json.loads(src.read_text())
         block = {"forecast_source": "noaa-gfs", **{k: lt[k] for k in KEYS if k in lt}}
+        # issue days that CAN score: their D+1 frame is dated on/before the
+        # damage anchor (later issue days cannot warn by definition)
+        anchor = dt.datetime.fromisoformat(lt["anchor_utc"]).date()
+        eligible = [d["issue"] for d in lt.get("issue_days", [])
+                    if dt.date.fromisoformat(d["issue"]) + dt.timedelta(days=1) <= anchor]
+        block["n_eligible_issue_days"] = len(eligible)
+        block["eligible_issue_days"] = eligible
+        block["denominator_note"] = ("quote n_warned of n_eligible_issue_days; issue days after "
+                                     "the anchor cannot warn by definition")
         cases[case]["forecast_lead_time"] = block
         print(f"{case}: median {block.get('lead_h_median')} h, n_warned "
               f"{block.get('n_warned')}/{block.get('n_issue_days')}")
