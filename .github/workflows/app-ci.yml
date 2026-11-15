@@ -3,9 +3,9 @@ name: app-ci
 # L53 monorepo: the Next.js app lives in app/ (was tipping-point-app ci.yml).
 on:
   push:
-    paths: ["app/**", "data/manifest.json", ".github/workflows/app-ci.yml"]
+    paths: ["app/**", "Dockerfile", ".dockerignore", "deploy/vps/**", "data/manifest.json", ".github/workflows/app-ci.yml", ".github/workflows/app-deploy.yml"]
   pull_request:
-    paths: ["app/**", "data/manifest.json", ".github/workflows/app-ci.yml"]
+    paths: ["app/**", "Dockerfile", ".dockerignore", "deploy/vps/**", "data/manifest.json", ".github/workflows/app-ci.yml", ".github/workflows/app-deploy.yml"]
 
 defaults:
   run:
@@ -21,3 +21,4 @@ jobs:
       - run: bun run lint
       - run: bun test --pass-with-no-tests
       - run: bun run build
+      - run: bash -n ../deploy/vps/deploy-app.sh && bash ../deploy/vps/test-deploy-app.sh
