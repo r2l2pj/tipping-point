@@ -145,7 +145,7 @@ def frame_layers(today: dt.date, gfs_issued: str, files: dict,
             "model": {"name": model_meta.get("model") or model_meta.get("name", "p_trigger_xgb"),
                       "combine": model_meta.get("serve_combine"),
                       "version": model_meta.get("version"),
-                      "test_metrics": "data/ml/ml_card.json"},
+                      "test_metrics": "data/ml/ml_card_v2.json"},
         })
     return layers
 

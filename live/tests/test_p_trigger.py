@@ -67,6 +67,8 @@ def test_p_trigger_frames_and_manifest_flag(tmp_path, monkeypatch):
     assert l24["basis"] == "observed+forecast" and l24["obs_through"] == "2026-11-14"
     assert l24["forecast_days"] == ["2026-11-15"] and layers[-1]["low_skill"] is True
     assert "issued 2026-11-15 00:00 UTC" in l24["basis_label"]
+    # the frames cite the v2 model card (ML v2 serving, L40/L48), not the v1 card
+    assert all(l["model"]["test_metrics"] == "data/ml/ml_card_v2.json" for l in layers)
     with rasterio.open(out / "cog" / "p_trigger_24h.tif") as ds:
         p = ds.read(1)
     assert np.isnan(p[0, 0]) and np.nanmin(p) >= 0 and np.nanmax(p) <= 1
