@@ -398,6 +398,10 @@ export const caseAlias = (id: string): string | undefined => CASE_ALIASES[id];
 export const canonicalCaseId = (id: string): string =>
   id.includes("_") ? id : (CASE_ALIASES[id] ?? id);
 
+// A case id from a URL becomes part of a data path. Only this shape is
+// accepted, so an encoded "../" cannot reach another folder.
+export const isSafeCaseId = (id: string): boolean => /^[A-Za-z0-9_-]{1,64}$/.test(id);
+
 // --- asset paths -----------------------------------------------------------
 
 // Resolves a manifest path against the data base URL.
