@@ -114,3 +114,26 @@ def test_runs_keep_one_row_per_now_run(tmp_path):
     con.close()
     assert ids == ["2026-11-15T08:00:00Z", "2026-11-15T11:00:00Z"]
     assert c["runs_carried"] == 2
+
+
+def test_docs_hold_app_facing_json_by_path(tmp_path):
+    """L53: every app-facing JSON/GeoJSON is a gzip row keyed by its data-relative path;
+    raw/ and static/ dirs stay out; bodies round-trip byte-exact."""
+    import gzip
+    import hashlib
+
+    d = _tree(tmp_path)
+    _w(d / "ml/ml_card_v2.json", {"version": "v2"})
+    _w(d / "raw/granule.json", {"x": 1})
+    _w(d / "now/static/ibge/municipalities_now.geojson", {"type": "FeatureCollection", "features": []})
+    counts = ss.build(d)
+    con = sqlite3.connect(d / "tipping_point.sqlite")
+    paths = {r[0] for r in con.execute("SELECT path FROM docs")}
+    assert {"manifest.json", "events.json", "now/manifest.json", "ml/ml_card_v2.json"} <= paths
+    assert not any(p.startswith("raw/") or "/static/" in p for p in paths)
+    assert counts["docs"] == len(paths)
+    body, size, sha, enc = con.execute(
+        "SELECT body, bytes, sha256, encoding FROM docs WHERE path = 'ml/ml_card_v2.json'").fetchone()
+    raw = gzip.decompress(body)
+    assert enc == "gzip" and raw == (d / "ml/ml_card_v2.json").read_bytes()
+    assert size == len(raw) and sha == hashlib.sha256(raw).hexdigest()

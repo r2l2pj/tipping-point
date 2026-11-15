@@ -880,9 +880,11 @@ standard-confidence flood only; R1 "lower" (cropland) is `*_lower`.
 
 Built by `tools/build_sqlite.py` (`pipeline/tp/sqlite_store.py`) from the files
 above, after the manifests are written; rebuilt from scratch each run, < 50 MB
-(the tool fails above that). The app keeps reading JSON — this is for analysis
-and queries only. Missing inputs leave a table empty and are listed in
-`build_notes`; values are never invented.
+(the tool fails above that). Missing inputs leave a table empty and are listed in
+`build_notes`; values are never invented. Since L53 (Neon → SQLite) the `docs`
+table carries every app-facing JSON/GeoJSON by path, so a server can read one
+local file instead of fetching each JSON (PNG/COG frames stay files on the
+fallback branch).
 
 | table | columns | from |
 |---|---|---|
@@ -894,6 +896,7 @@ and queries only. Missing inputs leave a table empty and are listed in
 | `response_candidates` | run_id, source, hazard, area_km2, people, municipality, confidence, status, acquired, lon, lat | `now/response/flood_dswx`, `flood_nisar`, `landslide_dist` and `rs_2024/geojson/landslide_candidates` (lon/lat = representative point; all `status = candidate`) |
 | `runs` | run_id, kind (now / replay), updated_at, verified (0/1), data_dates (JSON) | `now/manifest.json`, root `manifest.json`; **one row per Now run** — earlier `now` rows are carried over from the previous database (CI downloads it from the fallback branch before rebuilding) |
 | `build_notes` | item, note | build time + missing inputs |
+| `docs` | path (PRIMARY KEY, data-root-relative, exactly the path the app requests, e.g. `manifest.json`, `now/manifest.json`, `ml/ml_card_v2.json`, `rs_uruguai_2026/geojson/upstream_basin.geojson`), bytes, sha256 (of the raw file), encoding (`gzip`), body (gzip of the raw bytes, mtime 0) | every `*.json` / `*.geojson` under `data/` except `raw/` and `static/` dirs (same rule as the fallback publisher); files > 25 MB are skipped and noted in `build_notes` |
 
 Units come from the key suffix (`_km2` km², `_pct` %, `_h` h, `_mm` mm, `_m` m,
 `people*` persons); `unit` is null otherwise.

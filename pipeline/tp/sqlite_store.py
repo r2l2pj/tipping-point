@@ -39,6 +39,8 @@ CREATE TABLE response_candidates (run_id TEXT, source TEXT, hazard TEXT, area_km
                                   lon REAL, lat REAL);
 CREATE TABLE runs (run_id TEXT PRIMARY KEY, kind TEXT, updated_at TEXT, verified INTEGER, data_dates TEXT);
 CREATE TABLE build_notes (item TEXT, note TEXT);
+CREATE TABLE docs (path TEXT PRIMARY KEY, bytes INTEGER NOT NULL, sha256 TEXT NOT NULL,
+                   encoding TEXT NOT NULL, body BLOB NOT NULL);
 CREATE INDEX metrics_key ON metrics (key);
 CREATE INDEX series_case_var ON series (case_id, var);
 CREATE INDEX cand_run ON response_candidates (run_id, source);
@@ -84,6 +86,33 @@ def _rep_point(geom: dict):
         return round(p.x, 5), round(p.y, 5)
     except Exception:  # noqa: BLE001 — position is optional
         return None, None
+
+
+DOC_SUFFIXES = (".json", ".geojson")
+DOC_MAX_BYTES = 25 * 1024 * 1024
+
+
+def add_docs(con, data_root: Path, out: Path, note) -> int:
+    """Insert app-facing JSON/GeoJSON under data_root into ``docs`` (gzip, mtime 0)."""
+    import gzip
+    import hashlib
+
+    n = 0
+    for f in sorted(data_root.rglob("*")):
+        if not f.is_file() or f.suffix.lower() not in DOC_SUFFIXES:
+            continue
+        rel = f.relative_to(data_root)
+        if {"raw", "static"} & set(rel.parts) or f.resolve() == Path(out).resolve():
+            continue
+        raw = f.read_bytes()
+        if len(raw) > DOC_MAX_BYTES:
+            note(f"docs:{rel.as_posix()}", f"skipped: {len(raw)} B > {DOC_MAX_BYTES} B")
+            continue
+        con.execute("INSERT INTO docs VALUES (?,?,?,?,?)",
+                    (rel.as_posix(), len(raw), hashlib.sha256(raw).hexdigest(), "gzip",
+                     gzip.compress(raw, compresslevel=9, mtime=0)))
+        n += 1
+    return n
 
 
 def build(data_root: Path, out: Path | None = None, prev: Path | None = None) -> dict:
@@ -224,13 +253,17 @@ def build(data_root: Path, out: Path | None = None, prev: Path | None = None) ->
         cands_from(data_root / case / "geojson" / "landslide_candidates.geojson", case,
                    "landslide", "opera-dist-alert-hls")
 
+    # L53 (Neon -> SQLite): every app-facing JSON/GeoJSON the app reads by path,
+    # gzip body keyed by its data-root-relative path (same rule as the fallback
+    # publisher: no raw/ or static/ dirs). PNG/COG stay files.
+    add_docs(con, data_root, out, note)
     con.execute("INSERT INTO build_notes VALUES (?,?)",
                 ("built_at", dt.datetime.now(dt.UTC).isoformat(timespec="seconds")))
     con.executemany("INSERT INTO build_notes VALUES (?,?)", notes)
     con.commit()
     counts = {t: con.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]  # noqa: S608 - fixed names
               for t in ("events", "nisar_passes", "metrics", "series", "zones",
-                        "response_candidates", "runs", "build_notes")}
+                        "response_candidates", "runs", "build_notes", "docs")}
     con.execute("VACUUM")
     con.close()
     os.replace(tmp, out)
