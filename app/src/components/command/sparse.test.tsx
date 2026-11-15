@@ -13,8 +13,8 @@ const render = (id: string) => text(renderToStaticMarkup(
 
 test("featured replay without data: no 'pending' / 'not published yet' blocks", () => {
   const t = render("rs_uruguai_2026");
-  // The header's run-time chip is metadata of the fixture, not a section.
-  const panel = t.slice(t.indexOf("Start here"));
+  // The header's run-time line is metadata of the fixture, not a section.
+  const panel = t.slice(t.indexOf("Overview"));
   expect(panel).not.toMatch(/\bpending\b|not published yet/);
   expect(t).not.toContain("Who is affected");
   expect(t).not.toContain("Landslide scar candidates");

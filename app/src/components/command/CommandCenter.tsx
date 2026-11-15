@@ -17,7 +17,6 @@ import { placesDailyUrl, replayDayClass, replaySource, type ReplayPlace } from "
 import PanelTabs, { type PanelTab } from "./PanelTabs";
 import { headlineFor } from "./model/headline";
 import { geoUrl } from "@/lib/layers";
-import StartHere from "./StartHere";
 import PanelSection from "./PanelSection";
 import { observedRows, type AlertList } from "./model/alerts";
 import { expandLayerUrls } from "./model/layerUrls";
@@ -310,7 +309,7 @@ export function CommandCenterView({
     return (
       <div className={root}>
         <TopBar cases={cases} bundle={undefined} view={view} onView={onView}
-          onMode={() => {}} onSelectCase={() => {}}
+          onSelectCase={() => {}}
           freshness="Unknown age · no data loaded" freshnessKind="unknown-age" />
         <main className="m-auto max-w-md">
           <p role="status" className="p-6 text-center text-[15px]">
@@ -407,8 +406,8 @@ export function CommandCenterView({
         bundle={bundle}
         view={view}
         onView={onView}
-        onMode={(mode) => dispatch({ type: "setMode", mode })}
         onSelectCase={(id) => dispatch({ type: "selectCase", id })}
+        onTour={(a) => dispatch(a)}
         freshness={freshnessText(status, nowMs)}
         freshnessKind={status.kind}
         search={searchSource && (
@@ -544,7 +543,6 @@ export function CommandCenterView({
                       </section>
                     );
                   })()}
-              <StartHere cases={cases} dispatch={dispatch} />
                 {showAffected && <div>
                   <h3 className="m-0 mb-1 text-[13px] font-semibold text-cc-muted">Who is affected</h3>
                   <Tiles area={areaTile} people={peopleT} />
