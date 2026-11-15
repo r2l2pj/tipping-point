@@ -440,6 +440,13 @@ def fetch_increments(bounds, end: dt.date, days: int, work_dir: Path):
         daily_gs = search_granules_range(
             bounds, window_start, hh_start - dt.timedelta(days=1),
             short_name=DAILY_SHORT_NAME) or []
+    # CMR temporal search is end-inclusive: it also returns the daily
+    # granule of hh_start, a day the half-hourly path serves too — keep only
+    # days strictly before hh_start or that day is counted twice (2x rain).
+    daily_days = {d.strftime("%Y%m%d")
+                  for d in _daterange(window_start, hh_start)}
+    daily_gs = [g for g in daily_gs
+                if granule_start_tag(g)[:8] in daily_days]
     covered = {granule_start_tag(g)[:8] for g in daily_gs}
     uncovered = [d for d in _daterange(window_start, hh_start)
                  if d.strftime("%Y%m%d") not in covered]

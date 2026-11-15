@@ -132,12 +132,66 @@ def write_imerg_cogs(daily, out_dir: Path) -> list[Path]:
     return written
 
 
-def run_checks(terrain: dict | None, r_zero_violations: int) -> dict:
+def _sample_points(daily) -> list[tuple[float, float]]:
+    """>= 3 test points: the wettest cell of the last day + two fixed
+    interior points (Porto Alegre, Curitiba area) inside the NOW bbox."""
+    lat = next(d for d in daily.dims if "lat" in d.lower())
+    lon = next(d for d in daily.dims if "lon" in d.lower())
+    last = daily.isel(time=-1).transpose(lat, lon)
+    i, j = np.unravel_index(int(np.nanargmax(np.nan_to_num(last.values))),
+                            last.shape)
+    return [(float(last[lon].values[j]), float(last[lat].values[i])),
+            (-51.2, -30.0), (-49.3, -25.4)]
+
+
+def imerg_cogs_match_source(daily, paths: list[Path], tol_mm: float = 0.01) -> bool:
+    """Read each written daily COG back at >= 3 points and compare with the
+    source IMERG values (nearest cell, by coordinate) — catches transposed
+    or flipped writes like the legacy 42f5eb6 files."""
+    if not paths:
+        return False
+    try:
+        import rasterio
+        lat = next(d for d in daily.dims if "lat" in d.lower())
+        lon = next(d for d in daily.dims if "lon" in d.lower())
+        pts = _sample_points(daily)
+        for i, path in enumerate(paths):
+            src = daily.isel(time=i)
+            with rasterio.open(path) as ds:
+                got = [float(v[0]) for v in ds.sample(pts)]
+            want = [float(src.sel({lon: x, lat: y}, method="nearest").values)
+                    for x, y in pts]
+            if not np.allclose(np.nan_to_num(got), np.nan_to_num(want),
+                               atol=tol_mm):
+                print(f"[now] IMERG COG mismatch {path.name}: {got} vs {want}",
+                      file=sys.stderr)
+                return False
+        return True
+    except Exception as exc:
+        print(f"[now] IMERG COG check failed: {exc!r}", file=sys.stderr)
+        return False
+
+
+def class_areas_km2(cls: np.ndarray, valid: np.ndarray,
+                    area_km2: np.ndarray) -> dict[str, float]:
+    """km² per TPI class label over valid pixels."""
+    return {LABELS[c]: float((area_km2 * ((cls == c) & valid)).sum())
+            for c in range(4)}
+
+
+def critical_from_classes(areas: dict[str, float]) -> float:
+    return float(areas[LABELS[2]] + areas[LABELS[3]])
+
+
+def run_checks(terrain: dict | None, r_zero_violations: int,
+               imerg_cog_ok: bool | None = None) -> dict:
     """Run-level sanity gates; alerts are published only when all pass.
     terrain: static_fetch.terrain_checks() (None on the legacy npz path)."""
     checks = dict(terrain or {"terrain_checked": False})
     checks["r_zero_tpi_zero"] = r_zero_violations == 0
     checks["r_zero_violations"] = r_zero_violations
+    if imerg_cog_ok is not None:
+        checks["imerg_cogs_match_source"] = imerg_cog_ok
     checks["passed"] = all(v for k, v in checks.items()
                            if isinstance(v, bool) and k != "passed")
     return checks
@@ -176,7 +230,8 @@ def run(args) -> dict:
                       file=sys.stderr)
             raise
         imerg_source = "gesdisc-early"
-    write_imerg_cogs(imerg_daily, args.out_dir / "cog" / "imerg_early")
+    imerg_cogs = write_imerg_cogs(imerg_daily, args.out_dir / "cog" / "imerg_early")
+    imerg_cog_ok = imerg_cogs_match_source(imerg_daily, imerg_cogs)
     sm_lats, sm_lons, sm_vals, smap_date = fetch.fetch_smap_l4(tuple(args.bounds))
     fc_daily_da, gfs_issued = fetch.fetch_gfs_daily(tuple(args.bounds), today)
     nisar = [] if args.no_nisar else fetch.nisar_recent_passes(
@@ -265,20 +320,28 @@ def run(args) -> dict:
                  | ((floods[0] >= 2) & valid_f0) | ((floods[1] >= 2) & np.isfinite(flood_tpi[1])))
     pop = static.get("pop")
     people_critical = None if pop is None else float(np.nansum(pop * crit_mask))
+    # ONE computation: per-hazard class areas for today; critical_km2 is
+    # derived from them (Alto + Crítico), so the two can never disagree.
+    classes_km2 = {
+        "landslide": class_areas_km2(slides[0], valid_s0, area_km2),
+        "flood": class_areas_km2(floods[0], valid_f0, area_km2)}
+    today_mask = ((slides[0] >= 2) & valid_s0) | ((floods[0] >= 2) & valid_f0)
     summary = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z"),
-        "critical_km2": {"slide": float((area_km2 * ((slides[0] >= 2) & valid_s0)).sum()),
-                          "flood": float((area_km2 * ((floods[0] >= 2) & valid_f0)).sum()),
-                          "any": float((area_km2 * crit_mask).sum())},
+        "critical_km2": {
+            "slide": critical_from_classes(classes_km2["landslide"]),
+            "flood": critical_from_classes(classes_km2["flood"]),
+            "any": float((area_km2 * today_mask).sum()),
+            "any_today_or_d1": float((area_km2 * crit_mask).sum())},
+        "critical_km2_def": "today, class Alto or Crítico (TPI >= 0.4); "
+                            "any = slide OR flood; any_today_or_d1 adds D+1",
         "nodata_km2": {"slide": float((area_km2 * ~valid_s0).sum()),
                         "flood": float((area_km2 * ~valid_f0).sum())},
         "people_exposed": people_critical,
         "people_critical": people_critical,   # v4 metrics key (same value)
         "forecast_source": "noaa-gfs",        # v4 metrics key (D+1..D+3)
         "imerg_source": imerg_source,         # honest stand-in labeling
-        "classes_km2": {
-            LABELS[c]: float((area_km2 * ((slides[0] == c) & valid_s0)).sum())
-            for c in range(4)},
+        "classes_km2": classes_km2,
         "data_dates": {"imerg": imerg_date, "smap": smap_date,
                         "gfs_issued": gfs_issued,
                         "clim_doy_used": static.get("clim_doy_used")},
@@ -296,7 +359,12 @@ def run(args) -> dict:
     if terrain is None and "slope_deg" in static:   # legacy npz path
         from live.static_fetch import terrain_checks
         terrain = terrain_checks(np.asarray(static["slope_deg"]), t_slide)
-    checks = run_checks(terrain, r_zero_violations)
+    checks = run_checks(terrain, r_zero_violations, imerg_cog_ok)
+    # every alert must name its municipality: boundaries must be loaded
+    n_muni = now_geojson._n_features(gj_dir / "municipal_boundaries.geojson")
+    checks["municipalities_loaded"] = n_muni > 0
+    checks["municipalities"] = n_muni
+    checks["passed"] = checks["passed"] and n_muni > 0
     alerts_paused = not checks["passed"]
     payload = alerts.emit_hazard_alerts(
         prev, {"landslide": (slides[0], slides[1]),

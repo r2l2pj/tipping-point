@@ -67,7 +67,8 @@ jobs:
             data/now/static/jrc_gsw/gsw_occurrence_2021.tif
             data/now/static/jrc_gsw/gsw_seasonality_2021.tif
             data/static/south_brazil/terrain/hand_m.tif
-          key: static-v1-response-2
+            data/now/static/ibge/municipalities_now.geojson
+          key: static-v1-response-3
 
       - name: Fetch static response inputs (cache miss only, sha256-checked)
         run: |
@@ -85,6 +86,8 @@ jobs:
           get gsw_occurrence_2021.tif data/now/static/jrc_gsw/gsw_occurrence_2021.tif a31b98c96856b1541b7a998bbbbcc00326d6bb61cdb8055245199d3ac9cf3c04
           get gsw_seasonality_2021.tif data/now/static/jrc_gsw/gsw_seasonality_2021.tif 30cda153f75a687afd2421ef05337a5f392931a575431377bcf3ead65215c307
           get hand_m.tif data/static/south_brazil/terrain/hand_m.tif 5445278f146e65dca6cfae21bf6d31a97dbaf79cac3fb8230a22eb39635a993d
+          # IBGE API is unreachable from GitHub runners: static copy
+          get municipalities_now.geojson data/now/static/ibge/municipalities_now.geojson 7a003eb3aac3e52985152134c32bd4a35398ae015e8c58a220a7fb1593b33d1f
 
       # R1 rolling state ("changed since last pass"): restore the newest
       # snapshot, save a new one after R1 (cache entries are immutable).

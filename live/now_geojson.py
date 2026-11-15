@@ -44,11 +44,33 @@ def _stale(path: Path, max_age: dt.timedelta) -> bool:
     return age > max_age
 
 
-def ensure_municipal_boundaries(gj_dir: Path,
-                                bounds: tuple[float, ...]) -> Path:
-    """IBGE municipality meshes intersecting the now bbox (cached)."""
+IBGE_STATIC = (REPO_ROOT / "data" / "now" / "static" / "ibge"
+               / "municipalities_now.geojson")
+
+
+def _n_features(path: Path) -> int:
+    try:
+        return len(json.loads(path.read_text()).get("features", []))
+    except (OSError, ValueError, AttributeError):
+        return 0
+
+
+def ensure_municipal_boundaries(gj_dir: Path, bounds: tuple[float, ...],
+                                static_path: Path = IBGE_STATIC) -> Path | None:
+    """IBGE municipality meshes for the NOW bbox -> municipal_boundaries.geojson.
+
+    Source order: the static-v1 copy (data/now/static/ibge/, fetched by
+    now.yml — the IBGE API is unreachable from GitHub runners), then the
+    live IBGE API when the output is missing/stale. An empty result never
+    replaces a non-empty file."""
+    import shutil
+
     out = gj_dir / "municipal_boundaries.geojson"
-    if not _stale(out, BOUNDARIES_MAX_AGE):
+    if Path(static_path).is_file() and _n_features(Path(static_path)) > 0:
+        gj_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(static_path, out)
+        return out
+    if not _stale(out, BOUNDARIES_MAX_AGE) and _n_features(out) > 0:
         return out
     from shapely.geometry import box
 
@@ -61,6 +83,10 @@ def ensure_municipal_boundaries(gj_dir: Path,
             features += _fetch_ibge(aoi, uf)
         except (OSError, ValueError, KeyError, RuntimeError) as exc:
             print(f"[now_geojson] IBGE {uf} failed: {exc}", file=sys.stderr)
+    if not features:
+        print("[now_geojson] IBGE returned 0 municipalities — keeping "
+              "previous file", file=sys.stderr)
+        return out if _n_features(out) > 0 else None
     _write_feature_collection(features, out)
     return out
 
@@ -134,7 +160,7 @@ def municipality_lookup(gj_dir: Path, max_dist_deg: float = 0.1):
         pr = f.get("properties") or {}
         m = re.search(r"estados/([A-Z]{2})", pr.get("url") or "")
         props.append({"municipality": pr.get("name"),
-                      "uf": m.group(1) if m else None})
+                      "uf": pr.get("uf") or (m.group(1) if m else None)})
     if not geoms:
         return lambda lon, lat: None
     tree = STRtree(geoms)

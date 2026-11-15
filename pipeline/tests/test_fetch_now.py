@@ -431,6 +431,34 @@ def test_imerg_daily_product_for_older_days(tmp_path, monkeypatch):
         "20261111", "20261113", "20261114"]     # no 20261110 hh download
 
 
+def test_imerg_daily_product_never_double_counts_hh_start(tmp_path, monkeypatch):
+    """CMR's end-inclusive temporal search also returns the daily granule of
+    the first half-hourly day (seen live 2026-11-15: 11-13 came back from
+    the 11-07..11-12 daily search and summed with its 48 half-hours => 2x
+    rain). That granule must never be opened."""
+    monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
+    daily_gs = [_de_granule("20261109"), _de_granule("20261110"),
+                _de_granule("20261111"),
+                _de_granule("20261112")]             # = hh_start: must drop
+    hh_gs = [_hh_granule("20261112"), _hh_granule("20261113"),
+             _hh_granule("20261114")]
+    _fake_streaming_earthaccess(
+        monkeypatch, {imerg.DAILY_SHORT_NAME: daily_gs,
+                      imerg.SHORT_NAME: hh_gs})
+    opened = []
+
+    def fake_open(path, bounds, daily=False):
+        opened.append((Path(path).name, daily))
+        return _granule_da()
+
+    monkeypatch.setattr(imerg, "open_granule", fake_open)
+    imerg.fetch_increments(BOUNDS, dt.date(2026, 11, 14), 5, tmp_path)
+    de_days = sorted(n.split(".")[4][:8] for n, d in opened if d)
+    hh_days = sorted(n.split(".")[4][:8] for n, d in opened if not d)
+    assert de_days == ["20261109", "20261110", "20261111"]
+    assert not set(de_days) & set(hh_days)          # each day from ONE product
+
+
 def test_imerg_no_granules_still_raises(tmp_path, monkeypatch):
     monkeypatch.setenv("EARTHDATA_TOKEN", "tok")
     _fake_streaming_earthaccess(monkeypatch, {})

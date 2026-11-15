@@ -30,3 +30,21 @@ def test_permanent_water_polygonises_class_17(tmp_path):
 def test_permanent_water_missing_input_is_soft(tmp_path):
     assert now_geojson.ensure_permanent_water(
         tmp_path, (-52, -31, -51, -30), lc_path=tmp_path / "nope.tif") is None
+
+
+def test_boundaries_prefer_static_and_never_write_empty(tmp_path, monkeypatch):
+    fc = {"type": "FeatureCollection", "features": [{"type": "Feature",
+          "geometry": {"type": "Point", "coordinates": [-51, -30]},
+          "properties": {"name": "X", "uf": "RS"}}]}
+    static = tmp_path / "static.geojson"
+    static.write_text(json.dumps(fc))
+    gj = tmp_path / "gj"
+    out = now_geojson.ensure_municipal_boundaries(gj, (-52, -31, -50, -29), static_path=static)
+    assert json.loads(out.read_text()) == fc
+    # static gone + IBGE returning nothing: the previous file survives
+    import pipeline.fetch.boundaries as b
+    monkeypatch.setattr(b, "_fetch_ibge", lambda aoi, uf: [])
+    monkeypatch.setattr(now_geojson, "_stale", lambda p, age: True)
+    out2 = now_geojson.ensure_municipal_boundaries(gj, (-52, -31, -50, -29),
+                                                   static_path=tmp_path / "nope")
+    assert out2 == out and json.loads(out.read_text()) == fc

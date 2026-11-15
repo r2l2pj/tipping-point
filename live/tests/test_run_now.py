@@ -142,9 +142,16 @@ def test_run_now_end_to_end(fake_now):
     assert summary["nodata_km2"]["flood"] > 0
     lats, lons = dst_lats_lons(BOUNDS)
     total_km2 = float((pixel_area_km2(lats) * np.ones((lats.size, lons.size))).sum())
-    classes_total = sum(summary["classes_km2"].values())
-    assert classes_total < total_km2
-    assert classes_total + summary["nodata_km2"]["slide"] == pytest.approx(total_km2)
+    for hz, key in (("landslide", "slide"), ("flood", "flood")):
+        classes = summary["classes_km2"][hz]
+        classes_total = sum(classes.values())
+        assert classes_total < total_km2
+        assert classes_total + summary["nodata_km2"][key] == pytest.approx(total_km2)
+        # critical_km2 and classes_km2 come from one computation: they agree
+        assert summary["critical_km2"][key] == pytest.approx(
+            classes["Alto"] + classes["Crítico"])
+    assert summary["critical_km2"]["any"] <= (
+        summary["critical_km2"]["slide"] + summary["critical_km2"]["flood"] + 1e-9)
 
     # every expected artifact exists
     for rel in [
@@ -185,3 +192,39 @@ def test_write_imerg_cogs_lat_first(tmp_path):
         assert ds.shape == (15, 20)           # rows = lat
         assert ds.read(1)[0, 0] == 7.0        # north-west corner
         assert abs(ds.bounds.left - (-58.0)) < 1e-6
+
+
+def test_imerg_cogs_match_source_catches_transposed(tmp_path):
+    import rasterio
+    import xarray as xr
+    from rasterio.transform import from_origin
+    from live.run_now import imerg_cogs_match_source, write_imerg_cogs
+    lats = np.arange(-33.95, -22.5, 0.1)          # 115 lat
+    lons = np.arange(-57.95, -48.0, 0.1)          # 100 lon
+    rng = np.random.default_rng(1)
+    vals = rng.gamma(0.5, 8.0, (1, lons.size, lats.size)).astype(np.float32)
+    da = xr.DataArray(vals, dims=("time", "lon", "lat"), coords={
+        "time": np.array(["2026-11-13"], dtype="datetime64[ns]"),
+        "lon": lons, "lat": lats})
+    good = write_imerg_cogs(da, tmp_path / "good")
+    assert imerg_cogs_match_source(da, good)            # >= 3 points agree
+    # the legacy bug: lon-first array written on a lat-first transform
+    bad = tmp_path / "bad.tif"
+    with rasterio.open(bad, "w", driver="GTiff", width=lats.size, height=lons.size,
+                       count=1, dtype="float32", crs="EPSG:4326",
+                       transform=from_origin(-58.0, -22.5, 0.1, 0.1)) as ds:
+        ds.write(vals[0], 1)
+    assert not imerg_cogs_match_source(da, [bad])
+
+
+def test_critical_matches_classes_when_flood_only():
+    """lead-app bug 2026-11-15: critical flood 1024 km2 while classes_km2
+    (landslide only) said Crítico 0. Per-hazard classes now back critical."""
+    from live.run_now import class_areas_km2, critical_from_classes
+    area = np.full((4, 1), 2.0)
+    flood = np.array([[3, 3, 2, 0]] * 4)
+    slide = np.zeros((4, 4), dtype=int)
+    valid = np.ones((4, 4), bool)
+    fl, sl = class_areas_km2(flood, valid, area), class_areas_km2(slide, valid, area)
+    assert critical_from_classes(fl) == 24.0 and fl["Crítico"] == 16.0
+    assert critical_from_classes(sl) == 0.0 and sl["Baixo"] == 32.0
