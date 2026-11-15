@@ -169,6 +169,7 @@ def test_run_now_end_to_end(fake_now):
     # run must not swallow the upgrades it suppressed)
     assert m["alerts_paused"] is True and m["verified"] is False
     assert m["checks"]["municipalities_loaded"] is False
+    assert m["checks"]["clim_source_ok"] is False      # legacy clim never verifies
     a = json.loads((out_dir / "alerts.json").read_text())
     assert a["paused"] is True and a["candidates"] == []
     assert not (out_dir / "prev_classes.npz").exists()

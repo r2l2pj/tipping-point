@@ -175,6 +175,9 @@ def imerg_cogs_match_source(daily, paths: list[Path], tol_mm: float = 0.01) -> b
         return False
 
 
+CLIM_SOURCE_OK = "imerg-final-0p1"
+
+
 def class_areas_km2(cls: np.ndarray, valid: np.ndarray,
                     area_km2: np.ndarray) -> dict[str, float]:
     """km² per TPI class label over valid pixels."""
@@ -363,6 +366,12 @@ def run(args) -> dict:
         from live.static_fetch import terrain_checks
         terrain = terrain_checks(np.asarray(static["slope_deg"]), t_slide)
     checks = run_checks(terrain, r_zero_violations, imerg_cog_ok)
+    # the legacy per-doy clim COGs are spatially scrambled (two squashed
+    # domain copies, found 2026-11-15): only the IMERG-Final 0.1 deg
+    # climatology may back a verified run
+    checks["clim_source"] = static.get("clim_source", "legacy-doy-cogs")
+    checks["clim_source_ok"] = checks["clim_source"] == CLIM_SOURCE_OK
+    checks["passed"] = checks["passed"] and checks["clim_source_ok"]
     # every alert must name its municipality: boundaries must be loaded
     n_muni = now_geojson._n_features(gj_dir / "municipal_boundaries.geojson")
     checks["municipalities_loaded"] = n_muni > 0
