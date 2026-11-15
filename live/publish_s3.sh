@@ -33,8 +33,9 @@ DEST="s3://$BUCKET/data/"
 # oversized files stay out of the free-tier bucket (same cap as the
 # GitHub fallback publisher)
 mapfile -t BIG < <(find "$DATA" -type f -size +"${MAX_MB}"M -printf '%P\n')
-# raw/ holds fetch intermediates, not app-facing products
-EXCLUDES=(--exclude "raw/*")
+# raw/ holds fetch intermediates, not app-facing products; static/ moved
+# to the GitHub 'static-v1' Release (Neon is out of quota — do not re-add)
+EXCLUDES=(--exclude "raw/*" --exclude "static/*")
 for f in "${BIG[@]}"; do
   echo "[publish_s3] skipping oversized $f"
   EXCLUDES+=(--exclude "$f")

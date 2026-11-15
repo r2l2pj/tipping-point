@@ -143,7 +143,7 @@ def run(args) -> dict:
             raise
         imerg_source = "gesdisc-early"
     sm_lats, sm_lons, sm_vals, smap_date = fetch.fetch_smap_l4(tuple(args.bounds))
-    fc_daily_da, geos_issued = fetch.fetch_gfs_daily(tuple(args.bounds), today)
+    fc_daily_da, gfs_issued = fetch.fetch_gfs_daily(tuple(args.bounds), today)
     nisar = [] if args.no_nisar else fetch.nisar_recent_passes(
         tuple(args.bounds), NISAR_LOOKBACK_DAYS)
 
@@ -228,7 +228,8 @@ def run(args) -> dict:
             LABELS[c]: float((area_km2 * ((slides[0] == c) & valid_s0)).sum())
             for c in range(4)},
         "data_dates": {"imerg": imerg_date, "smap": smap_date,
-                        "gfs_issued": geos_issued},
+                        "gfs_issued": gfs_issued,
+                        "clim_doy_used": static.get("clim_doy_used")},
     }
     files["summary.json"] = summary
 
@@ -249,7 +250,8 @@ def run(args) -> dict:
     updated_at = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")
     manifest = build_manifest(
         tuple(args.bounds), updated_at,
-        {"imerg": imerg_date, "smap": smap_date, "gfs_issued": geos_issued},
+        {"imerg": imerg_date, "smap": smap_date, "gfs_issued": gfs_issued,
+         "clim_doy_used": static.get("clim_doy_used")},
         layers, nisar)
     written = publish.write_outputs(args.out_dir, files, manifest)
     assert written[-1].name == "manifest.json"

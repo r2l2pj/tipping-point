@@ -1,8 +1,8 @@
 """Per-run static inputs for the local TPI path (L20/L25).
 
 L25: no GEE at runtime. Climatology and terrain are read as COGs —
-first from the local data/static/ tree when present, else from the
-public Neon object-storage copy:
+first from the public GitHub 'static-v1' Release, then the local
+data/static/ tree, then the legacy Neon object-storage copy:
 
   data/static/south_brazil/clim/doy_NNN.tif   3-band float32: p90/p95/p99
     (mm, 3-day IMERG accumulation percentiles) on the NOW_BOUNDS
@@ -27,6 +27,11 @@ from live.config import NOW_BOUNDS, REPO_ROOT
 
 LOCAL_STATIC = REPO_ROOT / "data" / "static"
 NEON_PREFIX = "static/south_brazil"
+# L26-static: the canonical host is the GitHub Release (Neon hit quota);
+# assets are flat basenames (doy_318.tif, slope_deg.tif, gpw_pop.tif).
+STATIC_RELEASE_BASE = os.environ.get(
+    "STATIC_RELEASE_BASE",
+    "https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1")
 
 
 def _public_base() -> str:
@@ -36,13 +41,17 @@ def _public_base() -> str:
 
 
 def _read_cog(rel: str) -> np.ndarray | None:
-    """band-stack array from a static COG: local file first, Neon URL
-    fallback (GDAL range-reads only the bytes needed)."""
+    """band-stack array from a static COG: GitHub Release asset first
+    (canonical), then the local file, then the legacy Neon URL — GDAL
+    range-reads only the bytes needed."""
     import rasterio
 
     local = LOCAL_STATIC / "south_brazil" / rel
-    candidates = ([local] if local.exists() else []) + [
-        f"{_public_base()}/{NEON_PREFIX}/{rel}"]
+    candidates = [f"{STATIC_RELEASE_BASE}/{Path(rel).name}"]
+    if local.exists():
+        candidates.append(local)
+    if os.environ.get("NEON_S3_ENDPOINT"):
+        candidates.append(f"{_public_base()}/{NEON_PREFIX}/{rel}")
     for src in candidates:
         try:
             with rasterio.open(str(src)) as ds:
@@ -104,10 +113,17 @@ def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
 
 
 def clim_for_day(static: dict, day: dt.date) -> dict[str, np.ndarray]:
-    """p90/p95/p99 for `day`; falls back to the nearest fetched doy."""
+    """p90/p95/p99 for `day`; falls back to the nearest fetched doy.
+    The requested->used mapping is recorded in static["clim_doy_used"] so
+    the run manifest can publish it — a substituted climatology day must
+    never be silent."""
     doy = day.timetuple().tm_yday
     clim = static["clim"]
-    if doy in clim:
-        return clim[doy]
-    nearest = min(clim, key=lambda d: min(abs(d - doy), 366 - abs(d - doy)))
-    return clim[nearest]
+    used = doy if doy in clim else min(
+        clim, key=lambda d: min(abs(d - doy), 366 - abs(d - doy)))
+    static.setdefault("clim_doy_used", {})[doy] = used
+    if used != doy:
+        print(f"[static_fetch] CLIM SUBSTITUTION: doy {doy} missing — "
+              f"using nearest doy {used} for {day.isoformat()}",
+              file=sys.stderr)
+    return clim[used]
