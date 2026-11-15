@@ -59,8 +59,10 @@ def test_decode_recorded_apcp_message():
     arr, lats, lons = fetch._gfs_decode_message(raw)
     assert arr.shape == (721, 1440)
     assert lats[0] == -90.0 and lats[-1] == 90.0      # ascending
-    assert lons[0] == pytest.approx(-179.75)
-    assert lons[-1] == pytest.approx(180.0)
+    # GDAL GRIB driver wraps to -180..179.75 (same cells as NCEP 0..359.75)
+    assert lons[0] == pytest.approx(-180.0)
+    assert lons[-1] == pytest.approx(179.75)
+    assert np.allclose(np.diff(lons), 0.25) and np.allclose(np.diff(lats), 0.25)
     assert np.isfinite(arr).all()
     assert arr.max() > 0  # it rained somewhere in that 6h
 

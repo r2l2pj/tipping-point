@@ -3,15 +3,16 @@
 For each issue day D in the case window, horizons k=1..3, hazards
 slide/flood:
 
-    TPI_fcst(D+k) = geomean(R_fc, S_held(D), T, weights=tpi_weights)
+    TPI_fcst(D+k) = geomean(R_fc, S_held(D-1), T, weights=tpi_weights)
 
 * R_fc(D+k): rain_score of the 3-day accumulation ending D+k built from
-  OBSERVED IMERG daily mm for days <= D (via pipeline.fetch.imerg
-  .fetch_daily — the same basis as .herdr/asavail_run.py) plus the GFS
-  forecast-rain COG bands d1..dk issued at D (data/<case>/forecast_rain/),
+  OBSERVED IMERG daily mm for days <= D-1 (via pipeline.fetch.imerg
+  .fetch_daily) plus the GFS D 00Z run's calendar days D..D+k (COG band
+  d<j> = day D+j-1, data/<case>/forecast_rain/; tp.forecast_align, L28b),
   scored against the case rain3 climatology (p90/p95/p99 — the asavail
   clim COG for rs_2024, a GEE download for wa_2025).
-* S_held: the published s_series band for day D, held for all 3 horizons.
+* S_held: the published s_series band for day D-1 (last day fully
+  observed before D 00Z, L28b), held for all 3 horizons.
 * T: the static 90 m t_slide/t_flood COGs; R_fc/S are resampled UP to
   that grid exactly like gee.tpi._combine_case_tpi.
 
@@ -40,11 +41,12 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "pipeline"))
 
-from live.tpi import classify, projected_rain3, rain_score  # noqa: E402
+from live.tpi import classify, rain_score  # noqa: E402
 from ml.lead_time import damage_time  # noqa: E402
 from pipeline.fetch import imerg  # noqa: E402
 from tp.bundle import _class_png_3857  # noqa: E402
 from tp.config import thresholds  # noqa: E402
+from tp.forecast_align import gfs_band_days, issue_rain3  # noqa: E402
 
 CRITICAL = 0.6
 WORK = REPO / "intermediate" / "forecast_replay"
@@ -131,7 +133,7 @@ def clim_on_grid(case, lats, lons):
 
 
 def gfs_cube(case, issue, lats, lons):
-    """GFS d1..d3 mm reprojected onto the IMERG daily grid."""
+    """GFS bands d1..dN (calendar days D..D+N-1) on the IMERG daily grid."""
     cfg = CASES[case]
     path = (REPO / "data" / case / "forecast_rain"
             / f"{case}_gfs_{issue:%Y%m%d}.tif")
@@ -147,9 +149,9 @@ def gfs_cube(case, issue, lats, lons):
                             xres, yres)
     h, w = len(lats), len(lons)
     north_up = lats[0] > lats[-1]
-    cube = np.full((3, h, w), np.nan)
     with rasterio.open(path) as src:
-        for b in range(min(3, src.count)):
+        cube = np.full((src.count, h, w), np.nan)
+        for b in range(src.count):
             dst = np.full((h, w), np.nan)
             reproject(src.read(b + 1).astype(np.float64), dst,
                       src_transform=src.transform, src_crs=src.crs,
@@ -233,15 +235,15 @@ def combine_90m(case, r_cube, lats, lons, s_band_idx):
 def issue_forecast(case, issue, daily, times, lats, lons, clim, s_idx):
     """One issue day -> 6-band COG + PNGs + index entries."""
     cfg = CASES[case]
-    idx = {t: i for i, t in enumerate(times)}
-    obs_days = [issue - dt.timedelta(days=o) for o in (2, 1, 0)]
-    missing = [d for d in obs_days if d not in idx]
-    if missing:
-        raise RuntimeError(f"{case} {issue}: IMERG daily missing {missing}")
-    obs_recent = np.stack([daily[idx[d]] for d in obs_days])
-    fc = gfs_cube(case, issue, lats, lons)
+    # L28b: at issue D 00Z only IMERG days <= D-1 are observed; GFS band
+    # d<j> is calendar day D+j-1; frame D+k = 3-day sum ending D+k.
+    obs = {t: daily[i] for i, t in enumerate(times) if t < issue}
+    if issue - dt.timedelta(days=1) not in obs:
+        raise RuntimeError(f"{case} {issue}: IMERG daily missing {issue - dt.timedelta(days=1)}")
+    cube = gfs_cube(case, issue, lats, lons)
+    fc = {day: cube[j - 1] for day, j in gfs_band_days(issue, cube.shape[0]).items()}
     r_cube = np.stack([
-        rain_score(projected_rain3(obs_recent, fc, k),
+        rain_score(issue_rain3(issue, k, obs, fc)[0],
                    clim["p90"], clim["p95"], clim["p99"])
         for k in (1, 2, 3)])
     bands, profile = combine_90m(case, r_cube, lats, lons, s_idx)
@@ -286,7 +288,7 @@ def issue_forecast(case, issue, daily, times, lats, lons, clim, s_idx):
     return entries, bands
 
 
-def lead_time(case, issued_bands):
+def lead_time(case, issued_bands, skipped=()):
     """Earliest forecast-critical issue vs the damage anchor.
 
     An issue day 'warns' when some horizon's AOI max (slide or flood)
@@ -302,6 +304,8 @@ def lead_time(case, issued_bands):
     issue_days = []
     leads = []
     for issue in window_dates(case):
+        if issue not in issued_bands:
+            continue
         day_bands = issued_bands[issue]
         first_k = None
         first_date = None
@@ -332,8 +336,13 @@ def lead_time(case, issued_bands):
     earliest = next((d for d in issue_days if d["warned"]), None)
     out = {
         "case": case,
-        "basis": ("GFS-forecast replay TPI: R_fc = score(obs IMERG daily "
-                  "<=D + GFS d1..dk) vs case climatology, S held at D, "
+        "skipped_issue_days": list(skipped),
+        "skipped_reason": "no SMAP S for D-1 (series starts at the window start)",
+        "alignment": "L28b: issue D 00Z; observed IMERG days <= D-1 only; GFS D 00Z "
+                     "run calendar days D..D+3; frame D+k = 3-day sum ending D+k",
+        "basis": ("GFS-forecast replay TPI: R_fc = score(3-day sum ending D+k: "
+                  "obs IMERG days <= D-1 + GFS days D..D+k) vs case climatology, "
+                  "S held at D-1, "
                   "T static; critical = AOI max over slide/flood > 0.6 "
                   "for depicted date <= anchor"),
         "anchor_utc": str(anchor),
@@ -361,10 +370,19 @@ def run_case(case):
     s_path = REPO / "data" / case / "cog" / f"{case}_s_series_{cfg['tag']}.tif"
     index_path = REPO / "data" / case / "png" / "_index.json"
     index = json.loads(index_path.read_text())
+    # rerunnable (L28): drop previously appended GFS forecast layers first
+    index["layers"] = [lay for lay in index["layers"]
+                       if lay.get("forecast_source") != "noaa-gfs"]
     issued_bands = {}
     n_entries = 0
+    skipped = []
     for issue in window_dates(case):
-        s_idx = band_index(s_path, issue)
+        try:   # L28b: S held at the last day fully observed before D 00Z
+            s_idx = band_index(s_path, issue - dt.timedelta(days=1))
+        except KeyError:
+            skipped.append(issue.isoformat())
+            print(f"   {issue}: skipped (no S for {issue - dt.timedelta(days=1)})")
+            continue
         entries, bands = issue_forecast(
             case, issue, daily, times, lats, lons, clim, s_idx)
         index["layers"].extend(entries)
@@ -373,7 +391,7 @@ def run_case(case):
         print(f"   {issue}: COG + {len(entries)} PNGs", flush=True)
     index_path.write_text(json.dumps(index, indent=2,
                                      ensure_ascii=False) + "\n")
-    metrics = lead_time(case, issued_bands)
+    metrics = lead_time(case, issued_bands, skipped)
     print(f"   index +{n_entries} layers; "
           f"would_have_warned_h={metrics['would_have_warned_h']}")
     return metrics
@@ -381,7 +399,8 @@ def run_case(case):
 
 def main():
     WORK.mkdir(parents=True, exist_ok=True)
-    for case in CASES:
+    only = sys.argv[1:] or list(CASES)
+    for case in only:
         run_case(case)
 
 

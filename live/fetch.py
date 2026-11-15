@@ -408,24 +408,24 @@ def _gfs_apcp_range(idx_text: str, fh: int) -> tuple[int, int | None] | None:
 def _gfs_decode_message(raw: bytes):
     """Decode one byte-ranged GRIB2 message -> (arr2d, lats_asc, lons_asc).
 
-    lons come back in the -180..180 convention (GFS grid centres run
-    -179.75..180; GEE's 0.25 deg export uses the same centres).
+    Read with rasterio's GDAL GRIB driver (no cfgrib/eccodes, L28). GDAL's
+    geotransform is the NCEP grid truth (L28): cell centres come from it, so
+    the georeference never depends on a catalog re-registration. lons come
+    back in the -180..180 convention (GDAL wraps to -180..179.75).
     """
-    import tempfile
+    import rasterio
 
-    import cfgrib
-
-    with tempfile.NamedTemporaryFile(suffix=".grib2", delete=False) as f:
-        f.write(raw)
-        path = f.name
-    try:
-        ds = cfgrib.open_dataset(path)
-        da = ds["tp"]
-        arr = np.asarray(da.values, dtype=np.float64)
-        lats = np.asarray(da.latitude.values, dtype=np.float64)
-        lons = np.asarray(da.longitude.values, dtype=np.float64)
-    finally:
-        os.unlink(path)
+    with rasterio.MemoryFile(raw) as mem, mem.open() as ds:
+        arr = ds.read(1).astype(np.float64)
+        if ds.nodata is not None:
+            arr[arr == ds.nodata] = np.nan
+        t = ds.transform
+        if t.b or t.d:
+            raise RuntimeError("GFS GRIB grid is rotated — unexpected")
+        lons = t.c + (np.arange(ds.width) + 0.5) * t.a
+        lats = t.f + (np.arange(ds.height) + 0.5) * t.e
+    lons = np.round(lons, 6)
+    lats = np.round(lats, 6)
     lons = np.where(lons > 180.0, lons - 360.0, lons)
     la_i, lo_i = np.argsort(lats), np.argsort(lons)
     return arr[np.ix_(la_i, lo_i)], lats[la_i], lons[lo_i]
@@ -506,7 +506,7 @@ def fetch_gfs_daily(bounds, issued: dt.date | None = None):
     issued on D that is fh 30..48 for day D+1, 54..72 for D+2, 78..96 for
     D+3 (buckets ending D+1 00:00..06:00 belong to day D, per L28b). Each
     message is pulled with an HTTP Range read via the sibling
-    '.idx' file, decoded with cfgrib/eccodes (kg m-2 == mm), and subset to
+    '.idx' file, decoded with rasterio/GDAL GRIB (kg m-2 == mm), and subset to
     the 0.25 deg cell centres inside `bounds`.
 
     Run selection: prefers the 00Z cycle of `issued`, else the newest cycle
