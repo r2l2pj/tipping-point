@@ -13556,6 +13556,2796 @@
         "NISAR_L2_PR_GCOV_031_060_A_163_2005_SHSH_A_20260922T094722_20260922T094757_P05023_N_F_J_001"
       ],
       "coverage_pct": 68.5
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-09-28",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20260928.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20260928.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1595.81,
+      "nisar_passes": [
+        {
+          "date": "2026-09-18",
+          "track": "010D",
+          "id": "nisar_hh_20260918"
+        },
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        }
+      ],
+      "nisar_water_km2": 1583.087,
+      "nisar_outside_floodplain_pct": 61.7
+    },
+    {
+      "id": "nisar_water_20260928",
+      "date": "2026-09-28",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20260928.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-09-23",
+      "pass_track": "082D",
+      "age_days": 5,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-18",
+          "track": "010D",
+          "id": "nisar_hh_20260918"
+        },
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        }
+      ],
+      "nisar_water_km2": 1583.087,
+      "nisar_outside_floodplain_pct": 61.7
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-09-29",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20260929.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20260929.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1832.53,
+      "nisar_passes": [
+        {
+          "date": "2026-09-18",
+          "track": "010D",
+          "id": "nisar_hh_20260918"
+        },
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        }
+      ],
+      "nisar_water_km2": 1583.087,
+      "nisar_outside_floodplain_pct": 61.7
+    },
+    {
+      "id": "nisar_water_20260929",
+      "date": "2026-09-29",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20260929.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-09-23",
+      "pass_track": "082D",
+      "age_days": 6,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-18",
+          "track": "010D",
+          "id": "nisar_hh_20260918"
+        },
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        }
+      ],
+      "nisar_water_km2": 1583.087,
+      "nisar_outside_floodplain_pct": 61.7
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-09-30",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20260930.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20260930.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 14012.83,
+      "nisar_passes": [
+        {
+          "date": "2026-09-18",
+          "track": "010D",
+          "id": "nisar_hh_20260918"
+        },
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "nisar_water_20260930",
+      "date": "2026-09-30",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20260930.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-09-30",
+      "pass_track": "010D",
+      "age_days": 0,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-18",
+          "track": "010D",
+          "id": "nisar_hh_20260918"
+        },
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-01",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261001.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261001.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 12629.27,
+      "nisar_passes": [
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "nisar_water_20261001",
+      "date": "2026-10-01",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261001.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-09-30",
+      "pass_track": "010D",
+      "age_days": 1,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-02",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261002.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261002.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 4957.05,
+      "nisar_passes": [
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "nisar_water_20261002",
+      "date": "2026-10-02",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261002.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-09-30",
+      "pass_track": "010D",
+      "age_days": 2,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-03",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261003.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261003.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1238.61,
+      "nisar_passes": [
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "nisar_water_20261003",
+      "date": "2026-10-03",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261003.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-09-30",
+      "pass_track": "010D",
+      "age_days": 3,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-04",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261004.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261004.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1238.61,
+      "nisar_passes": [
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "nisar_water_20261004",
+      "date": "2026-10-04",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261004.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-09-30",
+      "pass_track": "010D",
+      "age_days": 4,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-22",
+          "track": "060A",
+          "id": "nisar_hh_20260922_060A"
+        },
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        }
+      ],
+      "nisar_water_km2": 1238.612,
+      "nisar_outside_floodplain_pct": 62.9
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-05",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261005.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261005.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1096.91,
+      "nisar_passes": [
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "nisar_water_20261005",
+      "date": "2026-10-05",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261005.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-05",
+      "pass_track": "082D",
+      "age_days": 0,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-23",
+          "track": "082D",
+          "id": "nisar_hh_20260923"
+        },
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-06",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261006.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261006.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1096.91,
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "nisar_water_20261006",
+      "date": "2026-10-06",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261006.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-05",
+      "pass_track": "082D",
+      "age_days": 1,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-07",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261007.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261007.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1096.91,
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "nisar_water_20261007",
+      "date": "2026-10-07",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261007.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-05",
+      "pass_track": "082D",
+      "age_days": 2,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-08",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261008.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261008.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1096.91,
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "nisar_water_20261008",
+      "date": "2026-10-08",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261008.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-05",
+      "pass_track": "082D",
+      "age_days": 3,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-09",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261009.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261009.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1162.37,
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "nisar_water_20261009",
+      "date": "2026-10-09",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261009.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-05",
+      "pass_track": "082D",
+      "age_days": 4,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-10",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261010.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261010.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1100.13,
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "nisar_water_20261010",
+      "date": "2026-10-10",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261010.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-05",
+      "pass_track": "082D",
+      "age_days": 5,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-11",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261011.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261011.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 4359.37,
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "nisar_water_20261011",
+      "date": "2026-10-11",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261011.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-05",
+      "pass_track": "082D",
+      "age_days": 6,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        }
+      ],
+      "nisar_water_km2": 1096.911,
+      "nisar_outside_floodplain_pct": 28.8
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-12",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261012.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261012.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1105.61,
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "nisar_water_20261012",
+      "date": "2026-10-12",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261012.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-12",
+      "pass_track": "010D",
+      "age_days": 0,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-09-30",
+          "track": "010D",
+          "id": "nisar_hh_20260930"
+        },
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-13",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261013.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261013.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1258.53,
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "nisar_water_20261013",
+      "date": "2026-10-13",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261013.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-12",
+      "pass_track": "010D",
+      "age_days": 1,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-14",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261014.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261014.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1105.61,
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "nisar_water_20261014",
+      "date": "2026-10-14",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261014.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-12",
+      "pass_track": "010D",
+      "age_days": 2,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-15",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261015.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261015.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1105.61,
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "nisar_water_20261015",
+      "date": "2026-10-15",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261015.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-12",
+      "pass_track": "010D",
+      "age_days": 3,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-16",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261016.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261016.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1105.61,
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "nisar_water_20261016",
+      "date": "2026-10-16",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261016.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-12",
+      "pass_track": "010D",
+      "age_days": 4,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        }
+      ],
+      "nisar_water_km2": 1105.613,
+      "nisar_outside_floodplain_pct": 25.6
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-17",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261017.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261017.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1780.64,
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "nisar_water_20261017",
+      "date": "2026-10-17",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261017.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-17",
+      "pass_track": "082D",
+      "age_days": 0,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-05",
+          "track": "082D",
+          "id": "nisar_hh_20261005"
+        },
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-18",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261018.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261018.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1780.64,
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "nisar_water_20261018",
+      "date": "2026-10-18",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261018.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-17",
+      "pass_track": "082D",
+      "age_days": 1,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-19",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261019.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261019.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1780.64,
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "nisar_water_20261019",
+      "date": "2026-10-19",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261019.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-17",
+      "pass_track": "082D",
+      "age_days": 2,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-20",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261020.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261020.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1780.64,
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "nisar_water_20261020",
+      "date": "2026-10-20",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261020.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-17",
+      "pass_track": "082D",
+      "age_days": 3,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-21",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261021.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261021.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1780.64,
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "nisar_water_20261021",
+      "date": "2026-10-21",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261021.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-17",
+      "pass_track": "082D",
+      "age_days": 4,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-22",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261022.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261022.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1780.64,
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "nisar_water_20261022",
+      "date": "2026-10-22",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261022.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-17",
+      "pass_track": "082D",
+      "age_days": 5,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-23",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261023.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261023.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1780.64,
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "nisar_water_20261023",
+      "date": "2026-10-23",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261023.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-17",
+      "pass_track": "082D",
+      "age_days": 6,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        }
+      ],
+      "nisar_water_km2": 1780.637,
+      "nisar_outside_floodplain_pct": 39.1
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-24",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261024.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261024.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 5064.21,
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "nisar_water_20261024",
+      "date": "2026-10-24",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261024.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-24",
+      "pass_track": "010D",
+      "age_days": 0,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-12",
+          "track": "010D",
+          "id": "nisar_hh_20261012"
+        },
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-25",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261025.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261025.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 12417.04,
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "nisar_water_20261025",
+      "date": "2026-10-25",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261025.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-24",
+      "pass_track": "010D",
+      "age_days": 1,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-26",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261026.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261026.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1991.06,
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "nisar_water_20261026",
+      "date": "2026-10-26",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261026.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-24",
+      "pass_track": "010D",
+      "age_days": 2,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-27",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261027.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261027.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1956.71,
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "nisar_water_20261027",
+      "date": "2026-10-27",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261027.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-24",
+      "pass_track": "010D",
+      "age_days": 3,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-28",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261028.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261028.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 1956.71,
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "nisar_water_20261028",
+      "date": "2026-10-28",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261028.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-24",
+      "pass_track": "010D",
+      "age_days": 4,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        }
+      ],
+      "nisar_water_km2": 1956.71,
+      "nisar_outside_floodplain_pct": 33.2
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-29",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261029.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261029.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 2344.38,
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        },
+        {
+          "date": "2026-10-29",
+          "track": "082D",
+          "id": "nisar_hh_20261029"
+        }
+      ],
+      "nisar_water_km2": 2344.381,
+      "nisar_outside_floodplain_pct": 37.7
+    },
+    {
+      "id": "nisar_water_20261029",
+      "date": "2026-10-29",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261029.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-29",
+      "pass_track": "082D",
+      "age_days": 0,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-17",
+          "track": "082D",
+          "id": "nisar_hh_20261017"
+        },
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        },
+        {
+          "date": "2026-10-29",
+          "track": "082D",
+          "id": "nisar_hh_20261029"
+        }
+      ],
+      "nisar_water_km2": 2344.381,
+      "nisar_outside_floodplain_pct": 37.7
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-30",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261030.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261030.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 2344.38,
+      "nisar_passes": [
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        },
+        {
+          "date": "2026-10-29",
+          "track": "082D",
+          "id": "nisar_hh_20261029"
+        }
+      ],
+      "nisar_water_km2": 2344.381,
+      "nisar_outside_floodplain_pct": 37.7
+    },
+    {
+      "id": "nisar_water_20261030",
+      "date": "2026-10-30",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261030.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-29",
+      "pass_track": "082D",
+      "age_days": 1,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        },
+        {
+          "date": "2026-10-29",
+          "track": "082D",
+          "id": "nisar_hh_20261029"
+        }
+      ],
+      "nisar_water_km2": 2344.381,
+      "nisar_outside_floodplain_pct": 37.7
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-10-31",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261031.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261031.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 2344.38,
+      "nisar_passes": [
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        },
+        {
+          "date": "2026-10-29",
+          "track": "082D",
+          "id": "nisar_hh_20261029"
+        }
+      ],
+      "nisar_water_km2": 2344.381,
+      "nisar_outside_floodplain_pct": 37.7
+    },
+    {
+      "id": "nisar_water_20261031",
+      "date": "2026-10-31",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261031.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-29",
+      "pass_track": "082D",
+      "age_days": 2,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        },
+        {
+          "date": "2026-10-29",
+          "track": "082D",
+          "id": "nisar_hh_20261029"
+        }
+      ],
+      "nisar_water_km2": 2344.381,
+      "nisar_outside_floodplain_pct": 37.7
+    },
+    {
+      "id": "tpi_flood_nisar",
+      "date": "2026-11-01",
+      "kind": "observed",
+      "forecast": false,
+      "png": "rs_uruguai_2026/png/tpi_flood_nisar_20261101.png",
+      "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_nisar_20261101.tif",
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        "Baixo",
+        "Moderado",
+        "Alto",
+        "Crítico"
+      ],
+      "label": "Flood risk with NISAR-observed water (candidate)",
+      "note": "Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days before the map day saw open water (HH < −18 dB, outside permanent water): max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. A single-date dark-radar mask also lights flooded rice paddies / irrigation: see outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).",
+      "critical_km2": 2344.38,
+      "nisar_passes": [
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        },
+        {
+          "date": "2026-10-29",
+          "track": "082D",
+          "id": "nisar_hh_20261029"
+        }
+      ],
+      "nisar_water_km2": 2344.381,
+      "nisar_outside_floodplain_pct": 37.7
+    },
+    {
+      "id": "nisar_water_20261101",
+      "date": "2026-11-01",
+      "kind": "nisar_extra",
+      "png": "rs_uruguai_2026/png/nisar_water_20261101.png",
+      "cog": null,
+      "bounds": [
+        -58.0,
+        -30.599926,
+        -55.298371,
+        -28.2
+      ],
+      "legend": [
+        {
+          "label": "NISAR-observed water (candidate)",
+          "color": "#08519c"
+        }
+      ],
+      "label": "NISAR-observed water (candidate)",
+      "sensor": "NISAR",
+      "pass_date": "2026-10-29",
+      "pass_track": "082D",
+      "age_days": 3,
+      "note": "HH < −18 dB on the latest NISAR pass ≤ 12 d before this day, outside permanent water; candidate (also lights flooded rice / irrigation).",
+      "nisar_passes": [
+        {
+          "date": "2026-10-24",
+          "track": "010D",
+          "id": "nisar_hh_20261024"
+        },
+        {
+          "date": "2026-10-29",
+          "track": "082D",
+          "id": "nisar_hh_20261029"
+        }
+      ],
+      "nisar_water_km2": 2344.381,
+      "nisar_outside_floodplain_pct": 37.7
     }
   ]
 }

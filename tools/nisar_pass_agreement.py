@@ -314,6 +314,11 @@ def run(case: str, root: Path, metrics: Path | None, headline: str | None = None
              "headline_rule": f"pass {want} (conductor/lead-analysis)",
              "headline": head, "headline_basis": "window_12d.best_day (critico)",
              "headline_label": HEADLINE_LABEL, "passes": recs, "days": []}
+    full = Path.home() / ".cache/lead-nisar" / f"{case}_pass_agreement_full.json"
+    full.parent.mkdir(parents=True, exist_ok=True)
+    full.write_text(json.dumps(block, indent=1, default=str))
+    for r in [block] + recs:                      # metrics.json keeps the best GFS run + the count only
+        (r.get("gfs_window_12d") or {}).pop("runs", None)
     if metrics is not None:
         from tp.metrics import merge_metrics
         flat = flat_keys(head) if head else {}
