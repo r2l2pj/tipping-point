@@ -36,9 +36,9 @@
   },
   "impacts": [
     {
-      "date": "2026-10-08",
-      "what": "Itaqui: 29 people displaced by the Uruguay River",
-      "source": "agorars.com"
+      "date": "2026-10-05",
+      "what": "Itaqui: Uruguay River above flood stage (ANA gauge 75900000, Oct 5-20; crest 9.93 m on Oct 16)",
+      "source": "ANA telemetry (ServiceANA)"
     },
     {
       "date": "2026-10-29",
@@ -56,7 +56,7 @@
   "forecast_source": null,
   "forecast_proof": {
     "question": "Would the upstream-rain signal have warned Uruguaiana before the Oct 2026 Uruguay River flood?",
-    "answer_short": "Yes, 5 days before the river reached flood stage at Uruguaiana (Oct 5) and 8 days before the Itaqui displacement (Oct 8): satellite rain already observed over the upstream basin (IMERG Early) plus the NOAA GFS run of Sep 30 put the basin 3-day total above the season's 99th percentile. Second rise: 6 days before Oct 29 (>= p95, Oct 23). The GFS forecast alone did not flag either rise; local rain at Uruguaiana never reached its own 99th percentile.",
+    "answer_short": "Yes, 5 days before the river reached flood stage at Uruguaiana (Oct 5) and at Itaqui (ANA gauge 75900000 also above flood stage from Oct 5): satellite rain already observed over the upstream basin (IMERG Early) plus the NOAA GFS run of Sep 30 put the basin 3-day total above the season's 99th percentile. Second rise: 6 days before Oct 29 (>= p95, Oct 23). The GFS forecast alone did not flag either rise; local rain at Uruguaiana never reached its own 99th percentile.",
     "truth": {
       "source": "ANA telemetry (ServiceANA), daily median level",
       "flood_stage_m": 8.5,
@@ -91,9 +91,6 @@
           "2026-10-16",
           9.93
         ]
-      },
-      "impact": {
-        "2026-10-08": "Itaqui: 29 people displaced"
       }
     },
     "signal": {
@@ -108,9 +105,12 @@
         "p95_first_issue_in_runup": "2026-09-29",
         "p95": 6
       },
-      "itaqui_displacement_2026-10-08": {
-        "p99": 8,
-        "p95": 9
+      "itaqui_flood_stage_2026-10-05": {
+        "p99_first_issue": "2026-09-30",
+        "p99": 5,
+        "p95_first_issue_in_runup": "2026-09-29",
+        "p95": 6,
+        "source": "ANA telemetry 75900000 (Itaqui), daily median level >= 8.50 m from Oct 5"
       },
       "uruguaiana_flood_stage_2026-10-29": {
         "p95_first_issue": "2026-10-23",
