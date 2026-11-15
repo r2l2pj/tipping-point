@@ -518,6 +518,41 @@ the onset day has an AOI-max TPI (slide or flood) > 0.6 anywhere in the AOI
 (not at the damage locations); `lead_h` = onset − issue 00Z; `issue_days[]`,
 `sensitivity[]`. The older `forecast_lead_time` block keeps its own anchor.
 
+### EMSR720 flood reference — `flood_ems*` (rs_2024)
+
+Producer `tools/rs_ems_validation.py`. Copernicus EMS Rapid Mapping
+activation **EMSR720** (GLIDE FL-2024-000063-BRA, activated 2024-05-03) is the
+RS 2024 flood reference map (gap G1; licence "Copernicus EMS — free use with
+attribution: © European Union, Copernicus Emergency Management Service").
+Files: `rs_2024/geojson/flood_ems.geojson` (union of all `5-Flood` polygons —
+observedEventA 'Flooded area' + 'Flood trace' + DEL_MONIT 'Maximum flood
+extent' — dissolved per AOI+product+image date, EPSG:4326, props `aoi`,
+`product`, `image_date_utc`, `sensor`, `source`, `status`, `notations`,
+`permanent_water_excluded`, `area_km2`; BLP `hydrographyA` permanent/reference
+water subtracted), `rs_2024/geojson/flood_ems_aoi.geojson` (the five EMS AOI
+extents), `rs_2024/geojson/landslide_ems.geojson` (`6-Mass Movement`
+polygons — reported, not scored), `rs_2024/flood_ems_meta.json` (activation,
+AOIs, products with versions/image dates/sensors/download URLs, licence).
+
+**Coverage limit (applies to every flood_ems key):** EMSR720 mapped only five
+small Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam,
+Santa Tereza — ~51.6–51.9 W, 29.0–29.3 S). Porto Alegre, Guaíba, Canoas,
+Eldorado do Sul and São Leopoldo — the metropolitan flood epicentre — were
+**not** mapped by any EMS activation, so scores are Taquari-valley-only
+evidence, not AOI-wide.
+
+| key | unit | definition |
+|---|---|---|
+| `flood_ems_iou` / `_f1` / `_precision` / `_recall` | fraction | headline cell-confusion score: EMS flood rasterized centre-in (`all_touched=False`) on the ~90 m TPI grid vs TPI_flood **Alto+ (> 0.4)** in the **observed** band dated **2024-05-06** — the EMS image date with the most AOI coverage (all five AOIs, Pleiades Neo optical GRA) |
+| `flood_ems_flooded_km2` | km² | EMS-mapped flood area on that headline date (rasterized cell km²) |
+| `flood_ems_flagged_before_onset_pct` / `_critical_pct` | % of the EMS flood footprint | already Alto+ / Crítico in the best of the GFS 00Z runs issued 2024-04-26/27/28 (frames depicting dates ≤ the onset day, max over frames; onset 2024-04-29 03:00Z, L37 — `tools/warned_before.py` evaluate/by_lead logic). Also reports the observed band dated 2024-04-29 |
+| `flood_ems` | object | `definitions`, `flagged_before_onset` (anchor, denominator km², per-issue %, `by_lead`), `rows[]` — every image-date × rasterization (center / area-weighted ≥50 % coverage) × threshold (alto_plus / critico) × source (observed band E / GFS run issued E−1, frames depicting ≤ E) with tp/fp/fn, IoU, F1, precision, recall, km², AOI list — plus `licence`, `coverage_limit`, `scope` |
+| `flood_ems_method` | text | one-paragraph method + caveats (imagery-mapped extent at a moment; misses flood under cloud/vegetation; 'Flood trace' = earlier water; EMS date E pairs loosely with frame conventions — observed band E = rain E−3..E−1, GFS frame depicting E = rain E−2..E) |
+
+`flood_ems*` never touches `flooded_km2` / `flood_warned_pct` — those keep
+their existing semantics (`flood_warned_pct` stays null pending the ASF
+route; `flood_ems` is the reference-map validation, a different question).
+
 ## data/now/ — the live bundle
 
 Moved from repo-root `now/` so `scripts/sync-data.mjs` copies it with
