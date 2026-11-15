@@ -56,6 +56,21 @@ NEON_BASE = (
 GPW_NEON_URL = f"{NEON_BASE}/{GPW_REL.as_posix()}"
 HAND_REL = Path("data/static/south_brazil/terrain/hand_m.tif")
 
+
+def _hand_label(hand_path) -> str | None:
+    """'HAND (m), <repo-relative path>' (basename outside the repo) — never a
+    local absolute path in published meta."""
+    if not hand_path:
+        return None
+    from tp.config import REPO_ROOT
+
+    p = Path(hand_path)
+    try:
+        rel = p.resolve().relative_to(Path(REPO_ROOT).resolve()).as_posix()
+    except ValueError:
+        rel = p.name
+    return f"HAND (m), {rel}"
+
 _H5Z_DEFLATE, _H5Z_SHUFFLE, _H5Z_FLETCHER32 = 1, 2, 3
 
 
@@ -529,7 +544,8 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
                          f"{fm.MMU_HA} ha",
             "res_m": res,
             "multilook": "mean linear power per block",
-            "hand": str(hand_path) if hand_path else None,
+            # label + repo-relative path, never a local absolute path
+            "hand": _hand_label(hand_path),
             "people": "GPW v4.11 2020 count, pixel-centre sampled, area-weighted",
         },
         "_null_reasons": reasons,

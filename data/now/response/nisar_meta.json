@@ -63,7 +63,7 @@
     "algorithm": "tp.flood_mask.flood_mask (wa_2025): pre->post dB drop < -3.0 dB into water (Otsu, clamp -15.0 dB), pre-water excluded, HAND gate, bright-flood layer, MMU 3.0 ha",
     "res_m": 100.0,
     "multilook": "mean linear power per block",
-    "hand": "/home/lucascoelho/code/r2l2pj/tipping-point-data-wt/r2-nisar/data/static/south_brazil/terrain/hand_m.tif",
+    "hand": "HAND (m), data/static/south_brazil/terrain/hand_m.tif",
     "people": "GPW v4.11 2020 count, pixel-centre sampled, area-weighted"
   },
   "_null_reasons": {},

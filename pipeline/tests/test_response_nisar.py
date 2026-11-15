@@ -293,3 +293,12 @@ def test_run_response_search_failure_is_null_reason(synthetic, tmp_path):
                            log=lambda m: None)
     assert meta["_null_reasons"]["search"].startswith("CMR search failed")
     assert meta["flooded_km2"] is None
+
+
+def test_hand_label_never_absolute(tmp_path):
+    from tp import response_nisar as rn
+    from tp.config import REPO_ROOT
+
+    assert rn._hand_label(None) is None
+    assert rn._hand_label(REPO_ROOT / rn.HAND_REL) == f"HAND (m), {rn.HAND_REL.as_posix()}"
+    assert rn._hand_label(tmp_path / "hand_m.tif") == "HAND (m), hand_m.tif"
