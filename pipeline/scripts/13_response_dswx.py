@@ -44,6 +44,10 @@ def main(argv=None) -> None:
     ap.add_argument("--gpw", type=Path, default=GPW, help="GPW v4.11 2020 30-arc-sec count raster")
     ap.add_argument("--landcover", type=Path, default=REPO_ROOT / "data/now/static/mcd12q1/lc_type1_2025.tif")
     ap.add_argument("--outline", type=Path, default=REPO_ROOT / "data/now/static/brazil_outline.geojson")
+    ap.add_argument("--gsw-occurrence", type=Path,
+                    default=REPO_ROOT / "data/now/static/jrc_gsw/gsw_occurrence_2021.tif")
+    ap.add_argument("--gsw-seasonality", type=Path,
+                    default=REPO_ROOT / "data/now/static/jrc_gsw/gsw_seasonality_2021.tif")
     ap.add_argument("--dry-run", action="store_true", help="print the grid + CMR query only")
     args = ap.parse_args(argv)
 
@@ -62,6 +66,7 @@ def main(argv=None) -> None:
         search=lambda start, end: opera.search_dswx_s1((w, s, e, n), start, end, session=session),
         fetch=lambda g: opera.download_wtr(g["wtr_url"], session=session),
         gpw_sources=[str(args.gpw)], gpw_label=GPW_LABEL, landcover_path=args.landcover, outline_path=args.outline,
+        gsw_paths=(args.gsw_occurrence, args.gsw_seasonality),
         bootstrap_days=args.bootstrap_days, overlap_h=args.overlap_h,
         window_h=args.window_h, min_obs=args.min_obs, base_max=args.base_max,
         min_area_km2=args.min_area_km2, simplify_m=args.simplify_m, workers=args.workers,
@@ -69,7 +74,8 @@ def main(argv=None) -> None:
     print(json.dumps({k: meta[k] for k in (
         "latest_acquired", "latency_h", "n_granules", "n_failed", "raw_candidate_km2", "flooded_km2",
         "new_km2", "receded_km2", "people_flooded", "lower_confidence_km2", "lower_confidence_people",
-        "excluded_water_wetland_km2", "outside_brazil_km2", "unbaselined_water_km2", "coverage_pct", "features", "_null_reasons")}, indent=2))
+        "excluded_water_wetland_km2", "outside_brazil_km2", "seasonal_downgraded_km2",
+        "seasonal_downgraded_people", "unbaselined_water_km2", "coverage_pct", "features", "_null_reasons")}, indent=2))
 
 
 if __name__ == "__main__":

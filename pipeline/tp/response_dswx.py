@@ -33,6 +33,10 @@ Method
   cropland 12/14 (e.g. RS rice paddies flooded for planting) is kept as
   confidence "lower". Headline flooded_km2/people_flooded = standard only, summed over the
   mapped polygons (>= min_area_km2); smaller clusters -> sub_mmu_km2.
+  Seasonal/occasional water (JRC GSW v1.4 1984-2021 cell-mean occurrence
+  >= GSW_OCC_MIN % or seasonality >= GSW_MONTHS_MIN months) is also kept as
+  confidence "lower" (``lower_reason`` names the rule); missing GSW rasters
+  -> the rule is skipped and ``_null_reasons.seasonal_water`` says so.
   Missing land cover or outline -> headline null + reason (unfiltered water
   is never published).
 * change: "new" = candidate now and not in the previous run's candidate
@@ -335,6 +339,35 @@ IGBP = {1: "evergreen needleleaf forest", 2: "evergreen broadleaf forest",
         14: "cropland/natural mosaic", 15: "snow/ice", 16: "barren", 17: "water body"}
 LC_EXCLUDE = (11, 17)        # permanent wetlands + water bodies (dilated 1 LC cell)
 LC_LOWER = (12, 14)          # croplands: e.g. RS rice paddies flooded for planting
+GSW_OCC_MIN = 25             # JRC GSW occurrence (%) at/above which water is "occasional"
+GSW_MONTHS_MIN = 3           # JRC GSW seasonality (months/yr) at/above which water is seasonal
+REASON_CROP = "cropland (MCD12Q1)"
+REASON_SEAS = "seasonal/occasional water (JRC GSW)"
+
+
+def gsw_grid(occ_path, seas_path, grid: Grid, occ_min: int = GSW_OCC_MIN,
+             months_min: int = GSW_MONTHS_MIN):
+    """(bool seasonal-water mask on the grid, None) or (None, reason).
+
+    Inputs are the tools/convert_jrc_gsw.py COGs (cell means on this grid,
+    uint8, 255 = no data); read with nearest so any grid works.
+    """
+    import rasterio
+    from rasterio.warp import Resampling, reproject
+
+    try:
+        out = []
+        for path in (occ_path, seas_path):
+            with rasterio.open(path) as src:
+                a = np.full(grid.shape, 255, np.uint8)
+                reproject(rasterio.band(src, 1), a, src_nodata=255, dst_nodata=255,
+                          dst_transform=grid.transform, dst_crs="EPSG:4326",
+                          resampling=Resampling.nearest)
+            out.append(a)
+        occ, seas = out
+        return ((occ != 255) & (occ >= occ_min)) | ((seas != 255) & (seas >= months_min)), None
+    except Exception as e:  # noqa: BLE001
+        return None, f"JRC GSW raster unavailable ({Path(str(occ_path)).name}: {type(e).__name__})"
 
 
 def landcover_grid(path, grid: Grid):
@@ -377,12 +410,20 @@ def brazil_grid(path, grid: Grid):
         return None, f"Brazil outline unavailable ({Path(str(path)).name}: {type(e).__name__})"
 
 
-def apply_context(masks: dict, lc: np.ndarray, excl: np.ndarray, br: np.ndarray, prev: np.ndarray) -> dict:
-    """Split raw candidates into excluded / outside Brazil / standard / lower."""
+def apply_context(masks: dict, lc: np.ndarray, excl: np.ndarray, br: np.ndarray, prev: np.ndarray,
+                  seasonal: np.ndarray | None = None) -> dict:
+    """Split raw candidates into excluded / outside Brazil / standard / lower.
+
+    lower = cropland OR seasonal/occasional water (when the GSW mask exists);
+    ``seasonal_downgraded`` = candidates that would be standard without the
+    GSW rule (what that rule moves).
+    """
     flood = masks["flood"]
     kept = flood & ~excl
     inbr = kept & br
-    lower = inbr & np.isin(lc, LC_LOWER)
+    crop = inbr & np.isin(lc, LC_LOWER)
+    seas = inbr & seasonal if seasonal is not None else np.zeros_like(inbr)
+    lower = crop | seas
     std = inbr & ~lower
     return {
         **masks,
@@ -391,6 +432,9 @@ def apply_context(masks: dict, lc: np.ndarray, excl: np.ndarray, br: np.ndarray,
         "candidate": inbr,
         "standard": std,
         "lower": lower,
+        "lower_crop": crop,
+        "lower_seasonal": seas,
+        "seasonal_downgraded": seas & ~crop,
         "std_new": std & ~prev,
         "lower_new": lower & ~prev,
         "receded": masks["receded"] & br,
@@ -445,6 +489,13 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
             np.add.at(lc_counts, (fid, lc[sel]), 1)
             lc_major = lc_counts.argmax(axis=1)
             del lc_counts
+            n_crop = np.bincount(fid, weights=masks["lower_crop"][sel], minlength=n)
+            n_seas = np.bincount(fid, weights=masks["lower_seasonal"][sel], minlength=n)
+            # what the GSW rule moved standard -> lower INSIDE mapped polygons
+            sd = masks["seasonal_downgraded"] & sel
+            moved_km2 = float((sd * grid.row_area_km2()).sum())
+            moved_people = float(pop[sd].sum()) if pop is not None else None
+            del sd
             del ids, sel, fid
             gran: dict[int, list[str]] = {}
             for f_i, g_i in pairs.T:
@@ -464,6 +515,8 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
                     "change": "new" if f["properties"]["value"] in (1, 3) else "persisting",
                     "confidence": "lower" if f["properties"]["value"] in (3, 4) else "standard",
                     "landcover": IGBP.get(int(lc_major[i]), "unclassified"),
+                    "lower_reason": ([r for r, k in ((REASON_CROP, n_crop[i]), (REASON_SEAS, n_seas[i])) if k > 0]
+                                     if f["properties"]["value"] in (3, 4) else None),
                 }})
             feats = out_feats
             text = json.dumps({"type": "FeatureCollection", "features": feats}, allow_nan=False,
@@ -477,6 +530,8 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
     _atomic_write(out_path, text)
     # headline totals from the MAPPED polygons (>= min_area), so the numbers
     # match what the map draws; sub-MMU specks are reported separately
+    if not feats:
+        moved_km2, moved_people = 0.0, (0.0 if pop is not None else None)
     totals = {k: {"km2": 0.0, "people": 0.0} for k in ("standard", "std_new", "lower", "lower_new")}
     for f in feats:
         p = f["properties"]
@@ -488,7 +543,9 @@ def polygonize(state: State, masks: dict, pop: np.ndarray | None, lc: np.ndarray
     return {"features": len(feats), "bytes": len(text.encode()), "simplify_m": simplify_m,
             "min_area_km2": min_area_km2,
             "totals": {k: {"km2": round(v["km2"], 3), "people": round(v["people"], 1)}
-                       for k, v in totals.items()}}
+                       for k, v in totals.items()},
+            "seasonal_moved": {"km2": round(moved_km2, 3),
+                               "people": None if moved_people is None else round(moved_people, 1)}}
 
 
 def _atomic_write(path: Path, text: str) -> None:
@@ -522,6 +579,7 @@ def run(
     gpw_label: str = "GPW v4.11 Population Count 2020",
     landcover_path=None,
     outline_path=None,
+    gsw_paths: tuple | None = None,      # (occurrence COG, seasonality COG)
     now: datetime | None = None,
     bootstrap_days: int = 60,
     overlap_h: int = 24,
@@ -616,7 +674,9 @@ def run(
     lc, excl, lc_reason = (landcover_grid(landcover_path, grid) if landcover_path
                            else (None, None, "no land cover raster configured"))
     br, br_reason = brazil_grid(outline_path, grid) if outline_path else (None, "no Brazil outline configured")
-    for k, r in (("landcover", lc_reason), ("brazil", br_reason)):
+    seasonal, gsw_reason = (gsw_grid(*gsw_paths, grid) if gsw_paths
+                            else (None, "no JRC GSW rasters configured"))
+    for k, r in (("landcover", lc_reason), ("brazil", br_reason), ("seasonal_water", gsw_reason)):
         if r:
             reasons[k] = r
 
@@ -624,11 +684,12 @@ def run(
     flood_path = out_dir / "flood_dswx.geojson"
     stat_keys = ("flooded_km2", "new_km2", "receded_km2", "people_flooded", "lower_confidence_km2",
                  "lower_confidence_new_km2", "lower_confidence_people", "excluded_water_wetland_km2",
-                 "outside_brazil_km2", "sub_mmu_km2")
+                 "outside_brazil_km2", "sub_mmu_km2", "seasonal_downgraded_km2",
+                 "seasonal_downgraded_people", "seasonal_flagged_pixel_km2", "seasonal_flagged_pixel_people")
     if valid and lc is not None and br is not None:
         prev = state.prev_flood.astype(bool) if state.has_prev else np.zeros(grid.shape, bool)
-        masks = apply_context(masks, lc, excl, br, prev)
-        del excl, br
+        masks = apply_context(masks, lc, excl, br, prev, seasonal)
+        del excl, br, seasonal
         poly = polygonize(state, masks, pop, lc, flood_path, min_area_km2, simplify_m)
         tot = poly["totals"]
         stats = {
@@ -642,6 +703,14 @@ def run(
             # not in the headline
             "sub_mmu_km2": round(max(0.0, km2(masks["candidate"]) - tot["standard"]["km2"]
                                      - tot["lower"]["km2"]), 3),
+            # what the GSW rule moved standard -> lower in the MAPPED polygons
+            # (= change to the headline); *_pixel_* also counts sub-MMU specks.
+            # null when the GSW rasters are missing
+            "seasonal_downgraded_km2": poly["seasonal_moved"]["km2"] if gsw_reason is None else None,
+            "seasonal_downgraded_people": poly["seasonal_moved"]["people"] if gsw_reason is None else None,
+            "seasonal_flagged_pixel_km2": km2(masks["seasonal_downgraded"]) if gsw_reason is None else None,
+            "seasonal_flagged_pixel_people": ((None if pop is None else round(float(pop[masks["seasonal_downgraded"]].sum()), 1))
+                                              if gsw_reason is None else None),
             "excluded_water_wetland_km2": km2(masks["excluded"]),
             "outside_brazil_km2": km2(masks["outside"]),
         }
@@ -686,11 +755,13 @@ def run(
         "params": {"window_h": window_h, "min_obs": min_obs, "base_max": base_max,
                    "min_area_km2": poly.get("min_area_km2", min_area_km2),
                    "simplify_m": poly.get("simplify_m", simplify_m),
-                   "water_classes": list(WTR_WATER), "bootstrap_days": bootstrap_days},
+                   "water_classes": list(WTR_WATER), "bootstrap_days": bootstrap_days,
+                   "gsw_occurrence_min_pct": GSW_OCC_MIN, "gsw_seasonality_min_months": GSW_MONTHS_MIN},
         "bootstrap": state.bootstrap,
         "people_source": gpw_label if pop_src else None,
         "landcover_source": None if lc is None else "MCD12Q1.061 2025 LC_Type1 (IGBP)",
         "brazil_outline_source": None if br_reason else "IBGE malhas v3 paises/BR",
+        "seasonal_water_source": None if gsw_reason else "JRC Global Surface Water v1.4 (1984-2021), cell mean",
         "_null_reasons": reasons,
     }
     del masks, pop, lc

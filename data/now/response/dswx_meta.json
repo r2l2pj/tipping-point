@@ -1,7 +1,7 @@
 {
   "source": "opera-dswx-s1",
   "status": "candidate",
-  "generated_at": "2026-11-15T04:18:24Z",
+  "generated_at": "2026-11-15T04:30:22Z",
   "latest_acquired": "2026-11-14T09:06:12.000Z",
   "latency_h": null,
   "n_granules": 0,
@@ -15,6 +15,10 @@
   "lower_confidence_new_km2": 0.0,
   "lower_confidence_people": 394.4,
   "sub_mmu_km2": 226.574,
+  "seasonal_downgraded_km2": 0.0,
+  "seasonal_downgraded_people": 0.0,
+  "seasonal_flagged_pixel_km2": 16.863,
+  "seasonal_flagged_pixel_people": 344.2,
   "excluded_water_wetland_km2": 222.322,
   "outside_brazil_km2": 856.497,
   "raw_candidate_km2": 1593.338,
@@ -47,7 +51,9 @@
       2,
       3
     ],
-    "bootstrap_days": 60
+    "bootstrap_days": 60,
+    "gsw_occurrence_min_pct": 25,
+    "gsw_seasonality_min_months": 3
   },
   "bootstrap": {
     "ok": true,
@@ -59,6 +65,7 @@
   "people_source": "GPW v4.11 Population Count 2020, 30 arc-sec (CIESIN/SEDAC, doi:10.7927/H4JW8BX5)",
   "landcover_source": "MCD12Q1.061 2025 LC_Type1 (IGBP)",
   "brazil_outline_source": "IBGE malhas v3 paises/BR",
+  "seasonal_water_source": "JRC Global Surface Water v1.4 (1984-2021), cell mean",
   "_null_reasons": {
     "latency_h": "no granules ingested this run"
   }

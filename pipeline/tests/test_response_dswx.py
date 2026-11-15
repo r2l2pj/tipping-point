@@ -264,3 +264,46 @@ def test_missing_landcover_nulls_headline(tmp_path):
     meta, _ = make_run(tmp_path, cat, T0 + timedelta(days=13), landcover_path=tmp_path / "nope.tif")
     assert meta["flooded_km2"] is None and "landcover" in meta["_null_reasons"]
     assert json.loads((tmp_path / "flood_dswx.geojson").read_text())["features"] == []
+
+
+def write_gsw(path, rows=None):
+    """GSW-like uint8 raster on GRID: 0 unless rows={row: value}; 255 = no data."""
+    a = np.zeros((10, 10), np.uint8)
+    for r, v in (rows or {}).items():
+        a[r] = v
+    with rasterio.open(path, "w", driver="GTiff", height=10, width=10, count=1, dtype="uint8",
+                       crs="EPSG:4326", transform=GRID.transform, nodata=255) as dst:
+        dst.write(a, 1)
+    return path
+
+
+def test_seasonal_water_downgraded_to_lower(tmp_path):
+    # new water on rows 2 (occurrence 40% -> seasonal), 5 (seasonality 4 mo),
+    # 8 (occurrence 10%, 1 mo -> stays standard); all grassland, all Brazil
+    cat = [granule(i, T0 + timedelta(days=4 * i), tile()) for i in range(4)]
+    cat.append(granule(4, T0 + timedelta(days=16), tile(water_rows=(2, 5, 8))))
+    occ = write_gsw(tmp_path / "occ.tif", {2: 40, 5: 5, 8: 10})
+    seas = write_gsw(tmp_path / "seas.tif", {2: 2, 5: 4, 8: 1})
+    meta, _ = make_run(tmp_path, cat, T0 + timedelta(days=17), gsw_paths=(occ, seas))
+    cell = meta["raw_candidate_km2"] / 30
+    assert meta["flooded_km2"] == pytest.approx(10 * cell, rel=0.01)            # row 8 only
+    assert meta["lower_confidence_km2"] == pytest.approx(20 * cell, rel=0.01)   # rows 2 + 5
+    assert meta["seasonal_downgraded_km2"] == pytest.approx(20 * cell, rel=0.01)
+    assert meta["seasonal_flagged_pixel_km2"] == pytest.approx(20 * cell, rel=0.01)
+    assert meta["seasonal_water_source"] and meta["params"]["gsw_occurrence_min_pct"] == 25
+    fc = json.loads((tmp_path / "flood_dswx.geojson").read_text())
+    reasons = [f["properties"]["lower_reason"] for f in fc["features"]
+               if f["properties"]["confidence"] == "lower"]
+    assert reasons and all(r == [rd.REASON_SEAS] for r in reasons)
+    assert all(f["properties"]["lower_reason"] is None for f in fc["features"]
+               if f["properties"]["confidence"] == "standard")
+
+
+def test_missing_gsw_skips_rule_with_reason(tmp_path):
+    cat = [granule(i, T0 + timedelta(days=4 * i), tile()) for i in range(4)]
+    cat.append(granule(4, T0 + timedelta(days=16), tile(water_rows=(5,))))
+    meta, _ = make_run(tmp_path, cat, T0 + timedelta(days=17),
+                       gsw_paths=(tmp_path / "nope_occ.tif", tmp_path / "nope_seas.tif"))
+    assert meta["flooded_km2"] > 0                                   # headline still published
+    assert meta["seasonal_downgraded_km2"] is None
+    assert "seasonal_water" in meta["_null_reasons"] and meta["seasonal_water_source"] is None

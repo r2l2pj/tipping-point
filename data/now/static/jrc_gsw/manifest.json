@@ -1,0 +1,41 @@
+{
+  "product": "JRC Global Surface Water v1.4 (1984-2021): occurrence + seasonality",
+  "source_url": "https://storage.googleapis.com/global-surface-water/downloads2021/<var>/<var>_<tile>v1_4_2021.tif",
+  "bbox": [
+    -58.0,
+    -34.0,
+    -48.0,
+    -22.5
+  ],
+  "grid": "EPSG:4326, 0.0025 deg, origin bbox west/north (same as R1 DSWx-S1 grid)",
+  "aggregation": "area average of valid 30 m pixels (255 = no data excluded)",
+  "units": {
+    "gsw_occurrence_2021.tif": "percent of valid observations with water, 0-100",
+    "gsw_seasonality_2021.tif": "months of water in the 2021 reference year, 0-12"
+  },
+  "files": {
+    "gsw_occurrence_2021.tif": {
+      "sha256": "a31b98c96856b1541b7a998bbbbcc00326d6bb61cdb8055245199d3ac9cf3c04",
+      "valid_frac": 0.8548,
+      "tiles": [
+        "occurrence_60W_20Sv1_4_2021.tif",
+        "occurrence_60W_30Sv1_4_2021.tif",
+        "occurrence_50W_20Sv1_4_2021.tif",
+        "occurrence_50W_30Sv1_4_2021.tif"
+      ]
+    },
+    "gsw_seasonality_2021.tif": {
+      "sha256": "30cda153f75a687afd2421ef05337a5f392931a575431377bcf3ead65215c307",
+      "valid_frac": 0.8548,
+      "tiles": [
+        "seasonality_60W_20Sv1_4_2021.tif",
+        "seasonality_60W_30Sv1_4_2021.tif",
+        "seasonality_50W_20Sv1_4_2021.tif",
+        "seasonality_50W_30Sv1_4_2021.tif"
+      ]
+    }
+  },
+  "citation": "Pekel et al. (2016) Nature 540:418-422, doi:10.1038/nature20584; EC JRC/Google",
+  "license": "CC-BY-4.0 (Copernicus Programme)",
+  "created_at": "2026-11-15T04:27:05+00:00"
+}

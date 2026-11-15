@@ -460,7 +460,15 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
   confidence only, summed over the mapped polygons ≥ `params.min_area_km2`
   so it equals what the map draws), `sub_mmu_km2` (in-Brazil candidate
   pixels in smaller clusters: not mapped, not in any headline),
-  `receded_km2`, `lower_confidence_km2` (also polygon sums),
+  `receded_km2`, `lower_confidence_km2` (also polygon sums; "lower" =
+  MCD12Q1 cropland OR JRC GSW seasonal/occasional water — occurrence ≥
+  `params.gsw_occurrence_min_pct` % or seasonality ≥
+  `params.gsw_seasonality_min_months` months; polygons carry
+  `lower_reason` [list]), `seasonal_downgraded_km2` /
+  `seasonal_downgraded_people` (what the GSW rule moved standard → lower in
+  the mapped polygons = change to the headline), `seasonal_flagged_pixel_km2`
+  / `seasonal_flagged_pixel_people` (same incl. sub-MMU specks),
+  `seasonal_water_source`,
   `lower_confidence_new_km2`, `lower_confidence_people`,
   `excluded_water_wetland_km2`, `outside_brazil_km2`, `raw_candidate_km2`
   (before land cover / Brazil filtering),
