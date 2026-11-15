@@ -14219,7 +14219,7 @@
       "forecast_proof_itaqui_p99": 8,
       "forecast_proof_itaqui_p95": 9,
       "forecast_proof_source": "lead-ml tools/uruguai_forecast_proof.py (data main 07d99c3); full data data/rs_uruguai_2026/series/forecast_proof.json; upstream-basin rain is an evaluation (not served in Now)",
-      "tpi_replay_note": "Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) read Critical over the Uruguay River corridor in the bands of Sep 30 – Oct 2 (rain Sep 28–30; up to 813 km² Critical), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 9 & 11 before the Oct 16 crest. The NOAA GFS run of Sep 29 showed High for Sep 30, the Sep 30 run Critical for Oct 1, the Oct 2 run High for Oct 3–5. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof).",
+      "tpi_replay_note": "Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) read Critical over the Uruguaiana region in the bands of Sep 30 – Oct 2 (rain Sep 28–30; up to 813 km² Critical), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 9 & 11 before the Oct 16 crest. The NOAA GFS run of Sep 29 showed High for Sep 30, the Sep 30 run Critical for Oct 1, the Oct 2 run High for Oct 3–5. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof).",
       "critical_km2": 1762.06,
       "critical_km2_date": "2026-10-11",
       "tpi_flood_corridor_first_critical_observed": "2026-09-30",
@@ -15088,7 +15088,7 @@
         },
         {
           "date": "2026-09-30",
-          "label": "Local flood index Critical over the river corridor (rain Sep 28–30)",
+          "label": "Index Critical over the Uruguaiana region (5 days ahead)",
           "kind": "signal"
         },
         {
