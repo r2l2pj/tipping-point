@@ -1041,6 +1041,29 @@ def test_load_event_inventory_arcgis_requests_only_date_field(tmp_path, monkeypa
     assert all(p["outFields"] == "" for p in seen)
 
 
+def test_resolve_source_rar_extracts_shp(tmp_path, monkeypatch):
+    """A .rar source is extracted once under events/<id>/rar_x/; the .shp inside
+    becomes the path. Offline: the 'rar' is a tar — libarchive (bsdtar) reads
+    content not suffix, and unrar failing on it exercises the tool fallback."""
+    import shutil
+    import tarfile
+    from ml.local import labels as L
+    from ml.local import settings as S
+    if not shutil.which("bsdtar"):
+        pytest.skip("needs bsdtar to read the fake rar")
+    monkeypatch.setattr(S, "DATA_DIR", tmp_path)
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "inv.shp").write_bytes(b"fake")
+    arc = tmp_path / "inv.rar"
+    with tarfile.open(arc, "w") as tf:
+        tf.add(src / "inv.shp", arcname="inv.shp")
+    ev = _ev(format="vector", source=str(arc))
+    p = L._resolve_source(ev)
+    assert p == tmp_path / "events" / "x_2024" / "rar_x" / "inv.shp"
+    assert L._resolve_source(ev) == p                     # second call reuses it
+
+
 def test_leak_mask_days_and_km():
     from ml.local import labels as L
     glc = pd.DataFrame({"point_id": ["a", "b", "c", "d"], "event_id": ["e1", "e2", "e3", "e4"],

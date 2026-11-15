@@ -1,101 +1,48 @@
-# L25 — live GFS fetcher from NOAA AWS (no GEE)
-
-Branch: `unit/gfsaws`. No push/merge.
+# emilia_2023 TEST event — implementation notes (t18b)
 
 ## What changed
 
-- `live/fetch.py` — new `fetch_gfs_daily(bounds, issued=None) ->
-  (daily xarray(time,lat,lon) 3 steps D+1..D+3, issued_iso)`, mirroring
-  `fetch_geosfp_daily`'s contract; `fetch_geosfp_daily` kept untouched as
-  the named fallback. New module-private helpers:
-  - `_gfs_key` — `gfs.YYYYMMDD/HH/atmos/gfs.tHHz.pgrb2.<res>.fFFF`
-  - `_gfs_head_ok` / `_gfs_get_text` / `_gfs_get_range` — HTTP layer
-    (anonymous GET/HEAD/Range against
-    `https://noaa-gfs-bdp-pds.s3.amazonaws.com`)
-  - `_gfs_apcp_range` — parses the sibling `.idx`, returns the byte range
-    of the *trailing 6h* APCP message (`(fh-6)-(fh) hour acc fcst`),
-    rejecting the since-issuance message (`0-N day acc fcst`)
-  - `_gfs_decode_message` — writes the byte-ranged GRIB2 message to a temp
-    file, opens with cfgrib/eccodes (`tp`), returns (arr, lats asc,
-    lons asc in -180..180)
-  - `_gfs_apcp_grid` — 0p25 with 0p50 fallback (+interp) if an hour's idx
-    or APCP message is missing at 0.25 deg
-  - `_gfs_candidates` / `_gfs_pick_run` — prefer issued-day 00Z, else
-    newest cycle at/before issued end-of-day whose `f072.idx` HEADs 200
-    (probes back 4 days, 16 candidates)
-  - `_gfs_day_label` — a bucket ending at valid time `t` belongs to the
-    day `(label-1, label]`, so a 00Z run issued on D gives D+1 = fh 6..24,
-    matching `pipeline/fetch/gfs.py::day_sum` exactly (verified against
-    its unit tests, incl. non-00Z cycles)
-- `live/tests/test_fetch_gfs.py` — 10 offline tests: key layout, idx
-  range selection (recorded `.idx` fixtures), day-boundary labelling,
-  real-message decode (recorded APCP bytes), run-pick preferences/
-  fallback/raise, full fetch bucketing+subset, partial-day 06Z run.
-- `live/tests/fixtures/` — `gfs_f006.idx`, `gfs_f024.idx` (recorded idx
-  text), `gfs_f006_apcp.grib` (367 KB, one real byte-ranged APCP message
-  from `gfs.20240429/00`).
-- `pyproject.toml` / `uv.lock` — `cfgrib>=0.9.15.1` +
-  `eccodes==2.42.0` (pinned: last release shipping manylinux wheels with
-  the bundled C library; 2.50.1 is bindings-only and raised
-  "Cannot find the ecCodes library").
+- `ml/local/test_events.d/emilia_2023.yaml` (new): RER2023 inventory event.
+  `dating: fixed`, D = 2023-05-16, trigger_window [2023-05-15, 2023-05-17]
+  (main rain episode 16-17 May; earlier episode 1-3 May folded in),
+  inventory_window auto = [2023-05-08, 2023-05-24]. `format: vector`,
+  source = Zenodo `/files/RER2023_V1.rar?download=1` (URL path must end in
+  `.rar` — the `/api/.../content` URL saves a file named `content`).
+  max_points 3000, enabled: false, licence CC-BY-4.0, citation noted.
+- `ml/local/labels.py`: `_resolve_source` now returns `p = _extract_rar(p, ev)`
+  for any resolved path ending `.rar` (local or downloaded). New `_extract_rar`:
+  extracts once under `DATA_DIR/events/<id>/rar_x/` using the first working
+  system tool of unrar / bsdtar / 7z (`shutil.which` + rc check), then returns
+  the single `.shp` found inside; clear RuntimeError if no tool / != 1 shp.
+  `out.mkdir()` added because `S.path()` only creates the parent.
+- `ml/tests/test_local_pipeline.py`: `test_resolve_source_rar_extracts_shp` —
+  offline test; a tar named `.rar` exercises the loop (unrar fails on it,
+  bsdtar/libarchive sniffs content). Skips when bsdtar absent.
 
-## Commands and results
+## Inventory facts
 
-- `uv add cfgrib` then `uv add "eccodes==2.42.0"` (uv at
-  `~/.local/share/mise/installs/uv/0.13.8/uv-x86_64-unknown-linux-gnu/uv`;
-  the mise shim is broken in this shell) — resolved, installed.
-- Reachability verified: `gfs.20240429/00/atmos/gfs.t00z.pgrb2.0p25.f006.idx`
-  and `f072.idx` both 200; Range GET of the APCP message returns a
-  self-contained `GRIB` blob that cfgrib decodes (721x1440 `tp`).
-- `.venv/bin/pytest live/tests/test_fetch_gfs.py -x -q` -> **10 passed**.
-- `.venv/bin/pytest live/tests -x -q` -> 91 passed, **1 pre-existing
-  failure** `test_publish_fallback.py::test_oversized_and_stale_files` —
-  caused by the uncommitted L26 edit to `live/publish_fallback.py`
-  already in the worktree (not mine); confirmed unrelated.
-- `.venv/bin/ruff check live/fetch.py live/tests/test_fetch_gfs.py` ->
-  clean.
+- Zenodo doi:10.5281/zenodo.13742643, "RER2023 v1", CC-BY-4.0.
+- RER2023_V1.rar = RAR5, 43.6 MB -> ESRI shapefile, 80,997 polygon features.
+- CRS EPSG:7791 (RDN2008/UTM 32N) — `_read_vector` reprojects to 4326.
+- Fields: OBJECTID IDC Lito GLI NFS ClassMan ClassNew — NO date/episode
+  attribute -> fixed dating (as instructed).
 
-## Real verification vs `rs_2024_gfs_20240429.tif`
+## Commands run + results
 
-`fetch_gfs_daily((-52.5,-30.5,-50.5,-29.0), 2024-04-29)` -> issued
-`2024-04-29T00:00:00Z`, steps `2024-04-30/05-01/05-02`, grid 9x7 at exact
-0.25 deg centres.
+- `curl https://zenodo.org/api/records/13742643` -> file RER2023_V1.rar,
+  license cc-by-4.0.
+- `curl -sL -o $ML_DATA_DIR/events/emilia_2023/RER2023_V1.rar <files-url>`
+  (43,630,642 B); `unrar lb/x` -> shapefile set.
+- pyogrio.read_info: 80,997 feats, EPSG:7791, fields as above.
+- Proof script (ML_DATA_DIR=~/.cache/tipping-point-ml, PYTHONPATH=pipeline:.):
+  n raw = 80,997 -> n after load = 3,000 (dedupe 90 m + cap);
+  lon 10.3174–12.7057, lat 43.7528–44.5384; dates {2023-05-16};
+  GLC leak count = 0.
+- `pytest -q ml/tests/test_local_pipeline.py` -> 55 passed (incl. new test).
 
-**Result: bit-exact match (0.00 mm on all 63 cells, all 3 bands) — but
-only when the tif rows are read one grid row north of their stamped
-transform.** Direct same-label comparison fails (d1 max diff 7.19 mm,
-mean 2.26). Sampling our d1 field at `tif_lat + 0.25` gives max diff
-**0.0** for d1, d2, d3; the same +0.25-row rule reproduces
-`rs_2024_gfs_20240428.tif` d1 exactly too, so it is systematic, not a
-fluke.
+## Uncertain / notes
 
-Comparison table (d1, tif row at stated lat L vs AWS field at L+0.25):
-
-| lon | lat (tif-stated) | aws mm | gee mm | diff |
-|-----|------------------|--------|--------|------|
-| -51.50 | -29.50 | 10.625 | 10.625 | 0.00000 |
-| -52.50 | -30.50 | 17.625 | 17.625 | 0.00000 |
-| -50.50 | -29.00 | 4.375  | 4.375  | 0.00000 |
-| -51.00 | -30.00 | 13.500 | 13.500 | 0.00000 |
-
-Diagnosis: our georeference is provably correct — eccodes reports
-`La1=90, La2=-90, Dj=0.25, jScansPositively=0` on the message itself, so
-our lat values are the true NCEP grid centres. The GEE tif payload rows
-instead hold data one row north of the transform written by
-`write_cog`'s `expected_transform` snap (the pipeline already documents
-GEE stamping WKT-crs downloads "one row too far north"; the recompute
-apparently leaves the payload one row south of its true position).
-Everything else — run choice, day bucketing, cell values, units — is
-identical to the GEE replay, so `fetch_gfs_daily` is verified correct
-and the residual is the tif's geotransform quirk, not a data
-difference. Also verified: PRATE*21600 gives the same field, and
-neighbouring cycles (28/18Z, 29/06Z, 29/12Z) do not match, ruling out a
-run-selection discrepancy.
-
-## Notes for lead-live
-
-- Non-00Z fallback runs can only partially cover D+1 (e.g. a D 18Z run
-  contributes just the (D 18:00, D+1 00:00] bucket) — same caveat the
-  GEE path has; `RuntimeError` if no probed cycle covers to D+3.
-- Each fetch pulls 12 Range requests (~370 KB each) + 12 idx files —
-  ~5 MB total per call, no full ~300 MB files.
+- dating=fixed per instructions (no per-point date exists); D covers only the
+  main episode — slides triggered 1-3 May also get 2023-05-16.
+- Download URL choice: `records/.../files/RER2023_V1.rar?download=1` keeps the
+  `.rar` suffix so extraction triggers.
