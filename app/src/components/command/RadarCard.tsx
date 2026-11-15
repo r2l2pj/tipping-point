@@ -4,6 +4,8 @@ import { PASSES_SHOWN, type RadarCard as RadarModel } from "./model/radar";
 import { fmtBrt, fmtDate } from "./model/format";
 import { CHANGE_OPACITY_MIN, NISAR_CHANGE_LABEL } from "./model/nisarChange";
 import NisarSeriesChart, { NisarFrames } from "./NisarSeriesChart";
+import RiverDanceChart from "./RiverDanceChart";
+import type { RiverDance } from "./model/riverDance";
 import { Icon, ICON } from "./ui";
 import { isMissingText } from "./model/sparse";
 import { layerKey } from "./model/uniqueLayers";
@@ -34,8 +36,11 @@ export default function RadarCard({
   hideMissing = false,
   swipeDates,
   change,
+  dance,
 }: {
   radar: RadarModel;
+  // Jhonatan's river's dance (Uruguaiana): bars jump the map to a pass.
+  dance?: { d: RiverDance; selected?: string; onPass: (date: string, track?: string) => void };
   hideMissing?: boolean; // featured replay: no "pending" scar block (conductor, v6)
   // Lucas: the NISAR dates of the open swipe, as chips (no slider).
   swipeDates?: { dates: string[]; before: string; after: string; onPick: (before: string, after: string) => void };
@@ -124,6 +129,8 @@ export default function RadarCard({
           </div>
         ))}
       </dl>
+
+      {dance && <RiverDanceChart d={dance.d} selected={dance.selected} onPass={dance.onPass} />}
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {radar.pair && (

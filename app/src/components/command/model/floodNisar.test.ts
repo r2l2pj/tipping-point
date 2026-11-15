@@ -55,15 +55,27 @@ test("caption note names the pass", () => {
   expect(floodNisarNote(undefined)).toBe("");
 });
 
-test("agreement sentence: water km² + the hit share N days before", () => {
-  const a = nisarAgreement(uy)!;
-  expect(a.waterKm2).toBe(28.04);
-  expect(a.leads).toEqual([{ k: 1, hit: 12.5 }, { k: 3, hit: 0 }]);
+test("L62 agreement: window_12d (index without NISAR, best day ≤ 12 d before the pass), never forecast.lead_1d", () => {
+  const rich = { ...uy, metricsView: { nisar_agreement: {
+    pass: { date: "2026-10-12", track: "010D" }, water_km2: 28.04,
+    observed: { alto_plus: { hit_pct: 40 } },
+    forecast: { lead_1d: { alto_plus: { hit_pct: 0 } } },
+    window_12d: { best_day: { critico: { day: "2026-09-30", days_before: 12, hit_pct: 61.2, lift: 2.1 }, alto_plus: { day: "2026-10-01", days_before: 11, hit_pct: 80 } } },
+    gfs_window_12d: { best: { critico: { issued: "2026-09-27", valid: "2026-09-30", issued_days_before: 15, critico: { hit_pct: 33 } } } },
+    headline_label: "index without NISAR, up to 12 days before the pass",
+  } } } as unknown as CcBundle;
+  const a = nisarAgreement(rich)!;
+  expect(a.window).toEqual({ hit: 61.2, daysBefore: 12, day: "2026-09-30", cls: "Critical" });
   const t = agreementText(a);
-  expect(t.main).toBe("NISAR saw water in 28.0 km²; the index had flagged 13% of it 1 day before"); // ≥ 10 % rounds
-  expect(t.more).toBe("3 days before: 0%");
+  expect(t.main).toBe("NISAR saw water in 28.0 km²; the index without NISAR had flagged 61% of it 12 days before the pass");
+  expect(t.main).not.toContain("1 day before");
+  expect(t.more).toBe("Pass Oct 12, 2026 · track 010D · Critical on Sep 30, 2026 · pass day: 40% (High or Critical) · NOAA GFS issued Sep 27, 2026 (15 days before): 33% Critical");
+  expect(t.label).toBe("index without NISAR, up to 12 days before the pass");
   // flat keys only
-  const flat = { ...uy, metricsView: { nisar_agreement_water_km2: 5, nisar_agreement_fc2d_hit_pct: 33 } } as unknown as CcBundle;
-  expect(agreementText(nisarAgreement(flat)!).main).toBe("NISAR saw water in 5.0 km²; the index had flagged 33% of it 2 days before");
+  const flat = { ...uy, metricsView: { nisar_agreement_water_km2: 5, nisar_agreement_win_critical_hit_pct: 7.5, nisar_agreement_win_critical_days_before: 3 } } as unknown as CcBundle;
+  expect(agreementText(nisarAgreement(flat)!).main).toBe("NISAR saw water in 5.0 km²; the index without NISAR had flagged 7.5% of it 3 days before the pass");
+  // a list of pass records: the last one with a window is the headline
+  const list = { ...uy, metricsView: { nisar_agreement: [(rich.metricsView as unknown as Record<string, unknown>).nisar_agreement, { water_km2: 1 }] } } as unknown as CcBundle;
+  expect(nisarAgreement(list)!.waterKm2).toBe(28.04);
   expect(nisarAgreement({ ...uy, metricsView: {} } as unknown as CcBundle)).toBeUndefined();
 });

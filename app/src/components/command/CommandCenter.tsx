@@ -57,6 +57,7 @@ import TopBar, { type View } from "./TopBar";
 import { useGeo } from "./useGeo";
 import { useInsets } from "./useInsets";
 import { agreementText, nisarAgreement } from "./model/floodNisar";
+import { requestRadarPass } from "./useRadarPick";
 
 export interface CommandCenterProps {
   cases: CcBundle[];
@@ -536,8 +537,9 @@ export function CommandCenterView({
                     const t = agreementText(a);
                     return (
                       <section aria-label="NISAR agreement" data-nisar-agreement className="rounded-xl border border-cc-line px-3 py-2 text-[13px]">
+                        <p className="m-0 text-xs font-semibold uppercase tracking-wide text-cc-muted">{t.label}</p>
                         <p className="m-0 font-semibold">{t.main}</p>
-                        {t.more && <p className="m-0 text-cc-muted">{t.more}</p>}
+                        {t.more && <p className="m-0 text-cc-muted" data-agreement-details>{t.more}</p>}
                         <p className="m-0 text-xs text-cc-muted">NISAR water = candidate (very dark radar outside permanent water)</p>
                       </section>
                     );
@@ -607,6 +609,21 @@ export function CommandCenterView({
                     };
                   })() : undefined}
                   radar={radar}
+                  dance={bundle.riverDance ? {
+                    d: bundle.riverDance,
+                    selected: step?.date,
+                    // A bar: that day on the timeline, the Radar — NISAR view,
+                    // and that exact pass (date + track) on the map.
+                    onPass: (date: string, track?: string) => {
+                      const idx = steps.findIndex((x) => x.date.slice(0, 10) === date);
+                      const near = idx >= 0 ? idx : steps.reduce((bi, x, i) =>
+                        Math.abs(Date.parse(x.date) - Date.parse(date)) < Math.abs(Date.parse(steps[bi].date) - Date.parse(date)) ? i : bi, 0);
+                      requestRadarPass(date, track, steps[near]?.date.slice(0, 10));
+                      if (state.compareOpen) dispatch({ type: "closeCompare" });
+                      dispatch({ type: "seek", index: near });
+                      dispatch({ type: "setView", view: "radar" });
+                    },
+                  } : undefined}
                   floodOn={state.layers.includes("flood")}
                   compareOpen={nisarOpen}
                   onConfirm={() => dispatch({ type: "confirmRadar" })}

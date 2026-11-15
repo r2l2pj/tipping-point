@@ -69,42 +69,83 @@ export function floodNisarNote(frame: ManifestLayer | undefined): string {
   return ` + NISAR water${p ? ` (pass ${fmtDate(p.date)})` : ""}`;
 }
 
-// --- agreement metric (lead-ml) --------------------------------------------
-export interface NisarAgreement { waterKm2?: number; observedHit?: number; leads: { k: 1 | 2 | 3; hit: number }[] }
+// --- agreement metric (L62) ------------------------------------------------
+// lead-nisar-uru / lead-ml (tools/nisar_pass_agreement.py): the headline pass
+// record cases.<case>.nisar_agreement = {pass{date,track}, water_km2,
+// observed{alto_plus|critico{hit_pct}}, window_12d{best_day{critico|alto_plus
+// {day, days_before, hit_pct, area_pct, lift}}}, gfs_window_12d{best{critico
+// {issued, issued_days_before, critico{hit_pct}}}}, headline_label, passes[]}
+// + flat nisar_agreement_win_critical_hit_pct / _days_before / _best_day.
+// The sentence reads window_12d (the index WITHOUT NISAR, best day up to 12
+// days before the pass) — never forecast.lead_1d (rain leads the river).
+export interface NisarAgreement {
+  waterKm2: number;
+  pass?: { date: string; track?: string };
+  window?: { hit: number; daysBefore: number; day?: string; cls: "Critical" | "High or Critical" };
+  passDayHit?: number; // the index on the pass day (High or Critical)
+  gfs?: { hit: number; issued?: string; daysBefore?: number };
+  label: string;
+}
 
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
 const rec = (v: unknown): Record<string, unknown> | undefined =>
   v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : undefined;
-const hitOf = (v: unknown) => num(rec(rec(v)?.alto_plus)?.hit_pct);
+const WINDOW_LABEL = "Index without NISAR, up to 12 days before the pass";
 
 export function nisarAgreement(bundle: CcBundle): NisarAgreement | undefined {
   const mv = rec(bundle.metricsView as unknown);
   if (!mv) return undefined;
-  const a = rec(mv.nisar_agreement);
-  const fc = rec(a?.forecast);
-  const leads = ([1, 2, 3] as const).flatMap((k) => {
-    const hit = hitOf(fc?.[`lead_${k}d`]) ?? num(mv[`nisar_agreement_fc${k}d_hit_pct`]);
-    return hit === undefined ? [] : [{ k, hit }];
-  });
-  const out: NisarAgreement = {
-    waterKm2: num(a?.water_km2) ?? num(mv.nisar_agreement_water_km2),
-    observedHit: hitOf(a?.observed) ?? num(mv.nisar_agreement_obs_hit_pct),
-    leads,
+  const rawA = mv.nisar_agreement;
+  // A list of pass records: the last one with a window is the headline.
+  const a = Array.isArray(rawA)
+    ? rec([...rawA].reverse().find((x) => rec(rec(x)?.window_12d)))
+    : rec(rawA);
+  const water = num(a?.water_km2) ?? num(mv.nisar_agreement_water_km2);
+  if (water === undefined) return undefined;
+  const best = rec(rec(a?.window_12d)?.best_day);
+  const crit = rec(best?.critico), high = rec(best?.alto_plus);
+  const pickWin = (b: Record<string, unknown> | undefined, cls: "Critical" | "High or Critical") => {
+    const hit = num(b?.hit_pct), k = num(b?.days_before);
+    return hit !== undefined && k !== undefined
+      ? { hit, daysBefore: k, cls, ...(typeof b?.day === "string" ? { day: b.day.slice(0, 10) } : {}) } : undefined;
   };
-  return out.waterKm2 !== undefined && (leads.length || out.observedHit !== undefined) ? out : undefined;
+  const flatHit = num(mv.nisar_agreement_win_critical_hit_pct), flatK = num(mv.nisar_agreement_win_critical_days_before);
+  const window = pickWin(crit, "Critical") ?? pickWin(high, "High or Critical")
+    ?? (flatHit !== undefined && flatK !== undefined
+      ? { hit: flatHit, daysBefore: flatK, cls: "Critical" as const,
+          ...(typeof mv.nisar_agreement_win_critical_best_day === "string" ? { day: mv.nisar_agreement_win_critical_best_day.slice(0, 10) } : {}) }
+      : undefined);
+  const pass = rec(a?.pass);
+  const g = rec(rec(rec(a?.gfs_window_12d)?.best)?.critico);
+  const gHit = num(rec(g?.critico)?.hit_pct);
+  const passDayHit = num(rec(rec(a?.observed)?.alto_plus)?.hit_pct);
+  if (!window && passDayHit === undefined) return undefined;
+  return {
+    waterKm2: water,
+    ...(pass && typeof pass.date === "string" ? { pass: { date: pass.date.slice(0, 10), ...(typeof pass.track === "string" ? { track: pass.track } : {}) } } : {}),
+    ...(window ? { window } : {}),
+    ...(passDayHit !== undefined ? { passDayHit } : {}),
+    ...(gHit !== undefined ? { gfs: { hit: gHit, ...(typeof g?.issued === "string" ? { issued: g.issued.slice(0, 10) } : {}),
+      ...(num(g?.issued_days_before) !== undefined ? { daysBefore: num(g?.issued_days_before) } : {}) } } : {}),
+    label: typeof a?.headline_label === "string" && a.headline_label.trim() ? a.headline_label.trim() : WINDOW_LABEL,
+  };
 }
 
 const pctText = (v: number) => `${v < 10 && v % 1 ? v.toFixed(1) : Math.round(v)}%`;
-const daysText = (k: number) => `${k} ${k === 1 ? "day" : "days"} before`;
+const daysText = (k: number) => `${k} ${k === 1 ? "day" : "days"}`;
 
-// "NISAR saw water in 28 km²; the index had flagged 12% of it 1 day before"
-// (+ the other leads on a second line).
-export function agreementText(a: NisarAgreement): { main: string; more?: string } {
-  const water = `NISAR saw water in ${fmtKm2(a.waterKm2!)}`;
-  const [first, ...rest] = a.leads;
-  if (!first) return { main: `${water}; the index flagged ${pctText(a.observedHit!)} of it on the pass day` };
-  return {
-    main: `${water}; the index had flagged ${pctText(first.hit)} of it ${daysText(first.k)}`,
-    ...(rest.length ? { more: rest.map((x) => `${daysText(x.k)}: ${pctText(x.hit)}`).join(" · ") } : {}),
-  };
+// "NISAR saw water in 28.0 km²; the index without NISAR had flagged 40% of it
+// 5 days before the pass" + a details line (pass, pass day, NOAA GFS).
+export function agreementText(a: NisarAgreement): { main: string; more?: string; label: string } {
+  const water = `NISAR saw water in ${fmtKm2(a.waterKm2)}`;
+  const main = a.window
+    ? `${water}; the index without NISAR had flagged ${pctText(a.window.hit)} of it ${daysText(a.window.daysBefore)} before the pass`
+    : `${water}; the index flagged ${pctText(a.passDayHit!)} of it on the pass day`;
+  const more = [
+    a.pass ? `Pass ${fmtDate(a.pass.date)}${a.pass.track ? ` · track ${a.pass.track}` : ""}` : undefined,
+    a.window ? `${a.window.cls}${a.window.day ? ` on ${fmtDate(a.window.day)}` : ""}` : undefined,
+    a.window && a.passDayHit !== undefined ? `pass day: ${pctText(a.passDayHit)} (High or Critical)` : undefined,
+    a.gfs ? `NOAA GFS${a.gfs.issued ? ` issued ${fmtDate(a.gfs.issued)}` : ""}${a.gfs.daysBefore !== undefined ? ` (${daysText(a.gfs.daysBefore)} before)` : ""}: ${pctText(a.gfs.hit)} Critical` : undefined,
+  ].filter(Boolean).join(" · ");
+  return { main, label: a.label, ...(more ? { more } : {}) };
 }

@@ -27,6 +27,7 @@ import { setRadarLook, useRadarLook, useTintedUrl, useWaterUrl } from "./useWate
 import { WATER_RED_LEGEND } from "./model/waterRamp";
 import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
 import { useFloodNisar } from "./useFloodNisar";
+import { useRadarPassRequest } from "./useRadarPick";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -124,11 +125,19 @@ export default function MapStage({
   // unless the user picked another pass or HV. A new day drops the pass
   // pick (the frame follows the timeline) but keeps the polarization.
   const radarPassList = useMemo(() => radarPasses(bundle), [bundle]);
-  const [rPick, setRPick] = useState<{ date?: string; track?: string; pol: Pol }>({ pol: "HH" });
+  const [rPick, setRPick] = useState<{ date?: string; track?: string; pol: Pol; forDay?: string }>({ pol: "HH" });
   const [rPickDay, setRPickDay] = useState(step?.date);
   if (rPickDay !== step?.date) {
     setRPickDay(step?.date);
-    setRPick((p) => ({ pol: p.pol }));
+    // A pick made for the new day (river's dance bar) survives the seek.
+    setRPick((p) => ((p.date && p.date === step?.date) || (p.forDay && p.forDay === step?.date?.slice(0, 10)) ? p : { pol: p.pol }));
+  }
+  // River's dance: a bar asks for one pass (date + track) — once per request.
+  const passReq = useRadarPassRequest();
+  const [seenReq, setSeenReq] = useState(0);
+  if (passReq && passReq.n !== seenReq) {
+    setSeenReq(passReq.n);
+    setRPick((p) => ({ date: passReq.date, track: passReq.track ?? "", pol: p.pol, ...(passReq.forDay ? { forDay: passReq.forDay } : {}) }));
   }
   const radarOn = !comparePair && activeView(state.layers) === "radar" && radarPassList.length > 0;
   const rFrame = useMemo(
