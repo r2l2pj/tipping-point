@@ -19175,6 +19175,8 @@
         "map_day": "2026-10-12",
         "water_km2": 612.27,
         "water_cells": 570,
+        "water_km2_single_pass": 612.27,
+        "water_km2_single_pass_floodplain": 521.7,
         "observed_km2": 27472.5,
         "outside_floodplain_pct": 14.8,
         "observed": {
@@ -19504,6 +19506,17 @@
             }
           }
         },
+        "map_12d": {
+          "what": "water on the served tpi_flood_nisar map of the pass day: latest pass <= 12 d per pixel (same HH < -18 dB, same grid, full case box); raised = the HAND <= 5 m floodplain part",
+          "passes": [
+            "2026-09-30/010D",
+            "2026-10-05/082D",
+            "2026-10-12/010D"
+          ],
+          "water_km2_case_box": 1105.61,
+          "raised_km2_floodplain": 822.03,
+          "observed_km2": 68703.4
+        },
         "definition": "Per pass: hit_pct = share of that pass's NISAR-water cells (cells of the case TPI grid) the index without NISAR flagged High+ (> 0.4, alto_plus) / Critical (> 0.6, critico); area_pct = share of observed land cells flagged; lift = hit_pct / area_pct; ratio_vs_terrain (M1) = hit vs a same-area terrain-only map. observed = TPI_flood of the pass day; forecast.lead_Ld = NOAA GFS run issued L days before, valid on the pass day.",
         "note": "Scores the flood index WITHOUT NISAR (pass-day TPI and NOAA GFS runs issued 1-3 d before) against one NISAR pass's candidate water (HH < -18 dB, fixed-stretch frame, outside permanent water, observed cells only). Candidate water also lights flooded rice / irrigation: outside_floodplain_pct is the share of it with HAND > 5 m; rice ON the floodplain cannot be told apart. Single-pass threshold; towns/forest stay bright (double bounce) and are missed.",
         "headline_rule": "pass 2026-10-12 (conductor/lead-analysis)",
@@ -19528,6 +19541,8 @@
           "map_day": "2026-10-12",
           "water_km2": 612.27,
           "water_cells": 570,
+          "water_km2_single_pass": 612.27,
+          "water_km2_single_pass_floodplain": 521.7,
           "observed_km2": 27472.5,
           "outside_floodplain_pct": 14.8,
           "observed": {
@@ -19856,6 +19871,17 @@
                 }
               }
             }
+          },
+          "map_12d": {
+            "what": "water on the served tpi_flood_nisar map of the pass day: latest pass <= 12 d per pixel (same HH < -18 dB, same grid, full case box); raised = the HAND <= 5 m floodplain part",
+            "passes": [
+              "2026-09-30/010D",
+              "2026-10-05/082D",
+              "2026-10-12/010D"
+            ],
+            "water_km2_case_box": 1105.61,
+            "raised_km2_floodplain": 822.03,
+            "observed_km2": 68703.4
           }
         },
         "headline_basis": "window_12d.best_day (critico)",
@@ -19882,6 +19908,8 @@
             "map_day": "2026-08-10",
             "water_km2": 636.83,
             "water_cells": 594,
+            "water_km2_single_pass": 636.83,
+            "water_km2_single_pass_floodplain": 305.6,
             "observed_km2": 41684.6,
             "outside_floodplain_pct": 52.0,
             "observed": {
@@ -19926,6 +19954,8 @@
             "map_day": "2026-08-13",
             "water_km2": 293.08,
             "water_cells": 273,
+            "water_km2_single_pass": 293.08,
+            "water_km2_single_pass_floodplain": 232.31,
             "observed_km2": 27497.2,
             "outside_floodplain_pct": 20.7,
             "observed": {
@@ -19970,6 +20000,8 @@
             "map_day": "2026-08-17",
             "water_km2": 697.03,
             "water_cells": 650,
+            "water_km2_single_pass": 697.03,
+            "water_km2_single_pass_floodplain": 378.83,
             "observed_km2": 41333.4,
             "outside_floodplain_pct": 45.7,
             "observed": {
@@ -20014,6 +20046,8 @@
             "map_day": "2026-08-18",
             "water_km2": 722.24,
             "water_cells": 674,
+            "water_km2_single_pass": 722.24,
+            "water_km2_single_pass_floodplain": 415.83,
             "observed_km2": 55274.3,
             "outside_floodplain_pct": 42.4,
             "observed": {
@@ -20058,6 +20092,8 @@
             "map_day": "2026-08-22",
             "water_km2": 791.73,
             "water_cells": 738,
+            "water_km2_single_pass": 791.73,
+            "water_km2_single_pass_floodplain": 415.39,
             "observed_km2": 41705.3,
             "outside_floodplain_pct": 47.5,
             "observed": {
@@ -20102,6 +20138,8 @@
             "map_day": "2026-08-25",
             "water_km2": 434.75,
             "water_cells": 405,
+            "water_km2_single_pass": 434.75,
+            "water_km2_single_pass_floodplain": 355.88,
             "observed_km2": 27484.3,
             "outside_floodplain_pct": 18.1,
             "observed": {
@@ -20146,6 +20184,8 @@
             "map_day": "2026-09-18",
             "water_km2": 708.0,
             "water_cells": 663,
+            "water_km2_single_pass": 708.0,
+            "water_km2_single_pass_floodplain": 293.63,
             "observed_km2": 27458.6,
             "outside_floodplain_pct": 58.5,
             "observed": {
@@ -20190,6 +20230,8 @@
             "map_day": "2026-09-22",
             "water_km2": 1084.76,
             "water_cells": 1015,
+            "water_km2_single_pass": 1084.76,
+            "water_km2_single_pass_floodplain": 383.41,
             "observed_km2": 41310.0,
             "outside_floodplain_pct": 64.7,
             "observed": {
@@ -20234,6 +20276,8 @@
             "map_day": "2026-09-23",
             "water_km2": 1330.63,
             "water_cells": 1245,
+            "water_km2_single_pass": 1330.63,
+            "water_km2_single_pass_floodplain": 437.84,
             "observed_km2": 55268.9,
             "outside_floodplain_pct": 67.1,
             "observed": {
@@ -20278,6 +20322,8 @@
             "map_day": "2026-09-30",
             "water_km2": 389.19,
             "water_cells": 363,
+            "water_km2_single_pass": 389.19,
+            "water_km2_single_pass_floodplain": 286.95,
             "observed_km2": 27480.0,
             "outside_floodplain_pct": 26.3,
             "observed": {
@@ -20476,6 +20522,8 @@
             "map_day": "2026-10-05",
             "water_km2": 891.26,
             "water_cells": 830,
+            "water_km2_single_pass": 891.26,
+            "water_km2_single_pass_floodplain": 597.04,
             "observed_km2": 55272.1,
             "outside_floodplain_pct": 33.0,
             "observed": {
@@ -20752,6 +20800,8 @@
             "map_day": "2026-10-12",
             "water_km2": 612.27,
             "water_cells": 570,
+            "water_km2_single_pass": 612.27,
+            "water_km2_single_pass_floodplain": 521.7,
             "observed_km2": 27472.5,
             "outside_floodplain_pct": 14.8,
             "observed": {
@@ -21080,6 +21130,17 @@
                   }
                 }
               }
+            },
+            "map_12d": {
+              "what": "water on the served tpi_flood_nisar map of the pass day: latest pass <= 12 d per pixel (same HH < -18 dB, same grid, full case box); raised = the HAND <= 5 m floodplain part",
+              "passes": [
+                "2026-09-30/010D",
+                "2026-10-05/082D",
+                "2026-10-12/010D"
+              ],
+              "water_km2_case_box": 1105.61,
+              "raised_km2_floodplain": 822.03,
+              "observed_km2": 68703.4
             }
           },
           {
@@ -21103,6 +21164,8 @@
             "map_day": "2026-10-17",
             "water_km2": 1506.16,
             "water_cells": 1404,
+            "water_km2_single_pass": 1506.16,
+            "water_km2_single_pass_floodplain": 828.58,
             "observed_km2": 55267.8,
             "outside_floodplain_pct": 45.0,
             "observed": {
@@ -21454,6 +21517,8 @@
             "map_day": "2026-10-24",
             "water_km2": 972.43,
             "water_cells": 904,
+            "water_km2_single_pass": 972.43,
+            "water_km2_single_pass_floodplain": 837.03,
             "observed_km2": 27463.9,
             "outside_floodplain_pct": 13.9,
             "observed": {
@@ -21769,6 +21834,8 @@
             "map_day": "2026-10-29",
             "water_km2": 1799.96,
             "water_cells": 1677,
+            "water_km2_single_pass": 1799.96,
+            "water_km2_single_pass_floodplain": 957.61,
             "observed_km2": 55261.4,
             "outside_floodplain_pct": 46.8,
             "observed": {
@@ -22120,6 +22187,8 @@
             "map_day": "2026-11-05",
             "water_km2": 1211.83,
             "water_cells": 1129,
+            "water_km2_single_pass": 1211.83,
+            "water_km2_single_pass_floodplain": 827.55,
             "observed_km2": 27471.4,
             "outside_floodplain_pct": 31.7,
             "observed": {
@@ -22382,7 +22451,12 @@
       "nisar_agreement_gfswin_critical_valid": "2026-10-08",
       "nisar_agreement_gfswin_critical_days_before": 7,
       "nisar_agreement_gfswin_critical_hit_pct": 49.65,
-      "nisar_agreement_gfswin_critical_lift": 1.18
+      "nisar_agreement_gfswin_critical_lift": 1.18,
+      "nisar_agreement_water_km2_single_pass": 612.27,
+      "nisar_agreement_water_km2_single_pass_floodplain": 521.7,
+      "nisar_agreement_observed_km2_single_pass": 27472.5,
+      "nisar_water_km2_case_box": 1105.61,
+      "nisar_raised_km2_floodplain": 822.03
     }
   },
   "definitions": {

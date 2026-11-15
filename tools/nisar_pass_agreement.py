@@ -98,6 +98,8 @@ def pass_record(frame: dict, root: Path, grid: dict, obs: dict, gfs: dict, fp) -
            "pass_dates": [frame["date"]], "pass_tracks": [frame.get("track")],   # t1br row layout
            "reference": REFERENCE, "map_day": frame["date"],
            "water_km2": round(wkm2, 2), "water_cells": int(w.sum()),
+           "water_km2_single_pass": round(wkm2, 2),
+           "water_km2_single_pass_floodplain": (round(float(km2[w & fp].sum()), 2) if fp is not None else None),
            "observed_km2": round(float(km2[dom].sum()), 1),
            "outside_floodplain_pct": (round(100 * float(km2[w & ~fp].sum()) / wkm2, 1)
                                       if fp is not None and wkm2 else None)}
@@ -181,6 +183,11 @@ def flat_keys(rec: dict) -> dict:
     out = {"nisar_agreement_pass_date": rec["pass"]["date"],
            "nisar_agreement_pass_track": rec["pass"]["track"],
            "nisar_agreement_water_km2": rec["water_km2"],
+           "nisar_agreement_water_km2_single_pass": rec.get("water_km2_single_pass"),
+           "nisar_agreement_water_km2_single_pass_floodplain": rec.get("water_km2_single_pass_floodplain"),
+           "nisar_agreement_observed_km2_single_pass": rec.get("observed_km2"),
+           "nisar_water_km2_case_box": (rec.get("map_12d") or {}).get("water_km2_case_box"),
+           "nisar_raised_km2_floodplain": (rec.get("map_12d") or {}).get("raised_km2_floodplain"),
            "nisar_agreement_outside_floodplain_pct": rec["outside_floodplain_pct"]}
     srcs = [("obs", rec.get("observed"))] + [(f"fc{L}d", (rec.get("forecast") or {}).get(f"lead_{L}d"))
                                               for L in LEADS]
@@ -310,6 +317,18 @@ def run(case: str, root: Path, metrics: Path | None, headline: str | None = None
     scored = [r for r in recs if isinstance(r.get("observed"), dict) and "alto_plus" in r["observed"]]
     head = next((r for r in scored if r["pass"]["date"] == want), None) or \
         (max(scored, key=lambda r: r["water_km2"]) if scored else None)
+    if head:   # the served map of the pass day = 12-d composite (latest pass per pixel), same threshold/grid
+        day = dt.date.fromisoformat(head["pass"]["date"])
+        wc, oc, used = nw.water_mask(frames, day, root, grid["shape"], grid["transform"],
+                                     perm_water=grid["perm_water"])
+        k2 = grid["km2"]
+        head["map_12d"] = {
+            "what": "water on the served tpi_flood_nisar map of the pass day: latest pass <= 12 d per pixel "
+                    "(same HH < -18 dB, same grid, full case box); raised = the HAND <= 5 m floodplain part",
+            "passes": [f"{u['date']}/{u.get('track')}" for u in used],
+            "water_km2_case_box": round(float(k2[wc].sum()), 2),
+            "raised_km2_floodplain": round(float(k2[wc & fp].sum()), 2) if fp is not None else None,
+            "observed_km2": round(float(k2[oc].sum()), 1)}
     block = {**(head or {}), "reference": REFERENCE, "definition": DEFINITION, "note": NOTE,
              "headline_rule": f"pass {want} (conductor/lead-analysis)",
              "headline": head, "headline_basis": "window_12d.best_day (critico)",
