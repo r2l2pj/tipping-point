@@ -546,6 +546,16 @@ export function useMapLayers(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map]);
 
+  // Lucas (dev console: 'The final argument passed to useEffect changed size
+  // between renders'): every map option the effect reads is folded into ONE
+  // string, so the dependency list below has a fixed length forever — adding
+  // an option never changes its size again.
+  const optionsKey = [
+    options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity,
+    options?.changeImage?.key, // the pair + cyan flag the image was built for
+    options?.changeOpacity, options?.radarFrame?.url, options?.nisarWater?.url, options?.tpiOpacity,
+  ].map((v) => (v === undefined || v === null ? "" : String(v))).join("|");
+
   // Mutate data + visibility when state changes. The whole effect is guarded
   // — a missing/failed layer must never throw through React into the error
   // boundary ("Dashboard data failed to load").
@@ -940,7 +950,7 @@ export function useMapLayers(
       console.warn("MapLayers update failed (map kept alive)", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity, options?.radarFrame?.url, options?.nisarWater?.url, options?.tpiOpacity]);
+  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, optionsKey]);
 
   // Priority-zone pins — top 20 by rank (matches the side list), anchored
   // at the polygon label point (real files are Polygons, not Points).
