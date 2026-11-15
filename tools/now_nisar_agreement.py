@@ -116,6 +116,11 @@ def run(now: Path) -> dict:
             if isinstance(sub, dict) and isinstance(sub.get(c), dict):
                 sub[c].pop("ratio_vs_terrain", None)
     meta = w.get("_meta") or {}
+    sp = now / "summary.json"
+    if not meta and sp.exists():   # in-job water.npz path: pass track + floodplain share from summary
+        meta = json.loads(sp.read_text()).get("nisar_water") or {}
+    if res.get("outside_floodplain_pct") is None and meta.get("outside_floodplain_pct") is not None:
+        res["outside_floodplain_pct"] = meta["outside_floodplain_pct"]
     age = meta.get("age_days")
     if age is None and w["pass_dates"]:
         try:
