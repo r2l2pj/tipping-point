@@ -25,6 +25,8 @@ import { activeView } from "./model/views";
 import { passLabel, passValue, radarFrame, radarPasses, type Pol } from "./model/radarFrame";
 import { setRadarLook, useRadarLook, useWaterUrl } from "./useWaterRed";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
+import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
+import { useFloodNisar } from "./useFloodNisar";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -133,6 +135,19 @@ export default function MapStage({
   // Lucas: 'Water in red' (default) recolours the frame — darker = redder.
   const radarLook = useRadarLook();
   const radarUrl = useWaterUrl(rFrame?.url, rFrame?.stretch, radarLook === "water");
+  // L61: Flood + TPI on an observed day → the flood + NISAR frame when
+  // lead-analysis published one for the day, with the NISAR water on top.
+  const floodNisarOn = useFloodNisar();
+  const fnFrame = useMemo(
+    () => (floodNisarOn && state.hazard === "flood" && state.layers.includes("tpi") && !issued && !hourFrame
+      ? floodNisarFrame(bundle, step?.date) : undefined),
+    [floodNisarOn, state.hazard, state.layers, issued, hourFrame, bundle, step?.date]
+  );
+  const fnWater = useMemo(() => {
+    const l = fnFrame ? nisarWaterLayer(bundle, step?.date, fnFrame) : undefined;
+    const url = l ? assetUrl(caseDirOf(bundle), l.png) : undefined;
+    return l && url ? { url, bounds: l.bounds } : undefined;
+  }, [fnFrame, bundle, step?.date]);
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
   const gfsAny = useMemo(() => hasGfsFrames(bundle), [bundle]);
   // NISAR change layer (Lucas, t5w): the Δ-dB composite of the picked pair —
@@ -148,7 +163,7 @@ export default function MapStage({
       frameDate: step?.date,
       overlays: overlaysFor(state.layers),
       probHorizon: state.probHorizon,
-      frameLayer: issued ?? hourFrame,
+      frameLayer: issued ?? hourFrame ?? fnFrame,
       // L52: the satellite underlay is dated by the case (its reference day);
       // live gets the latest imagery GIBS published.
       basemap: state.basemap,
@@ -160,8 +175,9 @@ export default function MapStage({
       changeImage,
       changeOpacity: state.changeOpacity,
       radarFrame: rFrame && radarUrl ? { url: radarUrl, bounds: rFrame.bounds } : undefined,
+      nisarWater: fnWater,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl, fnFrame, fnWater]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
@@ -306,7 +322,9 @@ export default function MapStage({
     ? { text: hourForecastCaption(step.date, hour, hourFc.issued, HAZARD_LABEL[state.hazard]), forecast: true }
     : mapCaption(bundle, steps, state.dayIndex, state.hazard, state.layers, effLead);
   // L52 merged view: name the NISAR pass while the outlines are on screen.
-  const captionNote = floodCaptionNote(bundle, step?.date, state.layers);
+  const passNote = floodCaptionNote(bundle, step?.date, state.layers);
+  const fnNote = floodNisarNote(fnFrame);
+  const captionNote = passNote + fnNote;
   // Prod regression: the ML forecast horizon must be on the map, not only in
   // the Layers panel (closed on phones).
   const probHorizons = useMemo(() => probHorizonsAvailable(bundle.manifest?.layers), [bundle]);
@@ -499,7 +517,7 @@ export default function MapStage({
             <button type="button" data-caption title={full} aria-expanded={capOpen} onClick={() => setCapOpen((o) => !o)}
               className={`${chip} max-w-full truncate !py-0.5 text-left ${caption.forecast ? "border-2 border-dashed border-cc-forecast-ink" : ""}`}>
               <span className="sr-only">{full} </span>
-              <span aria-hidden="true">{shortCaption(caption.text, caption.forecast)}{hourFrame && !issued ? ` · ${hourLabel(hourFrame).split(", ").pop()}` : ""}{captionNote.startsWith(" · next NISAR pass") ? captionNote : ""} ⓘ</span>
+              <span aria-hidden="true">{shortCaption(caption.text, caption.forecast)}{hourFrame && !issued ? ` · ${hourLabel(hourFrame).split(", ").pop()}` : ""}{passNote.startsWith(" · next NISAR pass") ? passNote : ""}{fnNote} ⓘ</span>
             </button>
           </div>
         );

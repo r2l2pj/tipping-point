@@ -51,6 +51,7 @@ function observedFrame(
       !!l.png &&
       l.date?.slice(0, 10) === day &&
       l.id.startsWith(`tpi_${hazard}`) &&
+      !l.id.startsWith("tpi_flood_nisar") &&
       !isGfsFrame(l)
   );
   return (

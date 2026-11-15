@@ -36,6 +36,7 @@ const tpiFrames = (bundle: CcBundle): ManifestLayer[] =>
   (bundle.manifest?.layers ?? []).filter(
     (l) =>
       l.id.startsWith("tpi_") &&
+      !l.id.startsWith("tpi_flood_nisar") && // L61: same days as tpi_flood
       l.png &&
       typeof l.date === "string" &&
       !(l as unknown as { datetime?: unknown }).datetime && // 6-hourly: hour chips only

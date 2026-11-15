@@ -56,6 +56,7 @@ import TimelineBar from "./TimelineBar";
 import TopBar, { type View } from "./TopBar";
 import { useGeo } from "./useGeo";
 import { useInsets } from "./useInsets";
+import { agreementText, nisarAgreement } from "./model/floodNisar";
 
 export interface CommandCenterProps {
   cases: CcBundle[];
@@ -527,6 +528,20 @@ export function CommandCenterView({
                       <button type="button" onClick={() => onCity(headlineData.top, places)} className="mt-1.5 rounded-lg bg-cc-accent px-3 py-1.5 text-sm font-semibold text-white">Show me</button>
                     </section>
                   )}
+                  {(() => {
+                    // L61: lead-ml's NISAR agreement — how much of the water
+                    // NISAR saw the index had flagged days before.
+                    const a = nisarAgreement(bundle);
+                    if (!a) return null;
+                    const t = agreementText(a);
+                    return (
+                      <section aria-label="NISAR agreement" data-nisar-agreement className="rounded-xl border border-cc-line px-3 py-2 text-[13px]">
+                        <p className="m-0 font-semibold">{t.main}</p>
+                        {t.more && <p className="m-0 text-cc-muted">{t.more}</p>}
+                        <p className="m-0 text-xs text-cc-muted">NISAR water = candidate (very dark radar outside permanent water)</p>
+                      </section>
+                    );
+                  })()}
               <StartHere cases={cases} dispatch={dispatch} />
                 {showAffected && <div>
                   <h3 className="m-0 mb-1 text-[13px] font-semibold text-cc-muted">Who is affected</h3>
