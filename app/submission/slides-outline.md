@@ -18,7 +18,8 @@
 - *Visual:* the Uruguaiana NISAR before/after swipe (Sep 30 → Oct 12) — `.crew/gallery/v6b/1-uy-nisar.png`
 
 ## Slide 3 — NISAR: what it sees through cloud (opens the technical part)
-- *Visual:* "The river's dance" NISAR strip, Uruguaiana (lead-ml): `[TBD river_dance]`
+- *Visual:* "The river's dance" NISAR strip, Uruguaiana (lead-ml, red = new water): `[TBD river_dance]`
+- **The river's dance:** Across 9 NISAR passes (Sep 18 → Nov 5, 2026), the area of new water the radar saw (red) tracks the Uruguay River gauge at Uruguaiana: r = 0.92 (fixed −15 dB, two tracks mixed, provisional products, 9 passes)
 - Calm floodwater turns dark to radar; radar sees through cloud (C-band, our OPERA reference, does too); NISAR's L-band also reaches water under vegetation and passes every 12 days
 - **NISAR feeds the index:** every NISAR pass updates the flood map through cloud (water it sees turns Critical, as a candidate) and scores the forecast
 - The index (NASA rain, soil, terrain + NOAA GFS) tells where and when to look between passes

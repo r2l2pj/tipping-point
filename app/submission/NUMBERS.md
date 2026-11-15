@@ -94,6 +94,7 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | 202 of 212 km² field darkening, Oct 5 (082D) | `cases.rs_uruguai_2026.nisar_082d` |
 | 1.76 / 15.7 km² ungated darkening, Oct 24→Nov 5 | `cases.rs_uruguai_2026.radar_darkening_corridor_km2` 1.762, `radar_darkening_fields_km2` 15.732, `radar_darkening_pair` (NOT the png note's 5.62/11.88, older definition) |
 | 45% vs 5%, 8.6× (8.562) | `data/wa_2025/nisar_hypothesis.json` result_paragraph |
+| River's dance: 9 passes Sep 18→Nov 5, r = 0.92 vs Uruguaiana gauge (−15 dB, 010D+082D) | `[TBD dance_key]` (lead-ml) |
 | SME2 0.23→0.25→0.23 vs SMAP 0.24→0.32→0.41; 68–75% recommended | notes of `nisar_sme2_<date>_010D` in `data/rs_uruguai_2026/png/_index.json` |
 
 ## Other numbers (sources outside metrics.json)

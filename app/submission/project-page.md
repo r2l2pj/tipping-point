@@ -25,7 +25,8 @@ Tipping Point is one operations screen for anyone responding to floods and lands
 - **Replay:** two past disasters, day by day, with no look-ahead. Each day uses only the data and the forecast available that day.
 
 ### What NISAR shows, and why
-*Figure (upload as an image here; opens the technical part): `[TBD river_dance]` — "The river's dance": [TBD river_dance_caption].*
+*Figure (upload as an image here; opens the technical part): `[TBD river_dance]` — "The river's dance": Across 9 NISAR passes (Sep 18 → Nov 5, 2026), the area of new water the radar saw (red) tracks the Uruguay River gauge at Uruguaiana: r = 0.92.*
+- **The river's dance.** Across 9 NISAR passes (Sep 18 → Nov 5, 2026), the area of new water the radar saw (red) tracks the Uruguay River gauge at Uruguaiana: r = 0.92. Caveats: water = HH below −15 dB (the per-scene threshold fell back to −15 dB on every pass), two tracks (010D and 082D) mixed, provisional products, 9 passes; it times the river, it is not a street-level flood map ([TBD dance_rice]).
 *Figure (upload as an image here): `.crew/deck/explainer/what-nisar-sees.png` — calm water reads dark, a flooded town or forest stays bright (double bounce), HH and HV.*
 - Calm floodwater acts like a mirror to radar. It reflects the L-band pulse away from the satellite, so new flooding appears as new dark patches between the before and after passes.
 - Radar passes through cloud, which is why it works when optical cannot; L-band (24 cm) also passes through leaves and is barely affected by rain. Wind-roughened water can look bright (less so at L-band), and wet snow can look dark like water; keeping only low ground near rivers limits that.
