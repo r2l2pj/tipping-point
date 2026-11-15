@@ -55,7 +55,7 @@ for p in (str(REPO_ROOT), str(REPO_ROOT / "pipeline")):
 
 from tp import flood_mask as fm
 from tp import response_nisar as rn
-from tp.bundle import _gray_png_3857
+from tp.bundle import NISAR_DB_STRETCH, _gray_png_3857, nisar_stretch_meta
 from tp.events import DATA_DIR
 
 CASE = "rs_uruguai_2026"
@@ -742,7 +742,8 @@ def main(argv=None) -> int:
                 cog = cog_dir / f"{CASE}_nisar_{tag}_{d.replace('-', '')}_60m.tif"
                 _write_tif(db[term][d], cog, grid)
                 png_bytes, b = _gray_png_3857(db[term][d], grid.transform,
-                                              f"EPSG:{grid.epsg}", float("nan"))
+                                              f"EPSG:{grid.epsg}", float("nan"),
+                                              stretch=NISAR_DB_STRETCH)
                 p = png_dir / f"nisar_{tag}_{d.replace('-', '')}.png"
                 p.parent.mkdir(parents=True, exist_ok=True)
                 p.write_bytes(png_bytes)
@@ -753,7 +754,8 @@ def main(argv=None) -> int:
                                 "cog": f"{CASE}/cog/{cog.name}",
                                 "bounds": b, "kind": "nisar_frame",
                                 "sensor": _sensor(d),
-                                "source": "NISAR GCOV (ASF)"})
+                                "source": "NISAR GCOV (ASF)",
+                                **nisar_stretch_meta()})
                 print(f"{tag} {d}: {len(png_bytes)} B")
         ymd_pre, ymd_post = (PRE_DATE.replace("-", ""), POST_DATE.replace("-", ""))
         entries += [
@@ -761,22 +763,22 @@ def main(argv=None) -> int:
              "png": f"{CASE}/png/nisar_hh_{ymd_pre}.png",
              "cog": f"{CASE}/cog/{CASE}_nisar_hh_{ymd_pre}_60m.tif",
              "bounds": bounds, "kind": "observed",
-             "sensor": _sensor(PRE_DATE), "source": "NISAR GCOV (ASF)"},
+             "sensor": _sensor(PRE_DATE), "source": "NISAR GCOV (ASF)", **nisar_stretch_meta()},
             {"id": "nisar_post", "date": POST_DATE, "polarization": "HH",
              "png": f"{CASE}/png/nisar_hh_{ymd_post}.png",
              "cog": f"{CASE}/cog/{CASE}_nisar_hh_{ymd_post}_60m.tif",
              "bounds": bounds, "kind": "observed",
-             "sensor": _sensor(POST_DATE), "source": "NISAR GCOV (ASF)"},
+             "sensor": _sensor(POST_DATE), "source": "NISAR GCOV (ASF)", **nisar_stretch_meta()},
             {"id": "nisar_hv_pre", "date": PRE_DATE, "polarization": "HV",
              "png": f"{CASE}/png/nisar_hv_{ymd_pre}.png",
              "cog": f"{CASE}/cog/{CASE}_nisar_hv_{ymd_pre}_60m.tif",
              "bounds": bounds, "kind": "observed",
-             "sensor": _sensor(PRE_DATE), "source": "NISAR GCOV (ASF)"},
+             "sensor": _sensor(PRE_DATE), "source": "NISAR GCOV (ASF)", **nisar_stretch_meta()},
             {"id": "nisar_hv_post", "date": POST_DATE, "polarization": "HV",
              "png": f"{CASE}/png/nisar_hv_{ymd_post}.png",
              "cog": f"{CASE}/cog/{CASE}_nisar_hv_{ymd_post}_60m.tif",
              "bounds": bounds, "kind": "observed",
-             "sensor": _sensor(POST_DATE), "source": "NISAR GCOV (ASF)"},
+             "sensor": _sensor(POST_DATE), "source": "NISAR GCOV (ASF)", **nisar_stretch_meta()},
         ]
         # change map (published): post-pre dB, both pols, swipe pair
         for term, tag in (("HHHH", "hh"), ("HVHV", "hv")):

@@ -46,7 +46,7 @@ for p in (str(REPO_ROOT), str(REPO_ROOT / "pipeline")):
 
 from tp import flood_mask as fm
 from tp import response_nisar as rn
-from tp.bundle import _gray_png_3857
+from tp.bundle import NISAR_DB_STRETCH, _gray_png_3857
 from tp.events import DATA_DIR
 
 COLLECTION = "NISAR_L2_GCOV_V1"
@@ -417,7 +417,7 @@ def main(argv=None) -> int:
                 png_bytes, b = _gray_png_3857(
                     db_hh[d] if tag == "hh" else db_hv[d],
                     grids[d].transform, f"EPSG:{grids[d].epsg}",
-                    float("nan"))
+                    float("nan"), stretch=NISAR_DB_STRETCH)
                 p = png_dir / f"nisar_{tag}_{d.replace('-', '')}.png"
                 p.write_bytes(png_bytes)
                 png_paths.append(p)

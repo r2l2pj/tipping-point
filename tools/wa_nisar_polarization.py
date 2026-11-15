@@ -206,9 +206,9 @@ def _png_bytes(bands: np.ndarray) -> bytes:
         return mf.read()
 
 
-def gray_png_3857_db(arr: np.ndarray, transform, crs, nodata=None) -> tuple:
-    """Gray RGBA PNG in 3857, linear 2-98 % stretch (same convention as
-    tp.bundle._gray_png_3857) — also returns the (lo, hi) dB endpoints."""
+def gray_png_3857_db(arr: np.ndarray, transform, crs, nodata=None, stretch=None) -> tuple:
+    """Gray RGBA PNG in 3857, linear stretch over `stretch` (lo, hi) dB — NISAR layers pass
+    tp.bundle.NISAR_DB_STRETCH — else 2-98 %; also returns the (lo, hi) dB endpoints."""
     arr = np.asarray(arr, dtype=np.float64)
     valid = np.isfinite(arr)
     if nodata is not None:
@@ -218,10 +218,14 @@ def gray_png_3857_db(arr: np.ndarray, transform, crs, nodata=None) -> tuple:
     v, _, _ = warp_to_3857(valid.astype(np.uint8), transform, src_crs=crs)
     v = v.astype(bool)
     vals = g[v]
-    lo, hi = (np.percentile(vals, (2, 98)) if vals.size else (0.0, 1.0))
-    if not hi > lo:
-        hi = lo + 1.0
-    u8 = np.clip((g - lo) / (hi - lo) * 255.0, 0, 255).astype(np.uint8)
+    if stretch is not None:   # same mapping as tp.bundle._gray_png_3857: valid -> 1..255
+        lo, hi = (float(x) for x in stretch)
+        u8 = np.where(v, np.clip(1 + (g - lo) / (hi - lo) * 254, 1, 255), 0).astype(np.uint8)
+    else:
+        lo, hi = (np.percentile(vals, (2, 98)) if vals.size else (0.0, 1.0))
+        if not hi > lo:
+            hi = lo + 1.0
+        u8 = np.clip((g - lo) / (hi - lo) * 255.0, 0, 255).astype(np.uint8)
     bands = np.stack([u8, u8, u8, np.where(v, 255, 0).astype(np.uint8)])
     with rasterio.MemoryFile() as mf:
         with mf.open(driver="PNG", height=u8.shape[0], width=u8.shape[1],
@@ -297,14 +301,14 @@ def cmd_layers() -> dict:
         print(f"{pp.name} bounds={bounds}")
     for which, cog, day in (("pre", HV_PRE, PRE_DATE), ("post", HV_POST, POST_DATE)):
         arr, ref = _read_db(cog)
+        from tp.bundle import NISAR_DB_STRETCH, nisar_stretch_meta
         png, bounds, (lo, hi) = gray_png_3857_db(arr, ref.transform, ref.crs,
-                                               ref.nodata)
+                                               ref.nodata, stretch=NISAR_DB_STRETCH)
         pp = PNG_DIR / f"nisar_hv_{which}_{day.replace('-', '')}.png"
         pp.write_bytes(png)
         entries.append(index_entry(
             f"nisar_hv_{which}", day, _rel(pp), _rel(cog), bounds,
-            {"legend": list(GRAY_LEGEND), "db_range": [round(lo, 2),
-                                                      round(hi, 2)]}))
+            {"db_range": [round(lo, 2), round(hi, 2)], **nisar_stretch_meta()}))
         print(f"{pp.name} bounds={bounds} db_range=({lo:.2f},{hi:.2f})")
     _upsert_entries(entries)
     return {"entries": entries}

@@ -44,7 +44,7 @@ for p in (str(REPO_ROOT), str(REPO_ROOT / "pipeline")):
 
 from tp import flood_mask as fm
 from tp import response_nisar as rn
-from tp.bundle import _gray_png_3857
+from tp.bundle import NISAR_DB_STRETCH, _gray_png_3857
 from tp.events import DATA_DIR
 
 CASE = "wa_2025"
@@ -367,7 +367,8 @@ def main(argv=None) -> int:
     bounds = None
     if not args.stats_only:
         png_bytes, bounds = _gray_png_3857(ref_db, GRID.transform,
-                                           f"EPSG:{GRID.epsg}", float("nan"))
+                                           f"EPSG:{GRID.epsg}", float("nan"),
+                                           stretch=NISAR_DB_STRETCH)
         png_path = png_dir / f"nisar_ref_{DATES['ref'].replace('-', '')}.png"
         png_path.parent.mkdir(parents=True, exist_ok=True)
         png_path.write_bytes(png_bytes)

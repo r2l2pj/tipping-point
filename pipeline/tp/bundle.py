@@ -228,19 +228,41 @@ def _confusion_png_3857(arr: np.ndarray, transform, crs, nodata) -> tuple[bytes,
     return palette_png_bytes(cls3857, val3857.astype(bool), OPERA_CONFUSION_PALETTE), bounds
 
 
-def _gray_png_3857(arr: np.ndarray, transform, crs, nodata) -> tuple[bytes, list]:
-    """Continuous raster (hillshade, dB, radiance) -> gray RGBA PNG in 3857,
-    linear 2–98 percentile stretch, nodata transparent."""
+# NISAR backscatter: ONE fixed linear dB stretch for every frame, both polarizations, every
+# case and the Now stacks (live/nisar_stack.py), so the app can composite two passes
+# (R = before, G = B = after) client-side: gray = 1 + (dB + 25) / 25 * 254, alpha 0 = nodata.
+NISAR_DB_STRETCH = (-25.0, 0.0)
+NISAR_LEGEND = {"unit": "dB", "db_min": NISAR_DB_STRETCH[0], "db_max": NISAR_DB_STRETCH[1], "stops": [
+    {"v": -25, "color": "#000000", "label": "−25 dB · dark (smooth open water)"},
+    {"v": -12.5, "color": "#808080", "label": "−12.5 dB"},
+    {"v": 0, "color": "#ffffff", "label": "0 dB · bright (urban, flooded trees)"}]}
+
+
+def nisar_stretch_meta() -> dict:
+    """Index fields for a NISAR gray frame rendered with NISAR_DB_STRETCH."""
+    return {"legend": NISAR_LEGEND,
+            "stretch_db": {"db_min": NISAR_DB_STRETCH[0], "db_max": NISAR_DB_STRETCH[1]}}
+
+
+def _gray_png_3857(arr: np.ndarray, transform, crs, nodata,
+                   stretch: tuple[float, float] | None = None) -> tuple[bytes, list]:
+    """Continuous raster (hillshade, dB, radiance) -> gray RGBA PNG in 3857, nodata
+    transparent. Linear stretch over `stretch` (lo, hi) when given — NISAR dB layers pass
+    NISAR_DB_STRETCH (-25..0 dB, gray 1..255) — else the image's own 2–98 percentile range."""
     arr = np.asarray(arr, dtype=np.float64)
     valid = _valid(arr, nodata)
     g, _, bounds = warp_to_3857(np.where(valid, arr, 0.0), transform, src_crs=crs)
     v, _, _ = warp_to_3857(valid.astype(np.uint8), transform, src_crs=crs)
     v = v.astype(bool)
     vals = g[v]
-    lo, hi = (np.percentile(vals, (2, 98)) if vals.size else (0.0, 1.0))
-    if not hi > lo:
-        hi = lo + 1.0
-    u8 = np.clip((g - lo) / (hi - lo) * 255.0, 0, 255).astype(np.uint8)
+    if stretch is not None:   # fixed: valid pixels map to 1..255 (0 never means data)
+        lo, hi = (float(x) for x in stretch)
+        u8 = np.where(v, np.clip(1 + (g - lo) / (hi - lo) * 254, 1, 255), 0).astype(np.uint8)
+    else:
+        lo, hi = (np.percentile(vals, (2, 98)) if vals.size else (0.0, 1.0))
+        if not hi > lo:
+            hi = lo + 1.0
+        u8 = np.clip((g - lo) / (hi - lo) * 255.0, 0, 255).astype(np.uint8)
     bands = np.stack([u8, u8, u8, np.where(v, 255, 0).astype(np.uint8)])
     with rasterio.MemoryFile() as mf:
         with mf.open(driver="PNG", height=u8.shape[0], width=u8.shape[1],
@@ -572,6 +594,9 @@ def publish_case(event_id: str, dry_run: bool = False,
             png, bounds = _class_png_3857(arr, valid, transform, crs)
         elif kind == "confusion":
             png, bounds = _confusion_png_3857(arr, transform, crs, nodata)
+        elif layer.startswith("nisar_"):   # nisar_pre/post/ref: HH backscatter in dB
+            png, bounds = _gray_png_3857(arr, transform, crs, nodata, stretch=NISAR_DB_STRETCH)
+            extra = {**(extra or {}), **nisar_stretch_meta()}
         else:
             png, bounds = _gray_png_3857(arr, transform, crs, nodata)
         png_path.parent.mkdir(parents=True, exist_ok=True)
