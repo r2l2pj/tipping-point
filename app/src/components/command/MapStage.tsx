@@ -352,7 +352,7 @@ export default function MapStage({
   return (
     <div
       ref={stageRef}
-      className="relative overflow-hidden bg-cc-map max-[899px]:h-[60vh] max-[899px]:min-h-[400px] min-[900px]:absolute min-[900px]:inset-0"
+      className="absolute inset-0 overflow-hidden bg-cc-map"
       style={{
         "--cc-il": `${insets.left}px`,
         "--cc-ir": `${insets.right}px`,
@@ -544,7 +544,7 @@ export default function MapStage({
           </button>
           <div className="flex items-end gap-2">
             <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan}
-              className={`rounded-[10px] bg-white/95 px-2.5 py-2 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)] max-[639px]:hidden ${state.layersOpen ? "min-[900px]:hidden" : ""}`} />
+              className={`max-w-[300px] rounded-[10px] bg-white/95 px-2.5 py-2 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)] max-[639px]:hidden`} />
             {/* Phones: the legend is collapsed by default so it does not cover
                 the map and the timeline chips; one tap opens it. */}
             <details data-legend-phone className="min-[640px]:hidden rounded-[10px] bg-white/95 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)]">

@@ -49,6 +49,7 @@ export default function LayersColumn({
   opacity = OPACITY_DEFAULT,
   onOpacity,
   changeCyan = true,
+  embedded = false,
   className = "",
 }: {
   bundle: CcBundle;
@@ -61,7 +62,7 @@ export default function LayersColumn({
   onHazard: (h: Hazard) => void;
   onToggle: (id: LayerId) => void;
   onProbHorizon: (h: ProbHorizon) => void;
-  onClose: () => void;
+  onClose?: () => void;
   onView?: (v: ViewId) => void;
   // U3 basemap: the 'Satellite' view (absent until the basemap switcher exists).
   satellite?: { on: boolean; toggle: () => void };
@@ -71,19 +72,22 @@ export default function LayersColumn({
   onOpacity?: (value: number) => void;
   // NISAR change layer: cyan (≥3 dB brighter) paints too, or red only.
   changeCyan?: boolean;
+  // lead-ux 1/8: inside the drawer's "Map" tab — no card, no header.
+  embedded?: boolean;
   className?: string;
 }) {
   // Collapsing hides the rows only; the legend stays visible (rule 3).
-  const [open, setOpen] = useState(true);
+  const [openState, setOpen] = useState(true);
+  const open = embedded || openState;
   const current = activeView(layers);
   const views = VIEWS.filter((v) => v.id === "satellite" ? !!satellite : viewLayers(bundle, hazard, v.id).length > 0);
   const probHorizons = probHorizonsAvailable(bundle.manifest?.layers);
   return (
     <aside
       aria-label="Map layers"
-      className={`max-h-full w-[236px] shrink-0 flex-col rounded-xl min-[900px]:shadow-[0_4px_18px_rgba(0,0,0,0.28)] border border-cc-line bg-cc-surface px-3.5 py-2.5 max-[899px]:fixed max-[899px]:inset-y-0 max-[899px]:left-0 max-[899px]:z-40 max-[899px]:w-[280px] max-[899px]:rounded-none max-[899px]:shadow-2xl ${className}`}
+      className={embedded ? `flex flex-col ${className}` : `max-h-full w-[236px] shrink-0 flex-col rounded-xl min-[900px]:shadow-[0_4px_18px_rgba(0,0,0,0.28)] border border-cc-line bg-cc-surface px-3.5 py-2.5 max-[899px]:fixed max-[899px]:inset-y-0 max-[899px]:left-0 max-[899px]:z-40 max-[899px]:w-[280px] max-[899px]:rounded-none max-[899px]:shadow-2xl ${className}`}
     >
-      <div className="flex items-center gap-1">
+      {!embedded && <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
@@ -97,10 +101,10 @@ export default function LayersColumn({
         <button type="button" onClick={onClose} aria-label="Close the Layers column" className="rounded-lg p-1.5 min-[900px]:hidden">
           <Icon d={ICON.close} />
         </button>
-      </div>
+      </div>}
 
       {open && (
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pr-1">
+        <div className={embedded ? "flex flex-col" : "flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pr-1"}>
           {/* L52 U1: big views first, one tap each. */}
           {onView && views.length > 0 && (
             <div role="radiogroup" aria-label="Map view" className="mt-1 flex flex-col gap-1.5 border-t border-cc-rule pt-2.5" data-views>

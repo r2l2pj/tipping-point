@@ -366,7 +366,7 @@ describe("response-first section order (L27)", () => {
   });
 
   test("the probability pointer shows only when the case publishes P(trigger) frames", () => {
-    const pointer = "Relative likelihood of a rain-triggered landslide (24 h–14 d) is in the Layers column.";
+    const pointer = "Relative likelihood of a rain-triggered landslide (24 h–14 d) is in the Map tab.";
     expect(render(b)).toContain(pointer);
     expect(render({ ...b, manifest: { event: "wa_2025", layers: [] } })).not.toContain(pointer);
   });
@@ -383,10 +383,10 @@ describe("response-first section order (L27)", () => {
       expect(at(s)).toBeLessThan(at("Tipping point reached"));
     }
     // Inside Prediction: the chip stays the headline, then the chart, then
-    // the pointer to the probability horizons in the Layers column.
+    // the pointer to the probability horizons in the Map tab.
     expect(at("Tipping point reached")).toBeGreaterThan(at("Prediction"));
     expect(at("Rain, Soil Moisture and TPI")).toBeGreaterThan(at("Tipping point reached"));
-    expect(at("Relative likelihood of a rain-triggered landslide (24 h–14 d) is in the Layers column.")).toBeGreaterThan(at("Rain, Soil Moisture and TPI"));
+    expect(at("Relative likelihood of a rain-triggered landslide (24 h–14 d) is in the Map tab.")).toBeGreaterThan(at("Rain, Soil Moisture and TPI"));
     // Replay check and the source ages keep their place at the end.
     expect(at("Replay check")).toBeGreaterThan(at("Prediction"));
     expect(at("Data sources - dates in BRT")).toBeGreaterThan(at("Replay check"));
