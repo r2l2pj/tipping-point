@@ -68,6 +68,20 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | Optical **100%** cloud, **20** HLS scenes | `cloud_pct` (100.0), `hls_scenes` (20) | P |
 | HAND ≤ **15 m** vs floods ~**16 m** above the river; ROC **0.61 / 0.85**, WA **0.93 → 0.83** | `docs/t-flood-fix-eval.md` (not in metrics.json) | R, A |
 
+## What we learned about NISAR + the river's dance (verified by lead-analysis / lead-ml)
+
+| Number | Key / source |
+|---|---|
+| WA Otsu never fired, fixed −15 dB | `cases.wa_2025.threshold_db` = −15.0 |
+| UY pairs at the −15 dB clamp: 010D Sep 30→Oct 12, Oct 24→Nov 5; 082D Sep 23→Oct 5/17/29 | `cases.rs_uruguai_2026.nisar_reproduction`, `.nisar_pairs[0]`, `.nisar_082d` |
+| clamped mask covers 99.3% of the 7 teammate polygons (1.82 km²), IoU 0.014 | `cases.rs_uruguai_2026.nisar_reproduction` |
+| 202 of 212 km² field darkening, Oct 5 (082D) | `cases.rs_uruguai_2026.nisar_082d` |
+| 1.76 / 15.7 km² ungated darkening, Oct 24→Nov 5 | `cases.rs_uruguai_2026.radar_darkening_corridor_km2` 1.762, `radar_darkening_fields_km2` 15.732, `radar_darkening_pair` (NOT the png note's 5.62/11.88, older definition) |
+| 45% vs 5%, 8.6× (8.562) | `data/wa_2025/nisar_hypothesis.json` result_paragraph |
+| River's dance: 9 passes Sep 18→Nov 5, r = 0.92 vs Uruguaiana gauge (−15 dB, 010D+082D) | `data/rs_uruguai_2026/series/river_dance.json` `pearson_stage_newwater` 0.918, `n` 9, `pearson_by_track` 010D 0.911 (5) / 082D 0.954 (4), `pearson_stage_newwater_floodplain_only` 0.966; gauge = ANA 77150000 daily median stage on the pass date |
+| River's dance: 46–52% of new water off HAND ≤ 5 m on flood passes, 61–85% on low passes | `river_dance.json` `passes[].new_water_outside_floodplain_pct` |
+| SME2 0.23→0.25→0.23 vs SMAP 0.24→0.32→0.41; 68–75% recommended | notes of `nisar_sme2_<date>_010D` in `data/rs_uruguai_2026/png/_index.json` |
+
 ## Other numbers (sources outside metrics.json)
 
 | Number | Source | Where |
