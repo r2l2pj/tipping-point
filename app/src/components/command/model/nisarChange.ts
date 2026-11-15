@@ -79,6 +79,19 @@ export function defaultChangePair(
 ): { before?: NisarChangeFrame; after?: NisarChangeFrame; pol?: "HH" | "HV" } {
   const frames = nisarChangeFrames(bundle);
   const d = day10(day);
+  // Lucas (follow the timeline): after = the newest pass on/before the day
+  // (any track, HH first, the default track first on a shared date), before =
+  // the previous pass on the SAME track and pol. Play steps through every pass.
+  if (d) {
+    const main = mainTrack(bundle);
+    const cands = frames.filter((f) => f.date <= d)
+      .sort((a, b) => b.date.localeCompare(a.date) || (a.pol === "HH" ? -1 : 1) - (b.pol === "HH" ? -1 : 1)
+        || Number(b.track === main) - Number(a.track === main));
+    for (const after of cands) {
+      const before = frames.filter((f) => f.track === after.track && f.pol === after.pol && f.date < after.date).pop();
+      if (before) return { before, after, pol: after.pol };
+    }
+  }
   for (const t of nisarTracks(bundle)) {
     for (const pol of ["HH", "HV"] as const) {
       const dates = t.dates.filter((x) => t.frames[x]?.[pol]);

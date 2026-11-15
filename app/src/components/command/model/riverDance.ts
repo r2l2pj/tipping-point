@@ -2,7 +2,7 @@
 // new-water area per pass vs the Uruguay River stage at the Uruguaiana gauge
 // (9 passes, Pearson r ≈ 0.92). Slimmed on the server; the card draws it.
 export interface DancePass { date: string; track?: string; stageM: number | null; newWaterKm2: number | null }
-export interface RiverDance { passes: DancePass[]; floodStageM?: number; r?: number }
+export interface RiverDance { passes: DancePass[]; floodStageM?: number; r?: number; boxUtm21s?: number[] }
 
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 const rec = (v: unknown): Record<string, unknown> | undefined =>
@@ -24,7 +24,8 @@ export function slimRiverDance(raw: unknown): RiverDance | undefined {
   if (passes.filter((p) => p.newWaterKm2 !== null).length < 2) return undefined;
   const corr = num(r.pearson_stage_newwater) ?? num(r.pearson_r) ?? num(r.r);
   const fs = num(r.flood_stage_m);
-  return { passes, ...(fs !== null ? { floodStageM: fs } : {}), ...(corr !== null ? { r: corr } : {}) };
+  const box = Array.isArray(r.box_utm21s) && r.box_utm21s.length === 4 && r.box_utm21s.every((v) => typeof v === "number") ? (r.box_utm21s as number[]) : undefined;
+  return { passes, ...(fs !== null ? { floodStageM: fs } : {}), ...(corr !== null ? { r: corr } : {}), ...(box ? { boxUtm21s: box } : {}) };
 }
 
 // "r = 0.92 across 9 passes" (pairs with both values).

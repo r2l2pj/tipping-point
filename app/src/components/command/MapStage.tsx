@@ -22,7 +22,8 @@ import { layerStateFor, overlaysFor } from "./model/layerRegistry";
 import { resolveChangePair } from "./model/nisarChange";
 import { useNisarChangeImage } from "./useNisarChange";
 import { activeView } from "./model/views";
-import { passLabel, passValue, radarFrame, radarPasses, type Pol } from "./model/radarFrame";
+import { passLabel, passValue, radarFrame, radarPasses, swathEdgeNote, type Pol } from "./model/radarFrame";
+import { riverWindow, type LonLatBox } from "./model/riverWindow";
 import { setRadarLook, useRadarLook, useTintedUrl, useWaterUrl } from "./useWaterRed";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
 import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
@@ -141,6 +142,31 @@ export default function MapStage({
     () => (radarOn ? radarFrame(radarPassList, step?.date, rPick) : undefined),
     [radarOn, radarPassList, step?.date, rPick]
   );
+  // Lucas: Jhonatan's 30 × 30 km river window (Uruguaiana): every NISAR pass
+  // fills it. The Radar — NISAR view fits it when it opens and on every
+  // river's-dance click; the user stays free to zoom out.
+  const riverWin = useMemo(() => riverWindow(bundle), [bundle]);
+  const [viewBox, setViewBox] = useState<LonLatBox>();
+  useEffect(() => {
+    if (!map) return;
+    const read = () => {
+      const b = map.getBounds();
+      setViewBox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+    };
+    map.on("moveend", read);
+    return () => { map.off("moveend", read); };
+  }, [map]);
+  useEffect(() => {
+    if (!map || !radarOn || !riverWin) return;
+    map.fitBounds([[riverWin[0], riverWin[1]], [riverWin[2], riverWin[3]]], {
+      padding: { top: 70, bottom: insets.bottom + 30, left: insets.left + 30, right: insets.right + 30 }, duration: 600,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fit on entering the view and on a dance click only
+  }, [map, radarOn, riverWin, passReq?.n]);
+  // The swath-edge note only when the visible map runs past the frame's
+  // missing side (zoomed out, or a pass that does not fill the window).
+  const swathNote = rFrame && viewBox
+    ? swathEdgeNote(rFrame.pass, rFrame.bounds, bundle.bbox as LonLatBox | undefined, viewBox) : undefined;
   // Lucas: 'Water in red' (default) recolours the frame — darker = redder.
   const radarLook = useRadarLook();
   const radarUrl = useWaterUrl(rFrame?.url, rFrame?.stretch, radarLook === "water");
@@ -403,6 +429,10 @@ export default function MapStage({
         <div role="group" aria-label="NISAR radar frame" data-radar-frame
           className={`absolute z-10 flex max-w-[calc(100%-28px)] flex-col items-start gap-1 ${chip} !py-1`} style={{ left: L(14), top: 52 }}>
           <span data-radar-chip className="text-xs font-semibold">{rFrame.chip}{rFrame.note ? ` (${rFrame.note})` : ""}</span>
+          <span data-radar-follow={rFrame.pinned ? "pinned" : "timeline"} className="text-[11px] font-medium text-cc-muted">
+            {rFrame.pinned ? `Pinned: ${fmtDate(rFrame.pass.date)} — the next timeline step follows the day again` : "Following the timeline"}
+          </span>
+          {swathNote && <span className="text-[11px] font-medium text-cc-warn" data-swath-note>{swathNote}</span>}
           <div className="flex flex-wrap items-center gap-1">
             {(["HH", "HV"] as const).map((p) => {
               const has = !!rFrame.pass.frames[p];
@@ -566,7 +596,9 @@ export default function MapStage({
       )}
 
       {comparePair && (
-        <CompareOverlay key={`${bundle.id}-${comparePair.kind}-${comparePair.before.url}-${comparePair.after.url}`} pair={comparePair}
+        <CompareOverlay key={`${bundle.id}-${comparePair.kind}-${comparePair.before.url}-${comparePair.after.url}`}
+          // Uruguaiana: a NISAR pair (side by side or Change) opens on the river window.
+          pair={riverWin && (comparePair.before.pol || comparePair.after.pol) ? { ...comparePair, bounds: riverWin } : comparePair}
           sidesCtl={comparePair.kind === "forecast" ? sidesCtl : undefined}
           controlsRef={compare} onClose={() => dispatch({ type: "closeCompare" })} />
       )}

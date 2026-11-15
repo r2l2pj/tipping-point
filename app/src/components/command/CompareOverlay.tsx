@@ -578,9 +578,12 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void 
         map.addLayer({ id: "change-flood-halo", type: "line", source: "change-flood", paint: { "line-color": FLOODED_HALO, "line-width": 3.5, "line-opacity": 0.55 } });
         map.addLayer({ id: "change-flood-line", type: "line", source: "change-flood", paint: { "line-color": FLOODED_OUTLINE, "line-width": 1.5 } });
       }
-      map.fitBounds([[img.bounds[0], img.bounds[1]], [img.bounds[2], img.bounds[3]]], { padding: 60, duration: 0 });
+      // pair.bounds: both frames, or the river window (Uruguaiana) set by MapStage.
+      const fb = pair.bounds ?? img.bounds;
+      map.fitBounds([[fb[0], fb[1]], [fb[2], fb[3]]], { padding: 60, duration: 0 });
     });
     return () => { mapRef.current = null; map.remove(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the fit is read once per composite; a new bounds object must not rebuild the map
   }, [img, pair.flood]);
 
   useEffect(() => {

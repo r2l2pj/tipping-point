@@ -375,7 +375,9 @@ export function reduce(
   };
   const manualSeek = (index: number): ScreenState => {
     const dayIndex = Math.min(last, Math.max(0, index));
-    return { ...state, ...dayLayers(dayIndex), dayIndex, playing: false };
+    // Lucas: a timeline move un-pins a picked NISAR change pair (the overlay
+    // follows the day again: previous pass → the pass on/before the day).
+    return { ...state, ...dayLayers(dayIndex), dayIndex, playing: false, nisarChange: undefined };
   };
 
   switch (action.type) {
@@ -405,7 +407,7 @@ export function reduce(
     case "tick": {
       if (!state.playing) return state;
       const dayIndex = Math.min(last, state.dayIndex + 1);
-      return { ...state, ...dayLayers(dayIndex), dayIndex, playing: dayIndex < last };
+      return { ...state, ...dayLayers(dayIndex), dayIndex, playing: dayIndex < last, nisarChange: undefined };
     }
     case "setHazard": {
       if (!bundle || action.hazard === state.hazard) return state;

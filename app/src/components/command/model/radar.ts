@@ -101,6 +101,7 @@ export interface CompareSide {
   sensor?: string; // sensorName() of the layer — "NISAR radar" | "Radar"
   // Fixed dB stretch of the frame PNG (lead-analysis stretch_db / legend).
   stretch?: { min: number; max: number };
+  coverage?: number; // lead-analysis coverage_pct: share of the case box the pass imaged
 }
 export interface ComparePair {
   kind: "radar" | "night-lights" | "forecast";
@@ -211,6 +212,7 @@ export function nisarTracks(bundle: CcBundle): NisarTrackStack[] {
       mode: typeof mode === "string" ? mode : undefined,
       sensor: name,
       stretch: stretchOf(l),
+      ...(typeof l.coverage_pct === "number" ? { coverage: l.coverage_pct } : {}),
     };
     byTrack.set(track, t);
   }
