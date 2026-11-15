@@ -23,8 +23,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--data-root", type=Path, default=REPO / "data")
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--prev", type=Path,
+                    help="previous database whose Now 'runs' rows are carried over "
+                         "(default: the existing --out file)")
     args = ap.parse_args(argv)
-    counts = build(args.data_root, args.out)
+    counts = build(args.data_root, args.out, args.prev)
     print(json.dumps(counts))
     if counts["bytes"] > MAX_BYTES:
         print(f"ERROR: sqlite {counts['bytes']} B > {MAX_BYTES} B budget", file=sys.stderr)

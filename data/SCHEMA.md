@@ -402,6 +402,13 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   written `null` must have a reason. `tp.metrics.merge_metrics` merges
   atomically into the root file keyed by case: never drops keys or cases,
   never overwrites a written non-null value.
+- `withdrawn` — `{ "<key>": { "value": <old>, "reason": "<decision id + why>" } }`
+  inside each case blob: a published value retired by a ruling (e.g. L32/L33
+  for the v1 ML scores), kept for audit; the live key then carries the v2
+  replacement (or `null` + `_null_reasons.<key>`). Nested paths appear as
+  dotted names (e.g. `landslide_ml.t_ml`).
+- `_sources` — `{ "<key>": "<exact source file#key.path>" }` inside each
+  case blob: where each replaced value was copied from.
 - `iou`/`f1`/AUCs are 0–1 ratios; `*_pct` keys are 0–100 (the app normalizes
   `> 1` values to 0–1 for display).
 - Flood validation vs OPERA DSWx (wa_2025), one key set:
@@ -414,6 +421,10 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   optical DSWx-HLS all-water, mostly cloud (`hls_method`, `cloud_pct`,
   `cloud_pct_source`). `tools/validation_metrics.py` writes only `*_raw` and
   `hls_*`; the headline keys are never overwritten by the all-water run.
+  `confusion_km2`/`confusion_raw_km2`/`hls_confusion_km2` carry the same
+  counts as geodesic areas (px × true geodesic pixel area at the AOI-mean
+  latitude — see `validation_area_note`: a 30 m nominal lattice pixel is
+  ~600 m² at ~48°N, not 900 m²).
 - rs_2024 optical cloud (`tools/validation_metrics.py` task B): `cloud_pct`
   (100 − `cloud_free_pct`), `hls_scenes` (count), `hls_scene_dates` (UTC dates
   of those HLS L30/S30 scenes over the AOI) and `cloud_pct_source` (product,
@@ -427,7 +438,12 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   reported only, `thresholds.hand_proxy_radius_m` is NOT rewritten),
   `hand_validation_radii` {radius_m: iou 0-1}; `hand_validation_by_radius`
   {radius_m: {iou, r, r_5k, n_px, low_proxy_pct,
-  low_merit_pct}} and `hand_validation_definition` (method text). Everything
+  low_merit_pct}} and `hand_validation_definition` (method text). The radius
+  actually served by the TPI is published alongside:
+  `hand_validation_served_radius_m` (= `thresholds.hand_proxy_radius_m`,
+  currently 1500), `hand_validation_served_iou`, `hand_validation_served_r`
+  (the same-radius entries of `hand_validation_by_radius`) and
+  `hand_validation_note` (one-line caveat). Everything
   is computed locally on ONE common grid: MERIT 'hnd' plus the three proxy
   bands (NASADEM z − focalMin(radius)) downloaded together via
   `getDownloadURL` (NPY, 90 m, EPSG:4326, clipped to the case AOI, tiled over
@@ -478,11 +494,11 @@ takes the ~90 m TPI cell that contains it; max over the window frames.
 
 | key | unit | compares |
 |---|---|---|
-| `flood_warned_pct` (wa) | % of NISAR-confirmed new-flood **area** (27.9 km²) | Alto+ in the L22 issued-GFS TPI_flood frames from 00Z runs 24-48 h before the anchor (headline) |
+| `flood_warned_pct` (wa) | % of NISAR-mapped new-flood-candidate **area** (27.9 km²) | Alto+ in the L22 issued-GFS TPI_flood frames from 00Z runs 24-48 h before the anchor (headline) |
 | `flood_warned_observed_pct` | same | Alto+ in observed TPI_flood bands dated anchor-2d..anchor-1d (latency ignored = upper bound) |
 | `flood_warned_critical_pct` | same | Crítico share of the headline window |
 | `slide_warned_pct` / `_observed_pct` / `_critical_pct` (rs) | % of the 16,027 inventory **points** | same rules with TPI_slide |
-| `flood_warned` / `slide_warned` | object | `definition`, `anchor_utc` + `anchor_source`, `observed`, `forecast_gfs`, `best_issued_gfs_before_anchor`, `by_issue_gfs[]`, `by_date_observed[]` (per-date curve), WA `explanation` |
+| `flood_warned` / `slide_warned` | object | `definition`, `anchor_utc` + `anchor_source`, `observed`, `forecast_gfs`, `best_issued_gfs_before_anchor`, `by_issue_gfs[]`, `by_date_observed[]` (per-date curve), WA `explanation`; WA `mapped_flood_km2` is an alias of `confirmed_flood_km2` (NISAR outputs are candidates, never confirmed — key name kept for contract stability) |
 
 Anchors (L37): the documented event **ONSET**, not the peak —
 `*_warned.anchor_basis = "onset"`, `*_warned_anchor_{basis,utc,source}` flat.
@@ -501,6 +517,70 @@ re-anchored on the onset — issue day warned if any frame depicting a date <=
 the onset day has an AOI-max TPI (slide or flood) > 0.6 anywhere in the AOI
 (not at the damage locations); `lead_h` = onset − issue 00Z; `issue_days[]`,
 `sensitivity[]`. The older `forecast_lead_time` block keeps its own anchor.
+
+### EMSR720 flood reference — `flood_ems*` (rs_2024)
+
+Producer `tools/rs_ems_validation.py`. Copernicus EMS Rapid Mapping
+activation **EMSR720** (GLIDE FL-2024-000063-BRA, activated 2024-05-03) is the
+RS 2024 flood reference map (gap G1; licence "Copernicus EMS — free use with
+attribution: © European Union, Copernicus Emergency Management Service").
+Files: `rs_2024/geojson/flood_ems.geojson` (union of all `5-Flood` polygons —
+observedEventA 'Flooded area' + 'Flood trace' + DEL_MONIT 'Maximum flood
+extent' — dissolved per AOI+product+image date, EPSG:4326, props `aoi`,
+`product`, `image_date_utc`, `sensor`, `source`, `status`, `notations`,
+`permanent_water_excluded`, `area_km2`; BLP `hydrographyA` permanent/reference
+water subtracted), `rs_2024/geojson/flood_ems_aoi.geojson` (the five EMS AOI
+extents), `rs_2024/geojson/landslide_ems.geojson` (`6-Mass Movement`
+polygons — scored by `tools/rs_ems_landslide.py`, next section),
+`rs_2024/flood_ems_meta.json` (activation,
+AOIs, products with versions/image dates/sensors/download URLs, licence).
+
+**Coverage limit (applies to every flood_ems key):** EMSR720 mapped only five
+small Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam,
+Santa Tereza — ~51.6–51.9 W, 29.0–29.3 S). Porto Alegre, Guaíba, Canoas,
+Eldorado do Sul and São Leopoldo — the metropolitan flood epicentre — were
+**not** mapped by any EMS activation, so scores are Taquari-valley-only
+evidence, not AOI-wide.
+
+| key | unit | definition |
+|---|---|---|
+| `flood_ems_iou` / `_f1` / `_precision` / `_recall` | fraction | headline cell-confusion score: EMS flood rasterized centre-in (`all_touched=False`) on the ~90 m TPI grid vs TPI_flood **Alto+ (> 0.4)** in the **observed** band dated **2024-05-06** — the EMS image date with the most AOI coverage (all five AOIs, Pleiades Neo optical GRA) |
+| `flood_ems_flooded_km2` | km² | EMS-mapped flood area on that headline date (rasterized cell km²) |
+| `flood_ems_flagged_before_onset_pct` / `_critical_pct` | % of the EMS flood footprint | already Alto+ / Crítico in the best of the GFS 00Z runs issued 2024-04-26/27/28 (frames depicting dates ≤ the onset day, max over frames; onset 2024-04-29 03:00Z, L37 — `tools/warned_before.py` evaluate/by_lead logic). Also reports the observed band dated 2024-04-29 |
+| `flood_ems` | object | `definitions`, `flagged_before_onset` (anchor, denominator km², per-issue %, `by_lead`), `rows[]` — every image-date × rasterization (center / area-weighted ≥50 % coverage) × threshold (alto_plus / critico) × source (observed band E / GFS run issued E−1, frames depicting ≤ E) with tp/fp/fn, IoU, F1, precision, recall, km², AOI list — plus `licence`, `coverage_limit`, `scope` |
+| `flood_ems_method` | text | one-paragraph method + caveats (imagery-mapped extent at a moment; misses flood under cloud/vegetation; 'Flood trace' = earlier water; EMS date E pairs loosely with frame conventions — observed band E = rain E−3..E−1, GFS frame depicting E = rain E−2..E) |
+
+`flood_ems*` never touches `flooded_km2` / `flood_warned_pct` — those keep
+their existing semantics (`flood_warned_pct` stays null pending the ASF
+route; `flood_ems` is the reference-map validation, a different question).
+
+### EMSR720 landslide reference — `landslide_ems*` + `scar_ems*` (rs_2024)
+
+Producer `tools/rs_ems_landslide.py` (reuses `tools/rs_ems_validation.py`
+loaders/AOI logic and `tools/warned_before.py` ANCHORS/frame conventions).
+The 497 member polygons of `rs_2024/geojson/landslide_ems.geojson`
+(photo-interpreted `6-Mass Movement`, imagery 2024-05-06..05-15, ~6.4 km²) are
+the landslide reference. **The same coverage limit applies: scored ONLY inside
+the five EMS AOI extents — Taquari-valley-only evidence, and the slides are
+undated** (post-event imagery shows scars, not failure times; all scored
+against the L37 onset 2024-04-29 03:00Z).
+
+| key | unit | definition |
+|---|---|---|
+| `landslide_ems_n` / `landslide_ems_km2` | count / km² | EMS mass-movement member polygons (geodesic area) |
+| `landslide_ems_warned_observed_pct` / `_critical_pct` | % of the 497 polygons | ANY ~90 m TPI_slide cell the polygon touches is Alto+ (> 0.4) [Crítico > 0.6] in the observed band dated **2024-04-29** (all information before the 04-29 03Z onset) |
+| `landslide_ems_warned_gfs_{24,48,72}h_pct` / `_critical_pct` | % of the 497 polygons | same any-cell-touched rule vs the GFS 00Z run issued 2024-04-28/27/26 (max over d1..d3 `_slide` frames depicting dates ≤ the onset day) — the `slide_warned_*` by-lead convention, polygons instead of points |
+| `scar_ems_hit_{100,500}m_pct` | % of the 497 polygons | ≥1 OPERA DIST scar candidate within r m (polygon-to-polygon, UTM 22S; candidates restricted to those whose representative point falls inside the AOI extents — 150 of 2,849) |
+| `scar_ems_precision_{100,500}m_pct` | % of the 150 in-AOI candidates | within r m of an EMS polygon |
+| `scar_ems_baseline` | object | random-placement null (science-review D2): same count (150) of placements per seed on steep terrain — T_slide > 0 = NASADEM slope ≥ 15° on the ~90 m grid (the scar product's terrain gate, from the case T_slide COG; the 1″ `steep15_1as.tif` mask it used is a gitignored static asset) — inside the AOI extents, buffered to circles with areas drawn from the in-AOI candidate distribution; `seeds` (200), per-metric `mean` + `ci95` (2.5/97.5 percentiles), `method`, `slope_source`, `lift_precision` |
+| `scar_ems_lift_{100,500}m` | ratio | observed `scar_ems_hit_*m_pct` / baseline mean |
+| `landslide_ems` | object | `tpi_warned` (per-date observed curve + per-lead GFS rows, all four variants: `{any_cell, centroid_cell} × {alto_plus, critico}`, count + area-weighted), `scar` (observed/baseline/lift), `inventory_16027` (published point-inventory numbers + `same_lead_order`), `definitions`, `licence`, `coverage_limit`, `scope` |
+| `landslide_ems_method` | text | one-paragraph method + caveats |
+
+`landslide_ems_warned_*` differs from `slide_warned_*` in BOTH the damage
+reference (497 EMS polygons in five small AOIs vs 16,027 inventory points
+AOI-wide) and the cell rule (any-cell-touched vs the point's own cell — more
+permissive); the order comparison lives in `landslide_ems.inventory_16027`.
 
 ## data/now/ — the live bundle
 
@@ -542,17 +622,32 @@ Paths inside this file are relative to `data/now/`. Layers are
 
 ```json
 { "generated_at": "...",
-  "critical_km2": { "slide": 0.0, "flood": 0.0, "any": 0.0 },
-  "people_critical": 0,
-  "people_exposed": 0,
+  "critical_km2": { "slide": 0.0, "flood": 0.0, "any": 0.0, "any_today_or_d1": 0.0 },
+  "alert_km2":    { "slide": 0.0, "flood": 0.0, "any": 0.0, "any_today_or_d1": 0.0 },
+  "critical_km2_def": "...", "alert_km2_def": "...",
+  "stats_domain": "Brazilian land in the bbox (...)", "stats_domain_km2": 0.0,
+  "people_critical": 0, "people_alert": 0, "people_exposed": 0,
   "forecast_source": "noaa-gfs",
-  "classes_km2": { "Baixo": 0.0, "Moderado": 0.0, "Alto": 0.0, "Crítico": 0.0 },
+  "classes_km2": { "landslide": { "Baixo": 0.0, "Moderado": 0.0, "Alto": 0.0, "Crítico": 0.0 },
+                   "flood": { ... } },
   "data_dates": { "imerg": "...", "smap": "...", "smap_granule": "...",
     "smap_age_days": 5, "smap_label": "...", "gfs_issued": "..." } }
 ```
 
-`people_critical` and `people_exposed` are both emitted with the same value
-(the flat metrics key and the legacy alias).
+A8 (2026-11-15): `critical_km2` = class **Crítico only** (TPI > 0.6);
+`alert_km2` = Alto or Crítico (TPI > 0.4, "High or above"); `people_critical`
+= people in Crítico cells today or D+1, `people_alert` / `people_exposed` = in
+Alto+ cells. All class / critical / alert / nodata areas cover **Brazilian
+land only** (`stats_domain`: IBGE outline minus MCD12Q1 water); the map layers
+still cover the whole bbox. `response/summary.json` and the priority-zone
+properties follow the same split (`critical_km2` / `people_critical` Crítico,
+`alert_km2` / `people_alert` Alto+).
+
+People (S03a): Every people number is GPW v4.11 UN-adjusted 2020 population count on its **native 30″ grid**, each cell weighted by the fraction of its area covered by the mapped area (exact polygon ∩ cell intersection; unions de-duplicate overlaps). Now: R1 DSWx-S1 and R2 NISAR polygons, R3 summary, priority zones and the Now `summary.json` `people_*` (merged from R3) all use it (`tp.response_summary.people_geom`, `people_method`). **Exception, not yet unified:** the replay cases (`people_critical` in metrics/series/GFS layer stats, WA `people_flooded`, `scar_people`) use GPW resampled by Earth Engine to ~1 km (0.00898°), which undercounts by ~11–13 %: RS 2024-05-02 Crítico area holds 1.49 M people on that grid vs 1.68 M on the native grid (2024-04-30: 1.17 M vs 1.30 M). Treat case people as a lower bound; re-run on the native grid after submission.
+
+Replay case nodes: `products.flood_candidates` is the contract key for the
+NISAR flood polygons (candidates, never confirmed); `products.flood_confirmed`
+is a deprecated alias for one cycle (`_deprecated` says so).
 
 ### `data/now/alerts.json`
 
@@ -718,7 +813,7 @@ and queries only. Missing inputs leave a table empty and are listed in
 | `series` | case_id, date, var, value | `<case>/series/imerg_smap_daily.json`, long format (numeric vars only) |
 | `zones` | run_id, municipality, code, uf, hazard, area_km2, people, class, rank | `now/geojson/priority_zones.geojson` (run_id = now `updated_at`), `<case>/geojson/priority_zones.geojson` (run_id = case) |
 | `response_candidates` | run_id, source, hazard, area_km2, people, municipality, confidence, status, acquired, lon, lat | `now/response/flood_dswx`, `flood_nisar`, `landslide_dist` and `rs_2024/geojson/landslide_candidates` (lon/lat = representative point; all `status = candidate`) |
-| `runs` | run_id, kind (now / replay), updated_at, verified (0/1), data_dates (JSON) | `now/manifest.json`, root `manifest.json` |
+| `runs` | run_id, kind (now / replay), updated_at, verified (0/1), data_dates (JSON) | `now/manifest.json`, root `manifest.json`; **one row per Now run** — earlier `now` rows are carried over from the previous database (CI downloads it from the fallback branch before rebuilding) |
 | `build_notes` | item, note | build time + missing inputs |
 
 Units come from the key suffix (`_km2` km², `_pct` %, `_h` h, `_mm` mm, `_m` m,

@@ -13,7 +13,8 @@ persons -> 25 people per analysis px):
     -> 4 px (col 0, rows 0-3), 100 people
 * municipalities: A = x<2.5, B = x>=2.5 (split on the px boundary x=2.5)
 
-people_flooded = 600, people_critical = 500, people_exposed = 1100.
+people_flooded = 600, people_critical = 400 (Crítico only, A8), people_alert = 500,
+people_exposed = 1100.
 """
 from __future__ import annotations
 
@@ -131,10 +132,12 @@ def test_happy_path(tmp_path: Path):
     crit = rs.geodesic_km2(box(3.0, 3.0, 4.0, 4.0)) + rs.geodesic_km2(box(0.0, 3.0, 0.25, 4.0))
     overlap = rs.geodesic_km2(box(1.5, 1.0, 2.0, 2.0))
     assert s["people_flooded"] == 600          # deduped union (400+400-200)
-    assert s["people_critical"] == 500         # 400 Crítico + 100 Alto
+    assert s["people_critical"] == 400         # A8: Crítico only
+    assert s["people_alert"] == 500            # 400 Crítico + 100 Alto
     assert s["people_exposed"] == 1100
     assert s["flooded_km2"] == pytest.approx(flood, abs=0.01)
-    assert s["critical_km2"] == pytest.approx(crit, abs=0.01)
+    assert s["critical_km2"] == pytest.approx(rs.geodesic_km2(box(3.0, 3.0, 4.0, 4.0)), abs=0.01)
+    assert s["alert_km2"] == pytest.approx(crit, abs=0.01)
     assert s["exposed_km2"] == pytest.approx(flood + crit, abs=0.01)   # disjoint
     assert s["overlap_km2"] == pytest.approx(overlap, abs=0.01)        # dswx vs nisar
     assert s["nisar"]["pre_granule"] == "G_PRE_001"
@@ -151,7 +154,8 @@ def test_happy_path(tmp_path: Path):
     assert a["class"] == "High" and a["tpi"] == 0.4
     assert a["hazard"] == "flood+landslide"
     assert a["sources"] == ["opera-dswx-s1", "nisar-gcov", "tpi-critical"]
-    assert a["people_flooded"] == 600 and a["people_critical"] == 100
+    assert a["people_flooded"] == 600 and a["people_critical"] == 0
+    assert a["people_alert"] == 100 and a["critical_km2"] == 0.0 and a["alert_km2"] > 0
     assert a["uf"] == "RS" and a["code"] == "4300001"
     assert isinstance(a["label_lon"], float) and isinstance(a["label_lat"], float)
     b = zones["features"][1]["properties"]
@@ -166,7 +170,8 @@ def test_happy_path(tmp_path: Path):
     assert merged["forecast_source"] == "noaa-gfs"          # preserved
     assert merged["critical_km2"]["any"] == 1915.1          # preserved
     assert merged["data_dates"]["imerg"] == "2026-11-14T00Z"  # preserved
-    assert merged["people_critical"] == 500
+    assert merged["people_critical"] == 400
+    assert merged["people_alert"] == 500
     assert merged["people_exposed"] == 1100
     assert merged["data_dates"]["nisar_pre"] == "2026-10-25"
     assert merged["data_dates"]["nisar_post"] == "2026-11-06"

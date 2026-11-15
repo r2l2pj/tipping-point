@@ -1,16 +1,18 @@
 # tipping-point-data
 
 Data & analysis pipeline for **Tipping Point** — NASA Space Apps Challenge 2026,
-"Dancing with the SARs". **GPM + SMAP predict; NISAR confirms.** IMERG rain and
+"Dancing with the SARs". **GPM + SMAP predict; NISAR maps.** IMERG rain and
 SMAP soil wetness feed a daily Tipping Point Index (TPI) that warns of
-flood/landslide risk; NISAR radar acquisitions after the event confirm what
+flood/landslide risk; NISAR radar acquisitions after the event map what
 actually flooded or slid.
 
 Produces the artifacts in `data/` consumed by
 [`r2l2pj/tipping-point-app`](https://github.com/r2l2pj/tipping-point-app).
 The contract between this repo and the app is
 [`data/SCHEMA.md`](data/SCHEMA.md) — read it first; the app never computes and
-never globs.
+never globs. Which calendar days a frame labelled X actually covers (the
+observed series ends at X−1; forecast and Now frames end at X) is in
+[`docs/conventions-dates.md`](docs/conventions-dates.md).
 
 ## Quickstart
 
@@ -95,7 +97,9 @@ TPI = geometric mean of three scores in [0,1], per `config.yaml thresholds`:
 Flood mask (NISAR, ruling A2 — calibration choice): **adaptive per-scene
 Otsu threshold** on GCOV backscatter change (`water_db_max: -15` is the
 fallback/clamp only), median 3×3, `flood_db_drop: -3` dB drop, HAND < 15 m
-gate, bright-flood layer, 3-ha minimum mapping unit. Coherence landslide
+gate, bright-flood layer, 3-ha minimum mapping unit. (WA 2025 as published:
+Otsu did not fire, so the −15 dB fallback set the threshold — see Declared
+limitations.) Coherence landslide
 candidates use `coherence_drop: 0.3` / `coherence_ref_min: 0.4` with
 elevation/snow/flood exclusion gates — declared but **moot for wa_2025**
 (no GUNW pair crosses the event; candidates come from HLS optical instead).
@@ -116,12 +120,16 @@ uses NOAA GFS (`forecast_source: "noaa-gfs"`, L25) with SMAP held at the
 latest observation.
 
 Forecast lead time (L22, `data/<case>/forecast_lead_time.json`, mirrored in
-`metrics.json cases.<id>.forecast_lead_time`): an issue day "warns" when any
-D+1..D+3 frame dated on/before the damage anchor has a pixel with TPI > 0.6
-(slide or flood). Current values: **rs_2024 111 h** before the anchor
-(earliest issue 2024-04-23; 1 of 4 issue days that could score),
-**wa_2025 144.6 h** (earliest 2025-12-03; median 84.6 h, IQR 54.6–114.6 h,
-6 of 8). Issue days after the anchor cannot score and are not in the
+`metrics.json cases.<id>.forecast_lead_time`; onset-anchored version in
+`cases.<id>.forecast_lead_time_onset`): an issue day "warns" when any frame
+depicting a date on/before the documented event onset has a pixel with TPI
+> 0.6 (slide or flood) **anywhere in the AOI** — a lenient any-pixel test,
+not at the damage locations (see `*_warned` for those). Onset-anchored
+values (L37): **rs_2024 median 87 h** (onset 2024-04-29 00:00 BRT; earliest
+issue 2024-04-23, 147 h; 2 of 7 issue days warned), **wa_2025 median 80 h**
+(onset 2025-12-08 00:00 PST; earliest 2025-12-03, 128 h; 5 of 8 warned — all
+five from landslide cells somewhere in the AOI, none from the flooded
+valleys). Issue days after the onset cannot score and are not in the
 denominator; an issue day whose D−1 SMAP is missing is skipped and listed.
 Official warnings still came before the index — the project never claims
 earlier-than-official.
@@ -228,18 +236,24 @@ never download full frames. Dataset paths (spec D-102274/D-102272, see
 - GCOV `/science/LSAR/GCOV/grids/frequencyA/{HHHH,HVHV,mask,numberOfLooks}` (float32 linear gamma0)
 - GUNW `/science/LSAR/GUNW/grids/frequencyA/{wrappedInterferogram,unwrappedInterferogram}/HH/coherenceMagnitude`
 
-## ML scope (ruling A3)
+## ML scope (ruling A3; re-scored as v2 under L32/L33)
 
-The ML layer is an XGBoost landslide-trigger model producing the
-`hazard_slide_series` (LHASA-style, spatial-block CV, `seed: 42`
-everywhere). T stays the slope/HAND static terrain score — there is **no
-`t_ml.tif` and no T_ML this weekend**; that susceptibility layer is
-roadmap. MODIS land cover feeds ML features only and is **not** a TPI
-index input.
+Two ML layers: an XGBoost landslide **trigger** model producing P(trigger
+within 24/48/72 h, 7 d) — v2 served `xgb_rain_soil`, evaluated on held-out
+events with GFS scored only on issue days that have an archived run — and a
+**T_ML susceptibility** layer (`data/ml/t_ml_v2.json`, served `xgb_all`,
+3a TEST ROC-AUC 0.93 on held-out Brazilian event slides). v2 was retrained
+without RS 2024 after L32 found the v1 TEST had leaked RS 2024 points; all
+v1 scores are kept under `metrics.json cases.rs_2024.withdrawn` with
+reasons, and each replacement's exact source is cited in `_sources`. TPI's
+T stays the slope/HAND static terrain score; MODIS land cover feeds ML
+features only and is **not** a TPI index input.
 
 ## Declared limitations
 
-- Flood threshold is a per-scene Otsu calibration (A2), not a fixed −15 dB.
+- **People counts (one method, S03a).** Every people number is GPW v4.11 UN-adjusted 2020 population count on its **native 30″ grid**, each cell weighted by the fraction of its area covered by the mapped area (exact polygon ∩ cell intersection; unions de-duplicate overlaps). Now: R1 DSWx-S1 and R2 NISAR polygons, R3 summary, priority zones and the Now `summary.json` `people_*` (merged from R3) all use it (`tp.response_summary.people_geom`, `people_method`). **Exception, not yet unified:** the replay cases (`people_critical` in metrics/series/GFS layer stats, WA `people_flooded`, `scar_people`) use GPW resampled by Earth Engine to ~1 km (0.00898°), which undercounts by ~11–13 %: RS 2024-05-02 Crítico area holds 1.49 M people on that grid vs 1.68 M on the native grid (2024-04-30: 1.17 M vs 1.30 M). Treat case people as a lower bound; re-run on the native grid after submission.
+
+- NISAR flood threshold: the method calls for a per-scene Otsu calibration (A2), but for WA 2025 Otsu never fired and the fixed −15 dB fallback was used (`wa_2025.threshold_db` = −15.0; see docs/conventions-dates.md).
 - The headline replay forecast is a real NOAA GFS run as issued. GFS
   under-forecast the RS 2024 peak by about half (3-day forecast 141 mm vs
   290 mm observed AOI mean ending 2024-05-02), so forecast frames understate
@@ -275,16 +289,18 @@ index input.
   before/after change on the same frame.
 
 - "Did the alert come before?" (Modo 3, `tools/warned_before.py`, metrics
-  `flood_warned*` / `slide_warned*`): RS 2024 — 88.1 % of the 16,027
-  inventory landslides were Alto+ (69.1 % Crítico) in the NOAA GFS frames
-  issued 24-48 h before 2024-05-01 (observed frames 88.8 % / 73.5 %).
-  WA 2025 — only 0.1 % of the 27.9 km² NISAR-confirmed flood was Alto+
-  24-48 h before the first damage report (0.0 % observed); the flooded
-  valley floors went Alto+ only from the 2025-12-10 frame (41 %, then 89 %
-  and 99 %). The TPI is pixel-local: those pixels had high T_flood but no
-  local extreme rain; the river flood came from rain upstream in the
-  Cascades, which R does not route. RS 2024 has no flood reference map, so
-  its flood equivalent is null.
+  `flood_warned*` / `slide_warned*`, anchored on the documented event onset
+  per L37): RS 2024 — 36.45 % of the 16,027 inventory landslides were Alto+
+  (1.87 % Crítico) in the NOAA GFS 00Z run issued 2024-04-28, **27 h before
+  the 2024-04-29 onset**; the runs issued 48 h and 72 h before showed 0 %,
+  and the observed band 24 h before onset had 0.25 % (`slide_warned*`).
+  WA 2025 — 0 % of the 27.9 km² NISAR-mapped flood candidates was Alto+ at
+  24/48 h and 0.14 % at 72 h before the 2025-12-08 onset (0 % observed;
+  `flood_warned*`): the flooded valley floors went Alto+ only from the
+  2025-12-10 frame (41 %, then 89 % and 99 %). The TPI is pixel-local:
+  those pixels had high T_flood but no local extreme rain; the river flood
+  came from rain upstream in the Cascades, which R does not route. RS 2024
+  has no flood reference map, so its flood equivalent is null.
 
 ## Use of AI
 

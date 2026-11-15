@@ -139,7 +139,7 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
         entry["forecast"] = forecast
     for extra in ("issued", "forecast_source", "kind",
                   "critical_km2", "people_critical", "_null_reasons",
-                  "legend"):
+                  "legend", "db_range"):
         if extra in index_entry:
             entry[extra] = index_entry[extra]
     if entry.get("forecast") and "forecast_source" not in entry:
@@ -225,6 +225,22 @@ def _products(event_id: str, case_id: str, case_dir: Path) -> tuple[dict, dict]:
         f"{case_id}/series/swot.json" if series.exists() else None)
     if not series.exists():
         reasons["swot_series"] = "no SWOT reach series for this case"
+    ts = case_dir / "nisar_timeseries.json"
+    products["nisar_timeseries"] = (
+        f"{case_id}/nisar_timeseries.json" if ts.exists() else None)
+    if not ts.exists():
+        reasons["nisar_timeseries"] = "no NISAR 3-date time series yet"
+    # science review 2026-11-15: NISAR flood polygons are CANDIDATES, never
+    # confirmed. 'flood_candidates' is the contract key; 'flood_confirmed'
+    # stays one cycle as a deprecated alias (same file / same reason).
+    products["flood_candidates"] = products.get("flood_confirmed")
+    if "flood_confirmed" in reasons:
+        reasons["flood_candidates"] = reasons["flood_confirmed"]
+    pol = case_dir / "nisar_polarization.json"
+    products["nisar_polarization"] = (
+        f"{case_id}/nisar_polarization.json" if pol.exists() else None)
+    if not pol.exists():
+        reasons["nisar_polarization"] = "no dual-pol NISAR analysis yet"
     return products, reasons
 
 
@@ -277,6 +293,8 @@ def build_case_node(event_id: str, data_root: Path | str = DATA_DIR) -> dict:
         "metrics": metrics,
         "data_dates": _data_dates(event_id, case_dir),
         "products": products,
+        "_deprecated": {"products.flood_confirmed": "alias of products.flood_candidates "
+                                                    "(NISAR polygons are candidates); removed next cycle"},
         "_null_reasons": reasons,
     }
 

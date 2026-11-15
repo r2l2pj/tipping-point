@@ -13,7 +13,8 @@ Tables (all also documented in data/SCHEMA.md):
   zones(run_id, municipality, code, uf, hazard, area_km2, people, class, rank)
   response_candidates(run_id, source, hazard, area_km2, people, municipality,
                       confidence, status, acquired, lon, lat)
-  runs(run_id, kind, updated_at, verified, data_dates)
+  runs(run_id, kind, updated_at, verified, data_dates) — one row per Now run:
+      earlier 'now' rows are carried over from the previous database file
   build_notes(item, note)
 """
 from __future__ import annotations
@@ -85,7 +86,7 @@ def _rep_point(geom: dict):
         return None, None
 
 
-def build(data_root: Path, out: Path | None = None) -> dict:
+def build(data_root: Path, out: Path | None = None, prev: Path | None = None) -> dict:
     """(Re)build the database from data_root; returns row counts per table."""
     data_root = Path(data_root)
     out = Path(out) if out else data_root / "tipping_point.sqlite"
@@ -95,6 +96,21 @@ def build(data_root: Path, out: Path | None = None) -> dict:
     con = sqlite3.connect(tmp)
     con.executescript(DDL)
     notes = []
+    # runs history: carry every earlier Now run row over from the previous
+    # database (CI downloads it from the fallback branch before this step),
+    # so `runs` keeps one row per Now run instead of only the latest
+    prev_db = Path(prev) if prev else out
+    carried = 0
+    if prev_db.exists():
+        try:
+            old = sqlite3.connect(f"file:{prev_db}?mode=ro", uri=True)
+            rows = old.execute("SELECT run_id, kind, updated_at, verified, data_dates "
+                               "FROM runs WHERE kind = 'now'").fetchall()
+            old.close()
+            con.executemany("INSERT OR IGNORE INTO runs VALUES (?,?,?,?,?)", rows)
+            carried = len(rows)
+        except sqlite3.Error as exc:
+            notes.append(("runs.history", f"previous database unreadable: {exc}"))
 
     def note(item, msg):
         notes.append((item, msg))
@@ -144,7 +160,7 @@ def build(data_root: Path, out: Path | None = None) -> dict:
     now_manifest = _load(data_root / "now" / "manifest.json") or {}
     run_id = now_manifest.get("updated_at")
     if run_id:
-        con.execute("INSERT INTO runs VALUES (?,?,?,?,?)",
+        con.execute("INSERT OR REPLACE INTO runs VALUES (?,?,?,?,?)",
                     (run_id, "now", run_id, int(bool(now_manifest.get("verified"))),
                      json.dumps(now_manifest.get("data_dates") or {}, ensure_ascii=False)))
         for p in now_manifest.get("nisar_passes") or []:
@@ -219,4 +235,5 @@ def build(data_root: Path, out: Path | None = None) -> dict:
     con.close()
     os.replace(tmp, out)
     counts["bytes"] = out.stat().st_size
+    counts["runs_carried"] = carried
     return counts

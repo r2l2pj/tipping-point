@@ -147,11 +147,16 @@ def test_run_now_end_to_end(fake_now):
         classes_total = sum(classes.values())
         assert classes_total < total_km2
         assert classes_total + summary["nodata_km2"][key] == pytest.approx(total_km2)
-        # critical_km2 and classes_km2 come from one computation: they agree
-        assert summary["critical_km2"][key] == pytest.approx(
+        # A8: critical_km2 = Crítico only; alert_km2 = Alto or Crítico; both
+        # come from the same classes_km2 computation, so they agree
+        assert summary["critical_km2"][key] == pytest.approx(classes["Crítico"])
+        assert summary["alert_km2"][key] == pytest.approx(
             classes["Alto"] + classes["Crítico"])
-    assert summary["critical_km2"]["any"] <= (
-        summary["critical_km2"]["slide"] + summary["critical_km2"]["flood"] + 1e-9)
+        assert summary["critical_km2"][key] <= summary["alert_km2"][key]
+    for k in ("critical_km2", "alert_km2"):
+        assert summary[k]["any"] <= summary[k]["slide"] + summary[k]["flood"] + 1e-9
+        assert summary[k]["any"] <= summary[k]["any_today_or_d1"] + 1e-9
+    assert summary["stats_domain"]
 
     # every expected artifact exists
     for rel in [

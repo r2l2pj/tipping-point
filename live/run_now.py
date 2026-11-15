@@ -35,7 +35,6 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from live import alerts, fetch, publish, render, tpi
-from live.now_manifest import OPTIONAL_PRODUCTS, prune_products
 from live.config import (
     FORECAST_DAYS,
     IMERG_LOOKBACK_DAYS,
@@ -47,6 +46,7 @@ from live.config import (
     STATIC_NPZ,
 )
 from live.grid import dst_lats_lons, dst_transform, pixel_area_km2, regrid_da, regrid_points
+from live.now_manifest import OPTIONAL_PRODUCTS, prune_products
 
 
 def parse_args(argv=None):
@@ -441,35 +441,59 @@ def run(args) -> dict:
                   file=sys.stderr)
 
     area_km2 = pixel_area_km2(lats)
-    valid_s0 = np.isfinite(slide_tpi[0])
-    valid_f0 = np.isfinite(flood_tpi[0])
-    crit_mask = (((slides[0] >= 2) & valid_s0) | ((slides[1] >= 2) & np.isfinite(slide_tpi[1]))
-                 | ((floods[0] >= 2) & valid_f0) | ((floods[1] >= 2) & np.isfinite(flood_tpi[1])))
+    # stats domain (audit 2026-11-15): Brazilian land only (IBGE outline,
+    # MCD12Q1 water excluded) — the bbox also covers UY/AR/PY; the map still
+    # shows the whole bbox. No mask -> whole bbox, stated in stats_domain.
+    dom = land if land is not None else np.ones(area_km2.shape, dtype=bool)
+    stats_domain = ("Brazilian land in the bbox (IBGE outline, MCD12Q1 water excluded)"
+                    if land is not None else "whole bbox (Brazil land mask unavailable)")
+    valid_s0 = np.isfinite(slide_tpi[0]) & dom
+    valid_f0 = np.isfinite(flood_tpi[0]) & dom
+    valid_s1 = np.isfinite(slide_tpi[1]) & dom
+    valid_f1 = np.isfinite(flood_tpi[1]) & dom
+
+    def _ge(c):  # today-or-D+1 mask at class >= c (2 = Alto, 3 = Crítico)
+        return (((slides[0] >= c) & valid_s0) | ((slides[1] >= c) & valid_s1)
+                | ((floods[0] >= c) & valid_f0) | ((floods[1] >= c) & valid_f1))
+    alert_mask, crit_mask = _ge(2), _ge(3)
     pop = static.get("pop")
+    people_alert = None if pop is None else float(np.nansum(pop * alert_mask))
     people_critical = None if pop is None else float(np.nansum(pop * crit_mask))
-    # ONE computation: per-hazard class areas for today; critical_km2 is
-    # derived from them (Alto + Crítico), so the two can never disagree.
+    # ONE computation: per-hazard class areas for today; critical_km2 (A8:
+    # Crítico only, TPI > 0.6) and alert_km2 (Alto or Crítico) derive from them
     classes_km2 = {
         "landslide": class_areas_km2(slides[0], valid_s0, area_km2),
         "flood": class_areas_km2(floods[0], valid_f0, area_km2)}
-    today_mask = ((slides[0] >= 2) & valid_s0) | ((floods[0] >= 2) & valid_f0)
+
+    def _today(c):
+        return ((slides[0] >= c) & valid_s0) | ((floods[0] >= c) & valid_f0)
     summary = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z"),
         "critical_km2": {
+            "slide": classes_km2["landslide"][LABELS[3]],
+            "flood": classes_km2["flood"][LABELS[3]],
+            "any": float((area_km2 * _today(3)).sum()),
+            "any_today_or_d1": float((area_km2 * crit_mask).sum())},
+        "critical_km2_def": "today, class Crítico only (TPI > 0.6, A8); any = slide OR flood; "
+                            "any_today_or_d1 adds D+1; Brazilian land only",
+        "alert_km2": {
             "slide": critical_from_classes(classes_km2["landslide"]),
             "flood": critical_from_classes(classes_km2["flood"]),
-            "any": float((area_km2 * today_mask).sum()),
-            "any_today_or_d1": float((area_km2 * crit_mask).sum())},
-        "critical_km2_def": "today, class Alto or Crítico (TPI >= 0.4); "
-                            "any = slide OR flood; any_today_or_d1 adds D+1",
-        "nodata_km2": {"slide": float((area_km2 * ~valid_s0).sum()),
-                        "flood": float((area_km2 * ~valid_f0).sum())},
+            "any": float((area_km2 * _today(2)).sum()),
+            "any_today_or_d1": float((area_km2 * alert_mask).sum())},
+        "alert_km2_def": "today, class Alto or Crítico (TPI > 0.4) = 'High or above'; "
+                         "any = slide OR flood; any_today_or_d1 adds D+1; Brazilian land only",
+        "stats_domain": stats_domain,
+        "stats_domain_km2": float((area_km2 * dom).sum()),
+        "nodata_km2": {"slide": float((area_km2 * (~np.isfinite(slide_tpi[0]) & dom)).sum()),
+                        "flood": float((area_km2 * (~np.isfinite(flood_tpi[0]) & dom)).sum())},
         "filled_km2": float((area_km2 * sm_filled).sum()),
         "soil_fill_note": ("L31: S at pixels whose nearest SMAP L4 cell is a "
                            "gap is taken from the nearest valid SMAP cell "
                            "within 9 km (one SMAP cell); farther stays nodata"),
-        "people_exposed": people_critical,
-        "people_critical": people_critical,   # v4 metrics key (same value)
+        "people_exposed": people_alert,       # Alto or Crítico, today or D+1
+        "people_alert": people_alert,
+        "people_critical": people_critical,   # A8: Crítico only, today or D+1
         "forecast_source": "noaa-gfs",        # v4 metrics key (D+1..D+3)
         "imerg_source": imerg_source,         # honest stand-in labeling
         "classes_km2": classes_km2,

@@ -192,6 +192,27 @@ def test_pair_rejects_gap_and_reports_unpaired_newer_pass():
     assert "within 36 d" in res["skipped"][1]["reasons"][0]
 
 
+def test_pair_prefers_same_mode_pre_over_full_frame():
+    """A frame/date with two products pairs the one matching the post's
+    acquisition mode, even when the other product is a full frame."""
+    fp = (-50.0, -26.0, -49.0, -25.0)
+    bbox = (-58, -34, -48, -22.5)
+    post = _g(G_POST, fp=fp)                                   # 4005_DHDH_A
+    pre_same = _g(G_PRE.replace("_N_F_", "_N_P_"), fp=fp)      # 4005, partial
+    pre_other = _g(G_PRE.replace("4005_DHDH_A", "2005_DHDH_M"), fp=fp)  # 2005 F
+    res = fn.pair_latest_pass([pre_same, pre_other, post], bbox)
+    assert res["pairs"][0]["pre"]["granule_id"] == pre_same["granule_id"]
+
+
+def test_pair_falls_back_to_any_mode_when_no_same_mode():
+    fp = (-50.0, -26.0, -49.0, -25.0)
+    bbox = (-58, -34, -48, -22.5)
+    post = _g(G_POST, fp=fp)
+    pre_other = _g(G_PRE.replace("4005_DHDH_A", "2005_DHDH_M"), fp=fp)
+    res = fn.pair_latest_pass([pre_other, post], bbox)
+    assert res["pairs"][0]["pre"]["granule_id"] == pre_other["granule_id"]
+
+
 def test_pair_prefers_full_frame_and_skips_sliver_overlap():
     bbox = (-58, -34, -48, -22.5)
     fp = (-50.0, -26.0, -49.0, -25.0)
@@ -223,7 +244,9 @@ def _run(synthetic, out, **kw):
         search=lambda bb, s, e: synthetic["granules"],
         pair=lambda gs, bb: fn.pair_latest_pass(gs, bb, min_overlap_km2=1.0),
         gpw_src=kw.pop("gpw_src", synthetic["gpw"]),
-        now=datetime(2026, 11, 15, 3, 0, tzinfo=UTC), log=lambda m: None, **kw)
+        now=datetime(2026, 11, 15, 3, 0, tzinfo=UTC), log=lambda m: None,
+        edge_buffer_m=kw.pop("edge_buffer_m", 0.0), require_otsu=kw.pop("require_otsu", False),
+        **kw)
 
 
 def test_run_response_end_to_end(synthetic, tmp_path):
@@ -322,3 +345,38 @@ def test_hand_default_prefers_90m_and_source_identity(tmp_path):
     assert src["res_m_approx"] == 93 and len(src["sha256_12"]) == 12
     assert not src["file"].startswith("/")
     assert rn.hand_source(None) is None
+
+
+# ---- guards (second-judge review 2026-11-15) ------------------------------
+def test_mode_token_and_pair_mismatch():
+    pre = "NISAR_L2_PR_GCOV_034_024_D_101_2005_DHDH_M_20261025T211603_20261025T211633_P05036_N_F_J_001"
+    post = "NISAR_L2_PR_GCOV_035_024_D_101_4005_DHDH_A_20261106T211603_20261106T211610_P05036_N_P_J_001"
+    assert rn.mode_token(post) == "4005_DHDH_A" and rn.mode_token(pre) == "2005_DHDH_M"
+    assert "looks differ" in rn.pair_mismatch(pre, post, {"pre": {"looks": 25}, "post": {"looks": 100}})
+    assert "modes differ" in rn.pair_mismatch(pre, post, {})
+    assert rn.pair_mismatch(G_PRE, G_POST, {"pre": {"looks": 100}, "post": {"looks": 100}}) is None
+
+
+def test_drop_touching_removes_edge_components():
+    import numpy as np
+    m = np.zeros((10, 10), bool)
+    m[0:2, 0:2] = True          # touches the edge zone
+    m[5:7, 5:7] = True          # interior
+    zone = np.zeros((10, 10), bool)
+    zone[0, :] = True
+    out, n = rn.drop_touching(m, zone)
+    assert n == 1 and out[5:7, 5:7].all() and not out[0:2, 0:2].any()
+
+
+def test_run_response_edge_buffer_drops_scene_edge_polygons(synthetic, tmp_path):
+    meta = _run(synthetic, tmp_path / "e", edge_buffer_m=2000.0)   # 4 km scene: all edge
+    assert meta["n_polygons"] == 0 and meta["status"] == "no_new_flooding"
+    assert meta["pairs"][0]["dropped_edge_components"] >= 1
+
+
+def test_run_response_rejects_mismatched_modes(synthetic, tmp_path):
+    synthetic["granules"][1]["granule_id"] = synthetic["granules"][1]["granule_id"].replace(
+        "4005_DHDH_A", "2005_DHDH_M")
+    meta = _run(synthetic, tmp_path / "m")
+    assert meta["status"] == "no_usable_pair" and meta["rejected_pairs"]
+    assert meta["flooded_km2"] is None and not (tmp_path / "m" / "flood_nisar.geojson").exists()
