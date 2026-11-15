@@ -44,8 +44,10 @@ export function tourStops(cases: readonly CcBundle[]): TourStop[] {
   });
   if (wa) stops.push({
     key: "wa-radar", primary: !uy,
-    what: `NISAR radar sees the flood through cloud: swipe before / after${extras ? `, ${extras}` : ""}`,
-    action: { type: "goTo", id: wa, hazard: "flood", compare: "radar" },
+    // Lucas: same replay as Uruguaiana — lands on the map (flood index day by
+    // day + NISAR outlines from the pass date); the swipe is in the Radar tab.
+    what: `Flood index day by day with the NISAR radar flood outlines (seen through cloud); in the Radar tab: before / after${extras ? `, ${extras}` : ""}`,
+    action: { type: "goTo", id: wa, hazard: "flood" },
   });
   if (live) stops.push({
     key: "now",

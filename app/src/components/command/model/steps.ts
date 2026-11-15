@@ -87,11 +87,25 @@ export function stepsFor(bundle: CcBundle | undefined): Step[] {
 // Step shown when a case opens: the event day (offset 0), else the last
 // observed step, else the first step.
 export function defaultStepIndex(steps: Step[], bundle?: CcBundle): number {
+  // Lucas: one replay experience for every case. The landing day comes from
+  // the data: a timeline mark flagged `landing`, else the onset anchor of the
+  // "did the alert come before?" test (WA flood Dec 8, RS landslides Apr 29),
+  // else the event day, else the first index signal (Uruguaiana Sep 30).
+  const m = bundle?.metricsView as Record<string, unknown> | undefined;
+  const at = (iso: unknown) => (typeof iso === "string" ? steps.findIndex((s) => s.date.slice(0, 10) === iso.slice(0, 10)) : -1);
+  const marks = Array.isArray(m?.timeline_marks) ? (m!.timeline_marks as Record<string, unknown>[]) : [];
+  const landing = at(marks.find((x) => x && x.landing === true)?.date);
+  if (landing >= 0) return landing;
+  for (const k of ["flood_warned", "slide_warned"]) {
+    const w = m?.[k] as Record<string, unknown> | undefined;
+    if (w && w.anchor_basis === "onset") {
+      const i = at(w.anchor_utc);
+      if (i >= 0) return i;
+    }
+  }
   const event = steps.findIndex((s) => s.offset === 0);
   if (event >= 0) return event;
-  // A replay without an event day (Uruguaiana) lands on its first index
-  // signal (lead-analysis timeline_marks kind 'signal': Sep 30).
-  const tm = (bundle?.metricsView as Record<string, unknown> | undefined)?.timeline_marks;
+  const tm = m?.timeline_marks;
   const signal = Array.isArray(tm)
     ? tm.find((x) => x && typeof x === "object" && (x as Record<string, unknown>).kind === "signal" && typeof (x as Record<string, unknown>).date === "string") as { date: string } | undefined
     : undefined;
