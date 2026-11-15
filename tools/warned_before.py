@@ -1,14 +1,16 @@
 """Modo 3 "O alerta veio antes?": share of the damage that the TPI already
-flagged Alto/Crítico 24-48 h before the damage anchor (replay cases).
+flagged Alto/Crítico 24-72 h before the event ONSET (L37) — replay cases.
 
   wa_2025 flood  — NISAR-confirmed new-flood AREA (cog/wa_2025_flood_nisar_*.tif,
-                   GCOV post 2025-12-16) vs TPI_flood; anchor = the case damage
-                   anchor (King County Flood Warning Center update 2025-12-09 00:35Z,
-                   data/wa_2025/forecast_lead_time.json anchor_utc).
+                   GCOV post 2025-12-16) vs TPI_flood; onset = 2025-12-08 00:00 PST
+                   (heavy rain begins, Skagit EOC activation 21:00 PST; WA EMD sitrep).
+                   Sensitivity: King County FWC update 2025-12-09 00:35Z.
   rs_2024 slide  — the 16,027 RS 2024 inventory POINTS
-                   (geojson/landslide_catalog.geojson) vs TPI_slide; anchor =
-                   2024-05-01 00:00Z (the fixed RS dating used by the ML TEST set,
-                   chosen independently of rain).
+                   (geojson/landslide_catalog.geojson) vs TPI_slide; onset =
+                   2024-04-29 00:00 BRT (first deaths of the event; MetSul laudo).
+                   Sensitivity: 2024-04-30 00:00 BRT (first landslide deaths) and the
+                   previous fixed dating 2024-05-01 00Z. The inventory has no per-slide
+                   times, so every point is scored against the onset.
   rs_2024 flood  — null: no flood reference map exists for RS 2024 (pre-NISAR,
                    HLS 100 % cloud, OPERA DSWx-S1 has no granules for the window).
 
@@ -125,7 +127,7 @@ def evaluate(cog: Path, case: str, hazard: str, series: Path, idx: np.ndarray, w
 
     win_names, win_arrays = [], []
     by_issue = []
-    for back in range(0, 15):
+    for back in range(15):
         issue = anchor_day - dt.timedelta(days=back)
         names, arrays = gfs_frames(issue)
         if not arrays:
@@ -142,6 +144,73 @@ def evaluate(cog: Path, case: str, hazard: str, series: Path, idx: np.ndarray, w
             "by_issue_gfs": sorted(by_issue, key=lambda r: r["issue"]), "by_date_observed": curve}
 
 
+ONSET_SRC_RS = ("MetSul laudo https://metsul.com/wp-content/uploads/2024/06/metsul-laudo_V4_assinado.pdf ; "
+                "Jornal do Comércio 2024-04-29 https://www.jornaldocomercio.com/geral/2024/04/"
+                "1152501-homem-morre-arrastado-pela-correnteza-em-paverama.html ; SGB "
+                "https://rigeo.sgb.gov.br/bitstream/doc/25165/1/guimaraes_et_al_evento_catastrofico_serra_rs.pdf")
+ONSET_SRC_WA = ("WA EMD SEOC sitrep 25-4783 (2025-12-10) https://content.govdelivery.com/attachments/"
+                "WAMILITARY/2025/12/11/file_attachments/3490229/SEOC_Sitrep-25-4783_12102025.pdf")
+# L37: 'before the damage' = before the documented event ONSET (local midnight of the
+# first documented damage day), not the peak. Sensitivity rows keep the other anchors.
+ANCHORS = {
+    "rs_2024": [
+        {"basis": "onset", "utc": dt.datetime(2024, 4, 29, 3, tzinfo=dt.UTC),
+         "local": "2024-04-29 00:00 BRT (UTC-3)",
+         "label": "event onset: first deaths of the event (2 flood deaths, Paverama, 2024-04-29); "
+                  "heavy rain from 2024-04-27, stalled from 04-29",
+         "source": ONSET_SRC_RS},
+        {"basis": "first_landslide_deaths", "utc": dt.datetime(2024, 4, 30, 3, tzinfo=dt.UTC),
+         "local": "2024-04-30 00:00 BRT (UTC-3)",
+         "label": "sensitivity: first landslide deaths (Itaara, Silveira Martins, 2024-04-30)",
+         "source": ONSET_SRC_RS},
+        {"basis": "fixed_dating_may1", "utc": dt.datetime(2024, 5, 1, tzinfo=dt.UTC),
+         "local": "2024-04-30 21:00 BRT",
+         "label": "sensitivity: previous fixed RS dating 2024-05-01 00Z (ML TEST set; superseded by L37)",
+         "source": "project convention (decisions L36a)"},
+    ],
+    "wa_2025": [
+        {"basis": "onset", "utc": dt.datetime(2025, 12, 8, 8, tzinfo=dt.UTC),
+         "local": "2025-12-08 00:00 PST (UTC-8)",
+         "label": "event onset day: heavy rain begins 2025-12-08; Skagit County EOC full activation "
+                  "21:00 PST; damage and evacuations 12-09/10",
+         "source": ONSET_SRC_WA},
+        {"basis": "king_county_update", "utc": dt.datetime(2025, 12, 9, 0, 35, tzinfo=dt.UTC),
+         "local": "2025-12-08 16:35 PST",
+         "label": "sensitivity: previous anchor, King County Flood Warning Center update "
+                  "2025-12-09 00:35Z (data/wa_2025/forecast_lead_time.json)",
+         "source": "King County Flood Warning Center (case damage anchor)"},
+    ],
+}
+LEADS_H = (24, 48, 72)
+
+
+def by_lead(r: dict, anchor: dt.datetime) -> dict:
+    """{h: {gfs, observed}} — the 00Z GFS run of date (anchor - h) (the newest run issued
+    at least h hours before the anchor) and the observed band dated (anchor - h) (its
+    information time, rain ending that day 00Z, is >= h hours before the anchor)."""
+    gfs = {g["issue"]: g for g in r["by_issue_gfs"]}
+    obs = {c["date"]: c for c in r["by_date_observed"]}
+    out = {}
+    for h in LEADS_H:
+        day = (anchor - dt.timedelta(hours=h)).date().isoformat()
+        g, o = gfs.get(day), obs.get(day)
+        out[str(h)] = {
+            "gfs": ({"issue": day, "hours_before_anchor": g["hours_before_anchor"],
+                     "alto_or_critico_pct": g["alto_or_critico_pct"], "critico_pct": g["critico_pct"],
+                     "frames": g["frames"]} if g else None),
+            "observed": ({"band_date": day, "hours_before_anchor": o["hours_before_anchor"],
+                          "alto_or_critico_pct": o["alto_or_critico_pct"], "critico_pct": o["critico_pct"]}
+                         if o else None),
+        }
+    return out
+
+
+def anchored(cog, case, hazard, series, idx, w, a: dict) -> dict:
+    r = evaluate(cog, case, hazard, series, idx, w, a["utc"])
+    return {"anchor_basis": a["basis"], "anchor_utc": a["utc"].isoformat(), "anchor_local": a["local"],
+            "anchor_label": a["label"], "anchor_source": a["source"], **r, "by_lead": by_lead(r, a["utc"])}
+
+
 COMMON_DEF = ("TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in the frames available 24-48 h before the "
               "anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, "
               "latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, "
@@ -149,22 +218,27 @@ COMMON_DEF = ("TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in
               "cell that contains it")
 
 
+def _sens(r: dict) -> dict:
+    """Sensitivity row: anchor + headline window + per-lead (no curves)."""
+    keep = ("anchor_basis", "anchor_utc", "anchor_local", "anchor_label", "anchor_source",
+            "observed", "forecast_gfs", "by_lead")
+    return {k: r[k] for k in keep}
+
+
 def run(data_root: Path) -> dict:
     out = {}
     # wa_2025 flood (area)
     wa = data_root / "wa_2025"
-    lt = json.loads((wa / "forecast_lead_time.json").read_text())
-    anchor = dt.datetime.fromisoformat(lt["anchor_utc"])
     series = wa / "cog" / "wa_2025_tpi_flood_20251210.tif"
     with rasterio.open(series) as g:
         idx, w = flood_pixels(wa / "cog" / "wa_2025_flood_nisar_20251210.tif", g)
+    on, *sens = ANCHORS["wa_2025"]
     out["wa_2025"] = {
         "hazard": "flood", "unit": "% of confirmed flood area",
         "definition": "share of the NISAR-confirmed new-flood AREA (GCOV, post 2025-12-16) with " + COMMON_DEF,
-        "anchor_utc": anchor.isoformat(), "anchor_source": "King County Flood Warning Center update "
-        "(case damage anchor, data/wa_2025/lead_time_metrics.json)",
         "confirmed_flood_km2": round(float(w.sum()), 3),
-        **evaluate(wa / "cog", "wa_2025", "flood", series, idx, w, anchor),
+        **anchored(wa / "cog", "wa_2025", "flood", series, idx, w, on),
+        "sensitivity": [_sens(anchored(wa / "cog", "wa_2025", "flood", series, idx, w, a)) for a in sens],
         "explanation": ("TPI_flood is pixel-local: at the flooded pixels T_flood is high (HAND, mean "
                         "~0.96) but local 3-day rain stayed below the pixel's P90 (R = 0) and SMAP "
                         "wetness low until the 2025-12-10 frame. The river flooding was driven by rain "
@@ -173,17 +247,18 @@ def run(data_root: Path) -> dict:
     }
     # rs_2024 landslides (points)
     rs = data_root / "rs_2024"
-    anchor = dt.datetime(2024, 5, 1, tzinfo=dt.UTC)
     series = rs / "cog" / "rs_2024_tpi_slide_20240502.tif"
     with rasterio.open(series) as g:
         idx, w = inventory_points(rs / "geojson" / "landslide_catalog.geojson", g)
+    on, *sens = ANCHORS["rs_2024"]
     out["rs_2024"] = {
         "hazard": "landslide", "unit": "% of inventory points",
-        "definition": f"share of the {len(w)} RS 2024 inventory landslide points with " + COMMON_DEF,
-        "anchor_utc": anchor.isoformat(), "anchor_source": ("fixed RS dating 2024-05-01 (as the ML "
-                                                           "TEST set; chosen independently of rain)"),
-        "n_points": int(len(w)),
-        **evaluate(rs / "cog", "rs_2024", "slide", series, idx, w, anchor),
+        "definition": f"share of the {len(w)} RS 2024 inventory landslide points with " + COMMON_DEF
+                      + "; the inventory has no per-slide times (imagery-mapped), so every point is "
+                        "scored against the event onset",
+        "n_points": len(w),
+        **anchored(rs / "cog", "rs_2024", "slide", series, idx, w, on),
+        "sensitivity": [_sens(anchored(rs / "cog", "rs_2024", "slide", series, idx, w, a)) for a in sens],
     }
     out["rs_2024_flood"] = None
     return out
@@ -197,28 +272,33 @@ def merge(data_root: Path, res: dict) -> None:
         r = res[case]
         head = r["forecast_gfs"] or r["observed"]
         blob[key] = r
-        blob[f"{key}_pct"] = head["alto_or_critico_pct"]
-        blob[f"{key}_critical_pct"] = head["critico_pct"]
+        blob[f"{key}_pct"] = head["alto_or_critico_pct"] if head else None
+        blob[f"{key}_critical_pct"] = head["critico_pct"] if head else None
         blob[f"{key}_observed_pct"] = r["observed"]["alto_or_critico_pct"] if r["observed"] else None
-        blob[f"{key}_basis"] = "forecast_gfs (issued 24-48 h before the anchor)"
+        blob[f"{key}_basis"] = (f"forecast_gfs (00Z runs issued 24-48 h before the event onset "
+                                f"{r['anchor_local']})")
+        blob[f"{key}_anchor_basis"] = r["anchor_basis"]
+        blob[f"{key}_anchor_utc"] = r["anchor_utc"]
+        blob[f"{key}_anchor_source"] = r["anchor_source"]
+        # per-lead flat keys: the 00Z run issued >= 24/48/72 h before the onset
+        for h in LEADS_H:
+            L = r["by_lead"][str(h)]
+            g, o = L["gfs"], L["observed"]
+            blob[f"{key}_gfs_{h}h_pct"] = g["alto_or_critico_pct"] if g else None
+            blob[f"{key}_gfs_{h}h_critical_pct"] = g["critico_pct"] if g else None
+            blob[f"{key}_gfs_{h}h_issue"] = g["issue"] if g else None
+            blob[f"{key}_observed_{h}h_pct"] = o["alto_or_critico_pct"] if o else None
+            blob[f"{key}_observed_{h}h_critical_pct"] = o["critico_pct"] if o else None
+        blob[f"{key}_by_lead_definition"] = (
+            f"{key}_{{gfs|observed}}_{{24|48|72}}h[_critical]_pct = % of the damage reference "
+            f"({r['unit']}) whose ~90 m TPI cell was Alto+ (> 0.4) [Crítico > 0.6] in: gfs = the NOAA GFS "
+            f"00Z run issued on the UTC date of (onset - 24/48/72 h), i.e. at least that many hours before "
+            f"the event onset {r['anchor_local']} (max over its d1..d3 frames depicting dates <= the onset "
+            f"day); observed = the observed TPI band dated that day (rain ending that day 00Z, latency "
+            f"ignored). Onset = {r['anchor_label']}. Locations on TPI no-data stay in the denominator. "
+            f"Sensitivity anchors in {key}.sensitivity.")
     rsb = m["cases"]["rs_2024"]
-    # per-lead flat keys (headline candidate): issue lead 24/48/72 h before the anchor
-    r = res["rs_2024"]
-    obs = {c["hours_before_anchor"]: c for c in r["by_date_observed"]}
-    gfs = {g["hours_before_anchor"]: g for g in r["by_issue_gfs"]}
-    for h in (24, 48, 72):
-        o, g = obs.get(float(h)), gfs.get(float(h))
-        rsb[f"slide_warned_gfs_{h}h_pct"] = g["alto_or_critico_pct"] if g else None
-        rsb[f"slide_warned_gfs_{h}h_critical_pct"] = g["critico_pct"] if g else None
-        rsb[f"slide_warned_observed_{h}h_pct"] = o["alto_or_critico_pct"] if o else None
-        rsb[f"slide_warned_observed_{h}h_critical_pct"] = o["critico_pct"] if o else None
-    rsb["slide_warned_n"] = r["n_points"]
-    rsb["slide_warned_by_lead_definition"] = (
-        "slide_warned_{gfs|observed}_{24|48|72}h[_critical]_pct = % of the 16,027 RS 2024 inventory "
-        "landslide points whose ~90 m TPI_slide cell was Alto+ (>= 0.4) [Crítico > 0.6] in: gfs = the "
-        "NOAA GFS 00Z run issued 24/48/72 h before 2024-05-01 00Z (max over its d1..d3 frames depicting "
-        "dates <= 2024-05-01); observed = the observed TPI band dated 24/48/72 h before (rain ending that "
-        "day 00Z, latency ignored). Points on TPI no-data stay in the denominator.")
+    rsb["slide_warned_n"] = res["rs_2024"]["n_points"]
     rsb["flood_warned_pct"] = None
     rsb.setdefault("_null_reasons", {})["flood_warned_pct"] = (
         "no flood reference map for RS 2024: event predates NISAR, OPERA DSWx-HLS was 100 % cloud, "
