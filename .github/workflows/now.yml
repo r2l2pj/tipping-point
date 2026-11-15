@@ -216,6 +216,20 @@ jobs:
           get ml_static_now_v2.tif data/static/south_brazil/ml/ml_static_now.tif a0070babee891e38e69d80ce148ec13884c51ab2e87abca24f0b460786b5cda7
           uv run python -m live.p_trigger
 
+      # L43: expected next NISAR pass per track/frame — last observed CMR
+      # GCOV granule (V1 + BETA_V1, anonymous metadata search) refreshed by
+      # the recent L0 overpass list, + n×12 d until the first repeat still
+      # ahead. Stamps next_nisar_* on priority zones + active alerts.
+      # Best-effort: the finalize step prunes the product when absent.
+      - name: Next NISAR passes (expected, best-effort)
+        continue-on-error: true
+        env:
+          PYTHONPATH: ".:pipeline"
+        run: |
+          if [ -f live/nisar_next.py ]; then
+            uv run python -m live.nisar_next --now-dir data/now
+          else echo "::notice::live/nisar_next.py not on this branch yet"; fi
+
       - name: Finalize now manifest (merge response node, drop absent products)
         env:
           NOW_P_TRIGGER: ${{ vars.NOW_P_TRIGGER }}
