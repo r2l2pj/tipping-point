@@ -82,7 +82,7 @@ def shares(tpi_flat: np.ndarray, idx: np.ndarray, w: np.ndarray) -> dict:
     v = tpi_flat[idx]
     valid = np.isfinite(v)
     tot = float(w.sum())
-    return {"alto_or_critico_pct": round(100 * float(w[valid & (v >= ALTO)].sum()) / tot, 2),
+    return {"alto_or_critico_pct": round(100 * float(w[valid & (v > ALTO)].sum()) / tot, 2),
             "critico_pct": round(100 * float(w[valid & (v > CRIT)].sum()) / tot, 2),
             "no_tpi_pct": round(100 * float(w[~valid].sum()) / tot, 2)}
 
@@ -142,7 +142,7 @@ def evaluate(cog: Path, case: str, hazard: str, series: Path, idx: np.ndarray, w
             "by_issue_gfs": sorted(by_issue, key=lambda r: r["issue"]), "by_date_observed": curve}
 
 
-COMMON_DEF = ("TPI Alto or higher (>= 0.4; Crítico > 0.6) in the frames available 24-48 h before the "
+COMMON_DEF = ("TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in the frames available 24-48 h before the "
               "anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, "
               "latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, "
               "frames depicting dates <= the anchor day); each damage location takes the ~90 m TPI "

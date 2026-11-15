@@ -203,7 +203,7 @@
       "flood_warned": {
         "hazard": "flood",
         "unit": "% of confirmed flood area",
-        "definition": "share of the NISAR-confirmed new-flood AREA (GCOV, post 2025-12-16) with TPI Alto or higher (>= 0.4; Crítico > 0.6) in the frames available 24-48 h before the anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, frames depicting dates <= the anchor day); each damage location takes the ~90 m TPI cell that contains it",
+        "definition": "share of the NISAR-confirmed new-flood AREA (GCOV, post 2025-12-16) with TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in the frames available 24-48 h before the anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, frames depicting dates <= the anchor day); each damage location takes the ~90 m TPI cell that contains it",
         "anchor_utc": "2025-12-09T00:35:00+00:00",
         "anchor_source": "King County Flood Warning Center update (case damage anchor, data/wa_2025/lead_time_metrics.json)",
         "confirmed_flood_km2": 27.921,
@@ -1156,7 +1156,7 @@
       "slide_warned": {
         "hazard": "landslide",
         "unit": "% of inventory points",
-        "definition": "share of the 16027 RS 2024 inventory landslide points with TPI Alto or higher (>= 0.4; Crítico > 0.6) in the frames available 24-48 h before the anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, frames depicting dates <= the anchor day); each damage location takes the ~90 m TPI cell that contains it",
+        "definition": "share of the 16027 RS 2024 inventory landslide points with TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in the frames available 24-48 h before the anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, frames depicting dates <= the anchor day); each damage location takes the ~90 m TPI cell that contains it",
         "anchor_utc": "2024-05-01T00:00:00+00:00",
         "anchor_source": "fixed RS dating 2024-05-01 (as the ML TEST set; chosen independently of rain)",
         "n_points": 16027,
