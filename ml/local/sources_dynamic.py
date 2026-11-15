@@ -115,10 +115,38 @@ def _doy(d64: np.ndarray) -> np.ndarray:
     return (d64 - d64.astype("datetime64[Y]")).astype("timedelta64[D]").astype(int) + 1
 
 
+def _nearest_dense(axis: np.ndarray, v: np.ndarray, chunk: int = 20000) -> np.ndarray:
+    out = np.empty(len(v), dtype=np.int64)
+    for s in range(0, len(v), chunk):
+        out[s:s + chunk] = np.argmin(np.abs(axis[None, :] - v[s:s + chunk, None]), axis=1)
+    return out
+
+
 def _nearest(axis: np.ndarray, vals) -> np.ndarray:
-    """Index of nearest element of 1-D ``axis`` for each of ``vals``."""
-    v = np.asarray(vals, dtype=np.float64)
-    return np.argmin(np.abs(axis[None, :] - v[:, None]), axis=1)
+    """Index of nearest element of 1-D ``axis`` for each of ``vals`` (first index on
+    ties, like argmin). O(n log m) via searchsorted on monotone axes — the dense
+    (n x m) argmin needed ~19 GB for 632k points on the SMAP grid (v2 TEST)."""
+    axis = np.asarray(axis, dtype=np.float64)
+    v = np.asarray(vals, dtype=np.float64).ravel()
+    m = len(axis)
+    if m < 2 or len(v) == 0:
+        return np.zeros(len(v), dtype=np.int64)
+    d = np.diff(axis)
+    if np.all(d > 0):
+        asc = True
+    elif np.all(d < 0):
+        asc = False
+    else:
+        return _nearest_dense(axis, v)
+    a = axis if asc else axis[::-1]
+    i = np.clip(np.searchsorted(a, v), 1, m - 1)
+    dl, dr = np.abs(v - a[i - 1]), np.abs(a[i] - v)
+    # first original index on ties: ascending -> left (i-1); descending -> right in reversed
+    pick_left = dl <= dr if asc else dl < dr
+    idx = np.where(pick_left, i - 1, i)
+    idx = idx if asc else m - 1 - idx
+    idx[~np.isfinite(v)] = 0
+    return idx.astype(np.int64)
 
 
 def _circ_doy_dist(a: np.ndarray, b: np.ndarray) -> np.ndarray:

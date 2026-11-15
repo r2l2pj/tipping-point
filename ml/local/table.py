@@ -358,9 +358,12 @@ def point_needs() -> dict:
     """Everything `fetch-points` must download for the sampled rows."""
     r3b = load_rows("rows_3b")
     hz = load_rows("horizon_3b")
-    smap_lon = np.concatenate([r3b.lon, hz.lon])
-    smap_lat = np.concatenate([r3b.lat, hz.lat])
-    smap_dates = np.concatenate([r3b.date.values, hz.issue_date.values]).astype("datetime64[D]")
+    from .combo import elsewhere_issue_rows   # by-lead / when x where: elsewhere on issue days
+    el = elsewhere_issue_rows(r3b)
+    smap_lon = np.concatenate([r3b.lon, hz.lon, el.lon])
+    smap_lat = np.concatenate([r3b.lat, hz.lat, el.lat])
+    smap_dates = np.concatenate([r3b.date.values, hz.issue_date.values,
+                                 el.issue_date.values]).astype("datetime64[D]")
     return {
         "power_lon": r3b.lon.to_numpy(), "power_lat": r3b.lat.to_numpy(),
         "smap_lon": smap_lon, "smap_lat": smap_lat, "smap_dates": smap_dates,

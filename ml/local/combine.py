@@ -43,7 +43,7 @@ from . import settings as S
 log = logging.getLogger(__name__)
 
 MEMBERS = ("xgb_all", "rf_all", "rule_tpi")
-REFERENCE = ("xgb_all", "rf_all", "xgb_rain_soil", "rule_tpi")  # singles rows
+REFERENCE = ("xgb_all", "rf_all", "xgb_rain_soil", "rule_tpi", "direct_rain")  # singles rows
 COMBOS: dict[str, tuple[str, ...]] = {
     "xgb+rf": ("xgb_all", "rf_all"),
     "xgb+tpi": ("xgb_all", "rule_tpi"),
@@ -128,7 +128,8 @@ def run(source: str = "gfs", step: float = WEIGHT_STEP) -> dict:
 
     b = joblib.load(S.DATA_DIR / "models" / "bundle_3b.joblib")
     hz = _load_table("horizon_3b_features")
-    ht = hz[hz.split == "test"].reset_index(drop=True)
+    ht = hz[hz.split == "test"]
+    ht = ht[SC.source_mask(ht, source)].reset_index(drop=True)   # L33: GFS rows need a run
     hv = hz[hz.split == "val"].reset_index(drop=True)
     rain = _rain()
     gfs = _gfs() if source == "gfs" else None

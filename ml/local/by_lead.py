@@ -40,7 +40,8 @@ from .trainer import _load_table, _rain
 
 log = logging.getLogger(__name__)
 LEADS = range(7)   # longest horizon 7 d (v2)
-MODELS_GFS = ("xgb_all", "xgb_rain_soil", "rf_all", "rule_tpi")
+MODELS_GFS = ("xgb_all", "xgb_rain_soil", "rf_all", "rule_tpi", "direct_rain")
+MODELS_PERFECT = ("xgb_all", "xgb_rain_soil", "direct_rain")
 CLEAN_3A_KM = 5.0  # T_ML-clean: >= 5 km from every 3a TRAIN/VAL positive
 
 
@@ -58,6 +59,8 @@ def scopes(rows: pd.DataFrame) -> dict[str, np.ndarray]:
     negatives are kept whole — elsewhere negatives are all >= 5 km already)."""
     out = {}
     pos = (rows.neg_set == "positive").to_numpy()
+    out["pooled"] = np.ones(len(rows), bool)
+    out["pooled_clean3a"] = ~pos | rows.clean_3a.to_numpy()
     for ev in sorted(rows.loc[pos, "event_id"].dropna().unique()):
         m = (rows.event_id == ev).to_numpy()
         out[ev] = m
@@ -140,13 +143,19 @@ def run(fetch: bool = False) -> dict:
         m = rows.k.isin(ks) | (rows.neg_set == "same_point")
         sub = rows[m]
         H = S.HORIZONS[h]
-        g = SC.horizon_scores(sub, H, {n: ents[n] for n in MODELS_GFS}, rain,
-                              source="gfs", gfs_daily=gfs)
-        pf = SC.horizon_scores(sub, H, {"xgb_all": ents["xgb_all"]}, rain, source="perfect")
+        ok = SC.source_mask(sub, "gfs")          # L33: GFS only where the issue day has a run
+        g_ok = SC.horizon_scores(sub[ok], H, {n: ents[n] for n in MODELS_GFS}, rain,
+                                 source="gfs", gfs_daily=gfs)
+        g = {}
+        for n, p in g_ok.items():
+            full = np.full(len(sub), np.nan)
+            full[ok] = p
+            g[n] = full
+        pf = SC.horizon_scores(sub, H, {n: ents[n] for n in MODELS_PERFECT}, rain, source="perfect")
         cal = b["horizon_cal"][h]
         sc = {n: (cal[n]["cal"](p), p, cal[n]["thr"]) for n, p in g.items()}
-        sc["xgb_all_perfect"] = (cal["xgb_all"]["cal"](pf["xgb_all"]), pf["xgb_all"],
-                                 cal["xgb_all"]["thr"])
+        for n in MODELS_PERFECT:
+            sc[f"{n}_perfect"] = (cal[n]["cal"](pf[n]), pf[n], cal[n]["thr"])
         sc["served_product"] = (sc["xgb_rain_soil"][0] * sub["t_ml"].to_numpy(), None, None)
         scores[h] = {"idx": np.flatnonzero(m.to_numpy()), **sc}
         log.info("by_lead %s scored (%d rows)", h, len(sub))
@@ -210,8 +219,8 @@ def table_md(res: dict, scope: str = "rs_2024", negs: str = "both") -> str:
     for k, kb in blk.items():
         r = kb[negs]
         first = True
-        for name in ("xgb_rain_soil", "xgb_all", "rf_all", "rule_tpi", "xgb_all_perfect",
-                     "served_product"):
+        for name in ("xgb_rain_soil", "direct_rain", "xgb_all", "rf_all", "rule_tpi",
+                     "xgb_all_perfect", "direct_rain_perfect", "served_product"):
             m = r[name]
             head = (f"| {k} | {kb['horizon']} | {m['n_pos']} / {m['n_neg']} " if first
                     else "| | | ")
@@ -225,7 +234,7 @@ def table_md(res: dict, scope: str = "rs_2024", negs: str = "both") -> str:
 def compact_md(res: dict, scope: str = "rs_2024", negs: str = "both") -> str:
     """One row per k: recall + ROC for every model (the pitch view)."""
     blk = res["scopes"][scope]
-    names = ("xgb_rain_soil", "xgb_all", "rf_all", "rule_tpi", "xgb_all_perfect")
+    names = ("xgb_rain_soil", "direct_rain", "xgb_all", "rf_all", "rule_tpi", "xgb_all_perfect")
     L = ["| k | H | n_pos / n_neg | " + " | ".join(f"{n} rec / F1 / PR / ROC" for n in names)
          + " | served_product PR / ROC |",
          "|" + "---|" * (len(names) + 4)]

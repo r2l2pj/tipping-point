@@ -339,7 +339,12 @@ def evaluate_3b(*, gfs: bool = True) -> dict:
                                              for r in sorted(set(reg))},
                                "by_event": {ev: _raw(SC.metrics(y[evs == ev], pc[evs == ev], c["thr"]),
                                                      y[evs == ev], p[evs == ev])
-                                            for ev in S.TRIGGER_TEST_EVENTS if (evs == ev).any()}}
+                                            for ev in S.TRIGGER_TEST_EVENTS if (evs == ev).any()},
+                               # pooled TEST without one event at a time (generalisation spread)
+                               "loeo": {ev: {k: v for k, v in SC.metrics(
+                                   y[evs != ev], pc[evs != ev], c["thr"]).items()
+                                   if k in ("n", "n_pos", "precision", "recall", "f1", "pr_auc", "roc_auc")}
+                                   for ev in S.TRIGGER_TEST_EVENTS if (evs == ev).any()}}
             res.setdefault("horizon_rows", {}).setdefault(hname, {})[src] = {
                 "n": len(ht), "n_dropped_no_gfs_run": int(len(ht_all) - len(ht))}
             res["horizons"][hname][src] = block
