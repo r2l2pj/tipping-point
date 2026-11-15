@@ -73,7 +73,7 @@ def fake_now(tmp_path, monkeypatch):
 
     fc_times = np.arange("2026-11-15", "2026-11-19", dtype="datetime64[D]")
     monkeypatch.setattr(
-        live.fetch, "fetch_geosfp_daily",
+        live.fetch, "fetch_gfs_daily",
         lambda bounds, issued=None: (
             _fake_da(fc_times, 50.0), "2026-11-14T00:00:00Z"))
 
@@ -129,7 +129,7 @@ def test_run_now_end_to_end(fake_now):
 
     # summary: NaN region excluded from classes_km2, counted in nodata_km2
     summary = json.loads((out_dir / "summary.json").read_text())
-    assert summary["forecast_source"] == "geos-fp"
+    assert summary["forecast_source"] == "noaa-gfs"
     assert summary["nodata_km2"]["slide"] > 0
     assert summary["nodata_km2"]["flood"] > 0
     lats, lons = dst_lats_lons(BOUNDS)

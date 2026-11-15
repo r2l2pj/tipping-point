@@ -24,11 +24,15 @@ def git(*args: str, cwd: Path = ROOT, allowed: tuple[int, ...] = (0,)):
     return result
 
 
+APP_FACING_SUFFIXES = {".json", ".geojson", ".png", ".tif", ".tiff", ".md"}
+
+
 def _app_facing(path: Path, source: Path) -> bool:
     """L26: only app-facing files go to the fallback branch — manifests,
-    frames, COGs, geojson, metrics. Raw granules/intermediates never do."""
+    frames, COGs, geojson, metrics. Raw granules and intermediates
+    (zip/hgt/hdf/nc/npz, anything under a raw/ dir) never do."""
     rel = path.relative_to(source)
-    return "raw" not in rel.parts
+    return "raw" not in rel.parts and path.suffix.lower() in APP_FACING_SUFFIXES
 
 
 def upload_release_assets(paths: list[Path], source: Path) -> None:

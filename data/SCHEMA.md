@@ -134,9 +134,9 @@ the app uses it for layer hints).
   the single root metrics file), `data_dates`, `products`,
   `forecast_source`, `_null_reasons`.
 - `data_dates`: the freshest date of each input actually used —
-  `{imerg, smap, geos_fp_issued?, nisar_pre?, nisar_post?, ...}`.
+  `{imerg, smap, gfs_issued?, nisar_pre?, nisar_post?, ...}`.
 - `forecast_source`: `"perfect-forecast"` for replay cases (D+1..D+3 =
-  observed IMERG as forecast), `"geos-fp"` for the live bundle. The app must
+  observed IMERG as forecast), `"noaa-gfs"` for the live bundle. The app must
   render forecast days differently (never like observed).
 - `data_basis`: provenance/latency honesty label. Replay cases carry
   `"hindcast — IMERG_V07 + SMAP SPL4SMGP as archived in GEE (no real-time
@@ -176,7 +176,7 @@ forecast_source?, kind?, upper_bound?}`:
 - `issued` — `YYYY-MM-DD` issue day of a real issued forecast (L22 GFS
   frames); the depicted `date` is issued + k.
 - `forecast_source` — `"noaa-gfs"` for the issued-GFS replay frames,
-  `"perfect-forecast"` for the copied-observation upper bound, `"geos-fp"`
+  `"perfect-forecast"` for the copied-observation upper bound, `"noaa-gfs"`
   live.
 - `kind` — `"observed"` | `"forecast"` when the index entry declares it.
 - `upper_bound: true` — on `perfect-forecast` frames only: they are the
@@ -318,7 +318,7 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   source (`tp.metrics.merge_metrics`). Mock cases use `wa_2025: "nisar"` and
   `rs_2024: "opera"`; runtime values describe the input actually used.
 - `forecast_source` — `"perfect-forecast"` for replay cases; the live now
-  bundle uses `"geos-fp"`.
+  bundle uses `"noaa-gfs"`.
 - `collections` — `{ "<dataset>": "<collection id/version>" }` for the inputs
   that produced the numbers (e.g. `NISAR_L2_GCOV_BETA_V1`,
   `OPERA_L3_DSWX-HLS_V1`, IMERG V07, SMAP L4, GPW epoch). General rule:
@@ -374,7 +374,7 @@ everything else. Overwritten every 3 h by `live/run_now.py` via
 { "schema": "tipping-point/now@2",
   "mode": "live", "updated_at": "2026-11-15T09:00:00Z",
   "bounds": [-58.0, -34.0, -48.0, -22.5],
-  "data_dates": { "imerg": "...", "smap": "...", "geos_fp_issued": "..." },
+  "data_dates": { "imerg": "...", "smap": "...", "gfs_issued": "..." },
   "layers": [
     { "id": "tpi_slide_d0", "date": "2026-11-15",
       "png": "png/tpi_slide_d0.png", "cog": "cog/tpi_slide_today.tif",
@@ -400,9 +400,9 @@ Paths inside this file are relative to `data/now/`. Layers are
   "critical_km2": { "slide": 0.0, "flood": 0.0, "any": 0.0 },
   "people_critical": 0,
   "people_exposed": 0,
-  "forecast_source": "geos-fp",
+  "forecast_source": "noaa-gfs",
   "classes_km2": { "Baixo": 0.0, "Moderado": 0.0, "Alto": 0.0, "Crítico": 0.0 },
-  "data_dates": { "imerg": "...", "smap": "...", "geos_fp_issued": "..." } }
+  "data_dates": { "imerg": "...", "smap": "...", "gfs_issued": "..." } }
 ```
 
 `people_critical` and `people_exposed` are both emitted with the same value
