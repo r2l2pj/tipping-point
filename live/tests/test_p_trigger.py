@@ -13,7 +13,7 @@ BOUNDS = (-52.0, -30.2, -51.8, -30.0)          # 20 x 20 cells at 0.01 deg
 D = dt.date(2026, 11, 15)
 
 
-def _smoke_model(tmp_path):
+def _smoke_model(tmp_path, horizons=None):
     from xgboost import XGBClassifier
 
     from ml.local import models as M
@@ -25,7 +25,7 @@ def _smoke_model(tmp_path):
     y = (X[:, cols.index("rain_72h")] > 0.5).astype(int)
     m = XGBClassifier(n_estimators=5, max_depth=2).fit(X, y)
     return M.save_xgb(m, tmp_path / "p_trigger_xgb.json",
-                      {"features": cols, "horizons": p_trigger.HORIZONS,
+                      {"features": cols, "horizons": horizons or p_trigger.HORIZONS,
                        "name": "smoke", "version": "test"})
 
 
@@ -155,3 +155,25 @@ def test_frames_monotone_in_horizon(tmp_path):
             ok = np.isfinite(p) & np.isfinite(prev)
             assert (p[ok] >= prev[ok] - 1e-7).all(), h
         prev = p
+
+
+def test_horizons_follow_model_meta_and_stale_frames_go(tmp_path):
+    """ML v2 serves 24h/72h/7d only: frames follow the meta, v1's 48h/14d
+    files left in the out dir are removed, 7d stays low_skill."""
+    out = tmp_path / "now"
+    _obs(out)
+    for rel in ("cog/p_trigger_48h.tif", "png/p_trigger_14d.png"):
+        (out / rel).parent.mkdir(parents=True, exist_ok=True)
+        (out / rel).write_bytes(b"stale")
+    soil = {v: np.full((20, 20), 0.3) for v in p_trigger.SOIL_VARS}
+    v2 = {"24h": 1, "72h": 3, "7d": 7}
+    layers = p_trigger.run(out, D, bounds=BOUNDS,
+                           model_path=_smoke_model(tmp_path, v2),
+                           static_path=_static(tmp_path),
+                           rain_fc=np.full((7, 20, 20), 10.0),
+                           gfs_issued="2026-11-15T00:00:00Z", soil=soil)
+    assert [l["id"] for l in layers] == ["p_trigger_24h", "p_trigger_72h", "p_trigger_7d"]
+    assert [l["low_skill"] for l in layers] == [False, False, True]
+    assert sorted(p.name for p in (out / "cog").glob("p_trigger_*")) == [
+        "p_trigger_24h.tif", "p_trigger_72h.tif", "p_trigger_7d.tif"]
+    assert not (out / "png" / "p_trigger_14d.png").exists()
