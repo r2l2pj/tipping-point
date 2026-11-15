@@ -79,10 +79,22 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | `[TBD uy_pass]` | the NISAR pass scored (date) | `[TBD key]` | R A S |
 | `[TBD uy_lead]` | forecast lead used for the headline (e.g. "1 day") | `[TBD key]` | R A P S K |
 | `[TBD uy_m1]` | uy lift ÷ terrain-only lift (M1 ratio) | `[TBD key]` | R A |
-| `[TBD uy_outside_fp]` | % of NISAR water off the low floodplain (HAND > 5 m) — rice caveat | `[TBD key]` | R A P S |
+| `[TBD uy_outside_fp]` | % of NISAR water off the low floodplain (HAND > 5 m) — rice caveat | `nisar_outside_floodplain_pct` (per layer) | R A P S |
 | `[TBD wa_high]` / `[TBD wa_lift]` | Washington, same | `[TBD key]` | R A P S K |
 | `[TBD now_status]` | Now: latest NISAR pass used, or "no water seen yet" | `now/summary.json` `[TBD key]` | P |
 | block | `nisar_agreement` in metrics.json (lead-analysis, ~21:00); sub-keys filled by hand per row | — | R A |
+
+### L61 'What we learned about NISAR' (verified by lead-analysis)
+
+| Number | Key / source |
+|---|---|
+| WA Otsu never fired, fixed −15 dB | `cases.wa_2025.threshold_db` = −15.0 |
+| UY pairs at the −15 dB clamp: 010D Sep 30→Oct 12, Oct 24→Nov 5; 082D Sep 23→Oct 5/17/29 | `cases.rs_uruguai_2026.nisar_reproduction`, `.nisar_pairs[0]`, `.nisar_082d` |
+| clamped mask covers 99.3% of the 7 teammate polygons (1.82 km²), IoU 0.014 | `cases.rs_uruguai_2026.nisar_reproduction` |
+| 202 of 212 km² field darkening, Oct 5 (082D) | `cases.rs_uruguai_2026.nisar_082d` |
+| 1.76 / 15.7 km² ungated darkening, Oct 24→Nov 5 | `cases.rs_uruguai_2026.radar_darkening_corridor_km2` 1.762, `radar_darkening_fields_km2` 15.732, `radar_darkening_pair` (NOT the png note's 5.62/11.88, older definition) |
+| 45% vs 5%, 8.6× (8.562) | `data/wa_2025/nisar_hypothesis.json` result_paragraph |
+| SME2 0.23→0.25→0.23 vs SMAP 0.24→0.32→0.41; 68–75% recommended | notes of `nisar_sme2_<date>_010D` in `data/rs_uruguai_2026/png/_index.json` |
 
 ## Other numbers (sources outside metrics.json)
 

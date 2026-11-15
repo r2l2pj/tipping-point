@@ -1,5 +1,7 @@
 # Tipping Point — slides outline (7 slides)
 
+> L61 order: NISAR opens the technical part (slide 3); the old demo slide is folded into slide 7 ("Try it").
+
 > **DRAFT — pending approval.**
 
 ## Slide 1 — Title
@@ -15,21 +17,19 @@
 - Context: May 2024, Rio Grande do Sul floods — 478 municipalities affected, 185 deaths, 581,638 people displaced at the peak (Government of Rio Grande do Sul, SOS Rio Grande do Sul, updated Aug 19, 2025)
 - *Visual:* the Uruguaiana NISAR before/after swipe (Sep 30 → Oct 12) — `.crew/gallery/v6b/1-uy-nisar.png`
 
-## Slide 3 — Prevent the disaster, not the flood: when · where · who (Uruguaiana, Oct 2026)
+## Slide 3 — NISAR: what it sees through cloud (opens the technical part)
+- *Visual:* "The river's dance" NISAR strip, Uruguaiana (lead-ml): `[TBD river_dance]`
+- Calm floodwater turns dark to radar; radar sees through cloud (C-band, our OPERA reference, does too); NISAR's L-band also reaches water under vegetation and passes every 12 days
+- **NISAR feeds the index:** every NISAR pass updates the flood map through cloud (water it sees turns Critical, as a candidate) and scores the forecast
+- The index (NASA rain, soil, terrain + NOAA GFS) tells where and when to look between passes
+- **What we learned:** flooded towns and forests stay bright (double bounce), so a darkening rule misses where people live (Washington: 45% of misses in towns or forest vs 5% of hits); BETA/provisional scenes fell to the fixed −15 dB threshold (every Uruguaiana pair we ran was rejected); 12-day revisit and swath edges limit operations; NISAR soil moisture (SME2) stayed flat while SMAP rose, so it is not used
+
+## Slide 4 — Prevent the disaster, not the flood: when · where · who (Uruguaiana, Oct 2026)
 - **When:** our index, fed by NASA satellite rain (GPM IMERG), turned the Uruguaiana region Critical on Sep 30, five days before flood stage (Oct 5; 13,129 km², 6,121 on the low floodplain); NOAA's forecast from Sep 27 already pointed there, 8 days ahead. Near-real-time rain; holds when scaled to the final product (3,541 km² on the floodplain)
 - **Honest:** 15 Critical days Sep 15 → Oct 31; 3 small ones (Sep 20–22) had no flood stage within 10 days. The Critical area was only 1.34× concentrated on the floodplain: right days, not yet the right streets
 - **Where (radar):** NISAR feeds the index: water it sees through cloud turns the flood map Critical (candidate), and each pass scores the forecast: [TBD uy_high]% of the water NISAR saw on [TBD uy_pass] was already High or Critical in the NOAA GFS forecast issued [TBD uy_lead] before ([TBD uy_lift]× chance); 54% of the NISAR flood candidates (a teammate's polygons, 1.8 km²) lie on the floodplain, which is 28% of the land in this case area (1.92×); our stricter automatic check has not reproduced them yet
 - **Who:** about 98,000 people live on the low floodplain (GPW v4.11)
-- How: Tipping Point Index of NASA rain, soil (SMAP) and terrain (NASADEM), with NOAA GFS for the next days; builds on NASA's LHASA (doi:10.3389/feart.2021.640043; LHASA-F doi:10.3389/feart.2022.878996); an experimental XGBoost model sits beside it
-
-## Slide 4 — The demo
-- **Uruguaiana, Oct 2026:** replay from Sep 28 (▶ Play): the region turns Critical on Sep 30; NISAR every 12 days on track 010D (provisional products) — before/after swipe Sep 30 → Oct 12 with the NISAR flood candidates (a teammate's polygons, 1.8 km², about 28 people inside); Itaqui is outside that swath
-- Ops dashboard `/` (**Command Center**): top-bar **Now / Replay** switch + **Past event** selector, timeline D-10 → EVENT → D+n, Play control; map control **Forecast issued this day: Off / +1 d / +2 d / +3 d** replays each day's GFS run
-- **Tipping point reached** (Situation overview) + ranked **Priority areas** (Critical and High)
-- Right panel: **Now on the ground** (NISAR radar card: "Check with NISAR radar →", **Before / after**), **Who is affected**, **Prediction**, **Replay check**; **Show details: validation and impact** opens **How early? (in replay)** / **Why radar** / **Impact**
-- Public feed `/alerts` (**Public Alerts** view): Civil-Defense-style alert cards ("Tipping Point: <level> <hazard> risk"), an **experimental research product, not official warnings** (official: Defesa Civil, SMS 40199)
-- Forecast rain = **NOAA GFS 0.25°** in replay and live, labelled "forecast · NOAA GFS (issued <date>)"; replay D+1..D+3 uses the forecast issued on each day
-- *Visual:* 2–3 real screenshots — **Tipping point reached** over the heated Taquari valley map (RS, Apr 30), NISAR radar **Before / after** swipe (WA), /alerts card
+- How: the Tipping Point Index of NASA rain, soil (SMAP) and terrain (NASADEM), with NOAA GFS for the next days, tells where and when to look; builds on NASA's LHASA (doi:10.3389/feart.2021.640043; LHASA-F doi:10.3389/feart.2022.878996); an experimental XGBoost model sits beside it
 
 ## Slide 5 — Did it work?
 - **NISAR, Washington Dec 2025:** "Clouds hid 93% of the area from optical satellites; NISAR radar mapped 28 km² of flood candidates through them" — home to about 950 people. C-band radar (NASA OPERA surface water, our reference) sees open flood through cloud too; NISAR's L-band also reaches water under vegetation
@@ -52,6 +52,7 @@
 - NASA inputs: GPM IMERG · SMAP L4 · NASADEM · NISAR (L-band radar) · HLS · VIIRS Black Marble · GPW · OPERA DSWx · OPERA DIST-ALERT · SWOT
 - Forecast rain = NOAA GFS 0.25°, our only non-NASA input; every observation is NASA
 - MERIT Hydro used as a validation reference only, not a NASA input
+- Try it: live view `/` (Now, every 3 h; NISAR radar card, Who is affected, Priority areas), Uruguaiana replay (▶ Play from Sep 28; NISAR before/after Sep 30 → Oct 12), `/alerts` (experimental research product, not official warnings)
 - Repo + live app links; built with AI assistants under human review
 - *Visual:* data-source grid as plain text (no mission or agency logos: the 2026 guide forbids NASA branding in team-made content) + QR code to the app/repo
 
