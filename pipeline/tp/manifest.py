@@ -139,7 +139,7 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
         entry["forecast"] = forecast
     for extra in ("issued", "forecast_source", "kind",
                   "critical_km2", "people_critical", "_null_reasons",
-                  "legend"):
+                  "legend", "db_range"):
         if extra in index_entry:
             entry[extra] = index_entry[extra]
     if entry.get("forecast") and "forecast_source" not in entry:
@@ -236,6 +236,11 @@ def _products(event_id: str, case_id: str, case_dir: Path) -> tuple[dict, dict]:
     products["flood_candidates"] = products.get("flood_confirmed")
     if "flood_confirmed" in reasons:
         reasons["flood_candidates"] = reasons["flood_confirmed"]
+    pol = case_dir / "nisar_polarization.json"
+    products["nisar_polarization"] = (
+        f"{case_id}/nisar_polarization.json" if pol.exists() else None)
+    if not pol.exists():
+        reasons["nisar_polarization"] = "no dual-pol NISAR analysis yet"
     return products, reasons
 
 

@@ -15,11 +15,12 @@ NODE_KEYS = {"event_id", "mode", "bounds", "forecast_source", "data_basis", "lay
              "metrics", "data_dates", "products", "_deprecated", "_null_reasons"}
 LAYER_KEYS = {"id", "date", "png", "cog", "legend", "bounds", "forecast",
               "issued", "forecast_source", "kind", "upper_bound",
-              "critical_km2", "people_critical", "_null_reasons"}
+              "critical_km2", "people_critical", "_null_reasons", "db_range"}
 PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
                  "swot_reference", "swot_series",
                  "priority_zones", "permanent_water", "flood_confirmed", "flood_candidates",
-                 "landslide_candidates", "nisar_timeseries"}
+                 "landslide_candidates", "nisar_timeseries",
+                 "nisar_polarization"}
 
 
 def _data_root(tmp_path, *case_ids):

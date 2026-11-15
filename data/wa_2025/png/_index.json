@@ -2849,9 +2849,91 @@
       "kind": "observed",
       "legend": [
         "Sem dados",
-        "TP \u2014 ambos",
-        "FP \u2014 s\u00f3 NISAR",
-        "FN \u2014 s\u00f3 OPERA"
+        "TP — ambos",
+        "FP — só NISAR",
+        "FN — só OPERA"
+      ]
+    },
+    {
+      "id": "nisar_hh_change",
+      "date": "2025-12-16",
+      "png": "wa_2025/png/nisar_hh_change_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_nisar_hh_change_20251216_60m.tif",
+      "bounds": [
+        -122.612106,
+        46.990354,
+        -121.455735,
+        48.509603
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "darker (−6 dB): water / smooth",
+        "no change",
+        "brighter (+6 dB): double-bounce / vegetation"
+      ]
+    },
+    {
+      "id": "nisar_hv_change",
+      "date": "2025-12-16",
+      "png": "wa_2025/png/nisar_hv_change_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_nisar_hv_change_20251216_60m.tif",
+      "bounds": [
+        -122.612106,
+        46.990354,
+        -121.455735,
+        48.509603
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "darker (−6 dB): water / smooth",
+        "no change",
+        "brighter (+6 dB): double-bounce / vegetation"
+      ]
+    },
+    {
+      "id": "nisar_hv_pre",
+      "date": "2025-12-04",
+      "png": "wa_2025/png/nisar_hv_pre_20251204.png",
+      "cog": "wa_2025/cog/wa_2025_nisar_hv_pre_20251204_60m.tif",
+      "bounds": [
+        -122.612106,
+        46.990354,
+        -121.455735,
+        48.509603
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "dark (low dB)",
+        "bright (high dB)"
+      ],
+      "db_range": [
+        -23.62,
+        -7.92
+      ]
+    },
+    {
+      "id": "nisar_hv_post",
+      "date": "2025-12-16",
+      "png": "wa_2025/png/nisar_hv_post_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_nisar_hv_post_20251216_60m.tif",
+      "bounds": [
+        -122.612106,
+        46.990354,
+        -121.455735,
+        48.509603
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "dark (low dB)",
+        "bright (high dB)"
+      ],
+      "db_range": [
+        -23.59,
+        -7.47
       ]
     },
     {
