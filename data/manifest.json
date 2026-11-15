@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T18:03:22Z",
+  "updated_at": "2026-11-15T18:04:13Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7246,7 +7246,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "nisar_hh_20260923",
@@ -7269,7 +7270,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "082D"
         },
         {
           "id": "nisar_hh_20260930",
@@ -7291,7 +7293,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "nisar_hh_20261005",
@@ -7314,7 +7317,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "082D"
         },
         {
           "id": "nisar_hh_20261012",
@@ -7336,7 +7340,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "nisar_hh_20261017",
@@ -7359,7 +7364,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "082D"
         },
         {
           "id": "nisar_hh_20261024",
@@ -7381,7 +7387,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "nisar_hh_20261028",
@@ -7403,7 +7410,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "060A"
         },
         {
           "id": "nisar_hh_20261029",
@@ -7426,7 +7434,8 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "082D"
         },
         {
           "id": "nisar_hh_20261102",
@@ -7448,7 +7457,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "132A"
         },
         {
           "id": "nisar_hh_20261105",
@@ -7470,7 +7480,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "nisar_hh_change_20261012",
@@ -7497,7 +7508,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "label": "NISAR HH change (Sep 30 → 10-12)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "nisar_hh_change_20261105",
@@ -7524,7 +7536,8 @@
           "sensor": "NISAR",
           "source": "NISAR GCOV (ASF)",
           "label": "NISAR HH change (Oct 24 → Nov 5)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_20260918",
@@ -7546,7 +7559,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_20260923",
@@ -7569,7 +7583,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "082D"
         },
         {
           "id": "nisar_hv_20260930",
@@ -7591,7 +7606,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_20261005",
@@ -7614,7 +7630,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "082D"
         },
         {
           "id": "nisar_hv_20261012",
@@ -7636,7 +7653,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_20261017",
@@ -7659,7 +7677,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "082D"
         },
         {
           "id": "nisar_hv_20261024",
@@ -7681,7 +7700,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_20261028",
@@ -7703,7 +7723,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "060A"
         },
         {
           "id": "nisar_hv_20261029",
@@ -7726,7 +7747,8 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "082D"
         },
         {
           "id": "nisar_hv_20261102",
@@ -7748,7 +7770,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "132A"
         },
         {
           "id": "nisar_hv_20261105",
@@ -7770,7 +7793,8 @@
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_change_20261012",
@@ -7797,7 +7821,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "label": "NISAR HV change (Sep 30 → 10-12)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_change_20261105",
@@ -7824,7 +7849,8 @@
           "sensor": "NISAR",
           "source": "NISAR GCOV (ASF)",
           "label": "NISAR HV change (Oct 24 → Nov 5)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_post",
@@ -7846,7 +7872,8 @@
           "kind": "observed",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_hv_pre",
@@ -7868,7 +7895,8 @@
           "kind": "observed",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HV"
+          "polarization": "HV",
+          "track": "010D"
         },
         {
           "id": "nisar_post",
@@ -7890,7 +7918,8 @@
           "kind": "observed",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "nisar_pre",
@@ -7912,7 +7941,8 @@
           "kind": "observed",
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
-          "polarization": "HH"
+          "polarization": "HH",
+          "track": "010D"
         },
         {
           "id": "radar_post",
@@ -7935,7 +7965,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "teammate",
           "label": "NISAR radar after (teammate render)",
-          "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it"
+          "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it",
+          "track": "010D"
         },
         {
           "id": "radar_pre",
@@ -7958,7 +7989,8 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "teammate",
           "label": "NISAR radar before (teammate render)",
-          "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it"
+          "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it",
+          "track": "010D"
         }
       ],
       "metrics": "metrics.json#rs_uruguai_2026",

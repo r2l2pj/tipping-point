@@ -143,7 +143,7 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
                   "critical_km2", "people_critical", "_null_reasons",
                   "legend", "db_range",
                   "sensor", "source", "label", "note", "attribution", "polarization",
-                  "window", "product"):
+                  "window", "product", "track"):
         if extra in index_entry:
             entry[extra] = index_entry[extra]
     if entry.get("forecast") and "forecast_source" not in entry:
