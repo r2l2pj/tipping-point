@@ -3,8 +3,10 @@
 Production moves from Vercel to our own VPS. The app is one Next.js 16
 server (`next start`) in a Docker image. **Data does not move**: the server
 reads the published files from the `fallback` branch of
-`r2l2pj/tipping-point-data` (GitHub raw), then the Neon bucket, then the
-copy bundled in the image (`public/data`). The 3-hourly data job keeps
+`r2l2pj/tipping-point-data` (GitHub raw), then the pipeline's SQLite
+`docs` table (`/app/.data/tipping_point.sqlite`, refreshed from the fallback
+branch every ≤ 3 h while GitHub answers — keep the `/app/.data` volume), then
+the copy bundled in the image (`public/data`). Neon is no longer read (L53). The 3-hourly data job keeps
 publishing there; a data update never needs an app redeploy.
 
 ## 1. Build and run
@@ -78,7 +80,7 @@ they are **build** arguments, not runtime env.
 
 | Variable | When | Value |
 | --- | --- | --- |
-| `DATA_BASE_URL` | runtime | **Leave unset.** Unset already reads the GitHub raw `fallback` branch first (`https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`), then Neon, then the bundled copy. Setting it makes that URL the ONLY remote (no Neon fallback) — set it to the GitHub raw URL only if Neon must be skipped. |
+| `DATA_BASE_URL` | runtime | **Leave unset.** Unset already reads the GitHub raw `fallback` branch first (`https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`), then the SQLite docs copy in `/app/.data`, then the bundled copy. Setting it replaces GitHub as the only remote (tests pin it unreachable). `DATA_SQLITE` (optional) points at another SQLite file; `DATA_SQLITE_REFRESH=0` stops the 3-hourly download. |
 | `GEE_ENABLED` | runtime | **Unset** (L25: no Earth Engine at runtime). `GEE_PROJECT`, `GCP_SA_KEY` stay unset too. |
 | `APP_URL` | runtime | The new public URL, e.g. `https://tipping-point.example.org` (no trailing slash). |
 | `PORT` | runtime | Default `3000`. Match the `-p` mapping and the proxy. |
@@ -174,7 +176,7 @@ certificate.
   it are slower.
 - `s-maxage` headers exist only on the Earth Engine API routes, which are
   off (`GEE_ENABLED` unset). Without a CDN they do nothing.
-- Map PNG frames load straight from GitHub raw / Neon in the browser, not
+- Map PNG frames load straight from GitHub raw in the browser, not
   through the VPS, so the VPS bandwidth stays small.
 - One instance only. Several instances would need a shared cache handler
   and the same `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` at build time (Next
