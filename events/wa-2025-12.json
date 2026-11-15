@@ -28,7 +28,7 @@
   "nisar": {
     "maturity": "BETA",
     "note": "Pre-calibration products from the Feb 2026 release (subset of acquisitions 2025-10-17 to 2026-01-20). Use relative before/after change on the same frame.",
-    "gunw_note": "No GUNW pair crosses the event — declared limitation; landslide candidates come from post-event HLS optical, always 'candidates' never 'confirmed'; radar confirms floods only.",
+    "gunw_note": "NISAR L2 GUNW pairs exist on track 172 D frames 064 and 065 (Beta X05010; frame 065 also Provisional): event-crossing pair 2025-12-04 -> 2025-12-16 (e.g. NISAR_L2_PR_GUNW_006_172_D_064_007_4000_SH_20251204T031815_20251204T031850_20251216T031815_20251216T031850_X05010_N_F_J_001) and pre-event reference 2025-11-22 -> 2025-12-04 (CMR, 2026-11-15). Earlier note (\"no GUNW pair crosses the event\") was wrong. Any coherence-loss output is 'candidates', never 'confirmed'.",
     "frames": [
       {
         "product": "GCOV",
