@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 METRICS = Path(__file__).resolve().parents[2] / "data" / "metrics.json"
-CASES = ("rs_2024", "wa_2025", "now")
+CASES = ("rs_2024", "wa_2025")   # replay cases; the live node lives in now/summary.json
 
 REQUIRED = (
     # Mode 3 (doc step 7)
@@ -61,9 +61,6 @@ def test_every_null_has_reason(case):
     assert missing == []
 
 
-@pytest.mark.xfail(reason="lead-analysis owns these keys (landslide_hit_pct, "
-                          "flood/forecast blocks); not fixed by the C1 audit",
-                   strict=False)
 @pytest.mark.parametrize("case", CASES)
 def test_lead_owned_keys(case):
     assert _check(case, LEAD_OWNED) == []

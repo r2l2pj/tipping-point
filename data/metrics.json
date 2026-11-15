@@ -60,8 +60,7 @@
         "rule_auc": "No local labeled WA feature CSV/parquet table or trained model exists. The ml pipeline is configured for RS-2024; no WA validation labels/features are available to compute case-specific AUC. Synthetic test fixtures are not validation data.",
         "gpw_year": "not merged: the committed people_critical comes from pipeline/tp/bundle.py, which records no GPW epoch; gee/impact.py (writes gpw_year) was not merged for this case",
         "lead_time_mean_h": "WGS landslide inventory has 15 points (data/wa_2025/geojson/landslide_catalog.geojson) but they are undated: point-level lead time is undefined",
-        "feature_importance": "no trained model: ml/models holds only model_card.md (no slide_xgb.json) and no labeled feature table exists, so importance is undefined",
-        "forecast_source": "07_forecast.py flag not merged as a flat key; the replay forecast source is recorded in forecast_lead_time.forecast_source"
+        "feature_importance": "no trained model: ml/models holds only model_card.md (no slide_xgb.json) and no labeled feature table exists, so importance is undefined"
       },
       "lead_time_median_h": null,
       "lead_time_iqr_h": null,
@@ -161,7 +160,47 @@
       "gpw_year": null,
       "lead_time_mean_h": null,
       "feature_importance": null,
-      "forecast_source": null
+      "forecast_source": "noaa-gfs",
+      "landslide_hit": {
+        "definition": "share of inventory points with TPI_slide >= 0.6 (Critical)",
+        "scale_m": 90,
+        "n_points": 15,
+        "per_day": [
+          {
+            "date": "2025-12-09",
+            "hit_pct": 13.333,
+            "p50": 0.243,
+            "max": 0.822
+          },
+          {
+            "date": "2025-12-10",
+            "hit_pct": 40.0,
+            "p50": 0.471,
+            "max": 0.985
+          },
+          {
+            "date": "2025-12-11",
+            "hit_pct": 66.667,
+            "p50": 0.661,
+            "max": 1.0
+          },
+          {
+            "date": "2025-12-12",
+            "hit_pct": 66.667,
+            "p50": 0.665,
+            "max": 1.0
+          },
+          {
+            "date": "2025-12-13",
+            "hit_pct": 66.667,
+            "p50": 0.665,
+            "max": 1.0
+          }
+        ],
+        "note": "WGS inventory points are undated; hit evaluated per day, headline on the case critical peak day (critical_km2_date). n = 15 is small."
+      },
+      "landslide_hit_pct": 66.667,
+      "landslide_hit_date": "2025-12-12"
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -219,8 +258,7 @@
         "hand_validation": "gee/hand.py (HAND proxy vs MERIT hnd) not run/merged for rs_2024; GEE is not used at runtime (L25)",
         "gpw_year": "not merged: the committed people_critical comes from pipeline/tp/bundle.py, which records no GPW epoch; gee/impact.py (writes gpw_year) was not merged for this case",
         "lead_time_mean_h": "not merged: the committed cluster-mode lead-time block carries median/IQR/hist only; mean was not recorded",
-        "feature_importance": "no trained model: ml/models holds only model_card.md (no slide_xgb.json) and no labeled feature table exists, so importance is undefined",
-        "forecast_source": "07_forecast.py flag not merged as a flat key; the replay forecast source is recorded in forecast_lead_time.forecast_source"
+        "feature_importance": "no trained model: ml/models holds only model_card.md (no slide_xgb.json) and no labeled feature table exists, so importance is undefined"
       },
       "lead_time_median_h": -57.0,
       "lead_time_iqr_h": [
@@ -364,42 +402,9 @@
       "gpw_year": null,
       "lead_time_mean_h": null,
       "feature_importance": null,
-      "forecast_source": null
-    },
-    "now": {
-      "event": "now",
-      "_null_reasons": {
-        "iou": "live now bundle (live/run_now.py): no event, so there is nothing to validate against; Mode 3 validation is replay-only (no NISAR/OPERA pair)",
-        "f1": "live now bundle (live/run_now.py): no event, so there is nothing to validate against; Mode 3 validation is replay-only (no NISAR/OPERA pair)",
-        "cloud_pct": "live now bundle (live/run_now.py): no event, so there is nothing to validate against; Mode 3 validation is replay-only (no OPERA DSWx-HLS peak scene)",
-        "hand_validation": "live now bundle (live/run_now.py): HAND-vs-MERIT validation is run per replay case only; not run for the live AOI",
-        "people_critical": "live now bundle (live/run_now.py): computed each 3 h run into data/now/summary.json (people_critical), not merged into metrics.json",
-        "night_light_drop_pct": "live now bundle (live/run_now.py): event-based metric (7 nights after vs 30 before); there is no event date",
-        "gpw_year": "live now bundle (live/run_now.py): population comes from the static bundle; no GPW epoch is recorded in metrics.json",
-        "flood_source": "live now bundle (live/run_now.py): no flood mask or flood validation input in the live bundle",
-        "lead_time_mean_h": "live now bundle (live/run_now.py): lead time needs dated damage; there is no event or inventory",
-        "lead_time_median_h": "live now bundle (live/run_now.py): lead time needs dated damage; there is no event or inventory",
-        "warned_before_pct": "live now bundle (live/run_now.py): lead time needs dated damage; there is no event or inventory",
-        "rf_auc": "no trained model: ml/models holds only model_card.md and no labeled feature table exists; the live run applies no learned model",
-        "rule_auc": "no labeled evaluation set for the live AOI; AUC is computed offline per replay case only",
-        "feature_importance": "no trained model: ml/models holds only model_card.md (no slide_xgb.json) and no labeled feature table exists, so importance is undefined",
-        "forecast_source": "live now bundle (live/run_now.py): writes forecast_source='noaa-gfs' into data/now/summary.json each run, not into metrics.json"
-      },
-      "iou": null,
-      "f1": null,
-      "cloud_pct": null,
-      "hand_validation": null,
-      "people_critical": null,
-      "night_light_drop_pct": null,
-      "gpw_year": null,
-      "flood_source": null,
-      "lead_time_mean_h": null,
-      "lead_time_median_h": null,
-      "warned_before_pct": null,
-      "rf_auc": null,
-      "rule_auc": null,
-      "feature_importance": null,
-      "forecast_source": null
+      "forecast_source": "noaa-gfs",
+      "landslide_hit_pct": 85.855,
+      "landslide_hit_date": "2024-05-02"
     }
   }
 }
