@@ -179,6 +179,29 @@ def imerg_cogs_match_source(daily, paths: list[Path], tol_mm: float = 0.01) -> b
 CLIM_SOURCE_OK = "imerg-final-0p1"
 
 
+def frame_basis(day: dt.date, today: dt.date, gfs_issued: str | None) -> dict:
+    """Honesty rule 2: what a 3-day frame ending on `day` is made of under
+    L28b (observed IMERG strictly before `today`, NOAA GFS from `today`)."""
+    window = [day - dt.timedelta(days=j) for j in (2, 1, 0)]
+    obs = [d.isoformat() for d in window if d < today]
+    fc = [d.isoformat() for d in window if d >= today]
+    basis = "observed+forecast" if obs and fc else ("forecast" if fc else "observed")
+    issued = (gfs_issued or "")[:16].replace("T", " ") + " UTC" if gfs_issued else "?"
+    def _md(iso):
+        d = dt.date.fromisoformat(iso)
+        return d.strftime("%b ") + str(d.day)
+    if basis == "observed+forecast":
+        label = (f"observed to {_md(obs[-1])} + NOAA GFS forecast for "
+                 f"{', '.join(_md(x) for x in fc)} (issued {issued})")
+    elif basis == "forecast":
+        label = f"NOAA GFS forecast (issued {issued})"
+    else:
+        label = f"observed (IMERG Early) to {_md(obs[-1])}"
+    return {"basis": basis, "obs_days": obs, "forecast_days": fc,
+            "obs_through": obs[-1] if obs else None,
+            "gfs_issued": gfs_issued if fc else None, "basis_label": label}
+
+
 def class_areas_km2(cls: np.ndarray, valid: np.ndarray,
                     area_km2: np.ndarray) -> dict[str, float]:
     """km² per TPI class label over valid pixels."""
@@ -311,10 +334,15 @@ def run(args) -> dict:
             if k <= 1:  # float TPI COGs only for today + D+1 (alert-bot contract)
                 cog_rel = f"cog/{kind}_{'today' if k == 0 else 'd1'}.tif"
                 files[cog_rel] = render.cog_bytes(tpis[k], transform)
+            fb = frame_basis(days[k], today, gfs_issued)
             layers.append({  # v4 layer shape {id, date, png, cog, legend} + bounds
                 "id": f"{kind}_d{k}", "date": days[k].isoformat(),
                 "png": rel, "cog": cog_rel, "legend": LABELS,
-                "bounds": png_bounds, "forecast": k > 0,
+                "bounds": png_bounds,
+                # L28b: D+0 already contains GFS rain for day D
+                "forecast": fb["basis"] != "observed",
+                "partly_forecast": fb["basis"] == "observed+forecast",
+                **fb,
             })
 
     feats = []
@@ -403,6 +431,12 @@ def run(args) -> dict:
     for c in payload["candidates"]:
         c.update(where(*c["centroid"]) or {"municipality": None, "uf": None})
         c["kind"] = "tpi"
+        day = today if c.get("when") == "today" else today + dt.timedelta(days=1)
+        fb = frame_basis(day, today, gfs_issued)
+        c.update(fb)
+        if fb["forecast_days"]:
+            c["basis_note"] = (f"based on forecast rain (NOAA GFS, issued "
+                               f"{fb['basis_label'].split('issued ')[-1].rstrip(')')})")
     payload["paused"] = alerts_paused
     if alerts_paused:
         payload["candidates"] = []

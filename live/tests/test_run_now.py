@@ -173,6 +173,11 @@ def test_run_now_end_to_end(fake_now):
     a = json.loads((out_dir / "alerts.json").read_text())
     assert a["paused"] is True and a["candidates"] == []
     assert not (out_dir / "prev_classes.npz").exists()
+    # honesty rule 2: D+0 is observed to D-1 + GFS for D, and says so
+    d0 = next(l for l in m["layers"] if l["id"] == "tpi_flood_d0")
+    assert d0["partly_forecast"] is True and d0["forecast"] is True
+    assert d0["basis"] == "observed+forecast" and d0["obs_through"] == "2026-11-13"
+    assert "NOAA GFS forecast for Nov 14" in d0["basis_label"]
 
 
 def test_no_upload_flag_removed():
@@ -238,3 +243,18 @@ def test_critical_matches_classes_when_flood_only():
     fl, sl = class_areas_km2(flood, valid, area), class_areas_km2(slide, valid, area)
     assert critical_from_classes(fl) == 24.0 and fl["Crítico"] == 16.0
     assert critical_from_classes(sl) == 0.0 and sl["Baixo"] == 32.0
+
+
+def test_frame_basis_labels_forecast_honestly():
+    import datetime as dt
+    from live.run_now import frame_basis
+    D = dt.date(2026, 11, 15)
+    b0 = frame_basis(D, D, "2026-11-15T00:00:00Z")
+    assert b0["basis"] == "observed+forecast"
+    assert b0["obs_through"] == "2026-11-14" and b0["forecast_days"] == ["2026-11-15"]
+    assert b0["basis_label"] == ("observed to Nov 14 + NOAA GFS forecast for Nov 15 "
+                                 "(issued 2026-11-15 00:00 UTC)")
+    b3 = frame_basis(D + dt.timedelta(days=3), D, "2026-11-15T00:00:00Z")
+    assert b3["basis"] == "forecast" and b3["obs_through"] is None
+    bo = frame_basis(D - dt.timedelta(days=1), D, "2026-11-15T00:00:00Z")
+    assert bo["basis"] == "observed" and bo["gfs_issued"] is None
