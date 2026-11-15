@@ -572,7 +572,10 @@ export default function MapStage({
       })()}
 
       {!comparing && (
-        <div className="absolute z-10 flex flex-col items-end gap-1.5" style={{ right: R(14), bottom: B(12) }}>
+        // Sits above the map attribution line, which MapLibre draws in the
+        // bottom-right corner; at B(12) the legend chip and the locator
+        // covered most of it and its edge stuck out behind them.
+        <div className="absolute z-10 flex flex-col items-end gap-1.5" style={{ right: R(14), bottom: B(40) }}>
           {/* Basemap switcher (L52): a row above the locator inset, clear of
               the horizon chips (left) and the City card (top-centre). */}
           {/* lead-ux: one "Dark ▾" button; the three choices open above it. */}

@@ -31,7 +31,7 @@ export default function LegendChip({
   const name = tpi ? legendTitle(hazard, true) : rows[0]?.label;
   if (!name) return null;
   return (
-    <details data-legend-chip className={`group max-w-[min(320px,calc(100vw-120px))] rounded-[10px] bg-white/95 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)] ${className}`}>
+    <details data-legend-chip className={`group relative max-w-[min(320px,calc(100vw-120px))] rounded-[10px] bg-white/95 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)] ${className}`}>
       <summary className="flex cursor-pointer list-none items-center gap-2 px-2.5 py-1.5 text-xs font-semibold [&::-webkit-details-marker]:hidden" title="Legend">
         <span aria-hidden="true" className="flex shrink-0 overflow-hidden rounded-[3px] border border-black/15">
           {swatches.map((bg, i) => <span key={i} className="inline-block h-3 w-3.5" style={{ background: bg }} />)}
@@ -40,7 +40,9 @@ export default function LegendChip({
         <span aria-hidden="true" className="shrink-0 text-cc-muted group-open:rotate-180">▴</span>
       </summary>
       <Legend bundle={bundle} layers={layers} hazard={hazard} stepDate={stepDate} probHorizon={probHorizon} compact changeCyan={changeCyan}
-        className="max-h-[50vh] overflow-y-auto border-t border-cc-rule px-2.5 pb-2 pt-1.5" />
+        // Opens as a panel above the chip: the chip and its neighbours (the
+        // basemap button, the locator) keep their place.
+        className="absolute bottom-full right-0 z-20 mb-1.5 max-h-[50vh] w-[min(320px,calc(100vw-40px))] overflow-y-auto rounded-[10px] bg-white/95 px-2.5 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.3)]" />
     </details>
   );
 }
