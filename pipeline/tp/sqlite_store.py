@@ -204,8 +204,9 @@ def build(data_root: Path, out: Path | None = None) -> dict:
         cands_from(resp / "flood_dswx.geojson", run_id, "flood", "opera-dswx-s1")
         cands_from(resp / "flood_nisar.geojson", run_id, "flood", "nisar-gcov")
         cands_from(resp / "landslide_dist.geojson", run_id, "landslide", "opera-dist-alert-hls")
-    cands_from(data_root / "rs_2024" / "geojson" / "landslide_candidates.geojson", "rs_2024",
-               "landslide", "opera-dist-alert-hls")
+    for case in CASES:
+        cands_from(data_root / case / "geojson" / "landslide_candidates.geojson", case,
+                   "landslide", "opera-dist-alert-hls")
 
     con.execute("INSERT INTO build_notes VALUES (?,?)",
                 ("built_at", dt.datetime.now(dt.UTC).isoformat(timespec="seconds")))
