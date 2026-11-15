@@ -2,6 +2,7 @@
 // "NISAR" label needs a real pair, scars are always "candidates".
 import { canonicalCaseId } from "@/lib/contract";
 import { assetUrl } from "@/lib/layers";
+import type { RasterTiles } from "./basemap";
 import { hypothesisLine, nisarSeriesView, type NisarSeriesView } from "./nisarSeries";
 import { NISAR_FRAMING, nextLookText } from "./nextPass";
 import { nisarExtras, type NisarExtra } from "./nisarExtras";
@@ -83,7 +84,19 @@ export const AWAITING_PAIR_TEXT = "Awaiting a NISAR pair over the AOI.";
 export const GUNW_LIMIT_TEXT =
   "NISAR radar maps flood candidates only in this case; scar candidates come from post-event NASA HLS optical — the GUNW pair spanning the event is a declared limitation.";
 
-export interface CompareSide { url: string; label: string; bounds?: BBox }
+export interface CompareSide {
+  url: string;
+  label: string;
+  bounds?: BBox;
+  // A raster-tile side (NASA GIBS satellite) instead of a PNG image — `url`
+  // then holds the tile template so keys stay unique; never an image source.
+  tiles?: RasterTiles;
+  // NISAR frame provenance for the compare labels (track/pol/mode).
+  track?: string;
+  pol?: "HH" | "HV";
+  mode?: string;
+  sensor?: string; // sensorName() of the layer — "NISAR radar" | "Radar"
+}
 export interface ComparePair {
   kind: "radar" | "night-lights" | "forecast";
   bounds: BBox;
@@ -105,7 +118,7 @@ export interface ComparePair {
 // `sensor` field (lead-analysis); a layer without it keeps the old meaning
 // (WA's NISAR pair). Anything else is "Radar" with its sensor note.
 export interface RadarSensor { nisar: boolean; name: string; note?: string }
-const sensorOf = (l: unknown): string | undefined => {
+export const sensorOf = (l: unknown): string | undefined => {
   const s = (l as Record<string, unknown> | undefined)?.sensor;
   return typeof s === "string" && s.trim() ? s.trim() : undefined;
 };
@@ -158,6 +171,61 @@ export function nisarStack(bundle: CcBundle): NisarStack | undefined {
   }
   const dates = Object.keys(frames).filter((d) => frames[d].HH || frames[d].HV).sort();
   return dates.length >= 2 ? { dates, frames, title: allNisar ? "NISAR radar dates" : "Radar dates" } : undefined;
+}
+
+// Track-aware variant for the compare (Lucas, STEP 2 — Now ships several
+// tracks, the newest 3 passes each): one stack per `track`, ordered by frame
+// count (the main track first). `nisarStack` above stays the main-track-only
+// view used by the replay swipe and the card.
+export interface NisarTrackStack {
+  track: string; // "" when the manifest carries no track
+  dates: string[];
+  frames: Record<string, { HH?: CompareSide; HV?: CompareSide }>;
+}
+export function nisarTracks(bundle: CcBundle): NisarTrackStack[] {
+  const caseDir = canonicalCaseId(bundle.manifest?.event ?? bundle.id);
+  const byTrack = new Map<string, NisarTrackStack>();
+  for (const raw of bundle.manifest?.layers ?? []) {
+    const l = raw as unknown as Record<string, unknown>;
+    if (l.kind !== "nisar_frame" || typeof l.date !== "string" || typeof l.png !== "string") continue;
+    const url = assetUrl(caseDir, l.png);
+    if (!url) continue;
+    const pol = String(l.polarization ?? "HH").toUpperCase() === "HV" ? "HV" : "HH";
+    const day = l.date.slice(0, 10);
+    const track = typeof l.track === "string" ? l.track : "";
+    const b = Array.isArray(l.bounds) && l.bounds.length === 4 ? (l.bounds as BBox) : undefined;
+    const name = sensorName(sensorOf(l));
+    const mode = Array.isArray(l.mode) ? l.mode[0] : l.mode;
+    const t = byTrack.get(track) ?? { track, dates: [], frames: {} };
+    (t.frames[day] ??= {})[pol] = {
+      url,
+      label: `${name} ${pol} — ${fmtDate(day)}${track ? ` (track ${track})` : ""}`,
+      bounds: b,
+      track: track || undefined,
+      pol,
+      mode: typeof mode === "string" ? mode : undefined,
+      sensor: name,
+    };
+    byTrack.set(track, t);
+  }
+  const tracks = [...byTrack.values()];
+  for (const t of tracks) {
+    t.dates = Object.keys(t.frames).filter((d) => t.frames[d].HH || t.frames[d].HV).sort();
+  }
+  return tracks
+    .filter((t) => t.dates.length > 0)
+    .sort((a, b) => b.dates.length - a.dates.length || a.track.localeCompare(b.track));
+}
+
+// Dates of the fixed nisar_(hv_)pre/post (radar_) pair layers, for cases
+// without a nisar_frame stack (WA, Now before the stack contract).
+export function nisarPairDays(bundle: CcBundle): string[] {
+  const days = (bundle.manifest?.layers ?? [])
+    .filter(
+      (l) => /^(nisar|radar)_(hv_)?(pre|post)$/.test(l.id) && typeof l.date === "string" && !!l.png
+    )
+    .map((l) => (l.date as string).slice(0, 10));
+  return [...new Set(days)].sort();
 }
 
 export interface CompareOption {

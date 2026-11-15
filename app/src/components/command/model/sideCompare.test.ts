@@ -1,41 +1,213 @@
-// Lucas (bug): the compare must never show the same thing on both sides.
+// Lucas (step 2): ONE Compare ⇆ — per-side layer + day, presets, never the
+// same thing on both sides.
 // @ts-expect-error -- bun:test resolves under `bun test`
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
-import { defaultSides, nisarDefaults, sameSide, sidesCompare } from "./sideCompare";
+import {
+  compareLayers,
+  defaultSides,
+  isRiskLayer,
+  nisarDefaults,
+  nisarSideDays,
+  normSide,
+  parseSideSpec,
+  presetSides,
+  sameSide,
+  sideDays,
+  sidesCompare,
+  viewCompareLayer,
+} from "./sideCompare";
+import { nisarTracks } from "./radar";
+import type { Step } from "./steps";
 
-const steps = ["2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01"].map((date, index) =>
-  ({ index, date, forecast: false, top: date, sub: "" })) as never[];
-const frame = (date: string) => ({ id: "tpi_flood", date, png: `tpi_flood_${date}.png` });
+const mkSteps = (dates: string[]): Step[] =>
+  dates.map((date, index) => ({ index, date, forecast: false, top: date, sub: "" })) as Step[];
+const DAYS = ["2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01"];
+const steps = mkSteps(DAYS);
+const frame = (date: string) => ({ id: "tpi_flood", date, png: `tpi_flood_${date}.png`, bounds: [0, 0, 1, 1] });
 const gfs = (k: number, issued: string, date: string) => ({ id: `tpi_flood_gfs_d${k}`, issued, date, png: `gfs_d${k}_${date}.png`, forecast_source: "noaa-gfs" });
-const uy = { id: "rs_uruguai_2026", mode: "replay", bbox: [0, 0, 1, 1], manifest: { event: "rs_uruguai_2026", layers: [
-  ...["2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01"].map(frame), gfs(3, "2026-09-27", "2026-09-30"),
-] } } as never;
+const nisar = (date: string, pol = "hh", track = "010D") =>
+  ({ id: `nisar_${pol}_${date.replaceAll("-", "")}_${track}`, kind: "nisar_frame", date, png: `nisar_stack/png/nisar_${pol}_${date.replaceAll("-", "")}_${track}.png`, track, polarization: pol.toUpperCase(), mode: "4005_DHDH_A", bounds: [0, 0, 1, 1] });
+const uy = {
+  id: "rs_uruguai_2026", mode: "replay", bbox: [0, 0, 1, 1],
+  manifest: {
+    event: "rs_uruguai_2026",
+    layers: [
+      ...DAYS.map(frame),
+      gfs(3, "2026-09-27", "2026-09-30"),
+      { id: "imerg_20260928", kind: "raster", date: "2026-09-28", png: "imerg_20260928.png", window: ["2026-09-28", "2026-09-30"], product: "IMERG Early" },
+      ...["2026-09-18", "2026-09-30", "2026-10-12", "2026-10-24", "2026-11-05"].map((d) => nisar(d)),
+    ],
+  },
+} as never;
 
-test("defaults: right = selected day observed; left = 3 days earlier (Observed view) or the forecast for that day (Forecast view)", () => {
-  const s = defaultSides(steps, 4, 0)!;
-  expect(s.R).toEqual({ date: "2026-09-30", lead: 0 });
-  expect(s.L).toEqual({ date: "2026-09-27", lead: 0 });
+// --- defaults + days -----------------------------------------------------------
+
+test("defaults: right = selected day; left = 3 days earlier; same layer as the map's view", () => {
+  const s = defaultSides(uy, steps, 4, "flood", 0)!;
+  expect(s.R).toEqual({ layer: "flood", date: "2026-09-30", lead: 0 });
+  expect(s.L).toEqual({ layer: "flood", date: "2026-09-27", lead: 0 });
   expect(sameSide(s.L, s.R)).toBe(false);
-  expect(defaultSides(steps, 4, 3)).toEqual({ L: { date: "2026-09-30", lead: 3 }, R: { date: "2026-09-30", lead: 0 } });
-  expect(defaultSides(steps, 0, 0)!.L.date).not.toBe("2026-09-26"); // no earlier day: another step, never the same
+  expect(defaultSides(uy, steps, 4, "flood", 3)).toEqual({
+    L: { layer: "flood", date: "2026-09-30", lead: 3 },
+    R: { layer: "flood", date: "2026-09-30", lead: 0 },
+  });
+  // The map's own view seeds the layer: nisar view → the pass pair.
+  const n = defaultSides(uy, steps, 4, "flood", 0, { layer: viewCompareLayer(uy, steps, ["tpi", "flood"], "flood") })!;
+  expect(n.L.layer).toBe("nisar");
+  expect(nisarDefaults(["2026-09-18", "2026-09-30", "2026-10-12", "2026-10-24", "2026-11-05"], "2026-09-30")).toEqual({ before: "2026-09-30", after: "2026-10-12" });
+});
+
+test("each side's day list depends on its layer: only dates that exist", () => {
+  expect(sideDays(uy, steps, "flood", { layer: "flood", date: "" }).map((d) => d.date)).toEqual(DAYS);
+  expect(sideDays(uy, steps, "flood", { layer: "rain", date: "" }).map((d) => d.date)).toEqual(["2026-09-28"]);
+  expect(sideDays(uy, steps, "flood", { layer: "nisar", date: "" }).map((d) => d.date)).toEqual(["2026-09-18", "2026-09-30", "2026-10-12", "2026-10-24", "2026-11-05"]);
+  // Satellite lists the case days (steps ∪ layer dates).
+  expect(sideDays(uy, steps, "flood", { layer: "satellite", date: "" }).map((d) => d.date)).toContain("2026-09-30");
+  // A NISAR day shows its mode: 'Sep 30 · 4005'.
+  expect(nisarSideDays(uy)[1].label).toBe("Sep 30 · 4005");
+});
+
+test("compareLayers: only layers the case has are offered; live offers ml", () => {
+  const ids = compareLayers(uy, steps, "flood").map((l) => l.id);
+  expect(ids).toContain("flood");
+  expect(ids).toContain("rain");
+  expect(ids).toContain("nisar");
+  expect(ids).toContain("satellite");
+  expect(ids).not.toContain("ml"); // replay
+  const now = { ...uy, mode: "live", manifest: { event: "now", layers: [
+    ...uy.manifest.layers,
+    { id: "p_trigger_24h", date: "2026-10-01", png: "p24.png" },
+    { id: "p_trigger_72h", date: "2026-10-01", png: "p72.png" },
+  ] } } as never;
+  const live = compareLayers(now, steps, "flood");
+  expect(live.map((l) => l.id)).toContain("ml");
+  expect(live.find((l) => l.id === "ml")?.horizons).toEqual(["24h", "72h"]);
+  expect(live.find((l) => l.id === "flood")?.canForecast).toBeUndefined(); // live: no leads
+  expect(compareLayers(uy, steps, "flood").find((l) => l.id === "flood")?.canForecast).toBe(true);
+});
+
+// --- per-side resolution + labels --------------------------------------------
+
+test("risk labels: observed vs forecast", () => {
+  const ok = sidesCompare(uy, { L: { layer: "flood", date: "2026-09-27", lead: 0 }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
+  expect(ok.pair?.before.url).toContain("tpi_flood_2026-09-27.png");
+  expect(ok.pair?.before.label).toBe("Observed Sep 27 (NASA IMERG + SMAP)");
+  const fc = sidesCompare(uy, { L: { layer: "flood", date: "2026-09-30", lead: 3 }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
+  expect(fc.pair?.before.label).toBe("Forecast for Sep 30, issued Sep 27 (NOAA GFS)");
+  expect(fc.pair?.before.url).toContain("gfs_d3_2026-09-30.png");
+});
+
+test("rain / satellite / ml / nisar labels", () => {
+  const rain = sidesCompare(uy, { L: { layer: "rain", date: "2026-09-28" }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
+  expect(rain.pair?.before.label).toBe("Rain (NASA GPM IMERG Early) — Sep 28–30");
+  expect(rain.pair?.before.url).toContain("imerg_20260928.png");
+
+  const sat = sidesCompare(uy, { L: { layer: "satellite", date: "2026-09-27" }, R: { layer: "satellite", date: "2026-10-12" } });
+  expect(sat.pair?.before.label).toBe("Satellite (NASA GIBS VIIRS) — Sep 27");
+  expect(sat.pair?.after.label).toBe("Satellite (NASA GIBS VIIRS) — Oct 12");
+  expect(sat.pair?.before.tiles?.tiles[0]).toContain("gibs.earthdata.nasa.gov");
+  expect(sat.pair?.before.tiles?.tiles[0]).toContain("/default/2026-09-27/");
+  expect(sat.pair?.after.tiles?.tiles[0]).toContain("/default/2026-10-12/");
+
+  const ni = sidesCompare(uy, { L: { layer: "nisar", date: "2026-09-30", pol: "HH" }, R: { layer: "nisar", date: "2026-10-12", pol: "HH" } });
+  expect(ni.pair?.before.label).toBe("NISAR HH — Sep 30, 2026 (track 010D)");
+  expect(ni.pair?.after.label).toBe("NISAR HH — Oct 12, 2026 (track 010D)");
+  expect(ni.pair?.before.url).toContain("nisar_hh_20260930_010D.png");
+  // Jhonatan: the radar flood candidates ride over a NISAR swipe.
+  expect(ni.pair?.flood).toBeUndefined(); // this fixture has no flood_confirmed product — ok
+
+  const ml = sidesCompare({ ...uy, mode: "live", manifest: { event: "now", layers: [
+    ...uy.manifest.layers, { id: "p_trigger_24h", date: "2026-10-01", png: "p24.png" }] } } as never,
+    { L: { layer: "ml", date: "2026-10-01", horizon: "24h" }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
+  expect(ml.pair?.before.label).toBe("Landslide likelihood (ML) — next 24 h");
+  expect(ml.pair?.before.url).toContain("p24.png");
 });
 
 test("any day vs any day; identical sides say 'Pick a different date'", () => {
-  const ok = sidesCompare(uy, { L: { date: "2026-09-27", lead: 0 }, R: { date: "2026-09-30", lead: 0 } }, "flood");
-  expect(ok.pair?.before.url).toContain("tpi_flood_2026-09-27.png");
-  expect(ok.pair?.after.url).toContain("tpi_flood_2026-09-30.png");
-  expect(ok.pair?.before.label).toBe("Observed Sep 27 (NASA IMERG + SMAP)");
-  expect(ok.warning).toBeUndefined();
-  const fc = sidesCompare(uy, { L: { date: "2026-09-30", lead: 3 }, R: { date: "2026-09-30", lead: 0 } }, "flood");
-  expect(fc.pair?.before.label).toBe("Forecast for Sep 30, issued Sep 27 (NOAA GFS)");
-  expect(fc.pair?.before.url).toContain("gfs_d3_2026-09-30.png");
-  const same = sidesCompare(uy, { L: { date: "2026-09-30", lead: 0 }, R: { date: "2026-09-30", lead: 0 } }, "flood");
+  const same = sidesCompare(uy, { L: { layer: "flood", date: "2026-09-30", lead: 0 }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
   expect(same.warning).toBe("Pick a different date");
+  // Different layers or different pol/track/horizon are never "identical".
+  expect(sidesCompare(uy, { L: { layer: "nisar", date: "2026-09-30", pol: "HH" }, R: { layer: "nisar", date: "2026-09-30", pol: "HV" } }).warning).toBeUndefined();
+  expect(sameSide({ layer: "nisar", date: "2026-09-30", pol: "HH", track: "010D" }, { layer: "nisar", date: "2026-09-30", pol: "HH", track: "082D" })).toBe(false);
+  // Missing sides keep the swipe open and name the gap.
+  const missing = sidesCompare(uy, { L: { layer: "nisar", date: "2026-10-30" }, R: { layer: "nisar", date: "2026-10-12" } });
+  expect(missing.missing?.L).toContain("No NISAR pass for Oct 30");
+  expect(missing.pair?.before.url).toBe(missing.pair?.after.url);
+  expect(missing.pair?.before.label).toContain("not published");
 });
 
-test("NISAR defaults: last pass on/before the day vs the first pass after it — never the same pass", () => {
+// --- presets -------------------------------------------------------------------
+
+test("presets: forecast vs what happened / NISAR before-after / day before vs day of", () => {
+  const f = presetSides(uy, steps, 4, "flood", "forecast-observed")!;
+  expect(f.L).toMatchObject({ layer: "flood", date: "2026-09-30", lead: 3 });
+  expect(f.R).toMatchObject({ layer: "flood", date: "2026-09-30", lead: 0 });
+  const n = presetSides(uy, steps, 4, "flood", "nisar-pair")!;
+  expect(n.L).toMatchObject({ layer: "nisar", date: "2026-09-30", pol: "HH" });
+  expect(n.R).toMatchObject({ layer: "nisar", date: "2026-10-12", pol: "HH" });
+  expect(n.L.track).toBe(n.R.track); // same track
+  const d = presetSides(uy, steps, 4, "flood", "day-before")!;
+  expect(d).toEqual({ L: { layer: "flood", date: "2026-09-29", lead: 0 }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
+  // Hidden when the case cannot do it.
+  const noGfs = { ...uy, manifest: { event: "x", layers: DAYS.map(frame) } } as never;
+  expect(presetSides(noGfs, steps, 4, "flood", "forecast-observed")).toBeUndefined();
+  expect(presetSides(uy, steps, 0, "flood", "day-before")).toBeUndefined(); // no earlier day
+});
+
+// --- deep links -----------------------------------------------------------------
+
+test("parseSideSpec: <layer>:<YYYY-MM-DD>[:<lead|pol|horizon>[:<track>]]", () => {
+  expect(parseSideSpec("flood:2026-09-30")).toEqual({ layer: "flood", date: "2026-09-30", lead: 0 });
+  expect(parseSideSpec("flood:2026-09-30:3")).toEqual({ layer: "flood", date: "2026-09-30", lead: 3 });
+  expect(parseSideSpec("slide:2026-09-30:d2")).toEqual({ layer: "slide", date: "2026-09-30", lead: 2 });
+  expect(parseSideSpec("nisar:2026-10-12:HV")).toEqual({ layer: "nisar", date: "2026-10-12", pol: "HV" });
+  expect(parseSideSpec("nisar:2026-10-12:hh:154d")).toEqual({ layer: "nisar", date: "2026-10-12", pol: "HH", track: "154D" });
+  expect(parseSideSpec("ml:2026-10-01:72h")).toEqual({ layer: "ml", date: "2026-10-01", horizon: "72h" });
+  expect(parseSideSpec("satellite:2026-09-27")).toEqual({ layer: "satellite", date: "2026-09-27" });
+  expect(parseSideSpec("imerg:2026-09-28")).toEqual({ layer: "rain", date: "2026-09-28" });
+  expect(parseSideSpec("bogus:2026-09-30")).toBeUndefined();
+  expect(parseSideSpec("flood:not-a-day")).toBeUndefined();
+  expect(parseSideSpec("flood:2026-09-30:x")).toBeUndefined();
+});
+
+test("normSide: clamps the day to the layer's own days; fills lead/pol/horizon", () => {
+  expect(normSide(uy, steps, "flood", { layer: "rain", date: "2026-09-30" })).toEqual({ layer: "rain", date: "2026-09-28" });
+  expect(normSide(uy, steps, "flood", { layer: "nisar", date: "2026-10-05" })).toEqual({ layer: "nisar", date: "2026-09-30", pol: "HH" });
+  expect(normSide(uy, steps, "flood", { layer: "flood", date: "2026-09-30" })).toEqual({ layer: "flood", date: "2026-09-30", lead: 0 });
+});
+
+// --- NISAR tracks (Now contract) ------------------------------------------------
+
+test("nisarTracks: one stack per track; pairs only within the same track + pol", () => {
+  const now = { id: "now", mode: "live", bbox: [0, 0, 1, 1], manifest: { event: "now", layers: [
+    nisar("2026-11-03", "hh", "154D"), nisar("2026-10-20", "hh", "154D"), nisar("2026-10-08", "hv", "154D"),
+    nisar("2026-11-02", "hh", "010D"), nisar("2026-10-19", "hh", "010D"),
+  ] } } as never;
+  const tracks = nisarTracks(now);
+  expect(tracks.map((t) => t.track).sort()).toEqual(["010D", "154D"]);
+  expect(tracks.find((t) => t.track === "154D")?.dates).toEqual(["2026-10-08", "2026-10-20", "2026-11-03"]);
+  // A side on a track + day resolves only that track's frame.
+  const a = sidesCompare(now, {
+    L: { layer: "nisar", date: "2026-10-20", pol: "HH", track: "154D" },
+    R: { layer: "nisar", date: "2026-11-03", pol: "HH", track: "154D" },
+  });
+  expect(a.pair?.before.label).toBe("NISAR HH — Oct 20, 2026 (track 154D)");
+  expect(a.pair?.after.url).toContain("nisar_hh_20261103_154D.png");
+  // The day list of a side follows its own track.
+  expect(nisarSideDays(now, "010D").map((d) => d.date)).toEqual(["2026-10-19", "2026-11-02"]);
+  // Live offers every track; the compare lists them.
+  expect(compareLayers(now, steps, "flood").find((l) => l.id === "nisar")?.tracks?.map((t) => t.id).sort()).toEqual(["010D", "154D"]);
+  // A date the other track lacks resolves that side's own track frame.
+  const b = sidesCompare(now, {
+    L: { layer: "nisar", date: "2026-10-20", pol: "HH", track: "154D" },
+    R: { layer: "nisar", date: "2026-10-20", pol: "HH", track: "010D" },
+  });
+  expect(b.missing?.R).toContain("track 010D");
+});
+
+test("nisarDefaults: last pass on/before the day vs the first pass after it — never the same pass", () => {
   const uyPasses = ["2026-09-18", "2026-09-30", "2026-10-12", "2026-10-24", "2026-11-05"];
   expect(nisarDefaults(uyPasses, "2026-09-30")).toEqual({ before: "2026-09-30", after: "2026-10-12" });
   expect(nisarDefaults(uyPasses, "2026-10-05")).toEqual({ before: "2026-09-30", after: "2026-10-12" });
@@ -58,4 +230,10 @@ test("Radar card date chips: After lists only later passes; picking the last Bef
   expect(beforeRow).not.toContain(">Nov 5<"); // the last pass can't be a Before
   expect(afterRow).not.toContain(">Oct 24<"); // only passes after Before
   expect(afterRow).toContain(">Nov 5<");
+});
+
+test("isRiskLayer guards the lead chips", () => {
+  expect(isRiskLayer("flood")).toBe(true);
+  expect(isRiskLayer("slide")).toBe(true);
+  expect(isRiskLayer("nisar")).toBe(false);
 });

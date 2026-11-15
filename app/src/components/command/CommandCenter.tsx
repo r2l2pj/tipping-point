@@ -24,12 +24,11 @@ import { expandLayerUrls } from "./model/layerUrls";
 import { priorityAreas } from "./model/areas";
 import { availability, missingText } from "./model/availability";
 import { dataStatus, freshnessText } from "./model/dataStatus";
-import { classLabel, fmtDate, fmtKm2 } from "./model/format";
+import { classLabel, fmtKm2 } from "./model/format";
 import { CLASS_COLOR } from "./model/legend";
 import { layerRows, visibleLayerRows } from "./model/layerRegistry";
 import { caseDirOf, declared, effectiveBundle, productUrl, withLazy, zonesAreTrimmed } from "./model/lazy";
-import { forecastCompare, hasGfsFrames } from "./model/forecastCompare";
-import { defaultSides, nisarDefaults, sidesCompare } from "./model/sideCompare";
+import { bothNisar, COMPARE_PRESETS, compareLayers, defaultSides, nisarDefaults, presetSides, sideDays, sidesCompare, viewCompareLayer, nisarSideDays } from "./model/sideCompare";
 import { nightLightsCompare, radarCard } from "./model/radar";
 import { evidence, replayCheckRows } from "./model/replayCheck";
 import { sourceRows } from "./model/sources";
@@ -334,21 +333,27 @@ export function CommandCenterView({
   const rows = visibleLayerRows(layerRows(bundle, state.layers, state.hazard, step?.date, state.probHorizon))
     .filter((r) => !sparse || r.available || r.on);
   const nightLights = nightLightsCompare(bundle);
-  // Lucas: the generic Compare ⇆ (LEFT / RIGHT day + Observed | Forecast k).
-  const sidesNow = state.compareSides ?? defaultSides(steps, state.dayIndex, state.issueLead);
-  const sidesInfo = state.compareOpen === "forecast" && sidesNow
+  // Lucas (step 2): ONE generic Compare ⇆ — LEFT / RIGHT layer + day +
+  // Observed | Forecast k / pol / track / horizon each.
+  const sidesNow = state.compareOpen === "forecast"
+    ? (state.compareSides ?? defaultSides(bundle, steps, state.dayIndex, state.hazard, state.issueLead,
+        { layer: viewCompareLayer(bundle, steps, state.layers, state.hazard), horizon: state.probHorizon }))
+    : undefined;
+  const sidesInfo = sidesNow
     ? {
         sides: sidesNow,
-        result: sidesCompare(bundle, sidesNow, state.hazard),
-        days: steps.map((s) => ({ date: s.date.slice(0, 10), label: `${fmtDate(s.date)}${s.forecast ? " (forecast)" : ""}` })),
-        canForecast: bundle.mode === "replay" && hasGfsFrames(bundle),
+        result: sidesCompare(bundle, sidesNow),
+        layers: compareLayers(bundle, steps, state.hazard),
+        days: {
+          L: sideDays(bundle, steps, state.hazard, sidesNow.L),
+          R: sideDays(bundle, steps, state.hazard, sidesNow.R),
+        },
+        presets: COMPARE_PRESETS.filter((p) => presetSides(bundle, steps, state.dayIndex, state.hazard, p.id)),
       }
     : undefined;
+  const nisarOpen = bothNisar(sidesNow);
   const comparePair =
-    state.compareOpen === "radar" ? radar.compare.pair
-    : state.compareOpen === "night-lights" ? nightLights.pair
-    // L52: forecast vs observed — the pair follows the timeline day and
-    // the lead chips (state.issueLead); both sides change together.
+    state.compareOpen === "night-lights" ? nightLights.pair
     : state.compareOpen === "forecast"
       ? sidesInfo?.result.pair
       : undefined;
@@ -425,15 +430,15 @@ export function CommandCenterView({
           stageRef={stageRef}
           focus={focus}
           cityPin={cityPin}
-          compareDefaults={{ before: radar.preIso, after: radar.postIso }}
           hourFrame={hourFrameFor(bundle, state.hazard, step?.date, hour)}
           hour={hour}
           sidesCtl={sidesInfo ? {
-            sides: sidesInfo.sides, days: sidesInfo.days, canForecast: sidesInfo.canForecast,
+            sides: sidesInfo.sides, layers: sidesInfo.layers, days: sidesInfo.days,
+            presets: sidesInfo.presets,
             warning: sidesInfo.result.warning, missing: sidesInfo.result.missing,
             onSide: (side, patch) => dispatch({ type: "setCompareSide", side, ...patch }),
+            onPreset: (id) => dispatch({ type: "applyComparePreset", id }),
           } : undefined}
-          compareNisarDefaults={nisarDefaults(radar.compare.pair?.stack?.dates ?? [], step?.date)}
           cityOutline={!live ? replayCity?.outline : undefined}
           featuredCase={(() => {
             const f = cases.find((c) => c.mode === "replay" && isFeatured(c));
@@ -539,19 +544,25 @@ export function CommandCenterView({
                 <PanelSection label="Now on the ground">
                 <RadarCard
                   hideMissing={sparse}
-                  swipeDates={state.compareOpen === "radar" && radar.compare.pair?.stack ? {
-                    dates: radar.compare.pair.stack.dates,
-                    before: state.compareInit?.before ?? nisarDefaults(radar.compare.pair.stack.dates, step?.date).before ?? radar.compare.pair.stack.dates[0],
-                    after: state.compareInit?.after ?? nisarDefaults(radar.compare.pair.stack.dates, step?.date).after ?? radar.compare.pair.stack.dates[radar.compare.pair.stack.dates.length - 1],
-                    onPick: (before, after) => dispatch({ type: "setCompareDates", before, after }),
-                  } : undefined}
+                  swipeDates={nisarOpen && sidesNow ? (() => {
+                    const track = sidesNow.L.layer === "nisar" ? sidesNow.L.track : sidesNow.R.layer === "nisar" ? sidesNow.R.track : undefined;
+                    const dates = nisarSideDays(bundle, track).map((d) => d.date);
+                    if (dates.length < 2) return undefined;
+                    const def = nisarDefaults(dates, step?.date);
+                    return {
+                      dates,
+                      before: sidesNow.L.layer === "nisar" ? sidesNow.L.date : def.before ?? dates[0],
+                      after: sidesNow.R.layer === "nisar" ? sidesNow.R.date : def.after ?? dates[dates.length - 1],
+                      onPick: (before, after) => dispatch({ type: "setCompareDates", before, after }),
+                    };
+                  })() : undefined}
                   radar={radar}
                   floodOn={state.layers.includes("flood")}
-                  compareOpen={state.compareOpen === "radar"}
+                  compareOpen={nisarOpen}
                   onConfirm={() => dispatch({ type: "confirmRadar" })}
                   onShowFlood={() => dispatch({ type: "toggleLayer", id: "flood" })}
                   onCompare={() =>
-                    dispatch(state.compareOpen === "radar" ? { type: "closeCompare" } : { type: "openCompare", kind: "radar" })}
+                    dispatch(nisarOpen ? { type: "closeCompare" } : { type: "openCompare", kind: "radar" })}
                 />
                 {forecastNisarNote && (
                   <p className="m-0 rounded-lg border border-cc-line bg-cc-well px-2.5 py-1.5 text-xs" data-forecast-nisar-note>

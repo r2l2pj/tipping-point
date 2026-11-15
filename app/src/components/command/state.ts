@@ -18,7 +18,7 @@ import {
 } from "./model/layerRegistry";
 import type { ComparePair } from "./model/radar";
 import { viewLayers, type ViewId } from "./model/views";
-import { defaultSides, type Sides } from "./model/sideCompare";
+import { defaultSides, normSide, nisarDefaults, parseSideSpec, presetSides, sideDays, viewCompareLayer, type ComparePresetId, type Sides } from "./model/sideCompare";
 import { caseHasHazard, defaultStepIndex, floodPostDate, stepsFor, type IssueLead } from "./model/steps";
 import type { CcBundle, Hazard } from "./model/types";
 
@@ -43,8 +43,8 @@ export interface ScreenState {
   selectedArea: number | null; // zone rank
   calloutExpanded: boolean;
   compareOpen: ComparePair["kind"] | null;
-  compareInit?: { before?: string; after?: string; pol?: "HH" | "HV" }; // deep link, first open only
-  // Lucas: the generic Compare ⇆ — LEFT / RIGHT day + Observed | Forecast k.
+  // Lucas (step 2): the generic Compare ⇆ — LEFT / RIGHT layer + day +
+  // Observed | Forecast k | pol | track | horizon each.
   compareSides?: Sides;
   fitTo?: [number, number, number, number]; // deep link ?fit=<layer>: initial map bounds
   // L52: Dark / Satellite / Streets chip on the map. The featured replay
@@ -78,9 +78,11 @@ export type Action =
   | { type: "toggleCallout" }
   | { type: "openCompare"; kind: ComparePair["kind"] }
   | { type: "closeCompare" }
-  | { type: "setCompareSide"; side: "L" | "R"; date?: string; lead?: IssueLead }
-  // Lucas: NISAR swipe dates are chips in the Radar card.
+  | { type: "setCompareSide"; side: "L" | "R"; layer?: import("./model/sideCompare").CompareLayer; date?: string; lead?: IssueLead; pol?: "HH" | "HV"; track?: string; horizon?: ProbHorizon }
+  // Lucas: NISAR swipe dates are chips in the Radar card (set L/R).
   | { type: "setCompareDates"; before?: string; after?: string }
+  // One-tap presets of the compare panel.
+  | { type: "applyComparePreset"; id: ComparePresetId }
   | { type: "toggleDetails" }
   | { type: "toggleLayersOpen" }
   | { type: "toggleList" }
@@ -164,7 +166,7 @@ export function featuredFirst<T extends CcBundle>(cases: readonly T[]): T[] {
 // The screen opens on Now when a live case is loaded, else on the first case.
 // `initialCase` (the `?case=<id|alias>` deep link of the old screen) opens
 // that case when it is loaded.
-export interface DeepLink { view?: string; lead?: string; compare?: string; before?: string; after?: string; pol?: string; layers?: string; fit?: string; basemap?: string }
+export interface DeepLink { view?: string; lead?: string; compare?: string; before?: string; after?: string; pol?: string; layers?: string; fit?: string; basemap?: string; l?: string; r?: string }
 
 // ?layers=imerg,hand5 → layer ids ("hand5"/"hand" = low ground); ?fit=<key>
 // → the map opens on that layer's bounds (the upstream basin for imerg).
@@ -221,16 +223,37 @@ export function initialState(
       : link.view === "forecast" || link.view === "compare" ? 3 : 0,
     selectedArea: null,
     calloutExpanded: false,
-    compareOpen: link.compare === "radar" ? "radar" : link.compare === "forecast" || link.view === "compare" ? "forecast" : null,
-    compareInit: { before: link.before, after: link.after, pol: link.pol === "HV" ? "HV" : link.pol === "HH" ? "HH" : undefined },
+    compareOpen: link.compare === "night-lights" ? "night-lights" : link.compare || link.view === "compare" ? "forecast" : null,
     compareSides: undefined,
     detailsOpen: false,
     layersOpen: true,
     listExpanded: false,
     chartAsTable: false,
   };
-  // ?compare=forecast&lead=k&day=D → LEFT = forecast for D issued D−k, RIGHT = observed D.
-  if (st.compareOpen === "forecast" && first) st.compareSides = defaultSides(stepsFor(first), st.dayIndex, st.issueLead);
+  // ?compare=forecast&lead=k&day=D → LEFT = forecast for D issued D−k,
+  // RIGHT = observed D (defaultSides with the lead). ?compare=radar&before=
+  // &after=&pol= → both sides NISAR passes. ?compare=1&L=<layer>:<date>[:..]&R=…
+  // → the named sides. Else the map's own view layer.
+  if (st.compareOpen === "forecast" && first) {
+    const steps = stepsFor(first);
+    const seed = { layer: viewCompareLayer(first, steps, st.layers, st.hazard), horizon: st.probHorizon };
+    if (link.compare === "radar") {
+      const pol = link.pol === "HV" ? "HV" as const : "HH" as const;
+      const days = sideDays(first, steps, st.hazard, { layer: "nisar", date: "" }).map((d) => d.date);
+      const def = nisarDefaults(days, steps[st.dayIndex]?.date);
+      st.compareSides = {
+        L: normSide(first, steps, st.hazard, { layer: "nisar", date: link.before ?? def.before ?? "", pol }),
+        R: normSide(first, steps, st.hazard, { layer: "nisar", date: link.after ?? def.after ?? "", pol }),
+      };
+    } else if (link.compare === "1") {
+      const l = parseSideSpec(link.l), r = parseSideSpec(link.r);
+      st.compareSides = l && r
+        ? { L: normSide(first, steps, st.hazard, l), R: normSide(first, steps, st.hazard, r) }
+        : defaultSides(first, steps, st.dayIndex, st.hazard, st.issueLead, seed);
+    } else {
+      st.compareSides = defaultSides(first, steps, st.dayIndex, st.hazard, st.issueLead, seed);
+    }
+  }
   return st;
 }
 
@@ -407,22 +430,53 @@ export function reduce(
       return state.selectedArea === null
         ? state : { ...state, calloutExpanded: !state.calloutExpanded };
     case "setCompareSide": {
-      const cur = state.compareSides ?? defaultSides(stepsFor(bundle), state.dayIndex, state.issueLead);
+      if (!bundle) return state;
+      const cur = state.compareSides
+        ?? defaultSides(bundle, stepsFor(bundle), state.dayIndex, state.hazard, state.issueLead, { horizon: state.probHorizon });
       if (!cur) return state;
-      const s = cur[action.side];
-      return { ...state, compareSides: { ...cur, [action.side]: { date: action.date ?? s.date, lead: action.lead ?? s.lead } } };
+      const merged = { ...cur[action.side] };
+      if (action.layer !== undefined) merged.layer = action.layer;
+      if (action.date !== undefined) merged.date = action.date;
+      if (action.lead !== undefined) merged.lead = action.lead;
+      if (action.pol !== undefined) merged.pol = action.pol;
+      if (action.track !== undefined) merged.track = action.track;
+      if (action.horizon !== undefined) merged.horizon = action.horizon;
+      return { ...state, compareSides: { ...cur, [action.side]: normSide(bundle, stepsFor(bundle), state.hazard, merged) } };
     }
-    case "openCompare":
-      // Opening the comparison keeps the layers; closing restores the map.
-      return {
-        ...state, compareOpen: action.kind, playing: false,
-        // A fresh generic compare starts from the selected day (never stale sides).
-        compareSides: action.kind === "forecast" ? defaultSides(stepsFor(bundle), state.dayIndex, state.issueLead) : state.compareSides,
-      };
+    case "openCompare": {
+      if (!bundle) return state;
+      if (action.kind === "night-lights") {
+        return { ...state, compareOpen: "night-lights", playing: false };
+      }
+      const steps = stepsFor(bundle);
+      const seed = { layer: viewCompareLayer(bundle, steps, state.layers, state.hazard), horizon: state.probHorizon };
+      // 'radar' (Radar card / old link) = the generic compare on the NISAR
+      // preset; 'forecast' = a fresh compare seeded from the map's own view.
+      const compareSides = action.kind === "radar"
+        ? (presetSides(bundle, steps, state.dayIndex, state.hazard, "nisar-pair")
+          ?? defaultSides(bundle, steps, state.dayIndex, state.hazard, state.issueLead, { ...seed, layer: "nisar" }))
+        : defaultSides(bundle, steps, state.dayIndex, state.hazard, state.issueLead, seed);
+      return { ...state, compareOpen: "forecast", playing: false, compareSides };
+    }
     case "closeCompare":
       return { ...state, compareOpen: null };
-    case "setCompareDates":
-      return { ...state, compareInit: { ...state.compareInit, before: action.before, after: action.after } };
+    case "setCompareDates": {
+      const cur = state.compareSides;
+      if (!cur || !bundle) return state;
+      const steps = stepsFor(bundle);
+      return {
+        ...state,
+        compareSides: {
+          L: action.before ? normSide(bundle, steps, state.hazard, { ...cur.L, layer: "nisar", date: action.before }) : cur.L,
+          R: action.after ? normSide(bundle, steps, state.hazard, { ...cur.R, layer: "nisar", date: action.after }) : cur.R,
+        },
+      };
+    }
+    case "applyComparePreset": {
+      if (!bundle) return state;
+      const sides = presetSides(bundle, stepsFor(bundle), state.dayIndex, state.hazard, action.id);
+      return sides ? { ...state, compareSides: sides } : state;
+    }
     case "toggleDetails":
       return { ...state, detailsOpen: !state.detailsOpen };
     case "toggleLayersOpen":

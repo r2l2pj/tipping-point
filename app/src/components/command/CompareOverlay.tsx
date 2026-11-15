@@ -9,9 +9,18 @@ import {
 import "maplibre-gl/dist/maplibre-gl.css";
 import { boundsToImageCoordinates } from "@/lib/tpi";
 import { cameraPatch, clipPathFor, dragStep, pctFromClientX, SWIPE_MAX_PCT, SWIPE_MIN_PCT } from "@/lib/swipe";
+import { horizonLabel, type ProbHorizon } from "@/lib/layers";
+import { fmtDayShort } from "./model/format";
 import { FLOODED_FILL, FLOODED_OUTLINE, type ComparePair } from "./model/radar";
 import { ISSUE_LEADS, type IssueLead } from "./model/steps";
-import type { Sides } from "./model/sideCompare";
+import {
+  COMPARE_LAYER_LABEL,
+  isRiskLayer,
+  type CompareLayer,
+  type CompareLayerInfo,
+  type ComparePresetId,
+  type Sides,
+} from "./model/sideCompare";
 
 // Same worker fix and the same dark basemap as Map.tsx.
 setWorkerUrl("/maplibre-gl-worker.js");
@@ -24,100 +33,113 @@ export interface CompareControls {
   recenter: () => void;
 }
 
-// Before / after comparison over the map container (radar pair or
-// night-light pair). Mounted only while it is open: the only time more than
-// one map instance exists. Takes over the old SwipeCompare.
-// L42: HH | HV switch when the radar pair carries an HV pair; switching
-// remounts the two maps on the other images.
+// Before / after comparison over the map container — ONE generic compare
+// (Lucas, step 2): each side picks its own layer, day and Observed |
+// Forecast k / polarization / track / horizon. Mounted only while open.
 export default function CompareOverlay({
   pair,
   onClose,
   controlsRef,
-  init,
   sidesCtl,
 }: {
   pair: ComparePair;
   onClose: () => void;
   controlsRef: MutableRefObject<CompareControls | null>;
-  init?: { before?: string; after?: string; pol?: "HH" | "HV" };
-  // L52 (forecast swipe): the lead chips; `lead` is the pair's own lead.
-  // Lucas: generic Compare ⇆ — LEFT / RIGHT day + Observed | Forecast k each.
+  // Lucas (step 2): LEFT / RIGHT layer + day + per-layer extras each;
+  // preset chips on top; never both sides identical.
   sidesCtl?: {
     sides: Sides;
-    days: { date: string; label: string }[];
-    canForecast: boolean;
+    layers: CompareLayerInfo[];
+    days: Record<"L" | "R", { date: string; label: string }[]>;
+    presets: { id: ComparePresetId; label: string }[];
     warning?: string;
     missing?: { L?: string; R?: string };
-    onSide: (side: "L" | "R", patch: { date?: string; lead?: IssueLead }) => void;
+    onSide: (side: "L" | "R", patch: {
+      layer?: CompareLayer; date?: string; lead?: IssueLead;
+      pol?: "HH" | "HV"; track?: string; horizon?: ProbHorizon;
+    }) => void;
+    onPreset: (id: ComparePresetId) => void;
   };
 }) {
-  const [pol, setPol] = useState<"HH" | "HV">(init?.pol ?? "HH");
-  const stack = pair.stack;
-  const n = stack?.dates.length ?? 0;
-  const at = (d: string | undefined, fallback: number) => {
-    const i = d && stack ? stack.dates.indexOf(d.slice(0, 10)) : -1;
-    return i >= 0 ? i : fallback;
-  };
-  // Lucas: the dates are picked in the Radar card (chips), not here.
-  const bi = at(init?.before, 0);
-  const ai = Math.max(bi, at(init?.after, Math.max(0, n - 1)));
-  // Same tag wording as the pair: "NISAR radar before (HH) — Sep 30, 2026".
-  const sideAt = (i: number, side: "before" | "after") => {
-    const f = stack!.frames[stack!.dates[i]];
-    const s = (pol === "HV" ? f.HV ?? f.HH : f.HH ?? f.HV)!;
-    const p = s === f.HV ? "HV" : "HH";
-    return { ...s, label: s.label.replace(/ (HH|HV) — /, ` ${side} (${p}) — `) };
-  };
-  const shown = stack
-    ? { ...pair, before: sideAt(bi, "before"), after: sideAt(ai, "after") }
-    : pol === "HV" && pair.hv ? { ...pair, before: pair.hv.before, after: pair.hv.after } : pair;
-  const hasHv = !!pair.hv || !!stack?.dates.some((d) => stack.frames[d].HV);
   const seg = (on: boolean) =>
     `rounded-full px-2.5 py-0.5 text-xs font-semibold ${on ? "bg-cc-accent text-white" : "text-cc-ink"}`;
+  const sel = "h-7 rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold";
   return (
     <>
-      <CompareMaps key={`${pol}-${bi}-${ai}`} pair={shown} onClose={onClose} controlsRef={controlsRef} />
-      {(hasHv || sidesCtl) && (
-        <div className={`absolute z-30 flex -translate-x-1/2 flex-col items-center gap-1 ${sidesCtl ? "top-20" : stack ? "top-12" : "top-3"}`}
+      <CompareMaps pair={pair} onClose={onClose} controlsRef={controlsRef} />
+      {sidesCtl && (
+        <div className="absolute z-30 top-20 flex -translate-x-1/2 flex-col items-center gap-1"
           // Centred on the visible map, never under the floating cards.
           style={{ left: "calc(var(--cc-il, 0px) + (100% - var(--cc-il, 0px) - var(--cc-ir, 0px)) / 2)",
             maxWidth: "calc(100% - var(--cc-il, 0px) - var(--cc-ir, 0px) - 24px)" }}>
-          {sidesCtl && (
-            <div className="flex flex-col gap-1 rounded-xl border border-cc-line-strong bg-white/95 px-2 py-1.5 text-xs shadow" data-compare-sides>
-              {(["L", "R"] as const).map((side) => {
-                const s = sidesCtl.sides[side];
-                return (
-                  <div key={side} role="group" aria-label={side === "L" ? "Left side" : "Right side"} className="flex flex-wrap items-center gap-1" data-side={side}>
-                    <span className="w-9 font-semibold text-cc-muted">{side === "L" ? "Left" : "Right"}</span>
-                    <select aria-label={`${side === "L" ? "Left" : "Right"} day`} value={s.date} onChange={(e) => sidesCtl.onSide(side, { date: e.target.value })}
-                      className="h-7 rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold">
-                      {sidesCtl.days.map((d) => <option key={d.date} value={d.date}>{d.label}</option>)}
+          <div className="flex flex-col gap-1 rounded-xl border border-cc-line-strong bg-white/95 px-2 py-1.5 text-xs shadow" data-compare-sides>
+            {sidesCtl.presets.length > 0 && (
+              <div role="group" aria-label="Compare presets" data-compare-presets className="flex flex-wrap items-center gap-1">
+                {sidesCtl.presets.map((p) => (
+                  <button key={p.id} type="button" onClick={() => sidesCtl.onPreset(p.id)}
+                    className="rounded-full border border-cc-line-strong px-2.5 py-0.5 text-xs font-semibold text-cc-ink">{p.label}</button>
+                ))}
+              </div>
+            )}
+            {(["L", "R"] as const).map((side) => {
+              const s = sidesCtl.sides[side];
+              const name = side === "L" ? "Left" : "Right";
+              const info = sidesCtl.layers.find((l) => l.id === s.layer);
+              const days = sidesCtl.days[side];
+              const dayOpts = days.some((d) => d.date === s.date)
+                ? days
+                : [...days, { date: s.date, label: fmtDayShort(s.date) }];
+              return (
+                <div key={side} role="group" aria-label={`${name} side`} className="flex flex-wrap items-center gap-1" data-side={side}>
+                  <span className="w-9 font-semibold text-cc-muted">{name}</span>
+                  <select aria-label={`${name} layer`} value={s.layer}
+                    onChange={(e) => sidesCtl.onSide(side, { layer: e.target.value as CompareLayer })}
+                    className={sel} data-layer-select>
+                    {!info && <option value={s.layer}>{COMPARE_LAYER_LABEL[s.layer]}</option>}
+                    {sidesCtl.layers.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+                  </select>
+                  {s.layer === "nisar" && info?.tracks?.length ? (
+                    <select aria-label={`${name} track`} value={s.track ?? info.tracks[0].id}
+                      onChange={(e) => sidesCtl.onSide(side, { track: e.target.value })}
+                      className={sel} data-track-select>
+                      {info.tracks.map((t) => <option key={t.id} value={t.id}>Track {t.id || "—"}</option>)}
                     </select>
-                    {sidesCtl.canForecast && (
-                      <>
-                        <button type="button" aria-pressed={s.lead === 0} onClick={() => sidesCtl.onSide(side, { lead: 0 })} className={seg(s.lead === 0)}>Observed</button>
-                        <button type="button" aria-pressed={s.lead > 0} onClick={() => sidesCtl.onSide(side, { lead: s.lead || 3 })} className={seg(s.lead > 0)}>Forecast</button>
-                        {s.lead > 0 && ISSUE_LEADS.map((k) => (
-                          <button key={k} type="button" aria-pressed={s.lead === k} onClick={() => sidesCtl.onSide(side, { lead: k })} className={seg(s.lead === k)}>{k} d before</button>
-                        ))}
-                      </>
-                    )}
-                    {sidesCtl.missing?.[side] && <span className="italic text-cc-muted">{sidesCtl.missing[side]}</span>}
-                  </div>
-                );
-              })}
-              {sidesCtl.warning && <p className="m-0 font-semibold text-cc-warn" role="status" data-compare-warning>{sidesCtl.warning}</p>}
-            </div>
-          )}
-          {hasHv && (
-            <div role="group" aria-label="Polarization" data-polarization
-              className="flex items-center gap-1 rounded-full border border-cc-line-strong bg-white/95 p-[3px] shadow">
-              <span className="px-1.5 text-xs text-cc-muted">Polarization</span>
-              {(["HH", "HV"] as const).map((p) => (
-                <button key={p} type="button" aria-pressed={pol === p} onClick={() => setPol(p)} className={seg(pol === p)}>{p}</button>
-              ))}
-            </div>
-          )}
+                  ) : null}
+                  <select aria-label={`${name} day`} value={s.date}
+                    onChange={(e) => sidesCtl.onSide(side, { date: e.target.value })}
+                    className={sel} data-day-select>
+                    {dayOpts.map((d) => <option key={d.date} value={d.date}>{d.label}</option>)}
+                  </select>
+                  {isRiskLayer(s.layer) && info?.canForecast && (
+                    <>
+                      <button type="button" aria-pressed={(s.lead ?? 0) === 0} onClick={() => sidesCtl.onSide(side, { lead: 0 })} className={seg((s.lead ?? 0) === 0)}>Observed</button>
+                      <button type="button" aria-pressed={(s.lead ?? 0) > 0} onClick={() => sidesCtl.onSide(side, { lead: s.lead || 3 })} className={seg((s.lead ?? 0) > 0)}>Forecast</button>
+                      {(s.lead ?? 0) > 0 && ISSUE_LEADS.map((k) => (
+                        <button key={k} type="button" aria-pressed={s.lead === k} onClick={() => sidesCtl.onSide(side, { lead: k })} className={seg(s.lead === k)}>{k} d before</button>
+                      ))}
+                    </>
+                  )}
+                  {s.layer === "nisar" && (info?.pols?.length ?? 0) > 1 && (
+                    <>
+                      {(info!.pols!).map((p) => (
+                        <button key={p} type="button" aria-pressed={(s.pol ?? "HH") === p} onClick={() => sidesCtl.onSide(side, { pol: p })} className={seg((s.pol ?? "HH") === p)}>{p}</button>
+                      ))}
+                    </>
+                  )}
+                  {s.layer === "ml" && (info?.horizons?.length ?? 0) > 0 && (
+                    <>
+                      {info!.horizons!.map((h) => (
+                        <button key={h} type="button" aria-pressed={(s.horizon ?? info!.horizons![0]) === h}
+                          onClick={() => sidesCtl.onSide(side, { horizon: h })} className={seg((s.horizon ?? info!.horizons![0]) === h)}>{horizonLabel(h)}</button>
+                      ))}
+                    </>
+                  )}
+                  {sidesCtl.missing?.[side] && <span className="italic text-cc-muted">{sidesCtl.missing[side]}</span>}
+                </div>
+              );
+            })}
+            {sidesCtl.warning && <p className="m-0 font-semibold text-cc-warn" role="status" data-compare-warning>{sidesCtl.warning}</p>}
+          </div>
         </div>
       )}
     </>
@@ -199,11 +221,22 @@ function CompareMaps({
       );
     let fitted = false;
     const onLoad = (map: MapInstance, side: ComparePair["before"]) => {
-      map.addSource("swipe-image", {
-        type: "image",
-        url: side.url,
-        coordinates: boundsToImageCoordinates(side.bounds ?? pair.bounds),
-      });
+      // A raster-tile side (NASA GIBS satellite) instead of a PNG image.
+      if (side.tiles) {
+        map.addSource("swipe-image", {
+          type: "raster",
+          tiles: side.tiles.tiles,
+          tileSize: side.tiles.tileSize,
+          maxzoom: side.tiles.maxzoom,
+          attribution: side.tiles.attribution,
+        });
+      } else {
+        map.addSource("swipe-image", {
+          type: "image",
+          url: side.url,
+          coordinates: boundsToImageCoordinates(side.bounds ?? pair.bounds),
+        });
+      }
       map.addLayer({ id: "swipe-image", type: "raster", source: "swipe-image" });
       // Flooded area (radar) in its own colour above both radar images.
       if (pair.flood) {

@@ -50,6 +50,21 @@ const GIBS_VIIRS = (date: string) =>
 const gibsDate = (d?: string) =>
   /^\d{4}-\d{2}-\d{2}$/.test(d ?? "") ? d! : "default";
 
+// The GIBS VIIRS true-colour raster-tile source spec (basemap underlay and
+// the compare swipe's satellite side — one day per side).
+export interface RasterTiles {
+  tiles: string[];
+  tileSize: number;
+  maxzoom: number;
+  attribution: string;
+}
+export const gibsTiles = (date?: string): RasterTiles => ({
+  tiles: [GIBS_VIIRS(gibsDate(date))],
+  tileSize: 256,
+  maxzoom: 9,
+  attribution: "Imagery: NASA GIBS VIIRS",
+});
+
 export interface BasemapPlan {
   /** The raster satellite underlay spec (source + layer ids, tiles, zoom). */
   satellite: {
@@ -74,10 +89,7 @@ export function basemapPlan(basemap: Basemap, imageryDate?: string): BasemapPlan
     satellite: {
       source: BM_SAT_SRC,
       layer: BM_SAT_LYR,
-      tiles: [GIBS_VIIRS(gibsDate(imageryDate))],
-      tileSize: 256,
-      maxzoom: 9,
-      attribution: "Imagery: NASA GIBS VIIRS",
+      ...gibsTiles(imageryDate),
       on: basemap === "satellite",
     },
     streetsOn: basemap === "streets",
