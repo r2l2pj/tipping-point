@@ -13,6 +13,8 @@ import { HOURS } from "./model/hours";
 const STEP_PX = 46;
 const STEP_DENSE_PX = 36;
 const DENSE_FROM = 16;
+// Room kept beside the selected step when the track scrolls it into view.
+const SCROLL_MARGIN_PX = 12;
 
 // Transport, steps, marks and the forecast tag. Previous / next move one step.
 export default function TimelineBar({
@@ -58,15 +60,29 @@ export default function TimelineBar({
   // Keep the selected step in view when the steps scroll sideways.
   const track = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // Scrolls the track only, never the page.
+    // Scrolls the track only, never the page. A step's offsetLeft is relative
+    // to the inner "relative" row (its offsetParent), not to the track, so the
+    // position comes from bounding boxes plus the track's own scrollLeft.
     const box = track.current;
     const el = box?.querySelector<HTMLElement>('[aria-pressed="true"]');
     if (!box || !el) return;
-    const left = el.offsetLeft - box.offsetLeft;
-    if (left < box.scrollLeft) box.scrollLeft = left;
-    else if (left + el.offsetWidth > box.scrollLeft + box.clientWidth) {
-      box.scrollLeft = left + el.offsetWidth - box.clientWidth;
+    // The date labels can be wider than a dense 36 px step, so the visible
+    // extent is the step and its labels together.
+    const own = el.getBoundingClientRect();
+    let from = own.left;
+    let to = own.right;
+    for (const part of el.querySelectorAll("span")) {
+      const r = part.getBoundingClientRect();
+      from = Math.min(from, r.left);
+      to = Math.max(to, r.right);
     }
+    const boxRect = box.getBoundingClientRect();
+    const origin = boxRect.left + box.clientLeft - box.scrollLeft; // content x = 0
+    const start = from - origin - SCROLL_MARGIN_PX;
+    const end = to - origin + SCROLL_MARGIN_PX;
+    // The browser clamps scrollLeft to the scrollable range.
+    if (start < box.scrollLeft) box.scrollLeft = start;
+    else if (end > box.scrollLeft + box.clientWidth) box.scrollLeft = end - box.clientWidth;
   }, [dayIndex, n]);
   const firstFc = steps.findIndex((s) => s.forecast);
   const chipText = mapFrame && isGfsFrame(mapFrame) ? forecastChip(mapFrame, undefined) : forecastTag;
@@ -85,12 +101,13 @@ export default function TimelineBar({
     if (i === eventIndex) return true;
     return (i - eventIndex) % 2 === 0 && Math.abs(i - eventIndex) !== 1;
   };
-  const small = "inline-flex h-[38px] w-10 items-center justify-center rounded-lg border border-cc-line-strong bg-cc-surface disabled:cursor-not-allowed disabled:opacity-50";
+  const small = "inline-flex h-[38px] w-10 shrink-0 items-center justify-center rounded-lg border border-cc-line-strong bg-cc-surface disabled:cursor-not-allowed disabled:opacity-50";
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border border-cc-line bg-cc-surface px-4 py-2 shadow-[0_4px_18px_rgba(0,0,0,0.28)]">
-      <div className="flex items-center gap-2">
+      {/* Wraps on a narrow screen so the card, not the page, holds the controls. */}
+      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
         <button type="button" onClick={onPlayToggle} disabled={n < 2} aria-label={playing ? "Pause" : "Play"}
-          className="inline-flex h-[46px] w-[50px] items-center justify-center rounded-[10px] bg-cc-accent text-white disabled:cursor-not-allowed disabled:opacity-50">
+          className="inline-flex h-[46px] w-[50px] shrink-0 items-center justify-center rounded-[10px] bg-cc-accent text-white disabled:cursor-not-allowed disabled:opacity-50">
           <Icon d={playing ? ICON.pause : ICON.play} size={20} fill={!playing} strokeWidth={playing ? 3 : 2.2} />
         </button>
         <button type="button" onClick={onPrev} disabled={n === 0 || dayIndex <= 0} aria-label="Previous step" className={small}>
@@ -106,7 +123,7 @@ export default function TimelineBar({
         {/* Lucas: a date picker, not only the step dots. */}
         {n > 1 && (
           <select aria-label="Pick a day" value={dayIndex} onChange={(e) => onSeek(Number(e.target.value))} data-day-picker
-            className="h-[38px] rounded-lg border border-cc-line-strong bg-cc-surface px-2 text-sm font-semibold text-cc-ink">
+            className="h-[38px] min-w-0 max-w-full rounded-lg border border-cc-line-strong bg-cc-surface px-2 text-sm font-semibold text-cc-ink">
             {steps.map((s) => (
               <option key={s.date} value={s.index}>{fmtDate(s.date)}{s.forecast ? " (forecast)" : ""}{forecastDates?.has(s.date) ? " · ● NOAA forecast" : ""}</option>
             ))}
@@ -124,7 +141,7 @@ export default function TimelineBar({
           </div>
         )}
         {hours && hours.available.length > 0 && (
-          <div role="group" aria-label="Hour (UTC)" className="flex items-center gap-1" data-hours>
+          <div role="group" aria-label="Hour (UTC)" className="flex flex-wrap items-center gap-1" data-hours>
             <button type="button" aria-pressed={hours.hour === null} onClick={() => hours.onHour(null)}
               className={`rounded-md px-2 py-1 text-xs font-semibold ${hours.hour === null ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>Day</button>
             {HOURS.filter((h) => hours.available.includes(h)).map((h) => (
