@@ -100,10 +100,31 @@ candidates use `coherence_drop: 0.3` / `coherence_ref_min: 0.4` with
 elevation/snow/flood exclusion gates — declared but **moot for wa_2025**
 (no GUNW pair crosses the event; candidates come from HLS optical instead).
 
-Perfect forecast (ruling A4): replay D+1..D+3 layers use the **observed**
-TPI band of D+k — R *and* S observed at that date, not held constant;
-`forecast_source: "perfect-forecast"` in metrics. Live Modo Agora uses
-`forecast_source: "geos-fp"` with SMAP held at the latest observation.
+Real-forecast replay (rulings L22, L28, L28b): for every issue day D of a
+case window the replay re-creates what a forecaster had at D 00Z —
+observed IMERG for days ≤ D−1 only (no look-ahead), the **NOAA GFS 0.25°
+00Z run of D** for days D..D+3, SMAP S held at D−1 (doc level 2), static T.
+Frame "D+k" (k = 1..3) is the 3-day accumulation ending D+k, each calendar
+day counted once (`pipeline/tp/forecast_align.py`). GFS precipitation is read
+from the NOAA AWS bucket `noaa-gfs-bdp-pds` (APCP 6-h buckets via `.idx`
+byte ranges, decoded with GDAL) and every replay COG is checked against the
+GDAL-sampled GRIB (`data/gfs_replay_verification.json`: 37 issue days × 24
+cells, 0 mismatches). Frames are labelled `forecast: NOAA GFS (issued
+<date>)`. The older perfect-forecast layers (observed inputs at D+k) remain
+only as a labelled **upper bound**, never the headline. Live Modo Agora also
+uses NOAA GFS (`forecast_source: "noaa-gfs"`, L25) with SMAP held at the
+latest observation.
+
+Forecast lead time (L22, `data/<case>/forecast_lead_time.json`, mirrored in
+`metrics.json cases.<id>.forecast_lead_time`): an issue day "warns" when any
+D+1..D+3 frame dated on/before the damage anchor has a pixel with TPI > 0.6
+(slide or flood). Current values: **rs_2024 111 h** before the anchor
+(earliest issue 2024-04-23; 1 of 4 issue days that could score),
+**wa_2025 144.6 h** (earliest 2025-12-03; median 84.6 h, IQR 54.6–114.6 h,
+6 of 8). Issue days after the anchor cannot score and are not in the
+denominator; an issue day whose D−1 SMAP is missing is skipped and listed.
+Official warnings still came before the index — the project never claims
+earlier-than-official.
 
 Lead time (`ml/lead_time.py`): per damage-point `lead_hours =
 anchor − first Critical crossing`; metrics carry `lead_time_median_h`,
@@ -122,7 +143,9 @@ silent 0.
 | IMERG V07 | `NASA/GPM_L3/IMERG_V07` (Late replay, Early live; `precipitation` mm/h ×0.5) | R score |
 | SMAP L4 | `NASA/SMAP/SPL4SMGP/008` (`sm_rootzone_wetness`; /007 discontinued) | S score |
 | NASADEM | `NASA/NASADEM_HGT/001` | slope / T scores |
-| MODIS LC | `MODIS/061/MCD12Q1` | ML features only — **not** a TPI index input (ruling A3) |
+| MODIS LC | `MODIS/061/MCD12Q1` | ML features + R1 wetland/water exclusion and cropland confidence — **not** a TPI index input (ruling A3) |
+| OPERA DSWx-S1 | PO.DAAC `OPERA_L3_DSWX-S1_V1` (`WTR`) via CMR | R1 near-real-time flood candidates (Modo Agora) |
+| NOAA GFS (non-NASA, declared) | AWS `noaa-gfs-bdp-pds` 0.25° APCP | replay real-forecast frames (L22) + live forecast (L25) |
 | GPWv4.11 | `CIESIN/GPWv411/GPW_Population_Count` | exposed population (`gpw_year` in metrics = epoch nearest the event; epochs are 5-yr, latest 2020) |
 | Black Marble | `NASA/VIIRS/002/VNP46A2` (`DNB_BRDF_Corrected_NTL`) | pre/post night-lights change |
 | OPERA DSWx | `OPERA/DSWX/L3_V1/HLS` (rs_2024), `OPERA/DSWX/L3_V1/S1` (wa_2025) | validation IoU/F1 (`B01_WTR`, ≤5 d after event, ruling L10b) |
@@ -136,8 +159,43 @@ number is the lead-time series (IMERG Early ~4 h + SMAP at real latency).
 Manifest `cases.<id>.data_basis` carries this label for the app.
 
 Off-GEE fetches: NISAR GCOV (below), SWOT Hydrocron (reach ids in
-`events/*.json`), GEOS-FP forecast, GLC/UFRGS-Cemaden landslide
-inventories.
+`events/*.json`), NOAA GFS forecast (AWS open data), OPERA DSWx-S1 (CMR /
+PO.DAAC), GLC/UFRGS-Cemaden landslide inventories.
+
+Declared non-NASA inputs: **NOAA GFS** forecast precipitation (the only
+forecast with an archive for the replay windows; L22) and three
+**context/reference layers that never enter the TPI**: JRC Global Surface
+Water v1.4 (seasonal-water confidence in R1), IBGE country/municipality
+outlines (Brazil clip, priority zones), and the landslide inventories.
+
+## Response products (Modo Agora, ruling L27)
+
+Every 3 h, after the TPI job, three steps write `data/now/response/`
+(contract in `data/SCHEMA.md`). All outputs are **candidates**, never
+confirmed.
+
+- **R1 — OPERA DSWx-S1 flood candidates** (`pipeline/scripts/13_response_dswx.py`):
+  a rolling per-pixel water-frequency baseline (60 days, ≥3 observations,
+  0.0025° grid). A pixel is a candidate when its latest observation is water
+  and its baseline water frequency is < 20 %. Candidates on MCD12Q1 permanent
+  wetland / water body (dilated one cell) are excluded, and candidates
+  outside the IBGE Brazil outline are dropped. These are kept but marked
+  **lower confidence** (`lower_reason`): cropland (e.g. rice paddies), JRC GSW
+  seasonal/occasional water (occurrence ≥ 25 % or ≥ 3 months), and **no
+  supporting rain** (8-day IMERG Early < 10 mm locally and everywhere within
+  50 km, and JRC occurrence 0). The 50 km radius is a direction-agnostic
+  upstream proxy with no flow routing. The headline `flooded_km2` /
+  `people_flooded` = standard-confidence mapped polygons (≥ 0.25 km²);
+  `all_candidates_km2` / `all_candidates_people` are published alongside.
+- **R2 — NISAR GCOV radar flood candidates** (`pipeline/scripts/14_response_nisar.py`):
+  same change-detection method as the wa_2025 replay, on the latest NISAR
+  pass pair over the domain.
+- **R3 — summary and priority zones** (`pipeline/scripts/15_response_summary.py`):
+  unions R1 + R2 flood candidates with the live Critical TPI areas.
+  Areas are geodesic and overlapping sources are counted once. People come
+  from GPW v4.11 (2020). IBGE municipalities are ranked by exposed people,
+  then area.
+
 
 ## NISAR products
 
@@ -167,8 +225,18 @@ index input.
 ## Declared limitations
 
 - Flood threshold is a per-scene Otsu calibration (A2), not a fixed −15 dB.
-- Perfect-forecast D+k uses observed inputs incl. S (A4) — upper bound,
-  not an operational forecast.
+- The headline replay forecast is a real NOAA GFS run as issued. GFS
+  under-forecast the RS 2024 peak by about half (3-day forecast 141 mm vs
+  290 mm observed AOI mean ending 2024-05-02), so forecast frames understate
+  that event's peak. The perfect-forecast layers are an upper bound only.
+- Forecast lead time uses a lenient "any pixel > 0.6" test per issue day and
+  small denominators (rs 4, wa 8 issue days that could score).
+- rs_2024 has no radar flood map: NISAR predates the event, and OPERA
+  DSWx-S1 has no 2024 granules over RS. OPERA RTC-S1 does exist
+  (2024-05-08/11) but is pending an Earthdata EULA approval, so
+  `flooded_km2` / `people_flooded` stay null with a reason.
+- R1 (DSWx-S1) can flag smooth or bare surfaces as water. The confidence rules
+  reduce but do not remove this. The rain-support rule has no flow routing.
 - GUNW/coherence landslide detection is moot for wa_2025 (no event-crossing
   pair); candidates are HLS optical and stay "candidates", never confirmed.
 - WA landslide hit-rate may be null — the GLC inventory has no in-window
