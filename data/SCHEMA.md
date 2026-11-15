@@ -183,7 +183,15 @@ forecast_source?, kind?, upper_bound?}`:
 - `forecast_source` — `"noaa-gfs"` for the issued-GFS replay frames,
   `"perfect-forecast"` for the copied-observation upper bound, `"noaa-gfs"`
   live.
-- `kind` — `"observed"` | `"forecast"` when the index entry declares it.
+- `kind` — `"observed"` | `"forecast"` when the index entry declares it;
+  `"nisar_extra"` on NISAR-derived overlay layers added after publish
+  (e.g. `nisar_coherence_loss`), which also carry:
+- `label` — display name (`nisar_extra` layers).
+- `legend` — for `nisar_extra` a list of `{label, color}` objects, not the
+  pinned class-name list (which stays fixed for the 0–3 class layers).
+- `attribution` — source/credit line (`"NISAR (NASA/ISRO), ASF DAAC —
+  Beta product"`).
+- `note` — free-text method/caveat blurb (`nisar_extra` layers).
 - `upper_bound: true` — on `perfect-forecast` frames only: they are the
   labelled upper bound of predictability, not an issued forecast.
 
@@ -198,7 +206,10 @@ map: 1=TP both, 2=FP NISAR-only, 3=FN OPERA-only, 0=nodata; PNG palette TP
 #1a9850 / FP #f46d43 / FN #4575b4, nodata transparent; legend/class areas in
 `data/<case>/opera_validation.json`, definition = `validation_method`),
 `night_lights_pre`, `night_lights_post` (VIIRS Black Marble composites),
-`t_ml` (XGBoost-modeled hazard; same class legend).
+`t_ml` (XGBoost-modeled hazard; same class legend). NISAR-derived extra
+overlays (`kind: "nisar_extra"`): `nisar_coherence_loss` (GUNW 12-day
+coherence-loss candidate polygons — candidates, never confirmed) and
+`nisar_coherence_event` (event-pair coherence, grayscale).
 
 COG-only score layers — for geotiff.js range reads; `png: null`, EPSG:4326,
 still listed in `layers[]`: `r_series`, `s_series` (per-day R/S score

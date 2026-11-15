@@ -15,7 +15,8 @@ NODE_KEYS = {"event_id", "mode", "bounds", "forecast_source", "data_basis", "lay
              "metrics", "data_dates", "products", "_deprecated", "_null_reasons"}
 LAYER_KEYS = {"id", "date", "png", "cog", "legend", "bounds", "forecast",
               "issued", "forecast_source", "kind", "upper_bound",
-              "critical_km2", "people_critical", "_null_reasons", "db_range"}
+              "critical_km2", "people_critical", "_null_reasons", "db_range",
+              "label", "attribution", "note"}
 PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
                  "swot_reference", "swot_series",
                  "priority_zones", "permanent_water", "flood_confirmed", "flood_candidates",
@@ -101,6 +102,38 @@ def test_index_supplies_verbatim_layer_fields(tmp_path):
     assert hill["png"] is None
     assert hill["cog"] == "wa_2025/cog/wa_2025_hillshade_20251201.tif"
     assert "forecast" not in hill
+
+
+def test_nisar_extra_fields_forwarded_from_index(tmp_path):
+    """kind/label/legend/attribution/note pass through verbatim — the
+    frozen app's nisar_extra contract (data/SCHEMA.md)."""
+    root = _data_root(tmp_path, "wa_2025")
+    index = {"layers": [
+        {"id": "nisar_coherence_loss", "date": "2025-12-16",
+         "png": "wa_2025/png/nisar_coherence_loss_20251216.png",
+         "cog": "wa_2025/cog/wa_2025_nisar_coherence_loss_60m.tif",
+         "bounds": [-122.61, 46.99, -121.46, 48.51], "forecast": False,
+         "kind": "nisar_extra", "label": "NISAR coherence loss (candidates)",
+         "legend": [{"label": "coherence loss (candidate)",
+                     "color": "#e6550d"}],
+         "attribution": "NISAR (NASA/ISRO), ASF DAAC — Beta product",
+         "note": "12-day coherence loss; candidates, not confirmed"},
+    ]}
+    (root / "wa_2025" / "png" / "_index.json").write_text(json.dumps(index))
+    node = manifest.build_case_node("wa-2025-12", root)
+    by_id = {l["id"]: l for l in node["layers"]}
+    coh = by_id["nisar_coherence_loss"]
+    assert set(coh) <= LAYER_KEYS
+    assert coh["kind"] == "nisar_extra"
+    assert coh["label"] == "NISAR coherence loss (candidates)"
+    assert coh["legend"] == [{"label": "coherence loss (candidate)",
+                              "color": "#e6550d"}]
+    assert coh["attribution"].endswith("Beta product")
+    assert coh["note"].startswith("12-day coherence loss")
+    assert coh["forecast"] is False
+    # standard layers never pick the fields up
+    assert "attribution" not in by_id["tpi_slide"]
+    assert "label" not in by_id["tpi_flood"]
 
 
 def test_gfs_layer_critical_stats_copied_from_index(tmp_path):
