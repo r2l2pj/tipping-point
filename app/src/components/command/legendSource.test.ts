@@ -33,7 +33,8 @@ describe("Start here stops", () => {
     expect((stops[0].action as { compare?: string }).compare).toBeUndefined();
     expect(stops[0].what).toBe("Flood index day by day with the NISAR radar flood outlines (seen through cloud); in the Radar tab: before / after");
     expect(stops[1].title).toBe("2 · Now — Southern Brazil, NISAR radar");
-    expect(stops[3].action).toMatchObject({ id: "wa-2025-12", day: -7, hazard: "slide", lead: 3 });
+    // The day is the forecast's target day (Dec 6), not its issue day (Dec 3): lead 3 = issued 3 days before.
+    expect(stops[3].action).toMatchObject({ id: "wa-2025-12", day: "2025-12-06", hazard: "slide", lead: 3 });
   });
   test("HH | HV and the time series are named only when published", () => {
     const wa = bundle({ id: "wa_2025", nisarSeries: { dates: ["a", "b"], areas: {} },
