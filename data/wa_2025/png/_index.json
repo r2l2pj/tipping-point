@@ -2993,6 +2993,165 @@
       ],
       "attribution": "NISAR (NASA/ISRO), ASF DAAC — Beta product",
       "note": "NISAR GUNW coherence, Beta; Dec 4 -> Dec 16 2025 vs Nov 22 -> Dec 4 reference. Broad storm decorrelation, not landslide-specific (10/15 landslides within 100 m vs a 60.9 % random baseline); candidates only."
+    },
+    {
+      "id": "nisar_sme2",
+      "date": "2025-11-22",
+      "kind": "nisar_extra",
+      "png": "wa_2025/png/nisar_sme2_20251122.png",
+      "cog": "wa_2025/cog/wa_2025_nisar_sme2_20251122.tif",
+      "bounds": [
+        -122.599585,
+        47.000693,
+        -121.500452,
+        48.052231
+      ],
+      "track": "172D",
+      "sensor": "NISAR (SME2, provisional)",
+      "source": "NISAR L3 SME2 provisional (ASF, NISAR_L3_SME2_PROVISIONAL_V1)",
+      "label": "Soil moisture (NISAR, provisional)",
+      "legend": {
+        "unit": "m³/m³",
+        "stops": [
+          {
+            "v": 0.0,
+            "color": "#a6611a",
+            "label": "0.0"
+          },
+          {
+            "v": 0.1,
+            "color": "#dfc27d",
+            "label": "0.1"
+          },
+          {
+            "v": 0.2,
+            "color": "#c7e9c0",
+            "label": "0.2"
+          },
+          {
+            "v": 0.3,
+            "color": "#74c476",
+            "label": "0.3"
+          },
+          {
+            "v": 0.4,
+            "color": "#3182bd",
+            "label": "0.4"
+          },
+          {
+            "v": 0.5,
+            "color": "#08306b",
+            "label": "≥ 0.5"
+          }
+        ]
+      },
+      "note": "NISAR SME2 provisional: surface soil moisture (~0-5 cm, 200 m), swath mean 0.37 m³/m³ vs SMAP L4 surface 0.25 (9 km, same day); only 4 % of pixels flagged 'recommended' — the SME2 algorithms (DSG/PMI/TSR) still disagree, read patterns, not absolute values"
+    },
+    {
+      "id": "nisar_sme2",
+      "date": "2025-12-04",
+      "kind": "nisar_extra",
+      "png": "wa_2025/png/nisar_sme2_20251204.png",
+      "cog": "wa_2025/cog/wa_2025_nisar_sme2_20251204.tif",
+      "bounds": [
+        -122.599585,
+        47.000693,
+        -121.500452,
+        48.052231
+      ],
+      "track": "172D",
+      "sensor": "NISAR (SME2, provisional)",
+      "source": "NISAR L3 SME2 provisional (ASF, NISAR_L3_SME2_PROVISIONAL_V1)",
+      "label": "Soil moisture (NISAR, provisional)",
+      "legend": {
+        "unit": "m³/m³",
+        "stops": [
+          {
+            "v": 0.0,
+            "color": "#a6611a",
+            "label": "0.0"
+          },
+          {
+            "v": 0.1,
+            "color": "#dfc27d",
+            "label": "0.1"
+          },
+          {
+            "v": 0.2,
+            "color": "#c7e9c0",
+            "label": "0.2"
+          },
+          {
+            "v": 0.3,
+            "color": "#74c476",
+            "label": "0.3"
+          },
+          {
+            "v": 0.4,
+            "color": "#3182bd",
+            "label": "0.4"
+          },
+          {
+            "v": 0.5,
+            "color": "#08306b",
+            "label": "≥ 0.5"
+          }
+        ]
+      },
+      "note": "NISAR SME2 provisional: surface soil moisture (~0-5 cm, 200 m), swath mean 0.29 m³/m³ vs SMAP L4 surface 0.26 (9 km, same day); only 5 % of pixels flagged 'recommended' — the SME2 algorithms (DSG/PMI/TSR) still disagree, read patterns, not absolute values"
+    },
+    {
+      "id": "nisar_sme2",
+      "date": "2025-12-16",
+      "kind": "nisar_extra",
+      "png": "wa_2025/png/nisar_sme2_20251216.png",
+      "cog": "wa_2025/cog/wa_2025_nisar_sme2_20251216.tif",
+      "bounds": [
+        -122.599585,
+        47.000693,
+        -121.500452,
+        48.052231
+      ],
+      "track": "172D",
+      "sensor": "NISAR (SME2, provisional)",
+      "source": "NISAR L3 SME2 provisional (ASF, NISAR_L3_SME2_PROVISIONAL_V1)",
+      "label": "Soil moisture (NISAR, provisional)",
+      "legend": {
+        "unit": "m³/m³",
+        "stops": [
+          {
+            "v": 0.0,
+            "color": "#a6611a",
+            "label": "0.0"
+          },
+          {
+            "v": 0.1,
+            "color": "#dfc27d",
+            "label": "0.1"
+          },
+          {
+            "v": 0.2,
+            "color": "#c7e9c0",
+            "label": "0.2"
+          },
+          {
+            "v": 0.3,
+            "color": "#74c476",
+            "label": "0.3"
+          },
+          {
+            "v": 0.4,
+            "color": "#3182bd",
+            "label": "0.4"
+          },
+          {
+            "v": 0.5,
+            "color": "#08306b",
+            "label": "≥ 0.5"
+          }
+        ]
+      },
+      "note": "NISAR SME2 provisional: surface soil moisture (~0-5 cm, 200 m), swath mean 0.29 m³/m³ vs SMAP L4 surface 0.35 (9 km, same day); only 4 % of pixels flagged 'recommended' — the SME2 algorithms (DSG/PMI/TSR) still disagree, read patterns, not absolute values"
     }
   ]
 }
