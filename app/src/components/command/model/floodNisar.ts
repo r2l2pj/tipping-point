@@ -18,8 +18,9 @@ import { fmtDate, fmtKm2 } from "./format";
 import type { CcBundle } from "./types";
 
 export const FLOOD_NISAR_LABEL = "Flood risk with NISAR-observed water (candidate)";
-export const NISAR_WATER_LABEL = "Observed by NISAR (candidate water)";
-export const NISAR_WATER_COLOR = "#08519c";
+// Lucas: NISAR water is RED everywhere (the published mask is blue #08519c;
+// the map repaints it #ff1f1f at ~55 %, like the candidate polygons).
+export const NISAR_WATER_LABEL = "NISAR-observed water (candidate)";
 
 type L = ManifestLayer & Record<string, unknown>;
 const layersOf = (b: CcBundle) => (b.manifest?.layers ?? []) as L[];

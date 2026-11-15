@@ -20,7 +20,8 @@ import { HAZARD_LABEL, type CcBundle, type Hazard } from "./model/types";
 import { OPACITY_DEFAULT, OPACITY_MIN } from "./state";
 import { Icon, ICON } from "./ui";
 import { activeView, viewLayers, VIEWS, type ViewId } from "./model/views";
-import { FLOOD_NISAR_LABEL, floodNisarFrame, hasFloodNisar, NISAR_WATER_COLOR, NISAR_WATER_LABEL } from "./model/floodNisar";
+import { FLOOD_NISAR_LABEL, floodNisarFrame, hasFloodNisar, NISAR_WATER_LABEL } from "./model/floodNisar";
+import { FLOODED_FILL } from "./model/radar";
 import { setFloodNisar, useFloodNisar } from "./useFloodNisar";
 
 const GROUPS: LayerGroup[] = ["Analysis", "Observations", "Replay evidence"];
@@ -299,11 +300,11 @@ export function Legend({
         )}
         {fn && (
           <span className="inline-flex items-center gap-2.5" data-legend-nisar-water>
-            <span aria-hidden="true" className={swatch} style={{ background: NISAR_WATER_COLOR }} />
+            <span aria-hidden="true" className={`${swatch} border border-white`} style={{ background: FLOODED_FILL, boxShadow: "0 0 0 1px #141414" }} />
             {NISAR_WATER_LABEL}
           </span>
         )}
-        {layerLegendRows(bundle, layers, probHorizon, stepDate, changeCyan).map((r) => r.note ? (
+        {layerLegendRows(bundle, layers, probHorizon, stepDate, changeCyan).filter((r) => !(fn && r.id === "flood")).map((r) => r.note ? (
           <span key={r.id} className="pl-[32px] text-xs text-cc-muted" data-legend-note>{r.label}</span>
         ) : (
           <span key={r.id} className="inline-flex items-center gap-2.5">
