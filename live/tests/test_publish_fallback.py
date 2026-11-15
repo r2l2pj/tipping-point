@@ -233,3 +233,23 @@ def test_guard_allows_fallback_only_drops_and_allowlisted(tmp_path, monkeypatch)
     files = _fallback_files(repo)
     assert "data/now/response/flood_nisar.geojson" not in files
     assert "data/wa_2025/scars.geojson" in files
+
+
+def test_now_history_carried_over_when_job_has_none(tmp_path):
+    """nisar/validation/reference snapshot a checkout without data/now/history:
+    the fallback copy survives; the Now job's own history replaces it."""
+    source, target = tmp_path / "src", tmp_path / "dst"
+    (source / "now").mkdir(parents=True)
+    (source / "manifest.json").write_text("{}")
+    (target / "now" / "history" / "20261115T191917Z").mkdir(parents=True)
+    (target / "now" / "history" / "index.json").write_text('{"runs": [1]}')
+    (target / "now" / "history" / "20261115T191917Z" / "manifest.json").write_text("{}")
+    publish.sync_data(source, target, 50)
+    assert (target / "now" / "history" / "index.json").read_text() == '{"runs": [1]}'
+    assert (target / "manifest.json").exists()
+    # the Now job writes its own history: that one wins, stale runs go
+    (source / "now" / "history").mkdir()
+    (source / "now" / "history" / "index.json").write_text('{"runs": [2]}')
+    publish.sync_data(source, target, 50)
+    assert (target / "now" / "history" / "index.json").read_text() == '{"runs": [2]}'
+    assert not (target / "now" / "history" / "20261115T191917Z").exists()

@@ -57,7 +57,28 @@ def upload_release_assets(paths: list[Path], source: Path) -> None:
                        cwd=source, capture_output=True, text=True, check=False)
 
 
+# Rolling state only the Now job writes (live/now_history.py). Every other
+# job (nisar, validation, reference) snapshots a checkout without it, so a
+# plain mirror would wipe it — carry the fallback copy over instead.
+CARRY_OVER = ("now/history",)
+
+
 def sync_data(source: Path, target: Path, max_mb: float) -> int:
+    keep = []
+    with tempfile.TemporaryDirectory(prefix="fallback-keep-") as stash:
+        for rel in CARRY_OVER:
+            if not (source / rel).exists() and (target / rel).is_dir():
+                shutil.move(str(target / rel), str(Path(stash) / rel.replace("/", "__")))
+                keep.append(rel)
+        released = _sync_data(source, target, max_mb)
+        for rel in keep:
+            (target / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(Path(stash) / rel.replace("/", "__")), str(target / rel))
+            print(f"snapshot: kept {rel} from the current fallback (not written by this job)")
+    return released
+
+
+def _sync_data(source: Path, target: Path, max_mb: float) -> int:
     excluded, released = set(), []
     for path in source.rglob("*"):
         if not path.is_file():

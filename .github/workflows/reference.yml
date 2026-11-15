@@ -59,3 +59,17 @@ jobs:
           GEE_PROJECT: ${{ vars.GEE_PROJECT }}
         run: uv run python live/jobs.py reference
 
+      # L53: Neon storage is gone — publish to the fallback branch like
+      # nisar/validation (only when the job wrote data/ artifacts).
+      - name: Detect data/ artifacts
+        id: data_changed
+        run: |
+          if [ -n "$(git status --porcelain -- data/)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish data/ to fallback branch
+        if: steps.data_changed.outputs.changed == 'true'
+        run: uv run python live/publish_fallback.py

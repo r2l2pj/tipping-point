@@ -81,20 +81,18 @@ def test_fallback_publish_and_permissions(name, cron, job):
     assert "git add" not in text
     assert "git push" not in text
     publish = [s for s in steps if "publish_fallback.py" in s.get("run", "")]
-    if job == "reference":
-        assert not publish
+    # L53: every job publishes to fallback (reference was Neon-only before)
+    assert len(publish) == 1
+    assert publish[0]["run"] == "uv run python live/publish_fallback.py"
+    assert _run_idx(steps, f"live/jobs.py {job}") < _run_idx(steps, "publish_fallback.py")
+    if job == "now":
+        assert "if" not in publish[0]
     else:
-        assert len(publish) == 1
-        assert publish[0]["run"] == "uv run python live/publish_fallback.py"
-        assert _run_idx(steps, f"live/jobs.py {job}") < _run_idx(steps, "publish_fallback.py")
-        if job == "now":
-            assert "if" not in publish[0]
-        else:
-            # Only publish when the job actually wrote data/ artifacts (S1).
-            assert publish[0].get("if") == "steps.data_changed.outputs.changed == 'true'"
-            detect = [s for s in steps if s.get("id") == "data_changed"]
-            assert len(detect) == 1
-            assert "git status --porcelain -- data/" in detect[0]["run"]
+        # Only publish when the job actually wrote data/ artifacts (S1).
+        assert publish[0].get("if") == "steps.data_changed.outputs.changed == 'true'"
+        detect = [s for s in steps if s.get("id") == "data_changed"]
+        assert len(detect) == 1
+        assert "git status --porcelain -- data/" in detect[0]["run"]
     # L53/L55: Neon storage is gone — the GitHub fallback branch is the only
     # data host, published after the job.
     assert not [s for s in steps if "publish_s3.sh" in s.get("run", "")]
