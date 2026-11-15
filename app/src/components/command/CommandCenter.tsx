@@ -353,7 +353,9 @@ export function CommandCenterView({
   const mapFrame = overlayFrame ?? (tpiOn ? frameFor(bundle, step?.date, state.hazard)?.layer : undefined);
   // Area by class of the selected hazard (summary v2), or the v1 union.
   const classesKm2 = bundle.riskPaused ? [] : Object.entries(liveClasses(bundle.summary, state.hazard) ?? {});
-  const headlineData = live && places ? headlineFor(places) : undefined;
+  const headlineData = live && places
+    ? headlineFor(places, (bundle.summary as Record<string, unknown> | undefined)?.people_alert as number | undefined)
+    : undefined;
   // lead-analysis (WA): one honest line on forecast vs the NISAR flood area.
   const fnn = (bundle.metricsView as Record<string, unknown> | undefined)?.forecast_nisar_overlap_note;
   const forecastNisarNote = typeof fnn === "string" && fnn.trim() ? plainText(fnn.trim()) : undefined;

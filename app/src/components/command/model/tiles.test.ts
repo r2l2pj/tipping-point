@@ -109,15 +109,20 @@ describe("live summary v3 (lead-analysis 022dbd6: strict critical, alert_km2)", 
     people_critical: 1200, people_alert: 9000, people_exposed: 9000,
     classes_km2: { landslide: { Baixo: 1, Moderado: 1, Alto: 26.3, Crítico: 0 }, flood: { Baixo: 1, Moderado: 1, Alto: 103, Crítico: 122.5 } },
   };
-  test("Critical area = strict critical_km2, labelled Brazilian land only", () => {
+  // Lucas/conductor (post-demo): the Now tiles and the headline share one
+  // basis — High or Critical, flood or landslide, today or tomorrow.
+  test("area = High or Critical (alert_km2), labelled so, Brazilian land only", () => {
     const t = criticalAreaTile(liveBundle({ summary } as never), "flood");
-    expect(t.value).toBe("122.5 km²");
-    expect(t.note).toBe("flood hazard · Brazilian land only");
+    expect(t.label).toBe("High or Critical area");
+    expect(t.value).toBe("251.7 km²");
+    expect(t.note).toBe("flood or landslide, today or tomorrow · Brazilian land only");
+    const d1 = criticalAreaTile(liveBundle({ summary: { ...summary, alert_km2: { ...summary.alert_km2, any_today_or_d1: 300.2 } } } as never), "flood");
+    expect(d1.value).toBe("300.2 km²");
   });
-  test("people = Critical only, today or tomorrow (never the High+ count)", () => {
+  test("people = people_alert (High or Critical, today or tomorrow) — the headline's number", () => {
     const t = peopleTile(liveBundle({ summary } as never));
-    expect(t.value).toContain("1,200");
-    expect(t.note).toBe("in Critical areas, today or tomorrow");
+    expect(t.value).toContain("9,000");
+    expect(t.note).toBe("in High or Critical areas, today or tomorrow");
   });
 });
 

@@ -110,13 +110,15 @@ Vercel (repo is public — Hobby plan can deploy public org repos). `prebuild`
 runs the data sync, so committed `public/data` is the last-resort deploy
 fallback. Read order: the `fallback` branch of `r2l2pj/tipping-point-data`
 (`raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`) is the
-primary source, Neon Object Storage is the fallback (being retired), and an explicit
-`DATA_BASE_URL` overrides both — runbook in `docs/DEPLOY.md`.
+primary source; when GitHub misses, the server reads its cached copy of the
+SQLite `docs` table (downloaded from the same branch), then the bundled
+`public/data`. An explicit `DATA_BASE_URL` overrides the remotes — runbook in
+`docs/DEPLOY.md`. Neon is no longer read or written (L53).
 The `now.yml` live job refreshes data every 3 h: it computes TPI locally
 from IMERG Early / SMAP / NOAA GFS forecast rain and publishes the result as one
 force-pushed orphan commit per run (`manifest.json` last). The stale-data
 warning threshold is 6 h. Everything runs on free tiers: GitHub Actions,
-GitHub raw, Vercel Hobby, Earthdata, Neon free object storage (being retired).
+GitHub raw, Vercel Hobby, Earthdata.
 
 ## Credentials
 

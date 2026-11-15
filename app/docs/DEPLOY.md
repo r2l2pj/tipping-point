@@ -56,17 +56,9 @@ single optional file is missing. `DATA_BASE_URL` stays an explicit override
 (sole remote source), read at request time; updating data never needs a
 redeploy.
 
-## Neon Object Storage (removed in the L53 merge)
+## Neon (retired, L53)
 
-Project `muddy-rice-39176958` hosts the object-storage mirror (Telegram and its Neon Postgres subscriber table were removed, L55):
-
-- **Object Storage** — bucket `tipping-point-data`, declared `public_read` in
-  the repo-root `neon.ts` (applied via `@neon/config`; `neon env pull` /
-  `neon-env run` manage local env). Anonymous `GET` returns objects; writes
-  need the `NEON_S3_ACCESS_KEY_ID` / `NEON_S3_SECRET_ACCESS_KEY` /
-  `NEON_S3_REGION` / `NEON_S3_BUCKET` credentials — those are data-repo
-  Actions secrets (uploads), **not** app runtime vars. The app only needs
-  `NEON_S3_ENDPOINT` to build the anonymous read URL.
+Neon is no longer used (L53): the app stopped reading the bucket and the workflows stopped uploading to it; only the legacy `live/publish_s3.sh` and a `static_fetch` fallback path remain until merge step 7 (after 48 h), when the bucket, the Neon project and the `NEON_S3_*` secrets are deleted. Telegram and its Neon Postgres subscriber table were removed earlier (L55).
 
 ## Free-tier limits
 
@@ -75,8 +67,6 @@ All runtime services must stay on free tiers; no paid plan is required.
 - GEE: non-commercial access.
 - GitHub Actions: public-repo workflows.
 - `raw.githubusercontent.com`: fallback small files only; no large COGs.
-- Neon Object Storage: free-tier object reads on the public bucket; anonymous
-  `GET` only from the app (no credentials in browser or server reads).
 - Vercel Hobby: set API routes' `maxDuration` within the plan's function
   duration limit.
 - Earthdata: free access.
@@ -140,6 +130,3 @@ until they exist.
   `GEE_ENABLED` unset).
 - Optional: `GEE_PROJECT` registered for the Earth Engine API with a service
   account, only if `GEE_ENABLED` is turned on.
-- Neon Object Storage bucket `tipping-point-data` provisioned `public_read`
-  (`neon.ts` is the declaration; `neon deploy`/`checkout` applies it) as the
-  fallback remote; `NEON_S3_ENDPOINT` optional (built-in public URL otherwise).

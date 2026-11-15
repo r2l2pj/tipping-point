@@ -36,7 +36,7 @@ More: [Declared limitations](#declared-limitations), `data/metrics.json`, `docs/
 
 ## Data products and where they are published
 
-`data/` (contract: [`data/SCHEMA.md`](data/SCHEMA.md)) holds per-case COG / PNG / GeoJSON / JSON plus `data/now/` and the root `data/manifest.json` (written last). The live workflow force-pushes `data/` to the orphan branch **`fallback`** every ~3 h; the app reads it from `https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`, then from a Neon Object Storage mirror (being retired), then from its bundled `app/public/data` copy. `data/tipping_point.sqlite` (tabular mirror: one row per Now run plus every app-facing JSON) is rebuilt and published on `fallback` by `now.yml`. Large static rasters are attached to the GitHub Release `static-v1`.
+`data/` (contract: [`data/SCHEMA.md`](data/SCHEMA.md)) holds per-case COG / PNG / GeoJSON / JSON plus `data/now/` and the root `data/manifest.json` (written last). The live workflow force-pushes `data/` to the orphan branch **`fallback`** every ~3 h; the app reads it from `https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`, then from its server-side copy of `data/tipping_point.sqlite` (the `docs` table holds every app-facing JSON; one row per Now run in `runs`), then from its bundled `app/public/data` copy. `now.yml` rebuilds the SQLite file and publishes it on `fallback`. Neon is no longer used (L53). Large static rasters are attached to the GitHub Release `static-v1`.
 
 ## Credits and attributions
 

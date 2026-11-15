@@ -121,6 +121,14 @@ export function criticalAreaTile(bundle: CcBundle, hazard: Hazard, stepDate?: st
     };
   }
   if (bundle.mode === "live") {
+    // Lucas: Now tiles and the headline share one basis — High or Critical,
+    // flood or landslide, today or tomorrow (summary v3 alert_km2 + people_alert).
+    const sv = bundle.summary as Record<string, unknown> | undefined;
+    const alert = isRecord(sv?.alert_km2) ? (sv!.alert_km2 as Record<string, unknown>) : undefined;
+    const hc = alert ? (finite(alert.any_today_or_d1) ? alert.any_today_or_d1 : alert.any) : undefined;
+    if (alert && finite(hc)) {
+      return finish(bundle, stepDate, "High or Critical area", hc, fmtKm2, "summary", "flood or landslide, today or tomorrow · Brazilian land only");
+    }
     // Critical only, per hazard (summary v1 or v2; see liveCriticalKm2).
     const own = bundle.summary?.critical_km2?.[hazard];
     const value = liveCriticalKm2(bundle.summary, hazard);
@@ -168,6 +176,10 @@ function peopleTileRaw(bundle: CcBundle, stepDate: string | undefined, day: DayP
     const s = bundle.summary;
     // v3 (alert_km2 present): people_critical = Critical only, today or D+1.
     const v3 = isRecord((s as Record<string, unknown> | undefined)?.alert_km2);
+    const alertPeople = (s as Record<string, unknown> | undefined)?.people_alert;
+    if (v3 && finite(alertPeople)) {
+      return finish(bundle, stepDate, label, alertPeople, fmtPeople, "summary", "in High or Critical areas, today or tomorrow");
+    }
     return finish(bundle, stepDate, label, s?.people_critical ?? s?.people_exposed, fmtPeople, "summary",
       v3 && finite(s?.people_critical) ? "in Critical areas, today or tomorrow" : undefined);
   }
