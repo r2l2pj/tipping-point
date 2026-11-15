@@ -199,7 +199,7 @@ def run() -> dict:
                              "k_days_pos": (event_day(tr_[tr_.y == 1], "onset")
                                             - pd.to_datetime(tr_.loc[tr_.y == 1, "issue_date"])
                                             ).dt.days.value_counts().sort_index().to_dict()}
-        ok = SC.source_mask(tr_, "gfs")
+        ok = SC.source_mask(tr_, "gfs", gfs, H)
         g = tr_[ok].reset_index(drop=True)
         hres["gfs"] = _block(g, cal, _scores(g, H, ents, rain, "gfs", gfs))
         hres["perfect"] = _block(tr_, cal, _scores(tr_, H, ents, rain, "perfect"))

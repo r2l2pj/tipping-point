@@ -155,7 +155,7 @@ def run(fetch: bool = False, anchor: str = "event_day") -> dict:
         m = rows.k.isin(ks) | (rows.neg_set == "same_point")
         sub = rows[m]
         H = S.HORIZONS[h]
-        ok = SC.source_mask(sub, "gfs")          # L33: GFS only where the issue day has a run
+        ok = SC.source_mask(sub, "gfs", gfs, H)  # L33 + review 04: run + finite forecast
         g_ok = SC.horizon_scores(sub[ok], H, {n: ents[n] for n in MODELS_GFS}, rain,
                                  source="gfs", gfs_daily=gfs)
         g = {}

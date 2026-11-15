@@ -288,6 +288,12 @@ def save_p_trigger(entries: dict, hz_cal: dict, name: str, n_train: int, n_val: 
         "horizon_thresholds_val_f1": {h: v[name]["thr"] for h, v in hz_cal.items() if name in v},
         "rain_source_train": "NASA POWER IMERG_PRECTOT daily (UTC)",
         "soil_source": "SMAP L4 SPL4SMGP 008 T10:30Z, held at issue day",
+        "soil_note": ("TRAIN/VAL daily rows read SMAP on the landslide (target) day; serving "
+                      "holds it at the issue day. Soil adds ~0 skill (TEST soil-lag 1-3 d: "
+                      "PR-AUC change <= 0.02), documented in model-metrics.md v2."),
+        # science review 04: live multiplies by T_ML only when this key names t_ml
+        "serve_combine": "P_live_H = p_trigger_H x t_ml (band 't_ml' of ml_static_now_v2.tif "
+                         "= data/cog/t_ml_v2.tif)",
         "output_keys": [f"p_trigger_{h}" for h in S.HORIZONS],
         "n_train": n_train, "n_val": n_val, "seed": S.SEED, **(extra or {}),
     })
@@ -317,10 +323,10 @@ def evaluate_3b(*, gfs: bool = True) -> dict:
         res["horizons"][hname] = {}
         ht_all = ht
         for src in sources:
-            ht = ht_all[SC.source_mask(ht_all, src)].reset_index(drop=True)
+            gd = _gfs() if src == "gfs" else None
+            ht = ht_all[SC.source_mask(ht_all, src, gd, H)].reset_index(drop=True)
             try:
-                sc = SC.horizon_scores(ht, H, b["entries"], rain, source=src,
-                                       gfs_daily=_gfs() if src == "gfs" else None)
+                sc = SC.horizon_scores(ht, H, b["entries"], rain, source=src, gfs_daily=gd)
             except Exception as exc:  # noqa: BLE001 - GFS archive gaps must not kill the run
                 res["horizons"][hname][src] = {"reason": f"{type(exc).__name__}: {exc}"}
                 continue

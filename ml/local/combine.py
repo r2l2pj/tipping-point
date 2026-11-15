@@ -128,8 +128,7 @@ def run(source: str = "gfs", step: float = WEIGHT_STEP) -> dict:
 
     b = joblib.load(S.DATA_DIR / "models" / "bundle_3b.joblib")
     hz = _load_table("horizon_3b_features")
-    ht = hz[hz.split == "test"]
-    ht = ht[SC.source_mask(ht, source)].reset_index(drop=True)   # L33: GFS rows need a run
+    ht_all = hz[hz.split == "test"]
     hv = hz[hz.split == "val"].reset_index(drop=True)
     rain = _rain()
     gfs = _gfs() if source == "gfs" else None
@@ -145,6 +144,8 @@ def run(source: str = "gfs", step: float = WEIGHT_STEP) -> dict:
                  "horizons": {}}
     for h, H in S.HORIZONS.items():
         cal = b["horizon_cal"][h]
+        # same per-horizon mask as evaluate (L33 + review 04), so singles reproduce it
+        ht = ht_all[SC.source_mask(ht_all, source, gfs, H)].reset_index(drop=True)
         sc_t = SC.horizon_scores(ht, H, entries, rain, source=source, gfs_daily=gfs)
         sc_v = SC.horizon_scores(hv, H, entries, rain, source=VAL_SOURCE)
         y_t = ht[f"label_{h}"].to_numpy()

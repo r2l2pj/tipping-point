@@ -442,7 +442,11 @@ def gfs_jobs(hz: pd.DataFrame) -> list[dict]:
 
 
 def gfs_reader(jobs: list[dict]):
-    """gfs_daily(lon, lat, issue, H) over several per-event boxes (first box containing the point)."""
+    """gfs_daily(lon, lat, issue, H) over several per-event boxes.
+
+    Boxes overlap (Petrópolis lies inside Angra's box): a row takes the first box
+    whose cache has a finite forecast for it, not merely the first box containing
+    it (science review 04: Petrópolis Feb 2022 read Angra's Mar-Apr cache -> all NaN)."""
     from . import sources_dynamic as D
 
     def read(lon, lat, issue, lead_days):
@@ -454,8 +458,11 @@ def gfs_reader(jobs: list[dict]):
         for job in jobs:
             m = todo & L.in_bbox(lon, lat, job["bbox"])
             if m.any():
-                out[m] = D.gfs_daily(lon[m], lat[m], issue[m], lead_days, bbox=job["bbox"])
-                todo &= ~m
+                idx = np.flatnonzero(m)
+                v = D.gfs_daily(lon[idx], lat[idx], issue[idx], lead_days, bbox=job["bbox"])
+                got = np.isfinite(v).any(axis=1)
+                out[idx[got]] = v[got]
+                todo[idx[got]] = False
         return out
     return read
 

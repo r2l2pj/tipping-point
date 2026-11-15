@@ -72,13 +72,29 @@ def tpi_score(rain_72h, p90, p95, p99, sm_wetness, slope) -> np.ndarray:
 
 
 # --------------------------------------------------------------------- horizons
-def source_mask(df: pd.DataFrame, source: str) -> np.ndarray:
+def source_mask(df: pd.DataFrame, source: str, gfs_daily=None, H: int | None = None) -> np.ndarray:
     """Rows that can be scored with ``source``: GFS only where the issue day has an
     archived run (>= S.GFS_ARCHIVE_START). Before v2 the GFS TEST also scored rows
-    without a run (NaN forecast rain -> confident 'no'), 40 % of RS same-point negatives."""
+    without a run (NaN forecast rain -> confident 'no'), 40 % of RS same-point negatives.
+
+    With ``gfs_daily`` + ``H`` (science review 04): also require a finite forecast for
+    every day of the window (a cache gap = NaN rain = a silent constant score), and drop
+    events left with no positive row (Maria/Kerala predate the archive: their negatives
+    alone must not enter pooled GFS metrics)."""
     if source != "gfs":
         return np.ones(len(df), bool)
-    return (pd.to_datetime(df["issue_date"]) >= pd.Timestamp(S.GFS_ARCHIVE_START)).to_numpy()
+    ok = (pd.to_datetime(df["issue_date"]) >= pd.Timestamp(S.GFS_ARCHIVE_START)).to_numpy()
+    if gfs_daily is not None and H is not None and ok.any():
+        sub = df[ok]
+        fc = gfs_daily(sub["lon"].to_numpy(), sub["lat"].to_numpy(),
+                       sub["issue_date"].to_numpy(), H)
+        fin = np.isfinite(fc).all(axis=1)
+        ok[np.flatnonzero(ok)[~fin]] = False
+    if "label" in df and "event_id" in df:
+        ev = df["event_id"].astype(str).to_numpy()
+        has_pos = set(ev[ok & (df["label"].to_numpy() == 1)])
+        ok &= np.isin(ev, list(has_pos))
+    return ok
 
 
 def rain_series(rain, lon, lat, issue, H: int, *, source: str = "perfect",
