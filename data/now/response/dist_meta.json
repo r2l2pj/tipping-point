@@ -1,0 +1,43 @@
+{
+  "source": "opera-dist-alert-hls",
+  "status": "candidate",
+  "generated_at": "2026-11-15T05:25:25+00:00",
+  "window": [
+    "2026-10-16",
+    "2026-11-15"
+  ],
+  "latest_acquired": "2026-11-05T13:52:01.437Z",
+  "n_tiles": 147,
+  "n_tiles_failed": 0,
+  "features": 685,
+  "candidates_km2": 3.295,
+  "people": 89.2,
+  "excluded": {
+    "loss_km2_total": 2917.415,
+    "flat_km2": 2904.285,
+    "cropland_or_water_km2": 3.119,
+    "too_large_polygons": 0,
+    "too_small_polygons": 4913,
+    "outside_brazil_polygons": 200
+  },
+  "params": {
+    "status_keep": [
+      5,
+      6,
+      8
+    ],
+    "slope_min_deg": 15,
+    "lc_drop": [
+      12,
+      14,
+      17
+    ],
+    "min_px": 3,
+    "max_km2": 1.0,
+    "date_rule": "VEG-DIST-DATE within window (first detection)"
+  },
+  "people_source": "GPW v4.11 2020 30 arc-sec count (density at representative point x area)",
+  "_null_reasons": {},
+  "latency_note": "DIST-ALERT-HLS is published ~1-2 weeks after acquisition; latest_acquired is the newest granule CMR had at run time",
+  "caveat": "vegetation loss on steep slopes outside a rain event is mostly forestry harvest / fire; RS 2024 validation (event window) found 55 % of candidates within 500 m of an inventoried landslide"
+}

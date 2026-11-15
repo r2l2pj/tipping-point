@@ -108,6 +108,8 @@ GEOJSON_COMPACT = {
     "municipal_boundaries": {"tol_m": 80},
     "landslide_catalog":   {"tol_m": 0, "props": [], "multipoint": True},
     "priority_zones":      {"tol_m": 15, "min_km2": 0.01},
+    # 30 m DIST-ALERT scar candidates: half a pixel, never drop small scars
+    "landslide_candidates": {"tol_m": 15},
 }
 GEOJSON_BUDGET_BYTES = 980 * 1024
 COORD_DECIMALS = 5                    # ~1 m — plenty for display
