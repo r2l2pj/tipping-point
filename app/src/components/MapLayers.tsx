@@ -616,7 +616,15 @@ export function useMapLayers(
     rasterToggle("imerg", SRC.imerg, LYR.imerg);
     rasterToggle("hand", SRC.hand, LYR.hand);
     rasterToggle("smap", SRC.smap, LYR.smap);
-    rasterToggle("nisar", SRC.nisar, LYR.nisar);
+    const rf = options?.radarFrame;
+    if (rf) {
+      // Below water, the NISAR candidate polygons and the change overlay —
+      // those must stay readable on top of the radar image.
+      ensureImageLayer(map, SRC.nisar, LYR.nisar, rf.url, boundsToImageCoordinates(rf.bounds ?? bundle.bbox), strength ?? 0.9, LYR.waterFill);
+      vis(LYR.nisar, true);
+    } else {
+      rasterToggle("nisar", SRC.nisar, LYR.nisar);
+    }
     // L25: XGBoost P(trigger) probability frame — per-day raster under the
     // muni lines at 0.7, same seam as the other toggle rasters. TPI stays
     // the headline; this only paints when the manifest ships real frames.
@@ -913,7 +921,7 @@ export function useMapLayers(
       console.warn("MapLayers update failed (map kept alive)", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity]);
+  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity, options?.radarFrame?.url]);
 
   // Priority-zone pins — top 20 by rank (matches the side list), anchored
   // at the polygon label point (real files are Polygons, not Points).

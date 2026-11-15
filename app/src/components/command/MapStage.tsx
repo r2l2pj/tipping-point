@@ -21,6 +21,8 @@ import { fmtDate } from "./model/format";
 import { layerStateFor, overlaysFor } from "./model/layerRegistry";
 import { resolveChangePair } from "./model/nisarChange";
 import { useNisarChangeImage } from "./useNisarChange";
+import { activeView } from "./model/views";
+import { passLabel, passValue, radarFrame, radarPasses, type Pol } from "./model/radarFrame";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -110,6 +112,22 @@ export default function MapStage({
       forecastForDay(bundle, step?.date, state.hazard, effectiveLead(bundle, step?.date, state.hazard, state.issueLead))?.layer,
     [bundle, step?.date, state.hazard, state.issueLead, hour]
   );
+  // Lucas (BUG): the Radar — NISAR view draws the radar frame itself, not
+  // only the flood polygons — the pass on/before the day (main track, HH)
+  // unless the user picked another pass or HV. A new day drops the pass
+  // pick (the frame follows the timeline) but keeps the polarization.
+  const radarPassList = useMemo(() => radarPasses(bundle), [bundle]);
+  const [rPick, setRPick] = useState<{ date?: string; track?: string; pol: Pol }>({ pol: "HH" });
+  const [rPickDay, setRPickDay] = useState(step?.date);
+  if (rPickDay !== step?.date) {
+    setRPickDay(step?.date);
+    setRPick((p) => ({ pol: p.pol }));
+  }
+  const radarOn = !comparePair && activeView(state.layers) === "radar" && radarPassList.length > 0;
+  const rFrame = useMemo(
+    () => (radarOn ? radarFrame(radarPassList, step?.date, rPick) : undefined),
+    [radarOn, radarPassList, step?.date, rPick]
+  );
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
   const gfsAny = useMemo(() => hasGfsFrames(bundle), [bundle]);
   // NISAR change layer (Lucas, t5w): the Δ-dB composite of the picked pair —
@@ -136,8 +154,9 @@ export default function MapStage({
       opacity: state.overlayOpacity,
       changeImage,
       changeOpacity: state.changeOpacity,
+      radarFrame: rFrame ? { url: rFrame.url, bounds: rFrame.bounds } : undefined,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
@@ -355,6 +374,40 @@ export default function MapStage({
               {horizonLabel(h)}
             </button>
           ))}
+        </div>
+      )}
+
+      {rFrame && (
+        <div role="group" aria-label="NISAR radar frame" data-radar-frame
+          className={`absolute z-10 flex max-w-[calc(100%-28px)] flex-col items-start gap-1 ${chip} !py-1`} style={{ left: L(14), top: 52 }}>
+          <span data-radar-chip className="text-xs font-semibold">{rFrame.chip}{rFrame.note ? ` (${rFrame.note})` : ""}</span>
+          <div className="flex flex-wrap items-center gap-1">
+            {(["HH", "HV"] as const).map((p) => {
+              const has = !!rFrame.pass.frames[p];
+              return (
+                <button key={p} type="button" aria-pressed={rFrame.pol === p} disabled={!has} data-radar-pol={p}
+                  title={has ? undefined : `No ${p} image for this pass`}
+                  onClick={() => setRPick((x) => ({ ...x, date: rFrame.pass.date, track: rFrame.pass.track, pol: p }))}
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${rFrame.pol === p ? "bg-cc-accent text-white" : "border border-cc-line-strong"} disabled:opacity-40`}>
+                  {p}
+                </button>
+              );
+            })}
+            <label className="flex items-center gap-1 text-xs font-medium">
+              <span className="sr-only">NISAR pass</span>
+              <select data-radar-pass value={passValue(rFrame.pass)}
+                onChange={(e) => {
+                  const [date, track = ""] = e.target.value.split("|");
+                  setRPick((x) => ({ ...x, date, track }));
+                }}
+                className="max-w-[190px] rounded-md border border-cc-line-strong bg-white px-1 py-0.5 text-xs">
+                {radarPassList.map((p) => (
+                  <option key={passValue(p)} value={passValue(p)}>{passLabel(p)}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <span className="text-[11px] font-medium text-cc-muted">Dark = smooth surface (open water) · bright = buildings, trees</span>
         </div>
       )}
 

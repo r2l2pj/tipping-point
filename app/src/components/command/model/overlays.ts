@@ -42,6 +42,10 @@ export interface MapLayerOptions {
   // key replaces the source.
   changeImage?: { url: string; bounds: BBox; key: string };
   changeOpacity?: number;
+  // Lucas (Radar view): the NISAR frame drawn on the single map — url +
+  // lon/lat bounds of an EPSG:3857 PNG. Without it the nisar toggle keeps
+  // its manifest lookup.
+  radarFrame?: { url: string; bounds?: [number, number, number, number] };
 }
 
 export interface OverlayVisibility {
