@@ -30,3 +30,7 @@ hermes-*.json
 gcp-*.json
 service-account*.json
 static/cache/
+
+# static geo downloads (large rasters stay local; manifests are committed)
+data/now/static/*/*
+!data/now/static/*/manifest.json
