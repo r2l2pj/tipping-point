@@ -76,12 +76,17 @@ branch first; `public/data` is only the last-resort fallback.
 
 ## Use of AI
 
-Built with AI coding assistants (Anthropic Claude via Claude Code, Cognition
-Devin, OpenAI Codex/GPT) under human direction: they wrote and reviewed code
-and drafted docs. The idea, method and data choices come from the team's own
-project document (`docs/PLAN.md`); every source, threshold and reported number
-was reviewed by the team. AI-assisted commits carry a `Co-Authored-By` trailer.
-The app shows no AI-generated images, video or audio.
+Built with AI assistants under human direction: Anthropic Claude (Claude Code,
+Claude Opus models) for planning, code, documentation, submission text and the
+demo-recording scripts; Cognition Devin for scoped coding tasks; jcode with
+OpenAI GPT models for research and independent code/science reviews. The idea,
+method and data choices come from the team's own project document
+(`docs/PLAN.md`); a team member directed every task and decision, and every
+source, threshold and reported number was reviewed by the team (several were
+withdrawn or corrected after review). AI-assisted commits carry a
+`Co-Authored-By` trailer. The app and the demo video show real app screens;
+two explanatory diagrams were drawn as SVG by an AI assistant and are labelled
+"AI-assisted diagram". Demo voiceover: [synthetic or recorded — Lucas].
 
 ## Seams
 
@@ -105,13 +110,13 @@ Vercel (repo is public — Hobby plan can deploy public org repos). `prebuild`
 runs the data sync, so committed `public/data` is the last-resort deploy
 fallback. Read order: the `fallback` branch of `r2l2pj/tipping-point-data`
 (`raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`) is the
-primary source, Neon Object Storage is the fallback (removed in the L53 merge), and an explicit
+primary source, Neon Object Storage is the fallback (being retired), and an explicit
 `DATA_BASE_URL` overrides both — runbook in `docs/DEPLOY.md`.
 The `now.yml` live job refreshes data every 3 h: it computes TPI locally
 from IMERG Early / SMAP / NOAA GFS forecast rain and publishes the result as one
 force-pushed orphan commit per run (`manifest.json` last). The stale-data
 warning threshold is 6 h. Everything runs on free tiers: GitHub Actions,
-GitHub raw, Vercel Hobby, Earthdata, Neon free object storage (until the L53 merge).
+GitHub raw, Vercel Hobby, Earthdata, Neon free object storage (being retired).
 
 ## Credentials
 
@@ -186,8 +191,7 @@ land-cover-aware detection. Data: `data/wa_2025/nisar_hypothesis.json`
 - Rio Grande do Sul 2024: UFRGS/Cemaden inventory, 16,027 mapped landslide
   points. Scored consistently (IMERG Final against a Final climatology), 5.8%
   of them were already High or Critical in the NOAA GFS forecast issued 27 h
-  before the first deaths (Apr 29, 2024 00:00 BRT; MetSul report, Jornal do
-  Comércio), while that forecast flagged only 2.1% of the case area: 2.7×
+  before the first deaths (Apr 29, 2024 00:00 BRT; MetSul technical report), while that forecast flagged only 2.1% of the case area: 2.7×
   better than chance (Critical 0.18% of slides in 0.11% of the area, 1.6×).
   Runs issued 51 and 75 h before: 0%. One forecast run carries the result.
   Our first number (36%) used near-real-time IMERG Early, 1.34× wetter than

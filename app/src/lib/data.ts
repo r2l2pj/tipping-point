@@ -1,11 +1,12 @@
 // Server-side loader for the v4 data contract (SCHEMA.md).
-// Remote read order (L26): explicit DATA_BASE_URL wins alone; otherwise the
-// public GitHub data branch (raw.githubusercontent, force-pushed each pipeline
-// run — the primary store) then the Neon Object Storage bucket
-// (NEON_S3_ENDPOINT) as fallback. The bundled public/data copy synced by
-// `bun run sync:data` is always the last resort.
+// Read order (L53): the public GitHub data branch (raw.githubusercontent,
+// force-pushed each pipeline run — the primary store; an explicit
+// DATA_BASE_URL replaces it), then the pipeline's tipping_point.sqlite `docs`
+// table (sqliteDocs.ts), then the bundled public/data copy synced by
+// `bun run sync:data`. The Neon bucket is no longer read (L53).
 // Any remote miss falls back to the bundled copy and flags the bundle.
 import { readFile } from "node:fs/promises";
+import { readSqliteDoc, refreshSqlite } from "./sqliteDocs";
 import path from "node:path";
 import { cacheLife } from "next/cache";
 import {
@@ -321,28 +322,19 @@ interface ReadCtx {
 // as `fallback` to avoid churn).
 const GITHUB_DATA_BASE =
   "https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data";
-// Public-read bucket URL — not a secret. Built-in default so the app works
-// on a host with no data env configured at all.
-const NEON_PUBLIC_BASE =
-  "https://br-lively-poetry-bdub0r34.storage.c-8.us-east-2.aws.neon.tech/tipping-point-data/data";
 
 // Max remote attempts per read context before short-circuiting to disk.
 // DATA_MAX_REMOTE_TRIES overrides; ~14 files × ≤3 bases fits in 60.
 const maxRemoteTries = () =>
   Number(process.env.DATA_MAX_REMOTE_TRIES) || 60;
 
-// Remote bases in priority order (L26, supersedes L17). An explicit
-// DATA_BASE_URL is the sole remote source (override semantics — tests pin it
-// unreachable to force the bundled copy). Unset, the default is the GitHub
-// data branch, then the public Neon bucket (env endpoint if set, else the
-// built-in public URL); disk is always last.
+// The remote base (L53): an explicit DATA_BASE_URL (override — tests pin it
+// unreachable to force the local copies), else the GitHub data branch. After
+// it: the SQLite docs table, then disk.
 const remoteBases = (): string[] => {
   const explicit = process.env.DATA_BASE_URL;
   if (explicit) return [explicit.replace(/\/+$/, "")];
-  const neon = process.env.NEON_S3_ENDPOINT
-    ? `${process.env.NEON_S3_ENDPOINT.replace(/\/+$/, "")}/tipping-point-data/data`
-    : NEON_PUBLIC_BASE;
-  return [...new Set([GITHUB_DATA_BASE, neon])];
+  return [GITHUB_DATA_BASE];
 };
 
 const newCtx = (): ReadCtx => ({
@@ -413,7 +405,7 @@ export const isEmptySeedManifest = (p: string, v: unknown): boolean =>
   v.layers.length === 0;
 
 // One logical file: each remote base in order (GitHub data branch, then
-// Neon — or the DATA_BASE_URL override alone), then the last-resort bundled
+// the DATA_BASE_URL override), then the SQLite docs table, then the bundled
 // copy under public/data. `p` is
 // data-root-relative ("rs_2024/geojson/...") or dir-relative ("geojson/..."),
 // per resolveAsset.
@@ -442,15 +434,18 @@ async function readData<T>(
     // or the bundled copy serves instead of a "no data" page.
     if (remote !== undefined && !isEmptySeedManifest(p, remote)) {
       ctx.lastBase = base;
+      // Keep the local SQLite copy fresh while the remote answers.
+      if (base === GITHUB_DATA_BASE) refreshSqlite(base, Date.now());
       return remote;
     }
   }
   ctx.lastBase = undefined;
   const key = resolveAsset("", dir, p);
-  const stored =
-    key === undefined || /^https?:\/\//i.test(key)
-      ? undefined
-      : await readFs<T>(key);
+  const local = key === undefined || /^https?:\/\//i.test(key);
+  // L53: the pipeline's SQLite docs table, then the bundled copy.
+  const stored = local
+    ? undefined
+    : ((await readSqliteDoc<T>(key!)) ?? (await readFs<T>(key!)));
   // "Fell back" means a substitute copy served a file the first remote did
   // not. A file that is in no place at all (an optional file the case never
   // publishes, such as series/swot.json) is absent or pending, not a
@@ -619,7 +614,7 @@ export async function getCaseBundle(
   // without — everything else absent degrades to `pending`, never throws.
   if (root === undefined) throw new Error("data: manifest.json not found");
   // Browser asset base: the remote that served the root manifest (GitHub
-  // normally, Neon when GitHub missed); first base when disk answered.
+  // normally); first base when the SQLite copy or disk answered.
   const assetBase = ctx.lastBase ?? ctx.bases[0];
   const manifestFromDisk = ctx.lastBase === undefined;
   const entry = root?.cases?.[canonical] ?? root?.cases?.[id];

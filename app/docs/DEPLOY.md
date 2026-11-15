@@ -1,8 +1,9 @@
 # Deploy
 
 Operator runbook for deploying `tipping-point-app` to Vercel. The app reads
-static data files (L26): the public GitHub data branch first, the Neon bucket
-as fallback, the bundled copy last. Earth Engine is not on any runtime path by
+static data files (L53): the public GitHub data branch first, the pipeline's
+SQLite `docs` table (`app/.data/tipping_point.sqlite`) next, the bundled copy
+last. Earth Engine is not on any runtime path by
 default (L25) — it is opt-in with `GEE_ENABLED`.
 
 **Credential rule:** credentials live in environment variables / platform
@@ -21,8 +22,8 @@ is ever committed; `.gitignore` already blocks the usual key file patterns.
 
 | Variable | Purpose |
 | --- | --- |
-| `DATA_BASE_URL` | Leave **unset** in production. Optional override: when set it is the ONLY remote source (tests pin it unreachable to force the bundled copy). Unset, reads go GitHub `fallback` branch → Neon bucket → bundled copy. |
-| `NEON_S3_ENDPOINT` | Optional. Neon Object Storage endpoint (`https://...`) for the FALLBACK remote `https://<endpoint>/tipping-point-data/data/`; unset uses the built-in public bucket URL. Not a secret — never a credential. |
+| `DATA_BASE_URL` | Leave **unset** in production. Optional override: when set it is the ONLY remote source (tests pin it unreachable to force the bundled copy). Unset, reads go GitHub `fallback` branch → SQLite `docs` table → bundled copy. |
+| `DATA_SQLITE` | Optional path of the SQLite file (default `app/.data/tipping_point.sqlite`, else the monorepo's `data/tipping_point.sqlite`). `DATA_SQLITE_REFRESH=0` stops the background download (every ≤ 3 h from the fallback branch). |
 | `GEE_ENABLED` | Optional, default **off** (L25). `1`/`true` turns on the Earth Engine routes (`/api/tiles`, `/api/layers`, `/api/numbers`, `/api/point`), and the GEE overlay of the case loader. Off: those routes answer 503 `runtime GEE disabled` and `/api/metrics` serves the manifest copy. `/api/health` is a liveness probe: 200 `{"ok":true}` while the server is up. |
 | `GEE_PROJECT` | Only with `GEE_ENABLED`: Google Cloud project registered for the Earth Engine API. |
 | `GCP_SA_KEY` | Only with `GEE_ENABLED`: service-account JSON key (single line). Server-side only — never `NEXT_PUBLIC_`-prefixed. |
@@ -39,14 +40,16 @@ GitHub is the data store (L26). Read order, per file:
    force-pushed commit per run (no history growth), app-facing files only,
    `manifest.json` written last. Files > 50 MB go to a GitHub Release asset.
    raw.githubusercontent caches ~5 min; the app tolerates that.
-2. **Neon Object Storage (fallback)** — public-read bucket `tipping-point-data`
-   (`neon.ts` declares it; CORS allows `GET`/`HEAD`), at
-   `${NEON_S3_ENDPOINT}/tipping-point-data/data/` or the built-in public URL.
+2. **SQLite `docs` table (L53, replaces Neon)** — lead-ml's
+   `tipping_point.sqlite` carries every app-facing JSON/GeoJSON by
+   data-relative path (gzip). The server keeps a copy in `app/.data/`,
+   downloaded from the fallback branch at most every 3 h while GitHub answers,
+   and reads it when GitHub misses (PNG frames then come from the bundled copy).
 3. **Bundled `public/data`** — committed copy synced by `bun run sync:data`;
    the last resort when every remote read misses.
 
 Browser assets (PNG frames, COGs, lazy GeoJSON) resolve against the remote
-that served the root manifest, so a GitHub outage serves frames from Neon too.
+that served the root manifest; when GitHub is down they come from the bundled copy.
 The "Showing last saved data" status appears only when the root manifest came
 from the bundled copy, or when live data is older than 6 h — never because a
 single optional file is missing. `DATA_BASE_URL` stays an explicit override

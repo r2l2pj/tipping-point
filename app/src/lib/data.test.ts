@@ -3,8 +3,9 @@
 import { afterAll, afterEach, beforeAll, describe, expect, spyOn, test } from "bun:test";
 import { createServer } from "node:http";
 
-import { readFile } from "node:fs/promises";
+import { mkdir, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
 
 import realMetrics from "../../test/fixtures/metrics-19c56df.json";
 import { getAlerts, getCaseBundle, getEventsIndex, getMetrics, getRootManifest, isEmptySeedManifest, nowCityPlaces, representativePoint } from "./data";
@@ -620,38 +621,17 @@ describe("default remote bases (no DATA_BASE_URL)", () => {
       expect(b.dataSource).toBeUndefined();
       expect(b.liveLayers).toBeUndefined();
       expect(b.dataDate).toBeUndefined();
-      // L26: GitHub data branch first, built-in public Neon bucket second.
+      // L53: the GitHub data branch is the only remote (no Neon).
       expect(requested[0]).toBe("https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/manifest.json");
-      expect(requested[1]).toContain("/tipping-point-data/data/manifest.json");
-      expect(requested[1]).toContain("aws.neon.tech");
+      expect(requested.some((u) => u.includes("neon"))).toBe(false);
     } finally {
       remote.mockRestore();
     }
   });
 
-  // L26: with no explicit DATA_BASE_URL the GitHub data branch is tried
-  // first; a GitHub miss falls through to the Neon bucket, then disk.
-  test("NEON_S3_ENDPOINT set: github first, bucket next", async () => {
+  // GitHub answers: frames resolve to GitHub raw.
+  test("github hit: layer PNGs point at github", async () => {
     delete process.env.DATA_BASE_URL;
-    process.env.NEON_S3_ENDPOINT = "https://neon-s3.example.com";
-    const requested: string[] = [];
-    const remote = spyOn(globalThis, "fetch").mockImplementation(async (input: string | URL | Request) => {
-      requested.push(String(input));
-      return new Response("not found", { status: 404 });
-    });
-    try {
-      await getRootManifest();
-      expect(requested[0]).toBe("https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/manifest.json");
-      expect(requested[1]).toBe("https://neon-s3.example.com/tipping-point-data/data/manifest.json");
-    } finally {
-      remote.mockRestore();
-    }
-  });
-
-  // GitHub answers: Neon is never asked, frames resolve to GitHub raw.
-  test("github hit: neon untouched, layer PNGs point at github", async () => {
-    delete process.env.DATA_BASE_URL;
-    process.env.NEON_S3_ENDPOINT = "https://neon-s3.example.com";
     const GH = "https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/";
     const fixtures = path.join(process.cwd(), "test/fixtures/public-data");
     const requested: string[] = [];
@@ -669,75 +649,69 @@ describe("default remote bases (no DATA_BASE_URL)", () => {
       const b = await getCaseBundle("rs-2024-05", "RS", RS_BBOX, "2024-05-02");
       expect(b.manifest?.event_id).toBe("rs-2024-05");
       expect(requested[0]).toBe(`${GH}manifest.json`);
-      expect(requested.filter((u) => u.startsWith("https://neon-s3.example.com/") && u.endsWith("/manifest.json"))).toEqual([]);
       expect(b.assetBase).toBe(GH.replace(/\/$/, ""));
       const png = b.manifest?.layers.find((l) => l.png)?.png;
       expect(png?.startsWith(GH)).toBe(true);
-      // Some per-case files 404 on every remote here (Neon is down in this
-      // mock) and fall to disk — individual misses never raise the banner.
-      expect(requested.some((u) => u.startsWith("https://neon-s3.example.com/"))).toBe(true);
+      // Some per-case files 404 here and fall to disk — individual misses
+      // never raise the banner; Neon is never asked (L53).
+      expect(requested.some((u) => u.includes("neon"))).toBe(false);
       expect(b.fallback).toBe(false);
     } finally {
       remote.mockRestore();
     }
   });
 
-  // GitHub down, Neon up: data AND browser frames come from Neon.
-  test("github miss, neon hit: assetBase follows the base that answered", async () => {
+  // L53: GitHub down → the pipeline's SQLite docs table serves (gzip bodies
+  // keyed by data-root-relative path, lead-ml c7ab438), before the bundled copy.
+  test("github miss, sqlite hit: the docs table serves; the bundled copy is not needed", async () => {
     delete process.env.DATA_BASE_URL;
-    process.env.NEON_S3_ENDPOINT = "https://neon-s3.example.com";
-    const NEON = "https://neon-s3.example.com/tipping-point-data/data/";
     const fixtures = path.join(process.cwd(), "test/fixtures/public-data");
-    const remote = spyOn(globalThis, "fetch").mockImplementation(async (input: string | URL | Request) => {
-      const url = String(input);
-      if (!url.startsWith(NEON)) return new Response("down", { status: 503 });
-      try {
-        return new Response(await readFile(path.join(fixtures, url.slice(NEON.length)), "utf-8"));
-      } catch {
-        return new Response("not found", { status: 404 });
-      }
-    });
+    const dir = path.join(process.cwd(), "node_modules/.cache/test-sqlite");
+    await mkdir(dir, { recursive: true });
+    const file = path.join(dir, `docs-${Date.now()}.sqlite`);
+    // @ts-expect-error -- node:sqlite exists in Bun / Node ≥ 22.5; @types/node 20 lacks it
+    const { DatabaseSync } = await import("node:sqlite");
+    const db = new DatabaseSync(file);
+    db.exec("CREATE TABLE docs (path TEXT PRIMARY KEY, bytes INTEGER NOT NULL, sha256 TEXT NOT NULL, encoding TEXT NOT NULL, body BLOB NOT NULL)");
+    const ins = db.prepare("INSERT INTO docs VALUES (?,?,?,?,?)");
+    const walk = async (d: string): Promise<string[]> => (await Promise.all((await readdir(d, { withFileTypes: true })).map((e) =>
+      e.isDirectory() ? walk(path.join(d, e.name)) : Promise.resolve(/\.(geo)?json$/.test(e.name) ? [path.join(d, e.name)] : [])))).flat();
+    for (const f of await walk(fixtures)) {
+      let raw = await readFile(f);
+      const rel = path.relative(fixtures, f).split(path.sep).join("/");
+      if (rel === "manifest.json") raw = Buffer.from(JSON.stringify({ ...JSON.parse(raw.toString()), served_by: "sqlite" }));
+      ins.run(rel, raw.length, "x", "gzip", gzipSync(raw));
+    }
+    db.close();
+    process.env.DATA_SQLITE = file;
+    process.env.DATA_FS_DIR = path.join(dir, "no-bundled-copy");
+    const remote = spyOn(globalThis, "fetch").mockImplementation(async () => new Response("down", { status: 503 }));
     try {
+      const root = await getRootManifest();
+      expect((root as unknown as { served_by?: string })?.served_by).toBe("sqlite");
       const b = await getCaseBundle("rs-2024-05", "RS", RS_BBOX, "2024-05-02");
       expect(b.manifest?.event_id).toBe("rs-2024-05");
-      expect(b.assetBase).toBe(NEON.replace(/\/$/, ""));
-      const png = b.manifest?.layers.find((l) => l.png)?.png;
-      expect(png?.startsWith(NEON)).toBe(true);
-      // L27 ruling: the manifest came from a remote (Neon) -> no banner.
-      expect(b.fallback).toBe(false);
+      expect(b.series?.days.length).toBeGreaterThan(0);
+      // A substitute copy served the root manifest: the 'last saved data' label.
+      expect(b.fallback).toBe(true);
     } finally {
       remote.mockRestore();
+      delete process.env.DATA_SQLITE;
+      delete process.env.DATA_FS_DIR;
     }
   });
 
-  // G6: GitHub down, Neon serves the empty seed manifest (bucket over quota)
-  // -> the seed is a miss and the bundled manifest serves, never 'no data'.
-  test("github miss, neon empty seed manifest: bundled manifest serves", async () => {
+  test("github miss, no sqlite file: the bundled copy serves", async () => {
     delete process.env.DATA_BASE_URL;
-    process.env.NEON_S3_ENDPOINT = "https://neon-s3.example.com";
-    const NEON = "https://neon-s3.example.com/tipping-point-data/data/";
-    const fixtures = path.join(process.cwd(), "test/fixtures/public-data");
-    process.env.DATA_FS_DIR = fixtures;
-    const remote = spyOn(globalThis, "fetch").mockImplementation(async (input: string | URL | Request) => {
-      const url = String(input);
-      if (!url.startsWith(NEON)) return new Response("down", { status: 503 });
-      if (url.endsWith("/manifest.json") && !url.endsWith("data/manifest.json")) {
-        return new Response(JSON.stringify({ updated_at: null, layers: [] }));
-      }
-      try {
-        return new Response(await readFile(path.join(fixtures, url.slice(NEON.length)), "utf-8"));
-      } catch {
-        return new Response("not found", { status: 404 });
-      }
-    });
+    process.env.DATA_SQLITE = path.join(process.cwd(), "node_modules/.cache/test-sqlite/absent.sqlite");
+    const remote = spyOn(globalThis, "fetch").mockImplementation(async () => new Response("down", { status: 503 }));
     try {
       const b = await getCaseBundle("rs-2024-05", "RS", RS_BBOX, "2024-05-02");
       expect(b.manifest?.event_id).toBe("rs-2024-05");
-      expect(b.manifest?.layers.length).toBeGreaterThan(0);
-      // L27: the banner follows the ROOT manifest only (served by Neon here).
-      expect(b.fallback).toBe(false);
+      expect(b.fallback).toBe(true);
     } finally {
       remote.mockRestore();
+      delete process.env.DATA_SQLITE;
     }
   });
 
