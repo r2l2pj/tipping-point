@@ -295,3 +295,9 @@ def test_quiet_hours_hold_reduction_too(monkeypatch, tmp_path):
     notify.run(tmp_path, now=NIGHT + dt.timedelta(hours=6))
     assert "caiu para Baixo" in post.call_args.kwargs["json"]["text"]
     assert _row(db)["last_class"] == 0
+
+
+def test_current_label_baixo_has_no_hazard():
+    from live import notify
+    assert notify._current_label(0, "landslide", 0) == "Baixo"
+    assert notify._current_label(2, "flood", 1) == "Alto — enchente, amanhã"

@@ -124,7 +124,7 @@ def _layer_for(manifest: dict, hazard: str | None, day: int | None) -> dict:
 
 def _current_label(cls: int, hazard: str | None, day: int | None) -> str:
     label = LABELS[cls]
-    if hazard is None or day is None:
+    if cls == 0 or hazard is None or day is None:   # Baixo: no hazard/day
         return label
     return f"{label} — {HAZARD_PT.get(hazard, hazard)}, {WHEN_PT[day]}"
 
