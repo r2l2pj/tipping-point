@@ -337,6 +337,14 @@ def _resolve_source(ev, *, get: Callable = requests.get):
         if not dest.exists():
             resp = get(src, timeout=300)
             resp.raise_for_status()
+            # APIs like Dataverse (/api/access/dataset/:persistentId/) name the
+            # payload only in Content-Disposition; use it when the URL does not.
+            cd = resp.headers.get("Content-Disposition", "")
+            fname = cd.rsplit("filename=", 1)[-1].strip(" ;\"'") if "filename=" in cd else ""
+            if fname and not Path(name).suffix:
+                dest = S.path("events", ev.event_id, Path(fname).name)
+                if dest.exists():
+                    return dest
             dest.write_bytes(resp.content)
             log.info("%s: downloaded %s (%d bytes)", ev.event_id, src, len(resp.content))
         return dest
