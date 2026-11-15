@@ -233,9 +233,15 @@ jobs:
       # L26: GitHub 'fallback' branch is the primary data host (one
       # force-pushed orphan snapshot per run, app-facing files only,
       # >50 MB -> release asset). Neon publish is best-effort secondary.
+      # Guard (conductor 2026-11-15, fallback race): the publish FAILS and
+      # logs DROPPED paths if the snapshot would remove an app-facing file
+      # that both the current fallback and main HEAD have. Exception: the
+      # R2 NISAR flood geojson, which 15_response_nisar.py deletes by design
+      # when no scene covers the window (the manifest prunes the product).
       - name: Publish data/ to fallback branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FALLBACK_ALLOW_DROP: data/now/response/flood_nisar.geojson
         run: uv run python live/publish_fallback.py
 
       # G1+G2: Telegram subscriber alerts on the just-published bundle —

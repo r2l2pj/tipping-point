@@ -181,3 +181,15 @@ def test_now_watchdog_stale_alarm_after_dispatch():
     assert "git fetch" in run and "FETCH_HEAD:data/now/manifest.json" in run
     assert "21600" in str(steps[stale].get("env", {}))
     assert _on(doc)["workflow_dispatch"]["inputs"]["stale_after_s"]["default"] == "21600"
+
+
+def test_now_publish_has_drop_guard_allowlist_only_for_r2():
+    import yaml
+    from pathlib import Path
+    wf = yaml.safe_load((Path(__file__).resolve().parents[2]
+                         / ".github/workflows/now.yml").read_text())
+    step = next(s for s in wf["jobs"][next(iter(wf["jobs"]))]["steps"]
+                if s.get("name") == "Publish data/ to fallback branch")
+    assert step["env"]["FALLBACK_ALLOW_DROP"].split() == [
+        "data/now/response/flood_nisar.geojson"]
+    assert "continue-on-error" not in step       # a refused publish fails the run

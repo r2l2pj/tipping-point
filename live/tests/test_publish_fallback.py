@@ -161,3 +161,75 @@ def test_ml_export_ships_to_fallback(tmp_path):
     for rel in ("ml/ml_card.json", "ml/feature_importance_3b.json", "ml/t_ml.json",
                 "ml/t_ml.png", "ml/model_metrics.json", "cog/t_ml.tif", "metrics.json"):
         assert _app_facing(src / rel, src), rel
+
+
+def _git(cwd, *args):
+    subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True,
+                   text=True)
+
+
+def _real_repo(tmp_path):
+    """origin (bare) with main and an orphan fallback, both holding
+    data/manifest.json, data/now/response/flood_nisar.geojson and
+    data/wa_2025/scars.geojson; fallback also has data/now/p_old.png."""
+    origin = tmp_path / "origin.git"
+    _git(tmp_path, "init", "-q", "--bare", "-b", "main", str(origin))
+    repo = tmp_path / "repo"
+    _git(tmp_path, "clone", "-q", str(origin), str(repo))
+    for k, v in (("user.name", "t"), ("user.email", "t@t")):
+        _git(repo, "config", k, v)
+    files = ["manifest.json", "now/response/flood_nisar.geojson",
+             "wa_2025/scars.geojson"]
+    for rel in files:
+        (repo / "data" / rel).parent.mkdir(parents=True, exist_ok=True)
+        (repo / "data" / rel).write_text("{}")
+    _git(repo, "add", "data")
+    _git(repo, "commit", "-q", "-m", "main")
+    _git(repo, "push", "-q", "origin", "main")
+    _git(repo, "checkout", "-q", "--orphan", "fallback")
+    (repo / "data" / "now" / "p_old.png").write_bytes(b"png")
+    _git(repo, "add", "data")
+    _git(repo, "commit", "-q", "-m", "fb")
+    _git(repo, "push", "-q", "origin", "fallback")
+    _git(repo, "checkout", "-q", "main")
+    return repo
+
+
+def _fallback_files(repo):
+    _git(repo, "fetch", "-q", "origin", "fallback")
+    out = subprocess.run(["git", "ls-tree", "-r", "--name-only", "origin/fallback"],
+                         cwd=repo, capture_output=True, text=True, check=True)
+    return set(out.stdout.split())
+
+
+def test_guard_refuses_to_drop_paths_on_main(tmp_path, monkeypatch, capsys):
+    """Conductor 2026-11-15 (fallback race): a snapshot that would drop an
+    app-facing path present on BOTH the current fallback and main HEAD
+    fails and publishes nothing; the dropped paths are logged."""
+    repo = _real_repo(tmp_path)
+    monkeypatch.setattr(publish, "ROOT", repo)
+    monkeypatch.setattr(publish, "DATA", repo / "data")
+    monkeypatch.delenv("FALLBACK_ALLOW_DROP", raising=False)
+    (repo / "data" / "wa_2025" / "scars.geojson").unlink()     # the race
+    before = _fallback_files(repo)
+    with pytest.raises(SystemExit, match="drop 1 app-facing"):
+        publish.main([])
+    assert "DROPPED (on fallback and main HEAD): data/wa_2025/scars.geojson" \
+        in capsys.readouterr().out
+    assert _fallback_files(repo) == before
+
+
+def test_guard_allows_fallback_only_drops_and_allowlisted(tmp_path, monkeypatch):
+    repo = _real_repo(tmp_path)
+    monkeypatch.setattr(publish, "ROOT", repo)
+    monkeypatch.setattr(publish, "DATA", repo / "data")
+    # p_old.png exists only on fallback: dropping it is fine
+    publish.main([])
+    assert "data/now/p_old.png" not in _fallback_files(repo)
+    # an intended removal of a main path needs FALLBACK_ALLOW_DROP
+    (repo / "data" / "now" / "response" / "flood_nisar.geojson").unlink()
+    monkeypatch.setenv("FALLBACK_ALLOW_DROP", "data/now/response/flood_nisar.geojson")
+    publish.main([])
+    files = _fallback_files(repo)
+    assert "data/now/response/flood_nisar.geojson" not in files
+    assert "data/wa_2025/scars.geojson" in files
