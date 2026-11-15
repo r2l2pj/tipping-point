@@ -179,6 +179,15 @@ def sample_3b(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> 
     SP.save_table(events, S.MODEL_DIR / "split_3b_events.csv")
     ev_split = dict(zip(events.event_id, events.split, strict=True))
 
+    neg_a, neg_b = negatives_3b(pos, inv, rng)
+
+    rows = pd.concat([pos, neg_a, neg_b], ignore_index=True)
+    rows["split"] = rows["event_id"].map(ev_split)
+    return _finish_3b(rows, pos, neg_a, neg_b)
+
+
+def negatives_3b(pos: pd.DataFrame, inv: pd.DataFrame, rng) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """(a) same-point other-date and (b) elsewhere-same-day negatives for ``pos``."""
     # (a) same point on NEG_DATES_3B no-event dates shared by the whole event
     end = last_data_day()
     pool = _date_pool(S.SMAP_START, end, S.NEG_DATE_POOL, rng)
@@ -212,9 +221,12 @@ def sample_3b(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> 
                         inv.lon.to_numpy(), inv.lat.to_numpy()) > S.NEG_MIN_DIST_KM
     neg_b = neg_b[far].assign(label=0, neg_type="elsewhere_same_day")
     neg_b["point_id"] = neg_b["point_id"] + "_nb"
+    return neg_a, neg_b
 
-    rows = pd.concat([pos, neg_a, neg_b], ignore_index=True)
-    rows["split"] = rows["event_id"].map(ev_split)
+
+def _finish_3b(rows, pos, neg_a, neg_b) -> pd.DataFrame:
+    """Buffer, region, row ids, write rows_3b + horizon_3b."""
+    rows = rows.reset_index(drop=True)
     rows["split"] = SP.buffer_rows(rows["lon"].to_numpy(), rows["lat"].to_numpy(),
                                    rows["split"].to_numpy())
     rows["region"] = L.report_region(rows["lon"].to_numpy(), rows["lat"].to_numpy())
@@ -226,6 +238,64 @@ def sample_3b(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> 
     hz = horizon_rows(rows)
     hz.to_csv(tables_dir() / "horizon_3b.csv", index=False)
     return rows
+
+
+def extend_3b(inv: pd.DataFrame, *, seed: int = S.SEED) -> pd.DataFrame:
+    """Keep the frozen 3b sample, drop GLC events that may BE a TEST event, add the
+    extra TEST events (conductor 2026-11-15, L32).
+
+    Base = ``rows_3b_base.csv`` (a copy of the first full sample, made once), so the
+    existing split, negative dates and cached features (POWER/SMAP/DEM) all stay;
+    a full resample would redraw every negative date. GLC events with any point
+    within S.LEAK_DAYS / S.LEAK_KM of a TEST event are dropped whole (positives +
+    their negatives). New TEST events get negatives from their own RNG stream
+    (seeded by event id), so adding one event never changes another's rows.
+    Idempotent: always rebuilt from the base.
+    """
+    import shutil
+    import zlib
+
+    base_path = tables_dir() / "rows_3b_base.csv"
+    if not base_path.exists():
+        shutil.copy(tables_dir() / "rows_3b.csv", base_path)
+        shutil.copy(S.MODEL_DIR / "split_3b_events.csv", tables_dir() / "split_3b_events_base.csv")
+    base = pd.read_csv(base_path, low_memory=False)
+    base["date"] = pd.to_datetime(base["date"]).dt.normalize()
+    # undo the base's own buffer: re-derive each row's event split, then re-buffer
+    ev_split = pd.read_csv(tables_dir() / "split_3b_events_base.csv")
+    base["split"] = base["event_id"].map(dict(zip(ev_split.event_id, ev_split.split, strict=True)))
+
+    glc_pos = base[(base.label == 1) & (base.source == "glc")]
+    test_pts = inv[inv.event_id.isin(S.TRIGGER_TEST_EVENTS)]
+    mask, rep = L.leak_mask(glc_pos, test_pts, S.EVENT_WINDOWS)
+    leak_events = set(glc_pos.event_id[mask])
+    SP.save_table(rep, S.MODEL_DIR / "test_event_leaks_3b.csv")
+    dropped = base[base.event_id.isin(leak_events)]
+    log.info("3b extend: dropping %d GLC events (%d pos, from %s) as TEST-event leaks",
+             len(leak_events), int((dropped.label == 1).sum()), dropped.split.value_counts().to_dict())
+    keep = base[~base.event_id.isin(leak_events)]
+
+    new = inv[(inv.source == "event") & inv.event_id.isin(S.TRIGGER_TEST_EVENTS)
+              & inv.date.notna()].copy()
+    new["date"] = pd.to_datetime(new["date"]).dt.normalize()
+    parts = [keep]
+    ev_rows = []
+    for ev, g in new.groupby("event_id"):
+        pos = g.assign(label=1, neg_type="")
+        rng = np.random.default_rng([seed, zlib.crc32(ev.encode())])
+        neg_a, neg_b = negatives_3b(pos, inv, rng)
+        parts += [pos, neg_a, neg_b]
+        ev_rows.append({"event_id": ev, "n_pos": len(pos), "split": "test", "forced": True})
+        log.info("3b extend: + %s %d pos, %d same-point neg, %d elsewhere neg",
+                 ev, len(pos), len(neg_a), len(neg_b))
+    rows = pd.concat(parts, ignore_index=True)
+    rows.loc[rows.event_id.isin(new.event_id.unique()), "split"] = "test"
+    events = pd.concat([ev_split[~ev_split.event_id.isin(leak_events)],
+                        pd.DataFrame(ev_rows)], ignore_index=True)
+    SP.save_table(events, S.MODEL_DIR / "split_3b_events.csv")
+    allpos = rows[rows.label == 1]
+    return _finish_3b(rows, allpos, rows[rows.neg_type == "same_point_other_date"],
+                      rows[rows.neg_type == "elsewhere_same_day"])
 
 
 LOOKBACK_DAYS = 20  # issue days L-20 .. L per positive (>= the 14 d horizon)

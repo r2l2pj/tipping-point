@@ -59,10 +59,13 @@ def stage_fetch_region(a):
 
 
 def stage_sample(a):
-    from .table import load_inventory, sample_3a, sample_3b
+    from .table import extend_3b, load_inventory, sample_3a, sample_3b
     inv = load_inventory()
     sample_3a(inv, smoke=a.smoke)
-    sample_3b(inv, smoke=a.smoke)
+    if getattr(a, "extend", False):
+        extend_3b(inv)   # frozen 3b sample - TEST-event leaks + extra TEST events
+    else:
+        sample_3b(inv, smoke=a.smoke)
 
 
 def stage_fetch_points(a):
@@ -129,6 +132,7 @@ def main(argv=None) -> int:
     ap.add_argument("--no-gfs", action="store_true", help="skip the GFS (real forecast) evaluation")
     ap.add_argument("--t-ml-90m", action="store_true", help="also write data/cog/t_ml_90m.tif")
     ap.add_argument("--skip-serve-grids", action="store_true")
+    ap.add_argument("--extend", action="store_true", help="sample: keep the frozen 3b sample, drop TEST-event leaks, add extra TEST events")
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
     if a.smoke:
