@@ -198,3 +198,51 @@ certificate.
 
 Nothing in the app breaks off Vercel; the only required actions are TLS,
 and the env file.
+
+## 6. SQLite refresh from host cron (fallback)
+
+The app refreshes `/app/.data/tipping_point.sqlite` itself, but only when a
+request arrives and the copy is older than 3 h. A host cron entry makes the
+refresh independent of traffic, of the app container and of the app
+deployment workflow: if a deployment fails or is disabled, the data copy on
+the VPS still follows the 3-hourly data job.
+
+`deploy/vps/refresh_sqlite.py` (Python 3.8+, standard library only) downloads
+`data/tipping_point.sqlite` from the `fallback` branch every 30 minutes and
+replaces the volume copy only when all of these hold:
+
+- the download is a SQLite file, passes `PRAGMA quick_check`, and its `docs`
+  table is not empty;
+- its content differs from the current copy;
+- its newest Now run is not older than the current copy's (a stale CDN answer
+  never rolls the data back).
+
+The replacement is one atomic rename, so the app never reads a partial file.
+The app opens the file again when its modification time changes; no restart
+is needed. On any failure the previous copy stays and the run exits 1.
+
+**Scope.** The job reads one public URL and writes one file,
+`tipping_point.sqlite`, in the existing `tipping-point-data` volume. It does
+not create a volume, and it does not start, stop, restart or change any
+container, network, Caddy route or database. It does not touch FE services
+or their data. It fails, and changes nothing, when the volume does not exist.
+
+Install (VPS administrator, from a reviewed checkout):
+
+```sh
+sudo install -o root -g root -m 0755 deploy/vps/refresh_sqlite.py \
+  /usr/local/sbin/tipping-point-sqlite-refresh
+sudo /usr/local/sbin/tipping-point-sqlite-refresh --dry-run   # downloads and checks, installs nothing
+sudo /usr/local/sbin/tipping-point-sqlite-refresh             # "updated: ..." or "unchanged: ..."
+sudo install -o root -g root -m 0644 deploy/vps/tipping-point-sqlite.cron \
+  /etc/cron.d/tipping-point-sqlite
+```
+
+Check: `journalctl -t tipping-point-sqlite -n 20` shows one line per run
+(`updated`, `unchanged`, `kept current copy` or `FAILED, previous copy
+kept`). Remove: delete `/etc/cron.d/tipping-point-sqlite`; the app's own
+refresh keeps working.
+
+The automatic app deployment keeps the `tipping-point-data` volume, so the
+two do not interfere: a deployment replaces the container, this job replaces
+the data file.
