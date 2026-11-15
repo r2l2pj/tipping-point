@@ -973,7 +973,7 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 0.0,
+      "critical_km2": 4.521,
       "people_critical": 0
     },
     {
@@ -1009,8 +1009,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 852.538,
-      "people_critical": 402
+      "critical_km2": 905.213,
+      "people_critical": 458
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -1027,8 +1027,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 21.259,
-      "people_critical": 1208
+      "critical_km2": 10.88,
+      "people_critical": 1427
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -1081,8 +1081,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 760.909,
-      "people_critical": 336
+      "critical_km2": 869.9,
+      "people_critical": 438
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -1099,8 +1099,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 25.609,
-      "people_critical": 364
+      "critical_km2": 17.041,
+      "people_critical": 823
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -1117,8 +1117,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1158.927,
-      "people_critical": 544
+      "critical_km2": 1197.263,
+      "people_critical": 580
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -1135,8 +1135,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 35.931,
-      "people_critical": 1343
+      "critical_km2": 25.332,
+      "people_critical": 1656
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -1153,8 +1153,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 31.523,
-      "people_critical": 33
+      "critical_km2": 143.709,
+      "people_critical": 89
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -1171,8 +1171,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 6.098,
-      "people_critical": 45
+      "critical_km2": 5.869,
+      "people_critical": 46
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -1189,8 +1189,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 137.376,
-      "people_critical": 44
+      "critical_km2": 229.075,
+      "people_critical": 82
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -1207,8 +1207,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 8.532,
-      "people_critical": 64
+      "critical_km2": 7.259,
+      "people_critical": 59
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -1225,8 +1225,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 779.571,
-      "people_critical": 283
+      "critical_km2": 943.845,
+      "people_critical": 344
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -1243,8 +1243,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 26.066,
-      "people_critical": 339
+      "critical_km2": 19.051,
+      "people_critical": 370
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -1261,8 +1261,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 70.42,
-      "people_critical": 61
+      "critical_km2": 150.047,
+      "people_critical": 75
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -1279,8 +1279,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 11.211,
-      "people_critical": 92
+      "critical_km2": 10.186,
+      "people_critical": 117
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -1297,8 +1297,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 622.93,
-      "people_critical": 236
+      "critical_km2": 787.369,
+      "people_critical": 318
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -1315,8 +1315,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 22.926,
-      "people_critical": 336
+      "critical_km2": 19.252,
+      "people_critical": 370
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -1333,8 +1333,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 196.631,
-      "people_critical": 10
+      "critical_km2": 236.321,
+      "people_critical": 25
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -1351,8 +1351,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 0.277,
-      "people_critical": 0
+      "critical_km2": 0.485,
+      "people_critical": 19
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -1369,8 +1369,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 6.42,
-      "people_critical": 0
+      "critical_km2": 42.196,
+      "people_critical": 3
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -1387,8 +1387,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 0.0,
-      "people_critical": 0
+      "critical_km2": 1.048,
+      "people_critical": 11
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -1405,8 +1405,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 489.842,
-      "people_critical": 166
+      "critical_km2": 527.117,
+      "people_critical": 189
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -1423,8 +1423,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 3.489,
-      "people_critical": 233
+      "critical_km2": 3.125,
+      "people_critical": 333
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -1441,8 +1441,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 698.057,
-      "people_critical": 339
+      "critical_km2": 746.207,
+      "people_critical": 406
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -1459,8 +1459,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 17.252,
-      "people_critical": 3519
+      "critical_km2": 10.668,
+      "people_critical": 3516
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -1477,8 +1477,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 266.207,
-      "people_critical": 38
+      "critical_km2": 570.383,
+      "people_critical": 166
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -1495,8 +1495,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 0.399,
-      "people_critical": 3
+      "critical_km2": 2.232,
+      "people_critical": 8
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -1513,8 +1513,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1661.657,
-      "people_critical": 1233
+      "critical_km2": 1698.208,
+      "people_critical": 1284
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -1531,8 +1531,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 88.85,
-      "people_critical": 10351
+      "critical_km2": 66.171,
+      "people_critical": 10375
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -1549,8 +1549,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1578.454,
-      "people_critical": 1267
+      "critical_km2": 1668.72,
+      "people_critical": 1570
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -1567,8 +1567,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 86.203,
-      "people_critical": 10608
+      "critical_km2": 69.927,
+      "people_critical": 10889
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -1585,8 +1585,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 2074.689,
-      "people_critical": 2760
+      "critical_km2": 2194.776,
+      "people_critical": 3473
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -1603,8 +1603,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 308.539,
-      "people_critical": 32462
+      "critical_km2": 164.418,
+      "people_critical": 32062
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -1621,8 +1621,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 2245.619,
-      "people_critical": 4658
+      "critical_km2": 2327.519,
+      "people_critical": 5421
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -1639,8 +1639,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 439.737,
-      "people_critical": 52842
+      "critical_km2": 238.928,
+      "people_critical": 48970
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -1657,8 +1657,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 2064.714,
-      "people_critical": 2713
+      "critical_km2": 2141.596,
+      "people_critical": 2988
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -1675,8 +1675,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 279.282,
-      "people_critical": 25739
+      "critical_km2": 154.597,
+      "people_critical": 24639
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -1693,8 +1693,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 2424.354,
-      "people_critical": 7444
+      "critical_km2": 2418.646,
+      "people_critical": 8201
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -1711,8 +1711,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 610.707,
-      "people_critical": 106139
+      "critical_km2": 297.955,
+      "people_critical": 81607
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -1729,8 +1729,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 2006.58,
-      "people_critical": 2819
+      "critical_km2": 2070.692,
+      "people_critical": 2989
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -1747,8 +1747,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 248.245,
-      "people_critical": 27205
+      "critical_km2": 118.235,
+      "people_critical": 23485
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -1765,7 +1765,7 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 0.0,
+      "critical_km2": 7.804,
       "people_critical": 0
     },
     {
@@ -1801,8 +1801,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 2341.557,
-      "people_critical": 4815
+      "critical_km2": 2430.817,
+      "people_critical": 4584
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -1819,8 +1819,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 652.412,
-      "people_critical": 56911
+      "critical_km2": 283.383,
+      "people_critical": 46844
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -1837,8 +1837,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 385.245,
-      "people_critical": 82
+      "critical_km2": 404.688,
+      "people_critical": 117
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -1855,8 +1855,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 7.988,
-      "people_critical": 3
+      "critical_km2": 3.184,
+      "people_critical": 2
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -1909,8 +1909,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 41.052,
-      "people_critical": 2
+      "critical_km2": 0.0,
+      "people_critical": 0
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -2089,8 +2089,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 563.981,
-      "people_critical": 164
+      "critical_km2": 706.275,
+      "people_critical": 206
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -2107,8 +2107,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 9.519,
-      "people_critical": 43
+      "critical_km2": 7.826,
+      "people_critical": 54
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -2161,8 +2161,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 663.563,
-      "people_critical": 264
+      "critical_km2": 832.338,
+      "people_critical": 321
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -2179,8 +2179,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 21.762,
-      "people_critical": 359
+      "critical_km2": 19.645,
+      "people_critical": 372
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -2197,8 +2197,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 2175.751,
-      "people_critical": 4593
+      "critical_km2": 2234.519,
+      "people_critical": 4123
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -2215,8 +2215,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 491.649,
-      "people_critical": 63682
+      "critical_km2": 179.253,
+      "people_critical": 34262
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -2233,8 +2233,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1510.075,
-      "people_critical": 1181
+      "critical_km2": 1436.941,
+      "people_critical": 838
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -2251,8 +2251,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 92.011,
-      "people_critical": 4717
+      "critical_km2": 39.426,
+      "people_critical": 2510
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -2269,8 +2269,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 2241.633,
-      "people_critical": 5861
+      "critical_km2": 2311.884,
+      "people_critical": 5917
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -2287,8 +2287,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 529.426,
-      "people_critical": 85156
+      "critical_km2": 203.181,
+      "people_critical": 60320
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -2305,8 +2305,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1365.194,
-      "people_critical": 395
+      "critical_km2": 1487.974,
+      "people_critical": 502
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -2323,8 +2323,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 37.055,
-      "people_critical": 414
+      "critical_km2": 24.595,
+      "people_critical": 412
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -2341,8 +2341,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1466.203,
-      "people_critical": 705
+      "critical_km2": 1559.353,
+      "people_critical": 1092
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -2359,8 +2359,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 77.253,
-      "people_critical": 2958
+      "critical_km2": 47.627,
+      "people_critical": 7859
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -2377,8 +2377,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1176.455,
-      "people_critical": 357
+      "critical_km2": 1272.813,
+      "people_critical": 451
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -2395,8 +2395,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 32.396,
-      "people_critical": 244
+      "critical_km2": 19.823,
+      "people_critical": 271
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -2413,8 +2413,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1461.119,
-      "people_critical": 614
+      "critical_km2": 1604.014,
+      "people_critical": 806
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -2431,8 +2431,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 41.499,
-      "people_critical": 1050
+      "critical_km2": 28.544,
+      "people_critical": 1896
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -2449,8 +2449,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 420.989,
-      "people_critical": 115
+      "critical_km2": 652.755,
+      "people_critical": 210
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -2467,8 +2467,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1.584,
-      "people_critical": 6
+      "critical_km2": 2.326,
+      "people_critical": 28
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -2485,8 +2485,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1708.277,
-      "people_critical": 1574
+      "critical_km2": 1817.364,
+      "people_critical": 2195
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -2503,8 +2503,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 103.843,
-      "people_critical": 11332
+      "critical_km2": 87.107,
+      "people_critical": 16131
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -2521,8 +2521,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 799.795,
-      "people_critical": 122
+      "critical_km2": 822.567,
+      "people_critical": 121
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -2539,8 +2539,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 8.814,
-      "people_critical": 9
+      "critical_km2": 4.65,
+      "people_critical": 14
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -2557,8 +2557,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1043.315,
-      "people_critical": 372
+      "critical_km2": 1091.716,
+      "people_critical": 362
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -2575,8 +2575,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 19.004,
-      "people_critical": 955
+      "critical_km2": 6.554,
+      "people_critical": 529
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -2593,8 +2593,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 655.812,
-      "people_critical": 113
+      "critical_km2": 644.26,
+      "people_critical": 132
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -2611,8 +2611,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 9.799,
-      "people_critical": 60
+      "critical_km2": 8.271,
+      "people_critical": 59
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -2629,8 +2629,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 445.134,
-      "people_critical": 96
+      "critical_km2": 628.193,
+      "people_critical": 187
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -2647,8 +2647,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 10.199,
-      "people_critical": 81
+      "critical_km2": 9.933,
+      "people_critical": 88
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -2665,8 +2665,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 1003.611,
-      "people_critical": 242
+      "critical_km2": 429.217,
+      "people_critical": 65
     },
     {
       "id": "tpi_flood_gfs_d1",
@@ -2683,8 +2683,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 11.761,
-      "people_critical": 53
+      "critical_km2": 1.184,
+      "people_critical": 7
     },
     {
       "id": "tpi_slide_gfs_d2",
@@ -2701,8 +2701,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 746.836,
-      "people_critical": 265
+      "critical_km2": 891.84,
+      "people_critical": 353
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -2719,8 +2719,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 21.094,
-      "people_critical": 334
+      "critical_km2": 19.63,
+      "people_critical": 389
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -2737,8 +2737,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 11.472,
-      "people_critical": 3
+      "critical_km2": 195.746,
+      "people_critical": 67
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -2755,8 +2755,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 0.304,
-      "people_critical": 2
+      "critical_km2": 5.063,
+      "people_critical": 38
     },
     {
       "id": "tpi_slide_gfs_d1",
@@ -2809,8 +2809,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 116.224,
-      "people_critical": 54
+      "critical_km2": 237.347,
+      "people_critical": 95
     },
     {
       "id": "tpi_flood_gfs_d2",
@@ -2827,8 +2827,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 5.343,
-      "people_critical": 39
+      "critical_km2": 6.748,
+      "people_critical": 52
     },
     {
       "id": "tpi_slide_gfs_d3",
@@ -2845,8 +2845,8 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 3.167,
-      "people_critical": 0
+      "critical_km2": 48.283,
+      "people_critical": 26
     },
     {
       "id": "tpi_flood_gfs_d3",
@@ -2863,7 +2863,7 @@
       "forecast": true,
       "forecast_source": "noaa-gfs",
       "kind": "forecast",
-      "critical_km2": 0.0,
+      "critical_km2": 0.128,
       "people_critical": 0
     },
     {
