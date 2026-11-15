@@ -19,6 +19,10 @@ import { hasGfsFrames } from "./model/forecastCompare";
 import { isRiskLayer } from "./model/sideCompare";
 import { fmtDate } from "./model/format";
 import { layerStateFor, overlaysFor } from "./model/layerRegistry";
+import { resolveChangePair } from "./model/nisarChange";
+import { useNisarChangeImage } from "./useNisarChange";
+import { activeView } from "./model/views";
+import { passLabel, passValue, radarFrame, radarPasses, type Pol } from "./model/radarFrame";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -108,8 +112,31 @@ export default function MapStage({
       forecastForDay(bundle, step?.date, state.hazard, effectiveLead(bundle, step?.date, state.hazard, state.issueLead))?.layer,
     [bundle, step?.date, state.hazard, state.issueLead, hour]
   );
+  // Lucas (BUG): the Radar — NISAR view draws the radar frame itself, not
+  // only the flood polygons — the pass on/before the day (main track, HH)
+  // unless the user picked another pass or HV. A new day drops the pass
+  // pick (the frame follows the timeline) but keeps the polarization.
+  const radarPassList = useMemo(() => radarPasses(bundle), [bundle]);
+  const [rPick, setRPick] = useState<{ date?: string; track?: string; pol: Pol }>({ pol: "HH" });
+  const [rPickDay, setRPickDay] = useState(step?.date);
+  if (rPickDay !== step?.date) {
+    setRPickDay(step?.date);
+    setRPick((p) => ({ pol: p.pol }));
+  }
+  const radarOn = !comparePair && activeView(state.layers) === "radar" && radarPassList.length > 0;
+  const rFrame = useMemo(
+    () => (radarOn ? radarFrame(radarPassList, step?.date, rPick) : undefined),
+    [radarOn, radarPassList, step?.date, rPick]
+  );
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
   const gfsAny = useMemo(() => hasGfsFrames(bundle), [bundle]);
+  // NISAR change layer (Lucas, t5w): the Δ-dB composite of the picked pair —
+  // a reasoned spec still resolves, the overlay only paints on a pair.
+  const changeSpec = useMemo(
+    () => resolveChangePair(bundle, state.nisarChange ?? {}, step?.date),
+    [bundle, state.nisarChange, step?.date]
+  );
+  const changeImage = useNisarChangeImage(changeSpec, state.layers.includes("nisarChange"), state.changeCyan);
   const options = useMemo(
     () => ({
       zoneMarkers: false,
@@ -125,8 +152,11 @@ export default function MapStage({
           ? undefined
           : (bundle.series?.reference_date ?? bundle.reference_date)?.slice(0, 10),
       opacity: state.overlayOpacity,
+      changeImage,
+      changeOpacity: state.changeOpacity,
+      radarFrame: rFrame ? { url: rFrame.url, bounds: rFrame.bounds } : undefined,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
@@ -347,6 +377,40 @@ export default function MapStage({
         </div>
       )}
 
+      {rFrame && (
+        <div role="group" aria-label="NISAR radar frame" data-radar-frame
+          className={`absolute z-10 flex max-w-[calc(100%-28px)] flex-col items-start gap-1 ${chip} !py-1`} style={{ left: L(14), top: 52 }}>
+          <span data-radar-chip className="text-xs font-semibold">{rFrame.chip}{rFrame.note ? ` (${rFrame.note})` : ""}</span>
+          <div className="flex flex-wrap items-center gap-1">
+            {(["HH", "HV"] as const).map((p) => {
+              const has = !!rFrame.pass.frames[p];
+              return (
+                <button key={p} type="button" aria-pressed={rFrame.pol === p} disabled={!has} data-radar-pol={p}
+                  title={has ? undefined : `No ${p} image for this pass`}
+                  onClick={() => setRPick((x) => ({ ...x, date: rFrame.pass.date, track: rFrame.pass.track, pol: p }))}
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${rFrame.pol === p ? "bg-cc-accent text-white" : "border border-cc-line-strong"} disabled:opacity-40`}>
+                  {p}
+                </button>
+              );
+            })}
+            <label className="flex items-center gap-1 text-xs font-medium">
+              <span className="sr-only">NISAR pass</span>
+              <select data-radar-pass value={passValue(rFrame.pass)}
+                onChange={(e) => {
+                  const [date, track = ""] = e.target.value.split("|");
+                  setRPick((x) => ({ ...x, date, track }));
+                }}
+                className="max-w-[190px] rounded-md border border-cc-line-strong bg-white px-1 py-0.5 text-xs">
+                {radarPassList.map((p) => (
+                  <option key={passValue(p)} value={passValue(p)}>{passLabel(p)}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <span className="text-[11px] font-medium text-cc-muted">Dark = smooth surface (open water) · bright = buildings, trees</span>
+        </div>
+      )}
+
       {/* Lucas: Compare ⇆ in Now too — any two days of the run. */}
       {!comparing && bundle.mode === "live" && steps.length > 1 && (
         <button type="button" data-compare-now onClick={() => dispatch({ type: "openCompare", kind: "forecast" })}
@@ -437,13 +501,13 @@ export default function MapStage({
             ))}
           </div>
           <div className="flex items-end gap-2">
-            <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact
+            <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan}
               className={`rounded-[10px] bg-white/95 px-2.5 py-2 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)] max-[639px]:hidden ${state.layersOpen ? "min-[900px]:hidden" : ""}`} />
             {/* Phones: the legend is collapsed by default so it does not cover
                 the map and the timeline chips; one tap opens it. */}
             <details data-legend-phone className="min-[640px]:hidden rounded-[10px] bg-white/95 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
               <summary className="cursor-pointer list-none px-2.5 py-1.5 text-xs font-semibold">Legend</summary>
-              <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact className="max-h-[50vh] overflow-y-auto px-2.5 pb-2" />
+              <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan} className="max-h-[50vh] overflow-y-auto px-2.5 pb-2" />
             </details>
             <LocatorInset bbox={bundle.bbox} className="max-[899px]:hidden" />
           </div>

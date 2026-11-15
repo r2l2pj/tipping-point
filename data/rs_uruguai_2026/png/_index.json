@@ -4083,7 +4083,7 @@
       ]
     },
     {
-      "id": "nisar_sme2",
+      "id": "nisar_sme2_20260918_010D",
       "date": "2026-09-18",
       "kind": "nisar_extra",
       "png": "rs_uruguai_2026/png/nisar_sme2_20260918.png",
@@ -4136,7 +4136,7 @@
       "note": "NISAR SME2 provisional: surface soil moisture (~0-5 cm, 200 m), swath mean 0.23 m³/m³ vs SMAP L4 surface 0.24 (9 km, same day); only 68 % of pixels flagged 'recommended' — the SME2 algorithms (DSG/PMI/TSR) still disagree, read patterns, not absolute values"
     },
     {
-      "id": "nisar_sme2",
+      "id": "nisar_sme2_20260930_010D",
       "date": "2026-09-30",
       "kind": "nisar_extra",
       "png": "rs_uruguai_2026/png/nisar_sme2_20260930.png",
@@ -4189,7 +4189,7 @@
       "note": "NISAR SME2 provisional: surface soil moisture (~0-5 cm, 200 m), swath mean 0.25 m³/m³ vs SMAP L4 surface 0.32 (9 km, same day); only 69 % of pixels flagged 'recommended' — the SME2 algorithms (DSG/PMI/TSR) still disagree, read patterns, not absolute values"
     },
     {
-      "id": "nisar_sme2",
+      "id": "nisar_sme2_20261012_010D",
       "date": "2026-10-12",
       "kind": "nisar_extra",
       "png": "rs_uruguai_2026/png/nisar_sme2_20261012.png",
@@ -4242,7 +4242,7 @@
       "note": "NISAR SME2 provisional: surface soil moisture (~0-5 cm, 200 m), swath mean 0.23 m³/m³ vs SMAP L4 surface 0.41 (9 km, same day); only 68 % of pixels flagged 'recommended' — the SME2 algorithms (DSG/PMI/TSR) still disagree, read patterns, not absolute values"
     },
     {
-      "id": "nisar_sme2",
+      "id": "nisar_sme2_20261017_082D",
       "date": "2026-10-17",
       "kind": "nisar_extra",
       "png": "rs_uruguai_2026/png/nisar_sme2_20261017.png",

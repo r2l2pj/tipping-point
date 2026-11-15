@@ -38,17 +38,18 @@ MAX_GRANULES = 10            # per run (each ~30 s for HH+HV): bounds the Now jo
 RES_M = 400.0                # multiple of the 10 m / 20 m postings
 MOSAIC_DEG = 0.004
 MIN_DOMAIN_SHARE = 0.05      # skip frames that barely touch the domain
-STRETCH = {"HH": (-22.0, 0.0), "HV": (-30.0, -8.0)}   # dB, fixed across dates
-LEGEND = {
-    "HH": {"unit": "dB", "stops": [
-        {"v": -22, "color": "#000000", "label": "−22 dB · smooth (open water)"},
-        {"v": -11, "color": "#808080", "label": "−11 dB"},
-        {"v": 0, "color": "#ffffff", "label": "0 dB · bright (urban, flooded trees)"}]},
-    "HV": {"unit": "dB", "stops": [
-        {"v": -30, "color": "#000000", "label": "−30 dB · bare / water"},
-        {"v": -19, "color": "#808080", "label": "−19 dB"},
-        {"v": -8, "color": "#ffffff", "label": "−8 dB · dense vegetation"}]},
-}
+# ONE fixed linear dB -> gray stretch for EVERY nisar_frame PNG (all cases, tracks,
+# HH and HV), so the app can build an RGB change composite from any two frames
+# (R = before, G = B = after): gray = 1 + (dB - DB_MIN) / (DB_MAX - DB_MIN) * 254,
+# alpha 0 = no data.
+DB_MIN, DB_MAX = -25.0, 0.0
+STRETCH = {"HH": (DB_MIN, DB_MAX), "HV": (DB_MIN, DB_MAX)}
+_STOPS = [{"v": -25, "color": "#000000", "label": "−25 dB · smooth (open water; HV: bare/water)"},
+          {"v": -12.5, "color": "#808080", "label": "−12.5 dB"},
+          {"v": 0, "color": "#ffffff", "label": "0 dB · bright (urban, flooded trees)"}]
+LEGEND = {pol: {"unit": "dB", "db_min": DB_MIN, "db_max": DB_MAX,
+                "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+                "stops": _STOPS} for pol in ("HH", "HV")}
 SCHEMA = "tipping-point/now-nisar-stack@1"
 
 
@@ -79,12 +80,12 @@ def plan_passes(granules: list[dict], domain, keep: int = KEEP) -> dict:
         per_track[(t, lk)].append(day)
     out = {}
     for (t, lk), days in per_track.items():
-        for day in sorted(days, reverse=True)[:keep]:
+        for day in sorted(days, reverse=True)[:keep] if keep else sorted(days, reverse=True):
             out[(t, lk, day)] = sorted(by[(t, lk, day)], key=lambda g: int(g["frame"]))
     return out
 
 
-def _read_db(url: str, term: str, bbox, token):
+def _read_db(url: str, term: str, bbox, token, res: float = RES_M):
     from tp import flood_mask as fm
     from tp import response_nisar as rn
 
@@ -92,26 +93,45 @@ def _read_db(url: str, term: str, bbox, token):
         info = rn.granule_grid_info(h5)
         if term not in info["terms"]:
             return None
-        grid = rn.target_grid(info["x"], info["y"], info["epsg"], bbox, RES_M)
+        grid = rn.target_grid(info["x"], info["y"], info["epsg"], bbox, res)
         if grid is None:
             return None
         arr, _io = rn.block_average(h5[f"{rn.GCOV_GRIDS}/{term}"], info["x"], info["y"], grid, rr)
     return fm.to_db(arr).astype(np.float32), grid
 
 
-def mosaic(parts, bbox):
+def track_bounds(gs: list[dict], bbox, deg: float = MOSAIC_DEG) -> tuple:
+    """One fixed grid per track: union of the track's granule footprints within
+    the AOI, snapped outward to `deg` — every pass of the track renders onto it
+    (identical PNG size + bounds)."""
+    import math
+
+    from shapely import wkt
+    from shapely.geometry import box
+    from shapely.ops import unary_union
+    u = unary_union([wkt.loads(g["footprint"]) if isinstance(g["footprint"], str) else g["footprint"]
+                     for g in gs]).intersection(box(*bbox))
+    w, s_, e, n = u.bounds
+    return (math.floor(w / deg) * deg, math.floor(s_ / deg) * deg,
+            math.ceil(e / deg) * deg, math.ceil(n / deg) * deg)
+
+
+def mosaic(parts, bbox, deg: float = MOSAIC_DEG, fixed: tuple | None = None):
     """[(db array, TargetGrid)] -> (db mosaic on a 0.004 deg EPSG:4326 grid, transform)."""
     from rasterio.transform import from_origin
     from rasterio.warp import Resampling, reproject, transform_bounds
 
-    bnds = [transform_bounds(f"EPSG:{g.epsg}", "EPSG:4326", g.left, g.top - g.height * g.res,
-                             g.left + g.width * g.res, g.top, densify_pts=21) for _, g in parts]
-    w = max(bbox[0], min(b[0] for b in bnds))
-    s = max(bbox[1], min(b[1] for b in bnds))
-    e = min(bbox[2], max(b[2] for b in bnds))
-    n = min(bbox[3], max(b[3] for b in bnds))
-    tr = from_origin(w, n, MOSAIC_DEG, MOSAIC_DEG)
-    shape = (int(np.ceil((n - s) / MOSAIC_DEG)), int(np.ceil((e - w) / MOSAIC_DEG)))
+    if fixed:
+        w, s, e, n = fixed
+    else:
+        bnds = [transform_bounds(f"EPSG:{g.epsg}", "EPSG:4326", g.left, g.top - g.height * g.res,
+                                 g.left + g.width * g.res, g.top, densify_pts=21) for _, g in parts]
+        w = max(bbox[0], min(b[0] for b in bnds))
+        s = max(bbox[1], min(b[1] for b in bnds))
+        e = min(bbox[2], max(b[2] for b in bnds))
+        n = min(bbox[3], max(b[3] for b in bnds))
+    tr = from_origin(w, n, deg, deg)
+    shape = (int(np.ceil((n - s) / deg)), int(np.ceil((e - w) / deg)))
     out = np.full(shape, np.nan, np.float32)
     for arr, g in parts:
         tmp = np.full(shape, np.nan, np.float32)
@@ -120,11 +140,13 @@ def mosaic(parts, bbox):
                   dst_nodata=np.nan, resampling=Resampling.bilinear)
         fill = np.isnan(out) & np.isfinite(tmp)
         out[fill] = tmp[fill]
+    if fixed:                       # identical grid per track: no crop
+        return out, tr
     # crop to the valid swath (granule grids are rectangles around a rotated swath)
     rows, cols = np.where(np.isfinite(out).any(axis=1))[0], np.where(np.isfinite(out).any(axis=0))[0]
     if rows.size:
         out = out[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
-        tr = from_origin(w + cols[0] * MOSAIC_DEG, n - rows[0] * MOSAIC_DEG, MOSAIC_DEG, MOSAIC_DEG)
+        tr = from_origin(w + cols[0] * deg, n - rows[0] * deg, deg, deg)
     return out, tr
 
 
@@ -147,6 +169,52 @@ def gray_png(db: np.ndarray, tr, pol: str) -> tuple[bytes, list]:
     return buf.getvalue(), bounds
 
 
+def render_pass(key, gs, bbox, token, pdir: Path, rel_dir: str, *, read=_read_db,
+                res: float = RES_M, deg: float = MOSAIC_DEG, source: str | None = None,
+                fixed: tuple | None = None) -> list[dict]:
+    """HH + HV mosaics of one pass -> PNGs in pdir; nisar_frame entries (png under rel_dir)."""
+    from tp import response_nisar as rn
+
+    t, lk, day = key
+    pid = f"{tag(t, lk)}_{day}"
+    modes = sorted({rn.mode_token(g["granule_id"]) for g in gs})
+    colls = sorted({"provisional" if "PROVISIONAL" in str(g.get("h5_url", "")) else "V1" for g in gs})
+    out = []
+    for pol, term in (("HH", "HHHH"), ("HV", "HVHV")):
+        parts = [p for p in (read(g["h5_url"], term, bbox, token, res) if read is _read_db
+                             else read(g["h5_url"], term, bbox, token) for g in gs) if p is not None]
+        if not parts:
+            continue
+        db, tr = mosaic(parts, bbox, deg, fixed)
+        png, bounds = gray_png(db, tr, pol)
+        lid = f"nisar_{pol.lower()}_{day.replace('-', '')}_{tag(t, lk)}"
+        (pdir / f"{lid}.png").write_bytes(png)
+        out.append({
+            "id": lid, "date": day, "pass": pid, "kind": "nisar_frame", "track": tag(t, lk),
+            "frames": [int(g["frame"]) for g in gs], "mode": modes[0] if len(modes) == 1 else modes,
+            "polarization": pol, "png": f"{rel_dir}/{lid}.png", "cog": None,
+            "bounds": bounds, "legend": LEGEND[pol],
+            "sensor": "NISAR" if colls == ["V1"] else "NISAR (GCOV provisional)",
+            "source": source or ("NISAR L2 GCOV (ASF, " + ", ".join(
+                "NISAR_L2_GCOV_PROVISIONAL_V1" if c == "provisional" else "NISAR_L2_GCOV_V1" for c in colls) + ")"),
+            "label": f"NISAR radar {pol} · track {tag(t, lk)} · {day}",
+            "note": (f"Backscatter, ONE fixed {DB_MIN:g}..{DB_MAX:g} dB stretch for every NISAR frame "
+                     f"({res:g} m; same grid for every pass of track {tag(t, lk)}); compare two passes "
+                     "of the SAME track. Not a flood map."),
+            "grid": {"deg": deg, "bounds_4326": list(fixed) if fixed else None},
+            "stretch_db": {"db_min": DB_MIN, "db_max": DB_MAX},
+            "granules": [g["granule_id"] for g in gs]})
+        print(f"nisar_stack: {pid} {pol} {len(parts)} frame(s) {len(png) // 1024} KB", flush=True)
+    return out
+
+
+def _checkpoint(lpath: Path, layers: list[dict]) -> None:
+    """Partial layers.json after every pass (a crash keeps what is rendered)."""
+    doc = json.loads(lpath.read_text()) if lpath.is_file() else {"schema": SCHEMA}
+    doc["layers"] = layers
+    _write_json(lpath, doc)
+
+
 def _write_json(path: Path, obj) -> None:
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n")
@@ -156,7 +224,6 @@ def _write_json(path: Path, obj) -> None:
 def update(now_dir: Path, bbox, granules: list[dict], token, *, keep: int = KEEP,
            max_granules: int = MAX_GRANULES, read=_read_db) -> dict:
     from shapely.geometry import box
-    from tp import response_nisar as rn
 
     sdir = now_dir / "nisar_stack"
     pdir = sdir / "png"
@@ -169,8 +236,16 @@ def update(now_dir: Path, bbox, granules: list[dict], token, *, keep: int = KEEP
         except ValueError:
             old = []
     old = [lay for lay in old if (now_dir / lay["png"]).is_file()]
-    done = {lay["pass"] for lay in old}
     want = plan_passes(granules, box(*bbox), keep)
+    by_track = {}
+    for (t, lk, day), gs in want.items():
+        by_track.setdefault(tag(t, lk), []).extend(gs)
+    grids = {trk: track_bounds(gs, bbox) for trk, gs in by_track.items()}
+    stale = {lay["pass"] for lay in old
+             if (lay.get("grid") or {}).get("bounds_4326") != list(grids.get(lay["track"], ()))
+             or (lay.get("legend") or {}).get("db_min") != DB_MIN}
+    old = [lay for lay in old if lay["pass"] not in stale]
+    done = {lay["pass"] for lay in old}
     budget, new, skipped = max_granules, [], []
     for key in sorted(want, key=lambda k: k[2], reverse=True):      # newest first
         t, lk, day = key
@@ -182,27 +257,15 @@ def update(now_dir: Path, bbox, granules: list[dict], token, *, keep: int = KEEP
             skipped.append(pid)
             continue
         budget -= len(gs)
-        modes = sorted({rn.mode_token(g["granule_id"]) for g in gs})
-        for pol, term in (("HH", "HHHH"), ("HV", "HVHV")):
-            parts = [p for p in (read(g["h5_url"], term, bbox, token) for g in gs) if p is not None]
-            if not parts:
-                continue
-            db, tr = mosaic(parts, bbox)
-            png, bounds = gray_png(db, tr, pol)
-            name = f"nisar_{pol.lower()}_{day.replace('-', '')}_{tag(t, lk)}.png"
-            (pdir / name).write_bytes(png)
-            new.append({
-                "id": f"nisar_{pol.lower()}_{day.replace('-', '')}_{tag(t, lk)}",
-                "date": day, "pass": pid, "kind": "nisar_frame", "track": tag(t, lk),
-                "frames": [int(g["frame"]) for g in gs], "mode": modes[0] if len(modes) == 1 else modes,
-                "polarization": pol, "png": f"nisar_stack/png/{name}", "cog": None,
-                "bounds": bounds, "legend": LEGEND[pol],
-                "sensor": "NISAR", "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
-                "label": f"NISAR radar {pol} · track {tag(t, lk)} · {day}",
-                "note": (f"Backscatter, fixed {STRETCH[pol][0]:g}..{STRETCH[pol][1]:g} dB stretch "
-                         f"({RES_M:g} m); compare two passes of the SAME track. Not a flood map."),
-                "granules": [g["granule_id"] for g in gs]})
-            print(f"nisar_stack: {pid} {pol} {len(parts)} frame(s) {len(png) // 1024} KB")
+        try:
+            ents = render_pass(key, gs, bbox, token, pdir, "nisar_stack/png", read=read,
+                               fixed=grids[tag(t, lk)])
+        except Exception as exc:   # noqa: BLE001 — network: retried next run
+            print(f"nisar_stack: {pid} failed ({type(exc).__name__}: {exc}) — retried next run")
+            skipped.append(pid)
+            continue
+        new += ents
+        _checkpoint(lpath, old + new)
     # roll: keep only passes still wanted (newest KEEP per track+look)
     wanted = {f"{tag(t, lk)}_{day}" for (t, lk, day) in want}
     layers = [lay for lay in old + new if lay["pass"] in wanted]

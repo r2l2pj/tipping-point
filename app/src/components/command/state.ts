@@ -16,6 +16,7 @@ import {
   withRadarDefault,
   type LayerId,
 } from "./model/layerRegistry";
+import { CHANGE_OPACITY_DEFAULT, CHANGE_OPACITY_MIN, parseChangeLink, type NisarChangeSel } from "./model/nisarChange";
 import type { ComparePair } from "./model/radar";
 import { viewLayers, type ViewId } from "./model/views";
 import { defaultSides, mainTrackDays, normSide, nisarDefaults, parseSideSpec, presetSides, sideDays, viewCompareLayer, type ComparePresetId, type Sides } from "./model/sideCompare";
@@ -44,6 +45,14 @@ export interface ScreenState {
   selectedArea: number | null; // zone rank
   calloutExpanded: boolean;
   compareOpen: ComparePair["kind"] | null;
+  // NISAR change layer (Lucas, t5w): the Δ-dB overlay on the normal map.
+  // `nisarChange` carries the picked pair ("<date>[|<track>]" each + pol);
+  // unset sides fall back to the day's default pair. The pickers are case
+  // state — a case change resets them. `changeCyan`/`changeOpacity` are
+  // viewing preferences and survive it.
+  nisarChange?: NisarChangeSel;
+  changeCyan: boolean;
+  changeOpacity: number;
   // Lucas (step 2): the generic Compare ⇆ — LEFT / RIGHT layer + day +
   // Observed | Forecast k | pol | track | horizon each.
   compareSides?: Sides;
@@ -90,6 +99,11 @@ export type Action =
   | { type: "toggleList" }
   | { type: "toggleTable" }
   | { type: "setBasemap"; basemap: Basemap }
+  // NISAR change layer: the Radar card's two pass pickers + pol, the cyan
+  // (brighter) toggle and the overlay's own opacity.
+  | { type: "setChangePair"; before?: string; after?: string; pol?: "HH" | "HV" }
+  | { type: "toggleChangeCyan" }
+  | { type: "setChangeOpacity"; value: number }
   | { type: "escape" }
   // "Start here" (judge report #6): one stop of the guided tour.
   | { type: "goTo"; id: string; day?: number | string; hazard?: Hazard; lead?: IssueLead; layer?: LayerId; compare?: ComparePair["kind"] };
@@ -168,11 +182,11 @@ export function featuredFirst<T extends CcBundle>(cases: readonly T[]): T[] {
 // The screen opens on Now when a live case is loaded, else on the first case.
 // `initialCase` (the `?case=<id|alias>` deep link of the old screen) opens
 // that case when it is loaded.
-export interface DeepLink { view?: string; lead?: string; compare?: string; before?: string; after?: string; pol?: string; layers?: string; fit?: string; basemap?: string; l?: string; r?: string }
+export interface DeepLink { view?: string; lead?: string; compare?: string; before?: string; after?: string; pol?: string; layers?: string; fit?: string; basemap?: string; l?: string; r?: string; nisarChange?: string }
 
 // ?layers=imerg,hand5 → layer ids ("hand5"/"hand" = low ground); ?fit=<key>
 // → the map opens on that layer's bounds (the upstream basin for imerg).
-const LINK_LAYER: Record<string, LayerId> = { imerg: "imerg", rain: "imerg", hand: "hand", hand5: "hand", tpi: "tpi", flood: "flood", ml: "ptrigger", ptrigger: "ptrigger", smap: "smap" };
+const LINK_LAYER: Record<string, LayerId> = { imerg: "imerg", rain: "imerg", hand: "hand", hand5: "hand", tpi: "tpi", flood: "flood", ml: "ptrigger", ptrigger: "ptrigger", smap: "smap", nisarchange: "nisarChange", "nisar-change": "nisarChange", change: "nisarChange" };
 const LINK_FIT: Record<string, "imerg" | "hand"> = { imerg: "imerg", rain: "imerg", hand: "hand", hand5: "hand" };
 function linkLayers(bundle: CcBundle, link: DeepLink, hazard: Hazard): LayerId[] | undefined {
   if (!link.layers) return undefined;
@@ -231,6 +245,9 @@ export function initialState(
     layersOpen: true,
     listExpanded: false,
     chartAsTable: false,
+    nisarChange: undefined,
+    changeCyan: true,
+    changeOpacity: CHANGE_OPACITY_DEFAULT,
   };
   // ?compare=forecast&lead=k&day=D → LEFT = forecast for D issued D−k,
   // RIGHT = observed D (defaultSides with the lead). ?compare=radar&before=
@@ -255,6 +272,17 @@ export function initialState(
         : defaultSides(first, steps, st.dayIndex, st.hazard, st.issueLead, seed);
     } else {
       st.compareSides = defaultSides(first, steps, st.dayIndex, st.hazard, st.issueLead, seed);
+    }
+  }
+  // ?nisarChange=<before>:<after>[:pol] → the pair's pass dates; it turns the
+  // layer on when the case can composite (a blocked pick keeps the pickers).
+  const changeSel = parseChangeLink(link.nisarChange);
+  if (changeSel) {
+    st.nisarChange = changeSel;
+    if (first && !st.layers.includes("nisarChange") && layerAvailable(first, "nisarChange", hazard)) {
+      const r = toggleLayer(st.layers, "nisarChange");
+      st.layers = r.layers;
+      st.layerNotice = r.notice ?? null;
     }
   }
   return st;
@@ -298,6 +326,9 @@ function selectCase(state: ScreenState, cases: readonly CcBundle[], id: string):
     selectedArea: null,
     calloutExpanded: false,
     compareOpen: null,
+    // The picked pair is of the old case's passes — the new case's day
+    // decides its own default (the layer itself stays on via `kept`).
+    nisarChange: undefined,
     detailsOpen: false,
   };
 }
@@ -493,6 +524,19 @@ export function reduce(
       return { ...state, chartAsTable: !state.chartAsTable };
     case "setBasemap":
       return { ...state, basemap: action.basemap };
+    case "setChangePair": {
+      const next: NisarChangeSel = { ...state.nisarChange };
+      if (action.before !== undefined) next.before = action.before || undefined;
+      if (action.after !== undefined) next.after = action.after || undefined;
+      if (action.pol !== undefined) next.pol = action.pol;
+      return { ...state, nisarChange: next };
+    }
+    case "toggleChangeCyan":
+      return { ...state, changeCyan: !state.changeCyan };
+    case "setChangeOpacity":
+      return Number.isFinite(action.value)
+        ? { ...state, changeOpacity: Math.min(1, Math.max(CHANGE_OPACITY_MIN, action.value)) }
+        : state;
     case "escape":
       if (state.compareOpen) return { ...state, compareOpen: null };
       return state.selectedArea === null

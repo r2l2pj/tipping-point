@@ -24,11 +24,12 @@ import { expandLayerUrls } from "./model/layerUrls";
 import { priorityAreas } from "./model/areas";
 import { availability, missingText } from "./model/availability";
 import { dataStatus, freshnessText } from "./model/dataStatus";
-import { classLabel, fmtKm2 } from "./model/format";
+import { classLabel, fmtDate, fmtKm2 } from "./model/format";
 import { CLASS_COLOR } from "./model/legend";
 import { layerRows, visibleLayerRows } from "./model/layerRegistry";
 import { caseDirOf, declared, effectiveBundle, productUrl, withLazy, zonesAreTrimmed } from "./model/lazy";
 import { bothNisar, COMPARE_PRESETS, compareLayers, defaultSides, nisarDefaults, presetSides, sideDays, sidesCompare, viewCompareLayer, nisarSideDays } from "./model/sideCompare";
+import { changeSelection, changeValue, nisarChangeFrames, resolveChangePair } from "./model/nisarChange";
 import { nightLightsCompare, radarCard } from "./model/radar";
 import { evidence, replayCheckRows } from "./model/replayCheck";
 import { sourceRows } from "./model/sources";
@@ -330,7 +331,7 @@ export function CommandCenterView({
   const chip = statusChip(bundle, steps, state.dayIndex, state.hazard);
   // Featured replay (v6): blocks with no data for this case are not shown.
   const sparse = hideMissingFor(bundle);
-  const rows = visibleLayerRows(layerRows(bundle, state.layers, state.hazard, step?.date, state.probHorizon))
+  const rows = visibleLayerRows(layerRows(bundle, state.layers, state.hazard, step?.date, state.probHorizon, { sel: state.nisarChange }))
     .filter((r) => !sparse || r.available || r.on);
   const nightLights = nightLightsCompare(bundle);
   // Lucas (step 2): ONE generic Compare ⇆ — LEFT / RIGHT layer + day +
@@ -491,6 +492,7 @@ export function CommandCenterView({
           }}
           opacity={state.overlayOpacity}
           onOpacity={(value) => dispatch({ type: "setOpacity", value })}
+          changeCyan={state.changeCyan}
           className={`${drawer ? "max-[899px]:flex" : "max-[899px]:hidden"} ${state.layersOpen ? "min-[900px]:flex" : "min-[900px]:hidden"}`}
         />
 
@@ -545,6 +547,35 @@ export function CommandCenterView({
                 <PanelSection label="Now on the ground">
                 <RadarCard
                   hideMissing={sparse}
+                  change={(() => {
+                    // NISAR change layer (Lucas, t5w): the Δ-dB overlay on the
+                    // normal map — toggle + two pass pickers + cyan + opacity.
+                    const frames = nisarChangeFrames(bundle);
+                    if (frames.length < 2) return undefined;
+                    const spec = resolveChangePair(bundle, state.nisarChange ?? {}, step?.date);
+                    const sel = changeSelection(bundle, state.nisarChange ?? {}, step?.date);
+                    return {
+                      on: state.layers.includes("nisarChange"),
+                      available: "pair" in spec,
+                      reason: "reason" in spec ? spec.reason : undefined,
+                      label: "pair" in spec ? spec.label : undefined,
+                      pol: sel.pol,
+                      pols: [...new Set(frames.map((f) => f.pol))],
+                      cyan: state.changeCyan,
+                      opacity: state.changeOpacity,
+                      passes: frames.map((f) => ({
+                        value: changeValue(f),
+                        label: `${fmtDate(f.date)}${f.track ? ` · track ${f.track}` : ""} · ${f.pol}`,
+                      })),
+                      before: sel.before,
+                      after: sel.after,
+                      onToggle: () => dispatch({ type: "toggleLayer", id: "nisarChange" }),
+                      onPair: (patch: { before?: string; after?: string; pol?: "HH" | "HV" }) =>
+                        dispatch({ type: "setChangePair", ...patch }),
+                      onCyan: () => dispatch({ type: "toggleChangeCyan" }),
+                      onOpacity: (value: number) => dispatch({ type: "setChangeOpacity", value }),
+                    };
+                  })()}
                   swipeDates={nisarOpen && sidesNow ? (() => {
                     const track = sidesNow.L.layer === "nisar" ? sidesNow.L.track : sidesNow.R.layer === "nisar" ? sidesNow.R.track : undefined;
                     const dates = nisarSideDays(bundle, track).map((d) => d.date);

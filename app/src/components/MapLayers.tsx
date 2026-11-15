@@ -87,6 +87,7 @@ const SRC = {
   nl: "tp-nl-img",
   tml: "tp-tml-img",
   prob: "tp-prob-img",
+  change: "tp-change-img",
   muni: "tp-muni",
   catalog: "tp-catalog",
   ems: "tp-ems",
@@ -121,6 +122,7 @@ const LYR = {
   nl: "tp-nl-lyr",
   tml: "tp-tml-lyr",
   prob: "tp-prob-lyr",
+  change: "tp-change-lyr",
   zonesFill: "tp-zones-fill",
   zonesLine: "tp-zones-line",
   muni: "tp-muni-line",
@@ -146,6 +148,7 @@ const DYNAMIC_IMG: [string, string][] = [
   [LYR.opera, SRC.opera],
   [LYR.nl, SRC.nl],
   [LYR.tml, SRC.tml],
+  [LYR.change, SRC.change],
 ];
 
 // Free Mapzen Terrarium elevation tiles — standard source for MapLibre
@@ -613,7 +616,15 @@ export function useMapLayers(
     rasterToggle("imerg", SRC.imerg, LYR.imerg);
     rasterToggle("hand", SRC.hand, LYR.hand);
     rasterToggle("smap", SRC.smap, LYR.smap);
-    rasterToggle("nisar", SRC.nisar, LYR.nisar);
+    const rf = options?.radarFrame;
+    if (rf) {
+      // Below water, the NISAR candidate polygons and the change overlay —
+      // those must stay readable on top of the radar image.
+      ensureImageLayer(map, SRC.nisar, LYR.nisar, rf.url, boundsToImageCoordinates(rf.bounds ?? bundle.bbox), strength ?? 0.9, LYR.waterFill);
+      vis(LYR.nisar, true);
+    } else {
+      rasterToggle("nisar", SRC.nisar, LYR.nisar);
+    }
     // L25: XGBoost P(trigger) probability frame — per-day raster under the
     // muni lines at 0.7, same seam as the other toggle rasters. TPI stays
     // the headline; this only paints when the manifest ships real frames.
@@ -662,6 +673,29 @@ export function useMapLayers(
     imgOverlay("night_lights", SRC.nl, LYR.nl, 0.85, LYR.muni,
       overlay.nightLights);
     imgOverlay("t_ml", SRC.tml, LYR.tml, 0.7, LYR.muni, overlay.tml);
+
+    // NISAR change overlay (Lucas, t5w): the Δ-dB canvas composite paints as
+    // an image source on the after-frame bounds — above the risk raster and
+    // water, below the flood (NISAR candidate) polygons. Its own opacity
+    // slider, independent of the data-raster strength.
+    const change = options?.changeImage;
+    if (change) {
+      ensureImageLayer(
+        map,
+        SRC.change,
+        LYR.change,
+        change.url,
+        boundsToImageCoordinates(change.bounds),
+        options?.changeOpacity ?? 0.85,
+        LYR.floodFill
+      );
+      vis(LYR.change, true);
+      if (map.getLayer(LYR.change) && options?.changeOpacity !== undefined) {
+        map.setPaintProperty(LYR.change, "raster-opacity", options.changeOpacity);
+      }
+    } else {
+      vis(LYR.change, false);
+    }
 
     // Image source for the day's PNG frame (created lazily — MapLibre image
     // sources need url+coordinates up front; the raster layer sits below
@@ -887,7 +921,7 @@ export function useMapLayers(
       console.warn("MapLayers update failed (map kept alive)", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity]);
+  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity, options?.radarFrame?.url]);
 
   // Priority-zone pins — top 20 by rank (matches the side list), anchored
   // at the polygon label point (real files are Polygons, not Points).

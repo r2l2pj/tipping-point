@@ -12,6 +12,7 @@ import { declared, productUrl } from "./lazy";
 import { finite, fmtDate, fmtKm2 } from "./format";
 import type { IssueLead } from "./steps";
 import type { CcBundle } from "./types";
+import { stretchOf } from "./changeComposite";
 
 type BBox = [number, number, number, number];
 
@@ -98,6 +99,8 @@ export interface CompareSide {
   pol?: "HH" | "HV";
   mode?: string;
   sensor?: string; // sensorName() of the layer — "NISAR radar" | "Radar"
+  // Fixed dB stretch of the frame PNG (lead-analysis stretch_db / legend).
+  stretch?: { min: number; max: number };
 }
 export interface ComparePair {
   kind: "radar" | "night-lights" | "forecast";
@@ -207,6 +210,7 @@ export function nisarTracks(bundle: CcBundle): NisarTrackStack[] {
       pol,
       mode: typeof mode === "string" ? mode : undefined,
       sensor: name,
+      stretch: stretchOf(l),
     };
     byTrack.set(track, t);
   }

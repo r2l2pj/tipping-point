@@ -1,0 +1,18 @@
+name: vps-tools-ci
+
+# Host-side VPS tools (deploy/vps): standard-library Python tests.
+on:
+  push:
+    paths: ["deploy/vps/**", ".github/workflows/vps-tools-ci.yml"]
+  pull_request:
+    paths: ["deploy/vps/**", ".github/workflows/vps-tools-ci.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 deploy/vps/test_refresh_sqlite.py

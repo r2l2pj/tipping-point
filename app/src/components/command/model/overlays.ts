@@ -1,6 +1,7 @@
 import type { ManifestLayer } from "@/lib/types";
 import type { ProbHorizon } from "@/lib/layers";
 import type { Basemap } from "./basemap";
+import type { BBox } from "./changeComposite";
 // Pure part of the additive `options` argument of useMapLayers. Without
 // options the result equals what the hook computed before (tab plan, or
 // showFlood when there is no tab), so the old screen is not affected.
@@ -35,6 +36,16 @@ export interface MapLayerOptions {
   // Opacity (0 to 1) of the data rasters, set by the screen's opacity
   // control so the basemap shows through. Without it: the fixed defaults.
   opacity?: number;
+  // NISAR change overlay (Lucas, t5w): a canvas-composited Δ-dB PNG drawn as
+  // an image source over the after frame's bounds, above the risk raster and
+  // below the NISAR candidate polygons. `key` identifies the pair — a new
+  // key replaces the source.
+  changeImage?: { url: string; bounds: BBox; key: string };
+  changeOpacity?: number;
+  // Lucas (Radar view): the NISAR frame drawn on the single map — url +
+  // lon/lat bounds of an EPSG:3857 PNG. Without it the nisar toggle keeps
+  // its manifest lookup.
+  radarFrame?: { url: string; bounds?: [number, number, number, number] };
 }
 
 export interface OverlayVisibility {

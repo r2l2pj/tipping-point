@@ -75,7 +75,7 @@ const PTRIGGER_DROP = ["title", "serve_note", "domain", "model", "obs_days", "fo
   "horizon_days", "obs_through", "gfs_issued", "basis", "partly_forecast"];
 // Kept: the rain legend (its stops are the colors of the re-rendered PNG)
 // and hand_low's swatch color.
-const KEEP_LEGEND = (id: string) => id.startsWith("imerg") || id === "hand_low";
+const KEEP_LEGEND = (id: string) => id.startsWith("imerg") || id === "hand_low" || id.startsWith("nisar_");
 function slimLayer(layer: NonNullable<CcBundle["manifest"]>["layers"][number]) {
   const out = { ...layer } as Record<string, unknown>;
   if (!KEEP_LEGEND(layer.id)) delete out.legend;
@@ -210,7 +210,7 @@ function toClientBundle(bundle: CcBundle, isLive: boolean): CcBundle {
 // Loads the case bundles and builds the alert list once, on the server, for
 // both routes (/ and /alerts). The alert list is built here because
 // candidatesToAlerts reads the clock when no issue time is given.
-type Search = Promise<{ view?: string; date?: string; case?: string; day?: string; lead?: string; compare?: string; before?: string; after?: string; pol?: string; layers?: string; fit?: string; city?: string; basemap?: string; L?: string; R?: string; l?: string; r?: string }> | undefined;
+type Search = Promise<{ view?: string; date?: string; case?: string; day?: string; lead?: string; compare?: string; before?: string; after?: string; pol?: string; layers?: string; fit?: string; city?: string; basemap?: string; L?: string; R?: string; l?: string; r?: string; nisarChange?: string }> | undefined;
 
 async function Loaded({ searchParams }: { searchParams?: Search }) {
   const search = await searchParams;
@@ -305,7 +305,7 @@ async function Loaded({ searchParams }: { searchParams?: Search }) {
       initialCase={initialCase}
       initialDay={initialDay}
       initialCity={search?.city || undefined}
-      deepLink={{ view: search?.view, lead: search?.lead, compare: search?.compare, before: search?.before, after: search?.after, pol: search?.pol, layers: search?.layers, fit: search?.fit, basemap: search?.basemap, l: search?.L ?? search?.l, r: search?.R ?? search?.r }}
+      deepLink={{ view: search?.view, lead: search?.lead, compare: search?.compare, before: search?.before, after: search?.after, pol: search?.pol, layers: search?.layers, fit: search?.fit, basemap: search?.basemap, l: search?.L ?? search?.l, r: search?.R ?? search?.r, nisarChange: search?.nisarChange }}
     />
   );
 }

@@ -14,6 +14,7 @@ import {
 } from "@/lib/layers";
 import type { ManifestLayer } from "@/lib/types";
 import { gibsTiles } from "./basemap";
+import { stretchOf } from "./changeComposite";
 import { fmtDate, fmtDayShort } from "./format";
 import { hasGfsFrames } from "./forecastCompare";
 import { caseDirOf, productUrl } from "./lazy";
@@ -555,6 +556,7 @@ function nisarFrameFor(
       pol,
       track: typeof track === "string" ? track : undefined,
       sensor: sensorName(sensorOf(layer)),
+      stretch: stretchOf(layer as unknown as Record<string, unknown>),
     },
     pol,
     track: typeof track === "string" ? track : undefined,
