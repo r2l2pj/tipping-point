@@ -499,6 +499,27 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
   proxy `data/static/south_brazil/terrain/hand_90m.tif`, static-v1, else the
   legacy ~1 km `hand_m.tif`), `method`, `_null_reasons`.
 
+#### Landslide scar candidates (`pipeline/scripts/16_response_dist.py`)
+
+OPERA DIST-ALERT-HLS (LP DAAC, 30 m MGRS tiles), newest granule per tile in
+the window; candidate = VEG-DIST-STATUS in {5,6,8} (≥ 50 % vegetation loss,
+provisional/confirmed/finished) AND first detection (VEG-DIST-DATE) in the
+window AND slope ≥ 15° (1" NASADEM mask `data/now/static/nasadem/
+steep15_1as.tif`, static-v1) AND not MCD12Q1 cropland/water; 3 px … 1 km².
+Always `status: "candidate"`.
+
+- Now: `response/landslide_dist.geojson` (props `class, kind:
+  "landslide_candidate", status, date` (first detection), `area_km2, people,
+  municipality, code, uf`) and `response/dist_meta.json` (`window,
+  latest_acquired` — DIST lags ~1-2 weeks —, `n_tiles, n_tiles_failed,
+  features, candidates_km2, people, excluded{loss/flat/cropland_or_water km²,
+  too_small/too_large/outside_brazil polygons}, params, caveat,
+  _null_reasons`). Clipped to the IBGE Brazil outline.
+- Replay rs_2024: `rs_2024/geojson/landslide_candidates.geojson` (manifest
+  `products.landslide_candidates`) + metrics `scar_*` (candidates n/km²/people,
+  inventory hit rate within 100/500 m, precision proxy within 500 m,
+  `scar_sensitivity` table).
+
 #### R3 — response summary + priority zones (`pipeline/scripts/15_response_summary.py`)
 
 Runs after the TPI job, R1 and R2. Inputs: `response/flood_dswx.geojson`,

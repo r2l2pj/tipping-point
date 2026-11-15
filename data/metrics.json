@@ -248,9 +248,9 @@
       "_null_reasons": {
         "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog has 16,027 points but none are dated",
         "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson has 16,027 points but none are dated: point-level lead times are undefined; fell back to cluster-lead vs damage_anchor",
-        "people_flooded": "no NISAR coverage — event predates launch (Jul 2025)",
-        "flooded_km2": "no NISAR coverage — event predates launch (Jul 2025)",
-        "flood_source": "no NISAR coverage — event predates launch (Jul 2025)",
+        "people_flooded": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "flooded_km2": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "flood_source": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
         "rf_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data.",
         "rule_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data.",
         "iou": "no NISAR water mask: event predates NISAR launch (Jul 2025), so NISAR-vs-OPERA IoU is undefined",
@@ -404,7 +404,55 @@
       "feature_importance": null,
       "forecast_source": "noaa-gfs",
       "landslide_hit_pct": 85.855,
-      "landslide_hit_date": "2024-05-02"
+      "landslide_hit_date": "2024-05-02",
+      "scar_source": "opera-dist-alert-hls",
+      "scar_window": [
+        "2024-04-27",
+        "2024-06-15"
+      ],
+      "scar_candidates_n": 2849,
+      "scar_candidates_km2": 20.02,
+      "scar_people": 522.3,
+      "scar_hit_100m_pct": 17.45,
+      "scar_hit_500m_pct": 46.13,
+      "scar_precision_500m_pct": 55.07,
+      "scar_inventory_n": 16027,
+      "scar_method": "OPERA DIST-ALERT-HLS VEG-DIST-STATUS in {5,6,8} (>=50 % loss), first detection in window, slope >= 15 deg (NASADEM 1\"), not cropland/water (MCD12Q1 2025), 3 px..1 km2; candidates, never confirmed",
+      "scar_sensitivity_note": "non-default variants measured before the 15 m publish compaction; default row = published file",
+      "scar_sensitivity": [
+        {
+          "variant": "default (published): status {5,6,8} (>=50 % loss), >=3 px",
+          "n": 2849,
+          "km2": 20.02,
+          "hit_100m_pct": 17.45,
+          "hit_500m_pct": 46.13,
+          "precision_500m_pct": 55.07
+        },
+        {
+          "variant": "status {5,6,8}, >=1 px",
+          "n": 10326,
+          "km2": 28.4,
+          "hit_100m_pct": 32.61,
+          "hit_500m_pct": 70.53,
+          "precision_500m_pct": 43.52
+        },
+        {
+          "variant": "status {2,3,5,6,7,8} (incl. <50 % loss), >=3 px",
+          "n": 11403,
+          "km2": 82.11,
+          "hit_100m_pct": 50.41,
+          "hit_500m_pct": 81.65,
+          "precision_500m_pct": 41.03
+        },
+        {
+          "variant": "status {4,5,6,8} (incl. first detection), >=3 px",
+          "n": 3690,
+          "km2": 31.84,
+          "hit_100m_pct": 18.31,
+          "hit_500m_pct": 47.47,
+          "precision_500m_pct": 48.1
+        }
+      ]
     }
   }
 }

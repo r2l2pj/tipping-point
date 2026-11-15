@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T05:16:35Z",
+  "updated_at": "2026-11-15T05:26:03Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -2981,14 +2981,13 @@
         "priority_zones": "rs_2024/geojson/priority_zones.geojson",
         "permanent_water": null,
         "flood_confirmed": null,
-        "landslide_candidates": null,
+        "landslide_candidates": "rs_2024/geojson/landslide_candidates.geojson",
         "swot_reference": "rs_2024/series/swot_reference.json",
         "swot_series": null
       },
       "_null_reasons": {
         "permanent_water": "not yet produced",
         "flood_confirmed": "No NISAR coverage — event predates launch (Jul 2025)",
-        "landslide_candidates": "no landslide candidate product yet",
         "swot_series": "no SWOT reach series for this case"
       }
     },
