@@ -1041,6 +1041,36 @@ def test_load_event_inventory_arcgis_requests_only_date_field(tmp_path, monkeypa
     assert all(p["outFields"] == "" for p in seen)
 
 
+def test_resolve_source_uses_content_disposition_name(tmp_path, monkeypatch):
+    """Extension-less API URLs (Dataverse /api/access/dataset/:persistentId/) take
+    the real file name from Content-Disposition so the .zip suffix survives."""
+    from ml.local import labels as L
+    from ml.local import settings as S
+    monkeypatch.setattr(S, "DATA_DIR", tmp_path)
+    payload = b"zip-bytes"
+
+    class R:
+        headers = {"Content-Disposition": 'attachment; filename="real_name.zip"'}
+        content = payload
+        def raise_for_status(self): pass
+
+    ev = _ev(source="https://x/api/access/dataset/:persistentId/?persistentId=doi:y")
+    p = L._resolve_source(ev, get=lambda url, timeout=None: R())
+    assert p.name == "real_name.zip" and p.read_bytes() == payload
+    # A URL whose basename already has an extension ignores Content-Disposition.
+    p2 = L._resolve_source(_ev(source="https://x/files/inv.geojson"),
+                           get=lambda url, timeout=None: R())
+    assert p2.name == "inv.geojson"
+    # No header at all -> URL name kept.
+    class R2:
+        headers = {}
+        content = payload
+        def raise_for_status(self): pass
+    p3 = L._resolve_source(_ev(source="https://x/other/noext"),
+                           get=lambda url, timeout=None: R2())
+    assert p3.name == "noext"
+
+
 def test_leak_mask_days_and_km():
     from ml.local import labels as L
     glc = pd.DataFrame({"point_id": ["a", "b", "c", "d"], "event_id": ["e1", "e2", "e3", "e4"],
