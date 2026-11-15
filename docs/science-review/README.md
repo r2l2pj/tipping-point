@@ -15,3 +15,5 @@ Numbers move while the team iterates; each section states the commit/run it was 
 | [07 — Independent overfitting audit](07-overfit-audit.md) | verdict: no leakage/overfitting, but the TEST set (curated mega-storms) overstates operational skill; ML ≈ a simple forecast-rain/local-P99 rule; honest numbers + alarm-days per site-year | done |
 
 **Updates after writing (11:00 BRT):** the audit (07) is in; the Petrópolis NaN-forecast bug (06 E6) is fixed and being re-scored; the live P(trigger) map is switching to v2 (06 E5); ML v3 with a hand-curated event-level split is being prepared (decision L41).
+
+**Update 11:20 BRT (decision L42):** the tagline is now "Rain warns. Radar sees through." (was "Radar confirms"); the product is re-centred on NISAR per the Florianópolis challenge summary ("the core must be NISAR and surface change"). Sections that discuss "Radar confirms" describe the earlier state.
