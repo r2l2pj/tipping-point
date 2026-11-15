@@ -164,6 +164,9 @@ XGB_PARAMS = {
     "min_child_weight": 5, "tree_method": "hist", "eval_metric": "aucpr",
     "early_stopping_rounds": 50, "enable_categorical": True,
 }
+# Served trigger (lead-live Now job). xgb_rain_soil has no terrain inputs, so the
+# 0.01° serving grid (block-averaged terrain) cannot shift it; WHERE comes from T_ML.
+SERVE_TRIGGER = "xgb_rain_soil"
 TPI_RULE_THRESHOLD = 0.6   # TPI > 0.6 = Crítico (rule baseline)
 
 

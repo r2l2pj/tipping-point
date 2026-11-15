@@ -56,6 +56,22 @@ def _calibrated(entry: dict, p_val, y_val) -> dict:
     return entry
 
 
+def _raw(m: dict, y, p_raw) -> dict:
+    """Add ranking metrics on the RAW (pre-calibration) scores. Isotonic calibration
+    is a step function: its ties lower PR-/ROC-AUC. Calibrated values describe the
+    served product; raw values describe the model's ranking ability."""
+    from sklearn.metrics import average_precision_score, roc_auc_score
+    y = np.asarray(y, dtype=int)
+    p_raw = np.asarray(p_raw, dtype=float)
+    ok = np.isfinite(p_raw)
+    if ok.any() and len(np.unique(y[ok])) == 2:
+        m["pr_auc_raw"] = float(average_precision_score(y[ok], p_raw[ok]))
+        m["roc_auc_raw"] = float(roc_auc_score(y[ok], p_raw[ok]))
+    else:
+        m["pr_auc_raw"] = m["roc_auc_raw"] = None
+    return m
+
+
 def _pos_weight(train: pd.DataFrame, use: bool) -> float | None:
     if not use:
         return None
@@ -150,8 +166,10 @@ def evaluate_3a() -> dict:
     _, _, te = _split(tab)
     res = {"split_rows": tab.split.value_counts().to_dict(), "models": {}}
     for name, e in b["entries"].items():
-        p = e["cal"](_score(e, te))
-        res["models"][name] = {"test": SC.metrics(te.label, p, e["thr"]), "val": e["val"]}
+        raw = _score(e, te)
+        p = e["cal"](raw)
+        res["models"][name] = {"test": _raw(SC.metrics(te.label, p, e["thr"]), te.label, raw),
+                               "val": e["val"]}
     res["importance"] = group_importance(b["entries"]["xgb_all"], te, b["groups"])
     res["importance_rf"] = group_importance(b["entries"]["rf_all"], te, b["groups"])
     return res
@@ -214,19 +232,7 @@ def train_3b(*, balanced: bool = False) -> dict:
                 hz_cal[hname][name] = _calibrated({}, p, yv_h)
     joblib.dump({"task": "3b", "entries": entries, "daily": daily, "horizon_cal": hz_cal,
                  "groups": groups}, _bundle_path("3b"))
-    xgb = entries["xgb_all"]
-    M.save_xgb(xgb["model"], S.MODEL_DIR / "p_trigger_xgb.json", {
-        "task": "3b daily trigger; P_H = 1 - prod(1 - p_k) over the horizon days",
-        "features": cols_all, "horizons": S.HORIZONS,
-        "horizon_calibrators": {h: v["xgb_all"]["cal"].to_dict() for h, v in hz_cal.items()
-                                if "xgb_all" in v},
-        "horizon_thresholds_val_f1": {h: v["xgb_all"]["thr"] for h, v in hz_cal.items()
-                                      if "xgb_all" in v},
-        "rain_source_train": "NASA POWER IMERG_PRECTOT daily (UTC)",
-        "soil_source": "SMAP L4 SPL4SMGP 008, held at issue day",
-        "output_keys": [f"p_trigger_{h}" for h in S.HORIZONS],
-        "n_train": len(tr), "n_val": len(va), "seed": S.SEED,
-    })
+    save_p_trigger(entries, hz_cal, S.SERVE_TRIGGER, len(tr), len(va))
     return {"daily_val": {k: v["val"] for k, v in daily.items()},
             "horizon_val": {h: {k: v["val"] for k, v in d.items()} for h, d in hz_cal.items()}}
 
@@ -243,14 +249,32 @@ def by_neg_type(df: pd.DataFrame, p: np.ndarray, thr: float) -> dict:
     return out
 
 
+def save_p_trigger(entries: dict, hz_cal: dict, name: str, n_train: int, n_val: int,
+                   extra: dict | None = None):
+    """Serving file for lead-live: one daily XGB + its per-horizon VAL calibrators."""
+    xgb = entries[name]
+    M.save_xgb(xgb["model"], S.MODEL_DIR / "p_trigger_xgb.json", {
+        "task": "3b daily trigger; P_H = 1 - prod(1 - p_k) over the horizon days",
+        "model": name, "features": xgb["cols"], "horizons": S.HORIZONS,
+        "horizon_calibrators": {h: v[name]["cal"].to_dict() for h, v in hz_cal.items() if name in v},
+        "horizon_thresholds_val_f1": {h: v[name]["thr"] for h, v in hz_cal.items() if name in v},
+        "rain_source_train": "NASA POWER IMERG_PRECTOT daily (UTC)",
+        "soil_source": "SMAP L4 SPL4SMGP 008 T10:30Z, held at issue day",
+        "output_keys": [f"p_trigger_{h}" for h in S.HORIZONS],
+        "n_train": n_train, "n_val": n_val, "seed": S.SEED, **(extra or {}),
+    })
+
+
 def evaluate_3b(*, gfs: bool = True) -> dict:
     b = joblib.load(_bundle_path("3b"))
     tab = _load_table("table_3b")
     _, _, te = _split(tab)
     res: dict = {"split_rows": tab.split.value_counts().to_dict(), "daily": {}, "horizons": {}}
     for name, e in b["daily"].items():
-        p = e["cal"](M.predict(e["model"], te, e["cols"]))
-        res["daily"][name] = {"test": SC.metrics(te.label, p, e["thr"]), "val": e["val"],
+        raw = M.predict(e["model"], te, e["cols"])
+        p = e["cal"](raw)
+        res["daily"][name] = {"test": _raw(SC.metrics(te.label, p, e["thr"]), te.label, raw),
+                              "val": e["val"],
                               "test_by_neg_type": by_neg_type(te, p, e["thr"])}
     res["importance"] = group_importance(b["entries"]["xgb_all"], te, b["groups"])
     rain = _rain()
@@ -278,8 +302,9 @@ def evaluate_3b(*, gfs: bool = True) -> dict:
                 pc = c["cal"](p)
                 y = ht[f"label_{hname}"].to_numpy()
                 reg = ht.region.to_numpy()
-                block[name] = {"test": SC.metrics(y, pc, c["thr"]),
-                               "by_region": {r: SC.metrics(y[reg == r], pc[reg == r], c["thr"])
+                block[name] = {"test": _raw(SC.metrics(y, pc, c["thr"]), y, p),
+                               "by_region": {r: _raw(SC.metrics(y[reg == r], pc[reg == r], c["thr"]),
+                                                     y[reg == r], p[reg == r])
                                              for r in sorted(set(reg))}}
             res["horizons"][hname][src] = block
     return res

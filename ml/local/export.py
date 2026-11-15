@@ -232,6 +232,8 @@ def export_metrics(case: str = "rs_2024") -> dict:
              "rows": importance_rows(a["importance_served"], g_served),
              "rf_permutation": a.get("importance_rf", {}).get("permutation_pr_auc_drop_test")}, indent=2))
     (mldir / "model_metrics.json").write_text(json.dumps(met, indent=2, default=str))
+    # keep the source of truth in sync (importance_served is computed here)
+    (S.MODEL_DIR / "metrics_ml.json").write_text(json.dumps(met, indent=2, default=str))
     b3b_path = S.path("models", "bundle_3b.joblib")
     if b3b_path.exists() and bb.get("importance"):
         b3b = joblib.load(b3b_path)
@@ -248,6 +250,7 @@ GROUP_LABELS = {"rain": "Rain (IMERG)", "soil": "Soil (SMAP L4)", "terrain": "Te
                 "landcover": "Surface (MCD12Q1 + VIIRS NDVI)", "climate": "Climate (IMERG/SMAP means)",
                 "soil_texture": "Soil texture (SMAP L4 constants)"}
 CARD_KEYS = ("n", "n_pos", "base_rate", "threshold", "precision", "recall", "f1", "accuracy",
+             "pr_auc_raw", "roc_auc_raw",
              "pr_auc", "roc_auc", "tp", "fp", "fn", "tn")
 REGION_EVENT = {"south_southeast_brazil": "rs_2024", "north_america": "wa_2025"}
 
@@ -273,6 +276,9 @@ def ml_card(met: dict) -> dict:
         "low_skill_horizons": ["7d", "14d"],
         "models": {"xgb_all": "XGBoost (all features)", "rf_all": "RandomForest(200)",
                    "rule_tpi": "TPI > 0.6 rule", "xgb_rain_only": "XGBoost rain only",
+                   "xgb_terrain_landcover": "XGBoost terrain + land cover (served T_ML)",
+                   "xgb_terrain_only": "XGBoost terrain only", "rule_slope": "Slope rule 15-30°",
+                   "nowcast_xgb_all": "XGBoost nowcast (observed rain only, no forecast)",
                    "xgb_rain_soil": "XGBoost rain + soil", "climatology": "XGBoost no rain/soil"},
     }
     for h, d in hz.items():

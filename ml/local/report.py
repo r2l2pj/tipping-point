@@ -10,7 +10,8 @@ from pathlib import Path
 
 from . import settings as S
 
-COLS = ("n", "n_pos", "base_rate", "precision", "recall", "f1", "accuracy", "pr_auc", "roc_auc")
+COLS = ("n", "n_pos", "base_rate", "precision", "recall", "f1", "accuracy", "pr_auc", "roc_auc",
+        "pr_auc_raw", "roc_auc_raw")
 EVENT = {"south_southeast_brazil": "RS 2024", "north_america": "WA 2025"}
 
 
