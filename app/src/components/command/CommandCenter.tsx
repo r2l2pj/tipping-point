@@ -132,8 +132,11 @@ export function CommandCenterView({
   // City search (Lucas): places.json of the live run (lead-analysis). A
   // pick in Now opens the live card; a pick in a replay case stays there —
   // the source is that case's municipalities (replaySource).
+  // geoUrl, not declared(): an old manifest that never lists `places` (the
+  // frozen bundled copy, an older SQLite table) still serves the canonical
+  // places.json — only an explicit `places: null` (declared absent) hides it.
   const liveCase = cases.find((c) => c.mode === "live");
-  const placesUrl = liveCase && declared(liveCase, "places")
+  const placesUrl = liveCase
     ? geoUrl(liveCase, caseDirOf(liveCase), "places", "places.json")
     : undefined;
   const [city, setCity] = useState<{ place: Place; dates: string[] }>();
