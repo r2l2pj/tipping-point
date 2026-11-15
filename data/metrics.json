@@ -4199,7 +4199,2509 @@
       "flood_warned_gfs_24h_critical_lift_vs_terrain": 0.0,
       "flood_warned_gfs_24h_lift_terrain": 21.3,
       "flood_nisar_event_lift_vs_terrain": 1.006,
-      "flood_nisar_event_critical_lift_vs_terrain": 0.778
+      "flood_nisar_event_critical_lift_vs_terrain": 0.778,
+      "nisar_agreement": {
+        "pass": {
+          "date": "2025-12-16",
+          "track": "172D",
+          "id": "nisar_post",
+          "png": "wa_2025/png/nisar_post_20251216.png"
+        },
+        "decoded_db": {
+          "p1": -18.11,
+          "min": -21.46
+        },
+        "pass_dates": [
+          "2025-12-16"
+        ],
+        "pass_tracks": [
+          "172D"
+        ],
+        "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+        "map_day": "2025-12-16",
+        "water_km2": 2.0,
+        "water_cells": 374,
+        "observed_km2": 11894.4,
+        "outside_floodplain_pct": 9.9,
+        "observed": {
+          "water_cells_scored": 374,
+          "alto_plus": {
+            "hit_pct": 3.21,
+            "area_pct": 0.061,
+            "lift": 52.87,
+            "ratio_vs_terrain": 2.379
+          },
+          "critico": {
+            "hit_pct": 0.0,
+            "area_pct": 0.02,
+            "lift": 0.0,
+            "ratio_vs_terrain": 0.0
+          }
+        },
+        "forecast": {
+          "lead_1d": {
+            "water_cells_scored": 374,
+            "alto_plus": {
+              "hit_pct": 0.0,
+              "area_pct": 0.709,
+              "lift": 0.0,
+              "ratio_vs_terrain": 0.0
+            },
+            "critico": {
+              "hit_pct": 0.0,
+              "area_pct": 0.334,
+              "lift": 0.0,
+              "ratio_vs_terrain": 0.0
+            },
+            "issued": "2025-12-15"
+          },
+          "lead_2d": {
+            "water_cells_scored": 374,
+            "alto_plus": {
+              "hit_pct": 0.0,
+              "area_pct": 0.344,
+              "lift": 0.0,
+              "ratio_vs_terrain": 0.0
+            },
+            "critico": {
+              "hit_pct": 0.0,
+              "area_pct": 0.167,
+              "lift": 0.0,
+              "ratio_vs_terrain": 0.0
+            },
+            "issued": "2025-12-14"
+          },
+          "lead_3d": {
+            "water_cells_scored": 374,
+            "alto_plus": {
+              "hit_pct": 0.0,
+              "area_pct": 0.241,
+              "lift": 0.0,
+              "ratio_vs_terrain": 0.0
+            },
+            "critico": {
+              "hit_pct": 0.0,
+              "area_pct": 0.066,
+              "lift": 0.0,
+              "ratio_vs_terrain": 0.0
+            },
+            "issued": "2025-12-13"
+          }
+        },
+        "window_12d": {
+          "days": [
+            "2025-12-04",
+            "2025-12-05",
+            "2025-12-06",
+            "2025-12-07",
+            "2025-12-08",
+            "2025-12-09",
+            "2025-12-10",
+            "2025-12-11",
+            "2025-12-12",
+            "2025-12-13",
+            "2025-12-14",
+            "2025-12-15"
+          ],
+          "max_tpi": {
+            "water_cells_scored": 374,
+            "alto_plus": {
+              "hit_pct": 79.41,
+              "area_pct": 9.161,
+              "lift": 8.67,
+              "ratio_vs_terrain": 0.856
+            },
+            "critico": {
+              "hit_pct": 50.53,
+              "area_pct": 6.226,
+              "lift": 8.12,
+              "ratio_vs_terrain": 0.554
+            }
+          },
+          "best_day": {
+            "alto_plus": {
+              "day": "2025-12-13",
+              "days_before": 3,
+              "hit_pct": 79.41,
+              "area_pct": 5.517,
+              "lift": 14.39,
+              "ratio_vs_terrain": 0.874
+            },
+            "critico": {
+              "day": "2025-12-12",
+              "days_before": 4,
+              "hit_pct": 50.53,
+              "area_pct": 6.226,
+              "lift": 8.12,
+              "ratio_vs_terrain": 0.554
+            }
+          },
+          "per_day": {
+            "2025-12-04": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            },
+            "2025-12-05": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            },
+            "2025-12-06": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            },
+            "2025-12-07": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            },
+            "2025-12-08": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            },
+            "2025-12-09": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.15,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.057,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              }
+            },
+            "2025-12-10": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 3.689,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 1.404,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              }
+            },
+            "2025-12-11": {
+              "alto_plus": {
+                "hit_pct": 79.14,
+                "area_pct": 8.74,
+                "lift": 9.06,
+                "ratio_vs_terrain": 0.855
+              },
+              "critico": {
+                "hit_pct": 25.13,
+                "area_pct": 4.585,
+                "lift": 5.48,
+                "ratio_vs_terrain": 0.282
+              }
+            },
+            "2025-12-12": {
+              "alto_plus": {
+                "hit_pct": 79.41,
+                "area_pct": 9.161,
+                "lift": 8.67,
+                "ratio_vs_terrain": 0.856
+              },
+              "critico": {
+                "hit_pct": 50.53,
+                "area_pct": 6.226,
+                "lift": 8.12,
+                "ratio_vs_terrain": 0.554
+              }
+            },
+            "2025-12-13": {
+              "alto_plus": {
+                "hit_pct": 79.41,
+                "area_pct": 5.517,
+                "lift": 14.39,
+                "ratio_vs_terrain": 0.874
+              },
+              "critico": {
+                "hit_pct": 21.39,
+                "area_pct": 2.232,
+                "lift": 9.58,
+                "ratio_vs_terrain": 0.431
+              }
+            },
+            "2025-12-14": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            },
+            "2025-12-15": {
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            }
+          }
+        },
+        "gfs_window_12d": {
+          "frames": 30,
+          "best": {
+            "alto_plus": {
+              "issued": "2025-12-11",
+              "lead_days": 1,
+              "valid": "2025-12-12",
+              "issued_days_before": 5,
+              "valid_days_before": 4,
+              "alto_plus": {
+                "hit_pct": 71.12,
+                "area_pct": 6.132,
+                "lift": 11.6,
+                "ratio_vs_terrain": 0.78
+              },
+              "critico": {
+                "hit_pct": 15.78,
+                "area_pct": 2.395,
+                "lift": 6.59,
+                "ratio_vs_terrain": 0.296
+              }
+            },
+            "critico": {
+              "issued": "2025-12-11",
+              "lead_days": 1,
+              "valid": "2025-12-12",
+              "issued_days_before": 5,
+              "valid_days_before": 4,
+              "alto_plus": {
+                "hit_pct": 71.12,
+                "area_pct": 6.132,
+                "lift": 11.6,
+                "ratio_vs_terrain": 0.78
+              },
+              "critico": {
+                "hit_pct": 15.78,
+                "area_pct": 2.395,
+                "lift": 6.59,
+                "ratio_vs_terrain": 0.296
+              }
+            }
+          }
+        },
+        "definition": "Per pass: hit_pct = share of that pass's NISAR-water cells (cells of the case TPI grid) the index without NISAR flagged High+ (> 0.4, alto_plus) / Critical (> 0.6, critico); area_pct = share of observed land cells flagged; lift = hit_pct / area_pct; ratio_vs_terrain (M1) = hit vs a same-area terrain-only map. observed = TPI_flood of the pass day; forecast.lead_Ld = NOAA GFS run issued L days before, valid on the pass day.",
+        "note": "Scores the flood index WITHOUT NISAR (pass-day TPI and NOAA GFS runs issued 1-3 d before) against one NISAR pass's candidate water (HH < -18 dB, fixed-stretch frame, outside permanent water, observed cells only). Candidate water also lights flooded rice / irrigation: outside_floodplain_pct is the share of it with HAND > 5 m; rice ON the floodplain cannot be told apart. Single-pass threshold; towns/forest stay bright (double bounce) and are missed.",
+        "headline_rule": "pass 2025-12-16 (conductor/lead-analysis)",
+        "headline": {
+          "pass": {
+            "date": "2025-12-16",
+            "track": "172D",
+            "id": "nisar_post",
+            "png": "wa_2025/png/nisar_post_20251216.png"
+          },
+          "decoded_db": {
+            "p1": -18.11,
+            "min": -21.46
+          },
+          "pass_dates": [
+            "2025-12-16"
+          ],
+          "pass_tracks": [
+            "172D"
+          ],
+          "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+          "map_day": "2025-12-16",
+          "water_km2": 2.0,
+          "water_cells": 374,
+          "observed_km2": 11894.4,
+          "outside_floodplain_pct": 9.9,
+          "observed": {
+            "water_cells_scored": 374,
+            "alto_plus": {
+              "hit_pct": 3.21,
+              "area_pct": 0.061,
+              "lift": 52.87,
+              "ratio_vs_terrain": 2.379
+            },
+            "critico": {
+              "hit_pct": 0.0,
+              "area_pct": 0.02,
+              "lift": 0.0,
+              "ratio_vs_terrain": 0.0
+            }
+          },
+          "forecast": {
+            "lead_1d": {
+              "water_cells_scored": 374,
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.709,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.334,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              },
+              "issued": "2025-12-15"
+            },
+            "lead_2d": {
+              "water_cells_scored": 374,
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.344,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.167,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              },
+              "issued": "2025-12-14"
+            },
+            "lead_3d": {
+              "water_cells_scored": 374,
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.241,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.066,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              },
+              "issued": "2025-12-13"
+            }
+          },
+          "window_12d": {
+            "days": [
+              "2025-12-04",
+              "2025-12-05",
+              "2025-12-06",
+              "2025-12-07",
+              "2025-12-08",
+              "2025-12-09",
+              "2025-12-10",
+              "2025-12-11",
+              "2025-12-12",
+              "2025-12-13",
+              "2025-12-14",
+              "2025-12-15"
+            ],
+            "max_tpi": {
+              "water_cells_scored": 374,
+              "alto_plus": {
+                "hit_pct": 79.41,
+                "area_pct": 9.161,
+                "lift": 8.67,
+                "ratio_vs_terrain": 0.856
+              },
+              "critico": {
+                "hit_pct": 50.53,
+                "area_pct": 6.226,
+                "lift": 8.12,
+                "ratio_vs_terrain": 0.554
+              }
+            },
+            "best_day": {
+              "alto_plus": {
+                "day": "2025-12-13",
+                "days_before": 3,
+                "hit_pct": 79.41,
+                "area_pct": 5.517,
+                "lift": 14.39,
+                "ratio_vs_terrain": 0.874
+              },
+              "critico": {
+                "day": "2025-12-12",
+                "days_before": 4,
+                "hit_pct": 50.53,
+                "area_pct": 6.226,
+                "lift": 8.12,
+                "ratio_vs_terrain": 0.554
+              }
+            },
+            "per_day": {
+              "2025-12-04": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              },
+              "2025-12-05": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              },
+              "2025-12-06": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              },
+              "2025-12-07": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              },
+              "2025-12-08": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              },
+              "2025-12-09": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.15,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.057,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                }
+              },
+              "2025-12-10": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 3.689,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 1.404,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                }
+              },
+              "2025-12-11": {
+                "alto_plus": {
+                  "hit_pct": 79.14,
+                  "area_pct": 8.74,
+                  "lift": 9.06,
+                  "ratio_vs_terrain": 0.855
+                },
+                "critico": {
+                  "hit_pct": 25.13,
+                  "area_pct": 4.585,
+                  "lift": 5.48,
+                  "ratio_vs_terrain": 0.282
+                }
+              },
+              "2025-12-12": {
+                "alto_plus": {
+                  "hit_pct": 79.41,
+                  "area_pct": 9.161,
+                  "lift": 8.67,
+                  "ratio_vs_terrain": 0.856
+                },
+                "critico": {
+                  "hit_pct": 50.53,
+                  "area_pct": 6.226,
+                  "lift": 8.12,
+                  "ratio_vs_terrain": 0.554
+                }
+              },
+              "2025-12-13": {
+                "alto_plus": {
+                  "hit_pct": 79.41,
+                  "area_pct": 5.517,
+                  "lift": 14.39,
+                  "ratio_vs_terrain": 0.874
+                },
+                "critico": {
+                  "hit_pct": 21.39,
+                  "area_pct": 2.232,
+                  "lift": 9.58,
+                  "ratio_vs_terrain": 0.431
+                }
+              },
+              "2025-12-14": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              },
+              "2025-12-15": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              }
+            }
+          },
+          "gfs_window_12d": {
+            "frames": 30,
+            "best": {
+              "alto_plus": {
+                "issued": "2025-12-11",
+                "lead_days": 1,
+                "valid": "2025-12-12",
+                "issued_days_before": 5,
+                "valid_days_before": 4,
+                "alto_plus": {
+                  "hit_pct": 71.12,
+                  "area_pct": 6.132,
+                  "lift": 11.6,
+                  "ratio_vs_terrain": 0.78
+                },
+                "critico": {
+                  "hit_pct": 15.78,
+                  "area_pct": 2.395,
+                  "lift": 6.59,
+                  "ratio_vs_terrain": 0.296
+                }
+              },
+              "critico": {
+                "issued": "2025-12-11",
+                "lead_days": 1,
+                "valid": "2025-12-12",
+                "issued_days_before": 5,
+                "valid_days_before": 4,
+                "alto_plus": {
+                  "hit_pct": 71.12,
+                  "area_pct": 6.132,
+                  "lift": 11.6,
+                  "ratio_vs_terrain": 0.78
+                },
+                "critico": {
+                  "hit_pct": 15.78,
+                  "area_pct": 2.395,
+                  "lift": 6.59,
+                  "ratio_vs_terrain": 0.296
+                }
+              }
+            }
+          }
+        },
+        "headline_basis": "window_12d.best_day (critico)",
+        "headline_label": "index without NISAR, up to 12 days before the pass",
+        "passes": [
+          {
+            "pass": {
+              "date": "2025-10-17",
+              "track": "005A",
+              "id": "nisar_hh_20251017_005A",
+              "png": "wa_2025/png/nisar_hh_20251017_005A.png"
+            },
+            "decoded_db": {
+              "p1": -18.21,
+              "min": -23.43
+            },
+            "pass_dates": [
+              "2025-10-17"
+            ],
+            "pass_tracks": [
+              "005A"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-10-17",
+            "water_km2": 1.48,
+            "water_cells": 276,
+            "observed_km2": 10367.9,
+            "outside_floodplain_pct": 36.4,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-10-17"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251016 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251015 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251014 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "null_reason": "no observed TPI replay frame in the 12 d before 2025-10-17"
+            },
+            "gfs_window_12d": {
+              "null_reason": "no GFS run issued and valid in the 12 d before 2025-10-17"
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-10-22",
+              "track": "071D",
+              "id": "nisar_hh_20251022_071D",
+              "png": "wa_2025/png/nisar_hh_20251022_071D.png"
+            },
+            "decoded_db": {
+              "p1": -25.0,
+              "min": -25.0
+            },
+            "pass_dates": [
+              "2025-10-22"
+            ],
+            "pass_tracks": [
+              "071D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-10-22",
+            "water_km2": 321.63,
+            "water_cells": 59115,
+            "observed_km2": 4002.9,
+            "outside_floodplain_pct": 92.5,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-10-22"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251021 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251020 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251019 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "null_reason": "no observed TPI replay frame in the 12 d before 2025-10-22"
+            },
+            "gfs_window_12d": {
+              "null_reason": "no GFS run issued and valid in the 12 d before 2025-10-22"
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-10-29",
+              "track": "005A",
+              "id": "nisar_hh_20251029_005A",
+              "png": "wa_2025/png/nisar_hh_20251029_005A.png"
+            },
+            "decoded_db": {
+              "p1": -18.31,
+              "min": -23.23
+            },
+            "pass_dates": [
+              "2025-10-29"
+            ],
+            "pass_tracks": [
+              "005A"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-10-29",
+            "water_km2": 0.77,
+            "water_cells": 144,
+            "observed_km2": 10333.2,
+            "outside_floodplain_pct": 46.0,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-10-29"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251028 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251027 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251026 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "null_reason": "no observed TPI replay frame in the 12 d before 2025-10-29"
+            },
+            "gfs_window_12d": {
+              "null_reason": "no GFS run issued and valid in the 12 d before 2025-10-29"
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-10-29",
+              "track": "172D",
+              "id": "nisar_hh_20251029_172D",
+              "png": "wa_2025/png/nisar_hh_20251029_172D.png"
+            },
+            "decoded_db": {
+              "p1": -17.91,
+              "min": -21.65
+            },
+            "pass_dates": [
+              "2025-10-29"
+            ],
+            "pass_tracks": [
+              "172D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-10-29",
+            "water_km2": 0.67,
+            "water_cells": 126,
+            "observed_km2": 11894.5,
+            "outside_floodplain_pct": 14.3,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-10-29"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251028 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251027 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251026 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "null_reason": "no observed TPI replay frame in the 12 d before 2025-10-29"
+            },
+            "gfs_window_12d": {
+              "null_reason": "no GFS run issued and valid in the 12 d before 2025-10-29"
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-11-05",
+              "track": "100D",
+              "id": "nisar_hh_20251105_100D",
+              "png": "wa_2025/png/nisar_hh_20251105_100D.png"
+            },
+            "decoded_db": {
+              "p1": -25.0,
+              "min": -25.0
+            },
+            "pass_dates": [
+              "2025-11-05"
+            ],
+            "pass_tracks": [
+              "100D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-11-05",
+            "water_km2": 101.27,
+            "water_cells": 18804,
+            "observed_km2": 2282.9,
+            "outside_floodplain_pct": 94.1,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-11-05"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251104 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251103 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251102 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "null_reason": "no observed TPI replay frame in the 12 d before 2025-11-05"
+            },
+            "gfs_window_12d": {
+              "null_reason": "no GFS run issued and valid in the 12 d before 2025-11-05"
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-11-10",
+              "track": "172D",
+              "id": "nisar_ref",
+              "png": "wa_2025/png/nisar_ref_20251110.png"
+            },
+            "decoded_db": {
+              "p1": -17.62,
+              "min": -21.75
+            },
+            "pass_dates": [
+              "2025-11-10"
+            ],
+            "pass_tracks": [
+              "172D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-11-10",
+            "water_km2": 2.05,
+            "water_cells": 384,
+            "observed_km2": 11894.4,
+            "outside_floodplain_pct": 11.5,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-11-10"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251109 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251108 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251107 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "null_reason": "no observed TPI replay frame in the 12 d before 2025-11-10"
+            },
+            "gfs_window_12d": {
+              "null_reason": "no GFS run issued and valid in the 12 d before 2025-11-10"
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-11-15",
+              "track": "071D",
+              "id": "nisar_hh_20251115_071D",
+              "png": "wa_2025/png/nisar_hh_20251115_071D.png"
+            },
+            "decoded_db": {
+              "p1": -25.0,
+              "min": -25.0
+            },
+            "pass_dates": [
+              "2025-11-15"
+            ],
+            "pass_tracks": [
+              "071D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-11-15",
+            "water_km2": 325.94,
+            "water_cells": 59915,
+            "observed_km2": 4022.1,
+            "outside_floodplain_pct": 92.8,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-11-15"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251114 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251113 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251112 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "null_reason": "no observed TPI replay frame in the 12 d before 2025-11-15"
+            },
+            "gfs_window_12d": {
+              "null_reason": "no GFS run issued and valid in the 12 d before 2025-11-15"
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-11-22",
+              "track": "172D",
+              "id": "nisar_hh_20251122_172D",
+              "png": "wa_2025/png/nisar_hh_20251122_172D.png"
+            },
+            "decoded_db": {
+              "p1": -17.52,
+              "min": -22.24
+            },
+            "pass_dates": [
+              "2025-11-22"
+            ],
+            "pass_tracks": [
+              "172D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-11-22",
+            "water_km2": 1.66,
+            "water_cells": 310,
+            "observed_km2": 11894.5,
+            "outside_floodplain_pct": 8.4,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-11-22"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251121 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251120 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251119 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "null_reason": "no observed TPI replay frame in the 12 d before 2025-11-22"
+            },
+            "gfs_window_12d": {
+              "null_reason": "no GFS run issued and valid in the 12 d before 2025-11-22"
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-12-04",
+              "track": "172D",
+              "id": "nisar_pre",
+              "png": "wa_2025/png/nisar_pre_20251204.png"
+            },
+            "decoded_db": {
+              "p1": -19.19,
+              "min": -23.13
+            },
+            "pass_dates": [
+              "2025-12-04"
+            ],
+            "pass_tracks": [
+              "172D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-12-04",
+            "water_km2": 1.26,
+            "water_cells": 236,
+            "observed_km2": 11894.6,
+            "outside_floodplain_pct": 7.2,
+            "observed": {
+              "water_cells_scored": 236,
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            },
+            "forecast": {
+              "lead_1d": {
+                "water_cells_scored": 236,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "issued": "2025-12-03"
+              },
+              "lead_2d": {
+                "water_cells_scored": 236,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "issued": "2025-12-02"
+              },
+              "lead_3d": {
+                "water_cells_scored": 236,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "issued": "2025-12-01"
+              }
+            },
+            "window_12d": {
+              "days": [
+                "2025-11-30",
+                "2025-12-01",
+                "2025-12-02",
+                "2025-12-03"
+              ],
+              "max_tpi": {
+                "water_cells_scored": 236,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.028,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              },
+              "best_day": {
+                "alto_plus": {
+                  "day": null,
+                  "days_before": null,
+                  "hit_pct": 0.0
+                },
+                "critico": {
+                  "day": null,
+                  "days_before": null,
+                  "hit_pct": 0.0
+                }
+              },
+              "per_day": {
+                "2025-11-30": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.028,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-01": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-02": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-03": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                }
+              }
+            },
+            "gfs_window_12d": {
+              "frames": 3,
+              "best": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "null_reason": "no frame with hit > area"
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "null_reason": "no frame with hit > area"
+                }
+              }
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-12-04",
+              "track": "005A",
+              "id": "nisar_hh_20251204_005A",
+              "png": "wa_2025/png/nisar_hh_20251204_005A.png"
+            },
+            "decoded_db": {
+              "p1": -17.72,
+              "min": -24.11
+            },
+            "pass_dates": [
+              "2025-12-04"
+            ],
+            "pass_tracks": [
+              "005A"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-12-04",
+            "water_km2": 2.98,
+            "water_cells": 556,
+            "observed_km2": 10350.0,
+            "outside_floodplain_pct": 32.3,
+            "observed": {
+              "water_cells_scored": 556,
+              "alto_plus": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.0,
+                "lift": null,
+                "ratio_vs_terrain": null
+              }
+            },
+            "forecast": {
+              "lead_1d": {
+                "water_cells_scored": 556,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "issued": "2025-12-03"
+              },
+              "lead_2d": {
+                "water_cells_scored": 556,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "issued": "2025-12-02"
+              },
+              "lead_3d": {
+                "water_cells_scored": 556,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                },
+                "issued": "2025-12-01"
+              }
+            },
+            "window_12d": {
+              "days": [
+                "2025-11-30",
+                "2025-12-01",
+                "2025-12-02",
+                "2025-12-03"
+              ],
+              "max_tpi": {
+                "water_cells_scored": 556,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.029,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.0,
+                  "lift": null,
+                  "ratio_vs_terrain": null
+                }
+              },
+              "best_day": {
+                "alto_plus": {
+                  "day": null,
+                  "days_before": null,
+                  "hit_pct": 0.0
+                },
+                "critico": {
+                  "day": null,
+                  "days_before": null,
+                  "hit_pct": 0.0
+                }
+              },
+              "per_day": {
+                "2025-11-30": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.029,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-01": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-02": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-03": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                }
+              }
+            },
+            "gfs_window_12d": {
+              "frames": 3,
+              "best": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "null_reason": "no frame with hit > area"
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "null_reason": "no frame with hit > area"
+                }
+              }
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-12-16",
+              "track": "172D",
+              "id": "nisar_post",
+              "png": "wa_2025/png/nisar_post_20251216.png"
+            },
+            "decoded_db": {
+              "p1": -18.11,
+              "min": -21.46
+            },
+            "pass_dates": [
+              "2025-12-16"
+            ],
+            "pass_tracks": [
+              "172D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-12-16",
+            "water_km2": 2.0,
+            "water_cells": 374,
+            "observed_km2": 11894.4,
+            "outside_floodplain_pct": 9.9,
+            "observed": {
+              "water_cells_scored": 374,
+              "alto_plus": {
+                "hit_pct": 3.21,
+                "area_pct": 0.061,
+                "lift": 52.87,
+                "ratio_vs_terrain": 2.379
+              },
+              "critico": {
+                "hit_pct": 0.0,
+                "area_pct": 0.02,
+                "lift": 0.0,
+                "ratio_vs_terrain": 0.0
+              }
+            },
+            "forecast": {
+              "lead_1d": {
+                "water_cells_scored": 374,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.709,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.334,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "issued": "2025-12-15"
+              },
+              "lead_2d": {
+                "water_cells_scored": 374,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.344,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.167,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "issued": "2025-12-14"
+              },
+              "lead_3d": {
+                "water_cells_scored": 374,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.241,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.066,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "issued": "2025-12-13"
+              }
+            },
+            "window_12d": {
+              "days": [
+                "2025-12-04",
+                "2025-12-05",
+                "2025-12-06",
+                "2025-12-07",
+                "2025-12-08",
+                "2025-12-09",
+                "2025-12-10",
+                "2025-12-11",
+                "2025-12-12",
+                "2025-12-13",
+                "2025-12-14",
+                "2025-12-15"
+              ],
+              "max_tpi": {
+                "water_cells_scored": 374,
+                "alto_plus": {
+                  "hit_pct": 79.41,
+                  "area_pct": 9.161,
+                  "lift": 8.67,
+                  "ratio_vs_terrain": 0.856
+                },
+                "critico": {
+                  "hit_pct": 50.53,
+                  "area_pct": 6.226,
+                  "lift": 8.12,
+                  "ratio_vs_terrain": 0.554
+                }
+              },
+              "best_day": {
+                "alto_plus": {
+                  "day": "2025-12-13",
+                  "days_before": 3,
+                  "hit_pct": 79.41,
+                  "area_pct": 5.517,
+                  "lift": 14.39,
+                  "ratio_vs_terrain": 0.874
+                },
+                "critico": {
+                  "day": "2025-12-12",
+                  "days_before": 4,
+                  "hit_pct": 50.53,
+                  "area_pct": 6.226,
+                  "lift": 8.12,
+                  "ratio_vs_terrain": 0.554
+                }
+              },
+              "per_day": {
+                "2025-12-04": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-05": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-06": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-07": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-08": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-09": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.15,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.057,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-10": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 3.689,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 1.404,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-11": {
+                  "alto_plus": {
+                    "hit_pct": 79.14,
+                    "area_pct": 8.74,
+                    "lift": 9.06,
+                    "ratio_vs_terrain": 0.855
+                  },
+                  "critico": {
+                    "hit_pct": 25.13,
+                    "area_pct": 4.585,
+                    "lift": 5.48,
+                    "ratio_vs_terrain": 0.282
+                  }
+                },
+                "2025-12-12": {
+                  "alto_plus": {
+                    "hit_pct": 79.41,
+                    "area_pct": 9.161,
+                    "lift": 8.67,
+                    "ratio_vs_terrain": 0.856
+                  },
+                  "critico": {
+                    "hit_pct": 50.53,
+                    "area_pct": 6.226,
+                    "lift": 8.12,
+                    "ratio_vs_terrain": 0.554
+                  }
+                },
+                "2025-12-13": {
+                  "alto_plus": {
+                    "hit_pct": 79.41,
+                    "area_pct": 5.517,
+                    "lift": 14.39,
+                    "ratio_vs_terrain": 0.874
+                  },
+                  "critico": {
+                    "hit_pct": 21.39,
+                    "area_pct": 2.232,
+                    "lift": 9.58,
+                    "ratio_vs_terrain": 0.431
+                  }
+                },
+                "2025-12-14": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-15": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                }
+              }
+            },
+            "gfs_window_12d": {
+              "frames": 30,
+              "best": {
+                "alto_plus": {
+                  "issued": "2025-12-11",
+                  "lead_days": 1,
+                  "valid": "2025-12-12",
+                  "issued_days_before": 5,
+                  "valid_days_before": 4,
+                  "alto_plus": {
+                    "hit_pct": 71.12,
+                    "area_pct": 6.132,
+                    "lift": 11.6,
+                    "ratio_vs_terrain": 0.78
+                  },
+                  "critico": {
+                    "hit_pct": 15.78,
+                    "area_pct": 2.395,
+                    "lift": 6.59,
+                    "ratio_vs_terrain": 0.296
+                  }
+                },
+                "critico": {
+                  "issued": "2025-12-11",
+                  "lead_days": 1,
+                  "valid": "2025-12-12",
+                  "issued_days_before": 5,
+                  "valid_days_before": 4,
+                  "alto_plus": {
+                    "hit_pct": 71.12,
+                    "area_pct": 6.132,
+                    "lift": 11.6,
+                    "ratio_vs_terrain": 0.78
+                  },
+                  "critico": {
+                    "hit_pct": 15.78,
+                    "area_pct": 2.395,
+                    "lift": 6.59,
+                    "ratio_vs_terrain": 0.296
+                  }
+                }
+              }
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-12-23",
+              "track": "106A",
+              "id": "nisar_hh_20251223_106A",
+              "png": "wa_2025/png/nisar_hh_20251223_106A.png"
+            },
+            "decoded_db": {
+              "p1": -18.01,
+              "min": -23.72
+            },
+            "pass_dates": [
+              "2025-12-23"
+            ],
+            "pass_tracks": [
+              "106A"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-12-23",
+            "water_km2": 3.69,
+            "water_cells": 687,
+            "observed_km2": 11899.9,
+            "outside_floodplain_pct": 22.7,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-12-23"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251222 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251221 (d2_flood)"
+              },
+              "lead_3d": {
+                "water_cells_scored": 687,
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.035,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.001,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                },
+                "issued": "2025-12-20"
+              }
+            },
+            "window_12d": {
+              "days": [
+                "2025-12-11",
+                "2025-12-12",
+                "2025-12-13",
+                "2025-12-14",
+                "2025-12-15",
+                "2025-12-16",
+                "2025-12-17",
+                "2025-12-18",
+                "2025-12-19",
+                "2025-12-20"
+              ],
+              "max_tpi": {
+                "water_cells_scored": 687,
+                "alto_plus": {
+                  "hit_pct": 58.66,
+                  "area_pct": 9.157,
+                  "lift": 6.41,
+                  "ratio_vs_terrain": 0.756
+                },
+                "critico": {
+                  "hit_pct": 43.23,
+                  "area_pct": 6.223,
+                  "lift": 6.95,
+                  "ratio_vs_terrain": 0.564
+                }
+              },
+              "best_day": {
+                "alto_plus": {
+                  "day": "2025-12-13",
+                  "days_before": 10,
+                  "hit_pct": 58.08,
+                  "area_pct": 5.515,
+                  "lift": 10.53,
+                  "ratio_vs_terrain": 0.764
+                },
+                "critico": {
+                  "day": "2025-12-12",
+                  "days_before": 11,
+                  "hit_pct": 43.23,
+                  "area_pct": 6.223,
+                  "lift": 6.95,
+                  "ratio_vs_terrain": 0.564
+                }
+              },
+              "per_day": {
+                "2025-12-11": {
+                  "alto_plus": {
+                    "hit_pct": 58.52,
+                    "area_pct": 8.736,
+                    "lift": 6.7,
+                    "ratio_vs_terrain": 0.754
+                  },
+                  "critico": {
+                    "hit_pct": 15.57,
+                    "area_pct": 4.583,
+                    "lift": 3.4,
+                    "ratio_vs_terrain": 0.212
+                  }
+                },
+                "2025-12-12": {
+                  "alto_plus": {
+                    "hit_pct": 58.66,
+                    "area_pct": 9.157,
+                    "lift": 6.41,
+                    "ratio_vs_terrain": 0.756
+                  },
+                  "critico": {
+                    "hit_pct": 43.23,
+                    "area_pct": 6.223,
+                    "lift": 6.95,
+                    "ratio_vs_terrain": 0.564
+                  }
+                },
+                "2025-12-13": {
+                  "alto_plus": {
+                    "hit_pct": 58.08,
+                    "area_pct": 5.515,
+                    "lift": 10.53,
+                    "ratio_vs_terrain": 0.764
+                  },
+                  "critico": {
+                    "hit_pct": 12.66,
+                    "area_pct": 2.231,
+                    "lift": 5.68,
+                    "ratio_vs_terrain": 0.313
+                  }
+                },
+                "2025-12-14": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-15": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                },
+                "2025-12-16": {
+                  "alto_plus": {
+                    "hit_pct": 2.47,
+                    "area_pct": 0.061,
+                    "lift": 40.8,
+                    "ratio_vs_terrain": 2.249
+                  },
+                  "critico": {
+                    "hit_pct": 1.75,
+                    "area_pct": 0.02,
+                    "lift": 85.94,
+                    "ratio_vs_terrain": 4.738
+                  }
+                },
+                "2025-12-17": {
+                  "alto_plus": {
+                    "hit_pct": 10.48,
+                    "area_pct": 0.657,
+                    "lift": 15.94,
+                    "ratio_vs_terrain": 0.879
+                  },
+                  "critico": {
+                    "hit_pct": 1.75,
+                    "area_pct": 0.026,
+                    "lift": 66.35,
+                    "ratio_vs_terrain": 3.657
+                  }
+                },
+                "2025-12-18": {
+                  "alto_plus": {
+                    "hit_pct": 2.18,
+                    "area_pct": 0.074,
+                    "lift": 29.7,
+                    "ratio_vs_terrain": 1.637
+                  },
+                  "critico": {
+                    "hit_pct": 1.75,
+                    "area_pct": 0.026,
+                    "lift": 68.48,
+                    "ratio_vs_terrain": 3.775
+                  }
+                },
+                "2025-12-19": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.084,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.002,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-20": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.002,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                }
+              }
+            },
+            "gfs_window_12d": {
+              "frames": 29,
+              "best": {
+                "alto_plus": {
+                  "issued": "2025-12-11",
+                  "lead_days": 1,
+                  "valid": "2025-12-12",
+                  "issued_days_before": 12,
+                  "valid_days_before": 11,
+                  "alto_plus": {
+                    "hit_pct": 52.11,
+                    "area_pct": 6.129,
+                    "lift": 8.5,
+                    "ratio_vs_terrain": 0.681
+                  },
+                  "critico": {
+                    "hit_pct": 8.3,
+                    "area_pct": 2.394,
+                    "lift": 3.47,
+                    "ratio_vs_terrain": 0.191
+                  }
+                },
+                "critico": {
+                  "issued": "2025-12-11",
+                  "lead_days": 1,
+                  "valid": "2025-12-12",
+                  "issued_days_before": 12,
+                  "valid_days_before": 11,
+                  "alto_plus": {
+                    "hit_pct": 52.11,
+                    "area_pct": 6.129,
+                    "lift": 8.5,
+                    "ratio_vs_terrain": 0.681
+                  },
+                  "critico": {
+                    "hit_pct": 8.3,
+                    "area_pct": 2.394,
+                    "lift": 3.47,
+                    "ratio_vs_terrain": 0.191
+                  }
+                }
+              }
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-12-28",
+              "track": "172D",
+              "id": "nisar_hh_20251228_172D",
+              "png": "wa_2025/png/nisar_hh_20251228_172D.png"
+            },
+            "decoded_db": {
+              "p1": -19.88,
+              "min": -23.52
+            },
+            "pass_dates": [
+              "2025-12-28"
+            ],
+            "pass_tracks": [
+              "172D"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-12-28",
+            "water_km2": 4.16,
+            "water_cells": 777,
+            "observed_km2": 11894.4,
+            "outside_floodplain_pct": 12.8,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-12-28"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251227 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251226 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251225 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "days": [
+                "2025-12-16",
+                "2025-12-17",
+                "2025-12-18",
+                "2025-12-19",
+                "2025-12-20"
+              ],
+              "max_tpi": {
+                "water_cells_scored": 777,
+                "alto_plus": {
+                  "hit_pct": 20.59,
+                  "area_pct": 0.755,
+                  "lift": 27.28,
+                  "ratio_vs_terrain": 1.269
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.031,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                }
+              },
+              "best_day": {
+                "alto_plus": {
+                  "day": "2025-12-17",
+                  "days_before": 11,
+                  "hit_pct": 20.59,
+                  "area_pct": 0.658,
+                  "lift": 31.3,
+                  "ratio_vs_terrain": 1.456
+                },
+                "critico": {
+                  "day": null,
+                  "days_before": null,
+                  "hit_pct": 0.0
+                }
+              },
+              "per_day": {
+                "2025-12-16": {
+                  "alto_plus": {
+                    "hit_pct": 1.03,
+                    "area_pct": 0.061,
+                    "lift": 16.97,
+                    "ratio_vs_terrain": 0.789
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.02,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-17": {
+                  "alto_plus": {
+                    "hit_pct": 20.59,
+                    "area_pct": 0.658,
+                    "lift": 31.3,
+                    "ratio_vs_terrain": 1.456
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.026,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-18": {
+                  "alto_plus": {
+                    "hit_pct": 0.39,
+                    "area_pct": 0.074,
+                    "lift": 5.25,
+                    "ratio_vs_terrain": 0.244
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.026,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-19": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.084,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.002,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-20": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.002,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                }
+              }
+            },
+            "gfs_window_12d": {
+              "frames": 15,
+              "best": {
+                "alto_plus": {
+                  "hit_pct": 0.0,
+                  "null_reason": "no frame with hit > area"
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "null_reason": "no frame with hit > area"
+                }
+              }
+            }
+          },
+          {
+            "pass": {
+              "date": "2025-12-28",
+              "track": "005A",
+              "id": "nisar_hh_20251228_005A",
+              "png": "wa_2025/png/nisar_hh_20251228_005A.png"
+            },
+            "decoded_db": {
+              "p1": -18.6,
+              "min": -25.0
+            },
+            "pass_dates": [
+              "2025-12-28"
+            ],
+            "pass_tracks": [
+              "005A"
+            ],
+            "reference": "NISAR water HH < -18 dB outside permanent water (single pass)",
+            "map_day": "2025-12-28",
+            "water_km2": 2.81,
+            "water_cells": 523,
+            "observed_km2": 10363.8,
+            "outside_floodplain_pct": 44.9,
+            "observed": {
+              "null_reason": "no observed TPI replay frame on 2025-12-28"
+            },
+            "forecast": {
+              "lead_1d": {
+                "null_reason": "no GFS run issued 20251227 (d1_flood)"
+              },
+              "lead_2d": {
+                "null_reason": "no GFS run issued 20251226 (d2_flood)"
+              },
+              "lead_3d": {
+                "null_reason": "no GFS run issued 20251225 (d3_flood)"
+              }
+            },
+            "window_12d": {
+              "days": [
+                "2025-12-16",
+                "2025-12-17",
+                "2025-12-18",
+                "2025-12-19",
+                "2025-12-20"
+              ],
+              "max_tpi": {
+                "water_cells_scored": 523,
+                "alto_plus": {
+                  "hit_pct": 13.77,
+                  "area_pct": 0.865,
+                  "lift": 15.92,
+                  "ratio_vs_terrain": 1.211
+                },
+                "critico": {
+                  "hit_pct": 0.0,
+                  "area_pct": 0.035,
+                  "lift": 0.0,
+                  "ratio_vs_terrain": 0.0
+                }
+              },
+              "best_day": {
+                "alto_plus": {
+                  "day": "2025-12-17",
+                  "days_before": 11,
+                  "hit_pct": 13.77,
+                  "area_pct": 0.754,
+                  "lift": 18.26,
+                  "ratio_vs_terrain": 1.389
+                },
+                "critico": {
+                  "day": null,
+                  "days_before": null,
+                  "hit_pct": 0.0
+                }
+              },
+              "per_day": {
+                "2025-12-16": {
+                  "alto_plus": {
+                    "hit_pct": 0.38,
+                    "area_pct": 0.07,
+                    "lift": 5.5,
+                    "ratio_vs_terrain": 0.418
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.023,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-17": {
+                  "alto_plus": {
+                    "hit_pct": 13.77,
+                    "area_pct": 0.754,
+                    "lift": 18.26,
+                    "ratio_vs_terrain": 1.389
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.03,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-18": {
+                  "alto_plus": {
+                    "hit_pct": 0.38,
+                    "area_pct": 0.084,
+                    "lift": 4.54,
+                    "ratio_vs_terrain": 0.345
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.029,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-19": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.096,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.002,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "2025-12-20": {
+                  "alto_plus": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.002,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.0,
+                    "lift": null,
+                    "ratio_vs_terrain": null
+                  }
+                }
+              }
+            },
+            "gfs_window_12d": {
+              "frames": 15,
+              "best": {
+                "alto_plus": {
+                  "issued": "2025-12-16",
+                  "lead_days": 1,
+                  "valid": "2025-12-17",
+                  "issued_days_before": 12,
+                  "valid_days_before": 11,
+                  "alto_plus": {
+                    "hit_pct": 5.74,
+                    "area_pct": 1.608,
+                    "lift": 3.57,
+                    "ratio_vs_terrain": 0.271
+                  },
+                  "critico": {
+                    "hit_pct": 0.0,
+                    "area_pct": 0.457,
+                    "lift": 0.0,
+                    "ratio_vs_terrain": 0.0
+                  }
+                },
+                "critico": {
+                  "issued": "2025-12-17",
+                  "lead_days": 2,
+                  "valid": "2025-12-19",
+                  "issued_days_before": 11,
+                  "valid_days_before": 9,
+                  "alto_plus": {
+                    "hit_pct": 5.74,
+                    "area_pct": 2.314,
+                    "lift": 2.48,
+                    "ratio_vs_terrain": 0.189
+                  },
+                  "critico": {
+                    "hit_pct": 5.35,
+                    "area_pct": 0.703,
+                    "lift": 7.62,
+                    "ratio_vs_terrain": 0.579
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "days": []
+      },
+      "nisar_agreement_pass_date": "2025-12-16",
+      "nisar_agreement_pass_track": "172D",
+      "nisar_agreement_water_km2": 2.0,
+      "nisar_agreement_outside_floodplain_pct": 9.9,
+      "nisar_agreement_obs_hit_pct": 3.21,
+      "nisar_agreement_obs_area_pct": 0.061,
+      "nisar_agreement_obs_lift": 52.87,
+      "nisar_agreement_obs_m1": 2.379,
+      "nisar_agreement_obs_critical_hit_pct": 0.0,
+      "nisar_agreement_obs_critical_area_pct": 0.02,
+      "nisar_agreement_obs_critical_lift": 0.0,
+      "nisar_agreement_obs_critical_m1": 0.0,
+      "nisar_agreement_fc1d_hit_pct": 0.0,
+      "nisar_agreement_fc1d_area_pct": 0.709,
+      "nisar_agreement_fc1d_lift": 0.0,
+      "nisar_agreement_fc1d_m1": 0.0,
+      "nisar_agreement_fc1d_critical_hit_pct": 0.0,
+      "nisar_agreement_fc1d_critical_area_pct": 0.334,
+      "nisar_agreement_fc1d_critical_lift": 0.0,
+      "nisar_agreement_fc1d_critical_m1": 0.0,
+      "nisar_agreement_fc2d_hit_pct": 0.0,
+      "nisar_agreement_fc2d_area_pct": 0.344,
+      "nisar_agreement_fc2d_lift": 0.0,
+      "nisar_agreement_fc2d_m1": 0.0,
+      "nisar_agreement_fc2d_critical_hit_pct": 0.0,
+      "nisar_agreement_fc2d_critical_area_pct": 0.167,
+      "nisar_agreement_fc2d_critical_lift": 0.0,
+      "nisar_agreement_fc2d_critical_m1": 0.0,
+      "nisar_agreement_fc3d_hit_pct": 0.0,
+      "nisar_agreement_fc3d_area_pct": 0.241,
+      "nisar_agreement_fc3d_lift": 0.0,
+      "nisar_agreement_fc3d_m1": 0.0,
+      "nisar_agreement_fc3d_critical_hit_pct": 0.0,
+      "nisar_agreement_fc3d_critical_area_pct": 0.066,
+      "nisar_agreement_fc3d_critical_lift": 0.0,
+      "nisar_agreement_fc3d_critical_m1": 0.0,
+      "nisar_agreement_win_best_day": "2025-12-13",
+      "nisar_agreement_win_days_before": 3,
+      "nisar_agreement_win_hit_pct": 79.41,
+      "nisar_agreement_win_area_pct": 5.517,
+      "nisar_agreement_win_lift": 14.39,
+      "nisar_agreement_win_m1": 0.874,
+      "nisar_agreement_winmax_hit_pct": 79.41,
+      "nisar_agreement_winmax_lift": 8.67,
+      "nisar_agreement_win_critical_best_day": "2025-12-12",
+      "nisar_agreement_win_critical_days_before": 4,
+      "nisar_agreement_win_critical_hit_pct": 50.53,
+      "nisar_agreement_win_critical_area_pct": 6.226,
+      "nisar_agreement_win_critical_lift": 8.12,
+      "nisar_agreement_win_critical_m1": 0.554,
+      "nisar_agreement_winmax_critical_hit_pct": 50.53,
+      "nisar_agreement_winmax_critical_lift": 8.12,
+      "nisar_agreement_gfswin_issued": "2025-12-11",
+      "nisar_agreement_gfswin_valid": "2025-12-12",
+      "nisar_agreement_gfswin_days_before": 5,
+      "nisar_agreement_gfswin_hit_pct": 71.12,
+      "nisar_agreement_gfswin_lift": 11.6,
+      "nisar_agreement_gfswin_critical_issued": "2025-12-11",
+      "nisar_agreement_gfswin_critical_valid": "2025-12-12",
+      "nisar_agreement_gfswin_critical_days_before": 5,
+      "nisar_agreement_gfswin_critical_hit_pct": 15.78,
+      "nisar_agreement_gfswin_critical_lift": 6.59
     },
     "rs_2024": {
       "event": "rs-2024-05",
