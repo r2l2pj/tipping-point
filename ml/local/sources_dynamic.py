@@ -1184,6 +1184,9 @@ _SMAP_POINT_BLOCK = 22     # ~2 deg per clustered window (22 * ~0.09 deg)
 def fetch_smap_points(lon, lat, dates, workers: int = 8) -> Path:
     """Per-date npz of the 4 soil vars at each point's SMAP cell.
 
+    ``dates`` aligned with lon/lat (same length) = (point, date) pairs;
+    otherwise every point is fetched on every date.
+
     For each date the requested points are deduplicated onto cells,
     clustered into <=~2 deg index windows (22x22 blocks) and fetched in
     one combined OPeNDAP request per window.
@@ -1193,7 +1196,16 @@ def fetch_smap_points(lon, lat, dates, workers: int = 8) -> Path:
         return settings.path("smap_points")
     pdir = settings.path("smap_points")
     rows, cols = _smap_rc(lon, lat)
-    pixels = np.unique(np.stack([rows, cols], axis=1), axis=0)
+    d_all = _as_dates(dates)
+    # pixels needed PER DATE (not the union over all dates — that requested every
+    # point's block on every date: hundreds of OPeNDAP calls per day)
+    want: dict = {}
+    if len(d_all) == len(rows):          # aligned (point_i, date_i) pairs
+        for d, r, c in zip(d_all, rows, cols, strict=True):
+            want.setdefault(d, set()).add((int(r), int(c)))
+    else:                                # every point on every date (CLI)
+        allpix = {(int(r), int(c)) for r, c in zip(rows, cols, strict=True)}
+        want = {d: allpix for d in set(d_all)}
     row_lats, col_lons = _smap_axes()
     urs = _cmr_filemap("SPL4SMGP", "008", days[0].tolist(),
                        days[-1].tolist(),
@@ -1210,32 +1222,34 @@ def fetch_smap_points(lon, lat, dates, workers: int = 8) -> Path:
     def _work(d) -> str:
         key = str(d).replace("-", "")
         outp = pdir / f"{key}.npz"
-        if outp.exists():
+        have: dict = {}
+        if outp.exists():   # merge: fetch only pixels this day file lacks
+            z = dict(np.load(outp))
+            for k, (r, c) in enumerate(zip(z["rows"], z["cols"], strict=True)):
+                have[(int(r), int(c))] = {v: float(z[v][k]) for v in SMAP_VARS}
+        need = sorted(want.get(d, set()) - set(have))
+        if not need:
             return "cached"
         if d.tolist() not in urs:
             return "no-granule"
         base = f"{OPENDAP}/{SMAP_GPH_COLLECTION}/granules/{urs[d.tolist()]}"
         blocks: dict[tuple[int, int], list[tuple[int, int]]] = {}
-        for r, c in pixels:
-            blocks.setdefault((int(r) // _SMAP_POINT_BLOCK,
-                              int(c) // _SMAP_POINT_BLOCK), []).append(
-                (int(r), int(c)))
-        val = {v: {} for v in SMAP_VARS}
+        for r, c in need:
+            blocks.setdefault((r // _SMAP_POINT_BLOCK, c // _SMAP_POINT_BLOCK), []).append((r, c))
         for pix in blocks.values():
             pr = [p[0] for p in pix]
             pc = [p[1] for p in pix]
             r0, r1, c0, c1 = min(pr), max(pr), min(pc), max(pc)
-            got = _smap_dap_vars(base, var_fq, r0, r1, c0, c1,
-                                 coords=False)
+            got = _smap_dap_vars(base, var_fq, r0, r1, c0, c1, coords=False)
             for r, c in pix:
-                for v in SMAP_VARS:
-                    val[v][(r, c)] = float(got[v][r - r0, c - c0])
+                have[(r, c)] = {v: float(got[v][r - r0, c - c0]) for v in SMAP_VARS}
+        px = np.array(sorted(have), dtype=np.int64).reshape(-1, 2)
         _save_npz(outp,
-                  rows=pixels[:, 0], cols=pixels[:, 1],
-                  lats=row_lats[pixels[:, 0]].astype(np.float64),
-                  lons=col_lons[pixels[:, 1]].astype(np.float64),
-                  **{v: np.array([val[v][tuple(p)] for p in pixels],
-                                 np.float32) for v in SMAP_VARS})
+                  rows=px[:, 0], cols=px[:, 1],
+                  lats=row_lats[px[:, 0]].astype(np.float64),
+                  lons=col_lons[px[:, 1]].astype(np.float64),
+                  **{v: np.array([have[tuple(p)][v] for p in px], np.float32)
+                     for v in SMAP_VARS})
         return "ok"
 
     done = 0
