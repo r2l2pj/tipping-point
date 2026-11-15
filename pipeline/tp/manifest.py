@@ -225,6 +225,12 @@ def _products(event_id: str, case_id: str, case_dir: Path) -> tuple[dict, dict]:
         f"{case_id}/series/swot.json" if series.exists() else None)
     if not series.exists():
         reasons["swot_series"] = "no SWOT reach series for this case"
+    # science review 2026-11-15: NISAR flood polygons are CANDIDATES, never
+    # confirmed. 'flood_candidates' is the contract key; 'flood_confirmed'
+    # stays one cycle as a deprecated alias (same file / same reason).
+    products["flood_candidates"] = products.get("flood_confirmed")
+    if "flood_confirmed" in reasons:
+        reasons["flood_candidates"] = reasons["flood_confirmed"]
     return products, reasons
 
 
@@ -277,6 +283,8 @@ def build_case_node(event_id: str, data_root: Path | str = DATA_DIR) -> dict:
         "metrics": metrics,
         "data_dates": _data_dates(event_id, case_dir),
         "products": products,
+        "_deprecated": {"products.flood_confirmed": "alias of products.flood_candidates "
+                                                    "(NISAR polygons are candidates); removed next cycle"},
         "_null_reasons": reasons,
     }
 

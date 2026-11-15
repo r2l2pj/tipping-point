@@ -12,13 +12,13 @@ LEGEND = ["Baixo", "Moderado", "Alto", "Crítico"]
 
 # data/SCHEMA.md per-case node + layer field lists.
 NODE_KEYS = {"event_id", "mode", "bounds", "forecast_source", "data_basis", "layers",
-             "metrics", "data_dates", "products", "_null_reasons"}
+             "metrics", "data_dates", "products", "_deprecated", "_null_reasons"}
 LAYER_KEYS = {"id", "date", "png", "cog", "legend", "bounds", "forecast",
               "issued", "forecast_source", "kind", "upper_bound",
               "critical_km2", "people_critical", "_null_reasons"}
 PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
                  "swot_reference", "swot_series",
-                 "priority_zones", "permanent_water", "flood_confirmed",
+                 "priority_zones", "permanent_water", "flood_confirmed", "flood_candidates",
                  "landslide_candidates"}
 
 

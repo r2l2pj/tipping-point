@@ -94,3 +94,23 @@ def test_units():
     assert ss.unit_for("flooded_km2") == "km2" and ss.unit_for("hit_500m_pct") == "%"
     assert ss.unit_for("lead_time_median_h") == "h" and ss.unit_for("people_flooded") == "persons"
     assert ss.unit_for("scar_people") == "persons" and ss.unit_for("flood_source") is None
+
+
+def test_runs_keep_one_row_per_now_run(tmp_path):
+    d = tmp_path / "data"
+    d.mkdir()
+    (d / "now").mkdir()
+
+    def run(ts):
+        (d / "now" / "manifest.json").write_text(json.dumps(
+            {"updated_at": ts, "verified": True, "data_dates": {"imerg": ts[:10]}}))
+        return ss.build(d)
+
+    run("2026-11-15T08:00:00Z")
+    run("2026-11-15T11:00:00Z")
+    c = run("2026-11-15T11:00:00Z")                      # same run rebuilt: no duplicate
+    con = sqlite3.connect(d / "tipping_point.sqlite")
+    ids = [r[0] for r in con.execute("SELECT run_id FROM runs WHERE kind='now' ORDER BY run_id")]
+    con.close()
+    assert ids == ["2026-11-15T08:00:00Z", "2026-11-15T11:00:00Z"]
+    assert c["runs_carried"] == 2

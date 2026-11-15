@@ -228,7 +228,13 @@ jobs:
         continue-on-error: true
         env:
           PYTHONPATH: pipeline
-        run: uv run python tools/build_sqlite.py
+        run: |
+          # runs history: start from the published database so its 'runs'
+          # table keeps one row per Now run (fallback is a single orphan commit)
+          curl -fsSL -o data/tipping_point.sqlite \
+            "https://raw.githubusercontent.com/${{ github.repository }}/fallback/data/tipping_point.sqlite" \
+            || echo "no previous sqlite on fallback - runs history starts here"
+          uv run python tools/build_sqlite.py
 
       # L26: GitHub 'fallback' branch is the primary data host (one
       # force-pushed orphan snapshot per run, app-facing files only,

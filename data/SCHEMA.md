@@ -542,17 +542,30 @@ Paths inside this file are relative to `data/now/`. Layers are
 
 ```json
 { "generated_at": "...",
-  "critical_km2": { "slide": 0.0, "flood": 0.0, "any": 0.0 },
-  "people_critical": 0,
-  "people_exposed": 0,
+  "critical_km2": { "slide": 0.0, "flood": 0.0, "any": 0.0, "any_today_or_d1": 0.0 },
+  "alert_km2":    { "slide": 0.0, "flood": 0.0, "any": 0.0, "any_today_or_d1": 0.0 },
+  "critical_km2_def": "...", "alert_km2_def": "...",
+  "stats_domain": "Brazilian land in the bbox (...)", "stats_domain_km2": 0.0,
+  "people_critical": 0, "people_alert": 0, "people_exposed": 0,
   "forecast_source": "noaa-gfs",
-  "classes_km2": { "Baixo": 0.0, "Moderado": 0.0, "Alto": 0.0, "Crítico": 0.0 },
+  "classes_km2": { "landslide": { "Baixo": 0.0, "Moderado": 0.0, "Alto": 0.0, "Crítico": 0.0 },
+                   "flood": { ... } },
   "data_dates": { "imerg": "...", "smap": "...", "smap_granule": "...",
     "smap_age_days": 5, "smap_label": "...", "gfs_issued": "..." } }
 ```
 
-`people_critical` and `people_exposed` are both emitted with the same value
-(the flat metrics key and the legacy alias).
+A8 (2026-11-15): `critical_km2` = class **Crítico only** (TPI > 0.6);
+`alert_km2` = Alto or Crítico (TPI > 0.4, "High or above"); `people_critical`
+= people in Crítico cells today or D+1, `people_alert` / `people_exposed` = in
+Alto+ cells. All class / critical / alert / nodata areas cover **Brazilian
+land only** (`stats_domain`: IBGE outline minus MCD12Q1 water); the map layers
+still cover the whole bbox. `response/summary.json` and the priority-zone
+properties follow the same split (`critical_km2` / `people_critical` Crítico,
+`alert_km2` / `people_alert` Alto+).
+
+Replay case nodes: `products.flood_candidates` is the contract key for the
+NISAR flood polygons (candidates, never confirmed); `products.flood_confirmed`
+is a deprecated alias for one cycle (`_deprecated` says so).
 
 ### `data/now/alerts.json`
 
@@ -718,7 +731,7 @@ and queries only. Missing inputs leave a table empty and are listed in
 | `series` | case_id, date, var, value | `<case>/series/imerg_smap_daily.json`, long format (numeric vars only) |
 | `zones` | run_id, municipality, code, uf, hazard, area_km2, people, class, rank | `now/geojson/priority_zones.geojson` (run_id = now `updated_at`), `<case>/geojson/priority_zones.geojson` (run_id = case) |
 | `response_candidates` | run_id, source, hazard, area_km2, people, municipality, confidence, status, acquired, lon, lat | `now/response/flood_dswx`, `flood_nisar`, `landslide_dist` and `rs_2024/geojson/landslide_candidates` (lon/lat = representative point; all `status = candidate`) |
-| `runs` | run_id, kind (now / replay), updated_at, verified (0/1), data_dates (JSON) | `now/manifest.json`, root `manifest.json` |
+| `runs` | run_id, kind (now / replay), updated_at, verified (0/1), data_dates (JSON) | `now/manifest.json`, root `manifest.json`; **one row per Now run** — earlier `now` rows are carried over from the previous database (CI downloads it from the fallback branch before rebuilding) |
 | `build_notes` | item, note | build time + missing inputs |
 
 Units come from the key suffix (`_km2` km², `_pct` %, `_h` h, `_mm` mm, `_m` m,
