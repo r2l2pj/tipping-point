@@ -624,7 +624,7 @@ def score(
                     "download_url",
                 )
             }
-            for mp in meta["products"]
+            for mp in meta.get("products", [])
         ],
         "headline": {
             "image_date_utc": headline_date,
