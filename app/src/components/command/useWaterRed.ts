@@ -108,3 +108,14 @@ export function useTintedUrl(url: string | undefined, rgb: readonly [number, num
   }, [url, r, g, b]);
   return url && done?.src === url ? done.out : undefined;
 }
+
+// The NISAR compare mode ('side' | 'change'), kept across the overlay's
+// re-mounts (a new pass pair re-mounts it).
+export type CompareMode = "side" | "change";
+let cmode: CompareMode = "side";
+const csubs = new Set<() => void>();
+const setCompareMode = (m: CompareMode) => { cmode = m; csubs.forEach((f) => f()); };
+export function useCompareMode(): [CompareMode, (m: CompareMode) => void] {
+  const m = useSyncExternalStore((f) => { csubs.add(f); return () => { csubs.delete(f); }; }, () => cmode, () => "side" as CompareMode);
+  return [m, setCompareMode];
+}

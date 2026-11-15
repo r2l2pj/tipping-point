@@ -56,7 +56,7 @@ import TopBar, { type View } from "./TopBar";
 import { useGeo } from "./useGeo";
 import { useInsets } from "./useInsets";
 import { agreementText, nisarAgreement } from "./model/floodNisar";
-import { requestRadarPass } from "./useRadarPick";
+import { requestRadarPass, useRadarPassRequest } from "./useRadarPick";
 
 export interface CommandCenterProps {
   cases: CcBundle[];
@@ -275,6 +275,7 @@ export function CommandCenterView({
     [loaded, fullZones, zonesUrl, scars, scarsUrl]
   );
   const steps = useMemo(() => stepsFor(bundle), [bundle]);
+  const passReq = useRadarPassRequest(); // river's dance: the bar asked for
   // places_daily (lead-analysis, tipping-point/places-daily@1): the shown
   // step day's observed flood class per municipality — replay only.
   const dailyUrl = bundle?.mode === "replay" ? placesDailyUrl(bundle) : undefined;
@@ -655,7 +656,9 @@ export function CommandCenterView({
                   radar={radar}
                   dance={bundle.riverDance ? {
                     d: bundle.riverDance,
-                    selected: step?.date,
+                    // The pass on the map: a bar's pass while the timeline sits on
+                    // the day it moved to (a pass outside the timeline), else the day.
+                    selected: passReq && passReq.forDay === step?.date.slice(0, 10) ? passReq.date : step?.date.slice(0, 10),
                     // A bar: that day on the timeline, the Radar — NISAR view,
                     // and that exact pass (date + track) on the map.
                     onPass: (date: string, track?: string) => {

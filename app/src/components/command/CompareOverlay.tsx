@@ -7,7 +7,7 @@ import {
   type ImageSource,
   type Map as MapInstance,
 } from "maplibre-gl";
-import { setRadarLook, useRadarLook, useWaterUrl } from "./useWaterRed";
+import { setRadarLook, useCompareMode, useRadarLook, useWaterUrl } from "./useWaterRed";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { boundsToImageCoordinates } from "@/lib/tpi";
@@ -74,7 +74,11 @@ export default function CompareOverlay({
   const sel = "h-7 max-w-[12rem] rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold";
   // Lucas: NISAR before/after can show the classic change composite (one
   // map, red = new water) — only for a same-track, same-pol NISAR pair.
-  const [mode, setMode] = useState<"side" | "change">("side");
+  // Lucas (demo bug): the overlay is re-mounted for every new pair (MapStage
+  // keys it by the image URLs), which reset this to "side" — picking a pass
+  // in the Change view threw you back to Side by side and the change picture
+  // never updated. The mode lives outside the component now.
+  const [mode, setMode] = useCompareMode();
   const bothNisarSides = !!sidesCtl && sidesCtl.sides.L.layer === "nisar" && sidesCtl.sides.R.layer === "nisar";
   const changeBlocked = sidesCtl ? changeBlockedReason(sidesCtl.sides.L, sidesCtl.sides.R) : "Change view needs two NISAR passes";
   const changeOn = mode === "change" && bothNisarSides && !changeBlocked && !!pair.before.url && !!pair.after.url;
