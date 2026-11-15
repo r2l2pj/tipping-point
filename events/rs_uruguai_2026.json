@@ -246,5 +246,62 @@
     "collections": "NISAR_L2_GCOV_PROVISIONAL_V1 (to cycle 033: Sep 18, Sep 30, Oct 12) + NISAR_L2_GCOV_V1 (034+: Oct 24, Nov 5); context passes 060A Oct 28, 082D Oct 29, 132A Nov 2",
     "access": "HDF5 chunk range reads over HTTPS via tp.response_nisar.open_gcov/block_average (no full-granule download)"
   },
-  "tpi_replay_note": "Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) read Critical over the Uruguay River corridor in the bands of Sep 30 – Oct 2 (rain Sep 28–30; up to 813 km² Critical), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 9 & 11 before the Oct 16 crest. The NOAA GFS run of Sep 29 showed High for Sep 30, the Sep 30 run Critical for Oct 1, the Oct 2 run High for Oct 3–5. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof)."
+  "tpi_replay_note": "Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) read Critical over the Uruguay River corridor in the bands of Sep 30 – Oct 2 (rain Sep 28–30; up to 813 km² Critical), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 9 & 11 before the Oct 16 crest. The NOAA GFS run of Sep 29 showed High for Sep 30, the Sep 30 run Critical for Oct 1, the Oct 2 run High for Oct 3–5. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof).",
+  "timeline_marks": [
+    {
+      "date": "2026-09-18",
+      "label": "NISAR pass (track 010 D)",
+      "kind": "nisar"
+    },
+    {
+      "date": "2026-09-30",
+      "label": "Local flood index Critical over the river corridor (rain Sep 28–30)",
+      "kind": "signal"
+    },
+    {
+      "date": "2026-09-30",
+      "label": "Upstream-basin rain ≥ 99th percentile in the Sep 30 forecast (retrospective test)",
+      "kind": "signal"
+    },
+    {
+      "date": "2026-09-30",
+      "label": "NISAR pass (track 010 D)",
+      "kind": "nisar"
+    },
+    {
+      "date": "2026-10-05",
+      "label": "Uruguaiana above flood stage 8.50 m (ANA gauge 77150000)",
+      "kind": "event"
+    },
+    {
+      "date": "2026-10-08",
+      "label": "Itaqui: 29 people displaced (press)",
+      "kind": "event"
+    },
+    {
+      "date": "2026-10-12",
+      "label": "NISAR pass (track 010 D)",
+      "kind": "nisar"
+    },
+    {
+      "date": "2026-10-16",
+      "label": "Crest 10.02 m at Uruguaiana (ANA)",
+      "kind": "event"
+    },
+    {
+      "date": "2026-10-24",
+      "label": "NISAR pass (track 010 D)",
+      "kind": "nisar"
+    },
+    {
+      "date": "2026-10-29",
+      "label": "Uruguaiana above flood stage again (ANA)",
+      "kind": "event"
+    },
+    {
+      "date": "2026-11-05",
+      "label": "NISAR pass (track 010 D)",
+      "kind": "nisar"
+    }
+  ]
 }

@@ -35,7 +35,64 @@
         -29.05
       ],
       "reference_date": "2026-10-12",
-      "layers": []
+      "layers": [],
+      "timeline_marks": [
+        {
+          "date": "2026-09-18",
+          "label": "NISAR pass (track 010 D)",
+          "kind": "nisar"
+        },
+        {
+          "date": "2026-09-30",
+          "label": "Local flood index Critical over the river corridor (rain Sep 28–30)",
+          "kind": "signal"
+        },
+        {
+          "date": "2026-09-30",
+          "label": "Upstream-basin rain ≥ 99th percentile in the Sep 30 forecast (retrospective test)",
+          "kind": "signal"
+        },
+        {
+          "date": "2026-09-30",
+          "label": "NISAR pass (track 010 D)",
+          "kind": "nisar"
+        },
+        {
+          "date": "2026-10-05",
+          "label": "Uruguaiana above flood stage 8.50 m (ANA gauge 77150000)",
+          "kind": "event"
+        },
+        {
+          "date": "2026-10-08",
+          "label": "Itaqui: 29 people displaced (press)",
+          "kind": "event"
+        },
+        {
+          "date": "2026-10-12",
+          "label": "NISAR pass (track 010 D)",
+          "kind": "nisar"
+        },
+        {
+          "date": "2026-10-16",
+          "label": "Crest 10.02 m at Uruguaiana (ANA)",
+          "kind": "event"
+        },
+        {
+          "date": "2026-10-24",
+          "label": "NISAR pass (track 010 D)",
+          "kind": "nisar"
+        },
+        {
+          "date": "2026-10-29",
+          "label": "Uruguaiana above flood stage again (ANA)",
+          "kind": "event"
+        },
+        {
+          "date": "2026-11-05",
+          "label": "NISAR pass (track 010 D)",
+          "kind": "nisar"
+        }
+      ]
     }
   ]
 }
