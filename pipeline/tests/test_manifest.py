@@ -13,7 +13,8 @@ LEGEND = ["Baixo", "Moderado", "Alto", "Crítico"]
 NODE_KEYS = {"event_id", "mode", "bounds", "forecast_source", "data_basis", "layers",
              "metrics", "data_dates", "products", "_null_reasons"}
 LAYER_KEYS = {"id", "date", "png", "cog", "legend", "bounds", "forecast",
-              "issued", "forecast_source", "kind", "upper_bound"}
+              "issued", "forecast_source", "kind", "upper_bound",
+              "critical_km2", "people_critical", "_null_reasons"}
 PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
                  "swot_reference", "swot_series",
                  "priority_zones", "permanent_water", "flood_confirmed",
@@ -98,6 +99,35 @@ def test_index_supplies_verbatim_layer_fields(tmp_path):
     assert hill["png"] is None
     assert hill["cog"] == "wa_2025/cog/wa_2025_hillshade_20251201.tif"
     assert "forecast" not in hill
+
+
+def test_gfs_layer_critical_stats_copied_from_index(tmp_path):
+    root = _data_root(tmp_path, "rs_2024")
+    gfs = {"date": "2024-04-24", "issued": "2024-04-23",
+           "cog": "rs_2024/cog/rs_2024_tpi_gfs_20240423.tif",
+           "bounds": [-52.5, -30.5, -50.5, -29.0], "forecast": True,
+           "forecast_source": "noaa-gfs", "kind": "forecast"}
+    index = {"layers": [
+        {**gfs, "id": "tpi_slide_gfs_d1",
+         "png": "rs_2024/png/tpi_slide_gfs_d1_20240424.png",
+         "critical_km2": 183.962, "people_critical": 5976},
+        {**gfs, "id": "tpi_flood_gfs_d1",
+         "png": "rs_2024/png/tpi_flood_gfs_d1_20240424.png",
+         "critical_km2": 11.557, "people_critical": None,
+         "_null_reasons": {"people_critical": "no population COG (GPW)"}},
+    ]}
+    (root / "rs_2024" / "png" / "_index.json").write_text(json.dumps(index))
+    node = manifest.build_case_node("rs-2024-05", root)
+    by_id = {l["id"]: l for l in node["layers"]}
+    slide, flood = by_id["tpi_slide_gfs_d1"], by_id["tpi_flood_gfs_d1"]
+    assert set(slide) <= LAYER_KEYS and set(flood) <= LAYER_KEYS
+    assert slide["critical_km2"] == 183.962
+    assert slide["people_critical"] == 5976
+    assert "_null_reasons" not in slide
+    assert flood["people_critical"] is None
+    assert flood["_null_reasons"] == {"people_critical": "no population COG (GPW)"}
+    # non-GFS layers never pick the fields up
+    assert "critical_km2" not in by_id["tpi_slide"]
 
 
 def test_cog_only_layers_listed_when_cog_exists(tmp_path):
