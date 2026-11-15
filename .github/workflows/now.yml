@@ -1,8 +1,9 @@
 name: modo-agora
 
-# Modo Agora — keeps the GEE now/ assets current every 3 h (L8: GEE assets are
-# the source of truth; the job also exports the last-good static fallback).
-# On failure the previous commit of data/ stays live.
+# Modo Agora — refreshes data/now every 3 h (L20/L25: local TPI from
+# IMERG Early + SMAP L4 + GFS, no GEE at runtime; L26: GitHub 'fallback'
+# branch is the primary data host, Neon best-effort secondary).
+# On failure the previous fallback snapshot stays live.
 
 on:
   schedule:
@@ -66,7 +67,16 @@ jobs:
           NOW_LOCAL: "1"
         run: uv run python live/jobs.py now
 
+      # L26: GitHub 'fallback' branch is the primary data host (one
+      # force-pushed orphan snapshot per run, app-facing files only,
+      # >50 MB -> release asset). Neon publish is best-effort secondary.
+      - name: Publish data/ to fallback branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: uv run python live/publish_fallback.py
+
       - name: Publish data/ to Neon storage
+        continue-on-error: true
         env:
           NEON_S3_ENDPOINT: ${{ secrets.NEON_S3_ENDPOINT }}
           NEON_S3_ACCESS_KEY_ID: ${{ secrets.NEON_S3_ACCESS_KEY_ID }}
@@ -74,6 +84,3 @@ jobs:
           NEON_S3_REGION: ${{ secrets.NEON_S3_REGION }}
           NEON_S3_BUCKET: ${{ secrets.NEON_S3_BUCKET }}
         run: bash live/publish_s3.sh
-
-      - name: Publish data/ to fallback branch
-        run: uv run python live/publish_fallback.py

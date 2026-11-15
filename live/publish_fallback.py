@@ -24,35 +24,65 @@ def git(*args: str, cwd: Path = ROOT, allowed: tuple[int, ...] = (0,)):
     return result
 
 
+def _app_facing(path: Path, source: Path) -> bool:
+    """L26: only app-facing files go to the fallback branch — manifests,
+    frames, COGs, geojson, metrics. Raw granules/intermediates never do."""
+    rel = path.relative_to(source)
+    return "raw" not in rel.parts
+
+
+def upload_release_assets(paths: list[Path], source: Path) -> None:
+    """L26: >max_mb files go to a `fallback-assets` GitHub release instead
+    of the branch. Best-effort: needs `gh` + a push-capable token."""
+    if not paths or not shutil.which("gh"):
+        return
+    subprocess.run(["gh", "release", "create", "fallback-assets", "--latest=false",
+                    "--title", "fallback data assets", "--notes",
+                    "Oversized app-facing files referenced by the fallback branch."],
+                   cwd=source, capture_output=True, text=True, check=False)
+    for path in paths:
+        rel = path.relative_to(source).as_posix()
+        subprocess.run(["gh", "release", "upload", "fallback-assets", str(path),
+                        "--clobber", "--name", rel.replace("/", "__")],
+                       cwd=source, capture_output=True, text=True, check=False)
+
+
 def sync_data(source: Path, target: Path, max_mb: float) -> int:
-    skipped = set()
+    excluded, released = set(), []
     for path in source.rglob("*"):
-        if path.is_file() and path.stat().st_size > max_mb * 1024 * 1024:
-            skipped.add(path.relative_to(source))
-            print(f"WARNING: skipping oversized file {path.relative_to(source)}")
+        if not path.is_file():
+            continue
+        rel = path.relative_to(source)
+        if not _app_facing(path, source):
+            excluded.add(rel)
+        elif path.stat().st_size > max_mb * 1024 * 1024:
+            excluded.add(rel)
+            released.append(path)
+            print(f"WARNING: {rel} over {max_mb:g} MB (-> release asset)")
+    upload_release_assets(released, source)
     if rsync := shutil.which("rsync"):
         result = subprocess.run(
-            [rsync, "-a",
-             *(f"--exclude=/{path.as_posix()}" for path in sorted(skipped)),
+            [rsync, "-a", "--delete", "--delete-excluded",
+             *(f"--exclude=/{path.as_posix()}" for path in sorted(excluded)),
              f"{source}/", f"{target}/"], capture_output=True, text=True, check=False)
         if result.returncode:
             raise SystemExit(f"ERROR: rsync failed (exit {result.returncode})")
-        print(f"snapshot: skipped {len(skipped)} oversized files")
-        return len(skipped)
-
-    def ignore(directory, names):
-        return [name for name in names
-                if (Path(directory) / name).relative_to(source) in skipped]
-
-    shutil.copytree(source, target, dirs_exist_ok=True, ignore=ignore)
-    print(f"snapshot: skipped {len(skipped)} oversized files")
-    return len(skipped)
+    else:
+        def ignore(directory, names):
+            return [name for name in names
+                    if (Path(directory) / name).relative_to(source) in excluded]
+        if target.is_dir():
+            shutil.rmtree(target)
+        shutil.copytree(source, target, ignore=ignore)
+    print(f"snapshot: excluded {len(excluded)} files "
+          f"({len(released)} oversized)")
+    return len(released)
 
 
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--max-mb", type=float, default=10)
+    parser.add_argument("--max-mb", type=float, default=50)
     args = parser.parse_args(argv)
     if not 0 < args.max_mb < float("inf"):
         parser.error("--max-mb must be positive and finite")
