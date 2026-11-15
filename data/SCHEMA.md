@@ -402,6 +402,13 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   written `null` must have a reason. `tp.metrics.merge_metrics` merges
   atomically into the root file keyed by case: never drops keys or cases,
   never overwrites a written non-null value.
+- `withdrawn` — `{ "<key>": { "value": <old>, "reason": "<decision id + why>" } }`
+  inside each case blob: a published value retired by a ruling (e.g. L32/L33
+  for the v1 ML scores), kept for audit; the live key then carries the v2
+  replacement (or `null` + `_null_reasons.<key>`). Nested paths appear as
+  dotted names (e.g. `landslide_ml.t_ml`).
+- `_sources` — `{ "<key>": "<exact source file#key.path>" }` inside each
+  case blob: where each replaced value was copied from.
 - `iou`/`f1`/AUCs are 0–1 ratios; `*_pct` keys are 0–100 (the app normalizes
   `> 1` values to 0–1 for display).
 - Flood validation vs OPERA DSWx (wa_2025), one key set:
@@ -414,6 +421,10 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   optical DSWx-HLS all-water, mostly cloud (`hls_method`, `cloud_pct`,
   `cloud_pct_source`). `tools/validation_metrics.py` writes only `*_raw` and
   `hls_*`; the headline keys are never overwritten by the all-water run.
+  `confusion_km2`/`confusion_raw_km2`/`hls_confusion_km2` carry the same
+  counts as geodesic areas (px × true geodesic pixel area at the AOI-mean
+  latitude — see `validation_area_note`: a 30 m nominal lattice pixel is
+  ~600 m² at ~48°N, not 900 m²).
 - rs_2024 optical cloud (`tools/validation_metrics.py` task B): `cloud_pct`
   (100 − `cloud_free_pct`), `hls_scenes` (count), `hls_scene_dates` (UTC dates
   of those HLS L30/S30 scenes over the AOI) and `cloud_pct_source` (product,
@@ -427,7 +438,12 @@ at its blob via the `metrics` field (`"metrics.json#rs_2024"`).
   reported only, `thresholds.hand_proxy_radius_m` is NOT rewritten),
   `hand_validation_radii` {radius_m: iou 0-1}; `hand_validation_by_radius`
   {radius_m: {iou, r, r_5k, n_px, low_proxy_pct,
-  low_merit_pct}} and `hand_validation_definition` (method text). Everything
+  low_merit_pct}} and `hand_validation_definition` (method text). The radius
+  actually served by the TPI is published alongside:
+  `hand_validation_served_radius_m` (= `thresholds.hand_proxy_radius_m`,
+  currently 1500), `hand_validation_served_iou`, `hand_validation_served_r`
+  (the same-radius entries of `hand_validation_by_radius`) and
+  `hand_validation_note` (one-line caveat). Everything
   is computed locally on ONE common grid: MERIT 'hnd' plus the three proxy
   bands (NASADEM z − focalMin(radius)) downloaded together via
   `getDownloadURL` (NPY, 90 m, EPSG:4326, clipped to the case AOI, tiled over
@@ -478,11 +494,11 @@ takes the ~90 m TPI cell that contains it; max over the window frames.
 
 | key | unit | compares |
 |---|---|---|
-| `flood_warned_pct` (wa) | % of NISAR-confirmed new-flood **area** (27.9 km²) | Alto+ in the L22 issued-GFS TPI_flood frames from 00Z runs 24-48 h before the anchor (headline) |
+| `flood_warned_pct` (wa) | % of NISAR-mapped new-flood-candidate **area** (27.9 km²) | Alto+ in the L22 issued-GFS TPI_flood frames from 00Z runs 24-48 h before the anchor (headline) |
 | `flood_warned_observed_pct` | same | Alto+ in observed TPI_flood bands dated anchor-2d..anchor-1d (latency ignored = upper bound) |
 | `flood_warned_critical_pct` | same | Crítico share of the headline window |
 | `slide_warned_pct` / `_observed_pct` / `_critical_pct` (rs) | % of the 16,027 inventory **points** | same rules with TPI_slide |
-| `flood_warned` / `slide_warned` | object | `definition`, `anchor_utc` + `anchor_source`, `observed`, `forecast_gfs`, `best_issued_gfs_before_anchor`, `by_issue_gfs[]`, `by_date_observed[]` (per-date curve), WA `explanation` |
+| `flood_warned` / `slide_warned` | object | `definition`, `anchor_utc` + `anchor_source`, `observed`, `forecast_gfs`, `best_issued_gfs_before_anchor`, `by_issue_gfs[]`, `by_date_observed[]` (per-date curve), WA `explanation`; WA `mapped_flood_km2` is an alias of `confirmed_flood_km2` (NISAR outputs are candidates, never confirmed — key name kept for contract stability) |
 
 Anchors (L37): the documented event **ONSET**, not the peak —
 `*_warned.anchor_basis = "onset"`, `*_warned_anchor_{basis,utc,source}` flat.

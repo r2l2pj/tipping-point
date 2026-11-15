@@ -1,7 +1,7 @@
 """Modo 3 "O alerta veio antes?": share of the damage that the TPI already
 flagged Alto/Crítico 24-72 h before the event ONSET (L37) — replay cases.
 
-  wa_2025 flood  — NISAR-confirmed new-flood AREA (cog/wa_2025_flood_nisar_*.tif,
+  wa_2025 flood  — NISAR-mapped new-flood-candidate AREA (cog/wa_2025_flood_nisar_*.tif,
                    GCOV post 2025-12-16) vs TPI_flood; onset = 2025-12-08 00:00 PST
                    (heavy rain begins, Skagit EOC activation 21:00 PST; WA EMD sitrep).
                    Sensitivity: King County FWC update 2025-12-09 00:35Z.
@@ -273,10 +273,11 @@ def run(data_root: Path) -> dict:
     on, *sens = ANCHORS["wa_2025"]
     canonical = float(json.loads((data_root / "metrics.json").read_text())["cases"]["wa_2025"]["flooded_km2"])
     out["wa_2025"] = {
-        "hazard": "flood", "unit": "% of confirmed flood area",
-        "definition": "share of the NISAR-confirmed new-flood AREA (GCOV, post 2025-12-16) with " + COMMON_DEF,
+        "hazard": "flood", "unit": "% of NISAR-mapped flood-candidate area",
+        "definition": "share of the NISAR-mapped new-flood-candidate AREA (GCOV, post 2025-12-16) with " + COMMON_DEF,
         "confirmed_flood_km2": round(float(w.sum()), 3),
-        "confirmed_flood_km2_label": (f"{float(w.sum()):.1f} km² of NISAR flood pixels on the ~12 m flood "
+        "mapped_flood_km2": round(float(w.sum()), 3),
+        "confirmed_flood_km2_label": (f"{float(w.sum()):.1f} km² of NISAR-mapped flood-candidate pixels on the ~12 m flood "
                                       "raster (the denominator); the canonical flooded_km2 "
                                       f"{canonical:.2f} km² is the polygon set within the swath"),
         "canonical_flooded_km2": round(canonical, 2),

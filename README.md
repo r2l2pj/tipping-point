@@ -1,9 +1,9 @@
 # tipping-point-data
 
 Data & analysis pipeline for **Tipping Point** — NASA Space Apps Challenge 2026,
-"Dancing with the SARs". **GPM + SMAP predict; NISAR confirms.** IMERG rain and
+"Dancing with the SARs". **GPM + SMAP predict; NISAR maps.** IMERG rain and
 SMAP soil wetness feed a daily Tipping Point Index (TPI) that warns of
-flood/landslide risk; NISAR radar acquisitions after the event confirm what
+flood/landslide risk; NISAR radar acquisitions after the event map what
 actually flooded or slid.
 
 Produces the artifacts in `data/` consumed by
@@ -116,12 +116,16 @@ uses NOAA GFS (`forecast_source: "noaa-gfs"`, L25) with SMAP held at the
 latest observation.
 
 Forecast lead time (L22, `data/<case>/forecast_lead_time.json`, mirrored in
-`metrics.json cases.<id>.forecast_lead_time`): an issue day "warns" when any
-D+1..D+3 frame dated on/before the damage anchor has a pixel with TPI > 0.6
-(slide or flood). Current values: **rs_2024 111 h** before the anchor
-(earliest issue 2024-04-23; 1 of 4 issue days that could score),
-**wa_2025 144.6 h** (earliest 2025-12-03; median 84.6 h, IQR 54.6–114.6 h,
-6 of 8). Issue days after the anchor cannot score and are not in the
+`metrics.json cases.<id>.forecast_lead_time`; onset-anchored version in
+`cases.<id>.forecast_lead_time_onset`): an issue day "warns" when any frame
+depicting a date on/before the documented event onset has a pixel with TPI
+> 0.6 (slide or flood) **anywhere in the AOI** — a lenient any-pixel test,
+not at the damage locations (see `*_warned` for those). Onset-anchored
+values (L37): **rs_2024 median 87 h** (onset 2024-04-29 00:00 BRT; earliest
+issue 2024-04-23, 147 h; 2 of 7 issue days warned), **wa_2025 median 80 h**
+(onset 2025-12-08 00:00 PST; earliest 2025-12-03, 128 h; 5 of 8 warned — all
+five from landslide cells somewhere in the AOI, none from the flooded
+valleys). Issue days after the onset cannot score and are not in the
 denominator; an issue day whose D−1 SMAP is missing is skipped and listed.
 Official warnings still came before the index — the project never claims
 earlier-than-official.
@@ -228,14 +232,18 @@ never download full frames. Dataset paths (spec D-102274/D-102272, see
 - GCOV `/science/LSAR/GCOV/grids/frequencyA/{HHHH,HVHV,mask,numberOfLooks}` (float32 linear gamma0)
 - GUNW `/science/LSAR/GUNW/grids/frequencyA/{wrappedInterferogram,unwrappedInterferogram}/HH/coherenceMagnitude`
 
-## ML scope (ruling A3)
+## ML scope (ruling A3; re-scored as v2 under L32/L33)
 
-The ML layer is an XGBoost landslide-trigger model producing the
-`hazard_slide_series` (LHASA-style, spatial-block CV, `seed: 42`
-everywhere). T stays the slope/HAND static terrain score — there is **no
-`t_ml.tif` and no T_ML this weekend**; that susceptibility layer is
-roadmap. MODIS land cover feeds ML features only and is **not** a TPI
-index input.
+Two ML layers: an XGBoost landslide **trigger** model producing P(trigger
+within 24/48/72 h, 7 d) — v2 served `xgb_rain_soil`, evaluated on held-out
+events with GFS scored only on issue days that have an archived run — and a
+**T_ML susceptibility** layer (`data/ml/t_ml_v2.json`, served `xgb_all`,
+3a TEST ROC-AUC 0.93 on held-out Brazilian event slides). v2 was retrained
+without RS 2024 after L32 found the v1 TEST had leaked RS 2024 points; all
+v1 scores are kept under `metrics.json cases.rs_2024.withdrawn` with
+reasons, and each replacement's exact source is cited in `_sources`. TPI's
+T stays the slope/HAND static terrain score; MODIS land cover feeds ML
+features only and is **not** a TPI index input.
 
 ## Declared limitations
 
@@ -275,16 +283,18 @@ index input.
   before/after change on the same frame.
 
 - "Did the alert come before?" (Modo 3, `tools/warned_before.py`, metrics
-  `flood_warned*` / `slide_warned*`): RS 2024 — 88.1 % of the 16,027
-  inventory landslides were Alto+ (69.1 % Crítico) in the NOAA GFS frames
-  issued 24-48 h before 2024-05-01 (observed frames 88.8 % / 73.5 %).
-  WA 2025 — only 0.1 % of the 27.9 km² NISAR-confirmed flood was Alto+
-  24-48 h before the first damage report (0.0 % observed); the flooded
-  valley floors went Alto+ only from the 2025-12-10 frame (41 %, then 89 %
-  and 99 %). The TPI is pixel-local: those pixels had high T_flood but no
-  local extreme rain; the river flood came from rain upstream in the
-  Cascades, which R does not route. RS 2024 has no flood reference map, so
-  its flood equivalent is null.
+  `flood_warned*` / `slide_warned*`, anchored on the documented event onset
+  per L37): RS 2024 — 36.45 % of the 16,027 inventory landslides were Alto+
+  (1.87 % Crítico) in the NOAA GFS 00Z run issued 2024-04-28, **27 h before
+  the 2024-04-29 onset**; the runs issued 48 h and 72 h before showed 0 %,
+  and the observed band 24 h before onset had 0.25 % (`slide_warned*`).
+  WA 2025 — 0 % of the 27.9 km² NISAR-mapped flood candidates was Alto+ at
+  24/48 h and 0.14 % at 72 h before the 2025-12-08 onset (0 % observed;
+  `flood_warned*`): the flooded valley floors went Alto+ only from the
+  2025-12-10 frame (41 %, then 89 % and 99 %). The TPI is pixel-local:
+  those pixels had high T_flood but no local extreme rain; the river flood
+  came from rain upstream in the Cascades, which R does not route. RS 2024
+  has no flood reference map, so its flood equivalent is null.
 
 ## Use of AI
 
