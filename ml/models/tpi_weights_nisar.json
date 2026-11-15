@@ -1,0 +1,409 @@
+{
+ "what": "TPI_flood weights (wR, wS, wT) calibrated against NISAR flood maps",
+ "grid": {
+  "step": 0.05,
+  "wmin": 0.1,
+  "n": 121
+ },
+ "cases": {
+  "wa_2025": {
+   "reference": "NISAR flood candidates",
+   "days": [
+    "20251208",
+    "20251209",
+    "20251210",
+    "20251211",
+    "20251212"
+   ],
+   "n_domain_cells": 2199739,
+   "n_reference_cells": 8408
+  },
+  "rs_uruguai_2026": {
+   "reference": "NISAR new-water polygons",
+   "days": [
+    "20260928",
+    "20260929",
+    "20260930",
+    "20261001",
+    "20261002",
+    "20261003",
+    "20261004",
+    "20261005",
+    "20261006",
+    "20261007",
+    "20261008",
+    "20261009",
+    "20261010",
+    "20261011",
+    "20261012"
+   ],
+   "n_domain_cells": 6211,
+   "n_reference_cells": 17
+  },
+  "rs_2024": {
+   "reference": "Copernicus EMS EMSR720 (not NISAR)",
+   "days": [
+    "20240429",
+    "20240430",
+    "20240501",
+    "20240502",
+    "20240503",
+    "20240504",
+    "20240505"
+   ],
+   "n_domain_cells": 33749,
+   "n_reference_cells": 4588
+  }
+ },
+ "terrain_only": {
+  "wa_2025": {
+   "ap": 0.07338371074562278,
+   "auc": 0.9664872001850457,
+   "base_rate": 0.003822271642226646,
+   "n_pos": 8408,
+   "n": 2199739
+  },
+  "rs_uruguai_2026": {
+   "ap": 0.0033052741572909645,
+   "auc": 0.5832969287165948,
+   "base_rate": 0.0027370793753018837,
+   "n_pos": 17,
+   "n": 6211
+  },
+  "rs_2024": {
+   "ap": 0.30085962475836786,
+   "auc": 0.6216764273872972,
+   "base_rate": 0.13594476873388842,
+   "n_pos": 4588,
+   "n": 33749
+  }
+ },
+ "leave_one_case_out": {
+  "fit_wa_2025": {
+   "w": [
+    0.1,
+    0.1,
+    0.8
+   ],
+   "fit_ap": 0.06365829448911829,
+   "test_case": "rs_uruguai_2026",
+   "test_ap": 0.00903040857037659,
+   "test_ap_uniform": 0.010034298169749446,
+   "test_gain": 0.8999541789181332
+  },
+  "fit_rs_uruguai_2026": {
+   "w": [
+    0.3,
+    0.1,
+    0.6
+   ],
+   "fit_ap": 0.030878914851496953,
+   "test_case": "wa_2025",
+   "test_ap": 0.06120526879588626,
+   "test_ap_uniform": 0.03879695872869696,
+   "test_gain": 1.5775790371582536
+  }
+ },
+ "chosen": {
+  "uniform": {
+   "w": [
+    0.3333333333333333,
+    0.3333333333333333,
+    0.3333333333333333
+   ],
+   "wa_2025": {
+    "ap": 0.03879695872869696,
+    "auc": 0.9469107109494573,
+    "base_rate": 0.003822271642226646,
+    "n_pos": 8408,
+    "n": 2199739,
+    "alto_plus": {
+     "area_share_pct": 9.101,
+     "hit_pct": 97.88,
+     "lift": 10.75,
+     "lift_terrain": 10.73,
+     "ratio": 1.002
+    },
+    "critico": {
+     "area_share_pct": 5.878,
+     "hit_pct": 68.15,
+     "lift": 11.59,
+     "lift_terrain": 15.63,
+     "ratio": 0.742
+    }
+   },
+   "rs_uruguai_2026": {
+    "ap": 0.010034298169749446,
+    "auc": 0.8278124940644647,
+    "base_rate": 0.0027370793753018837,
+    "n_pos": 17,
+    "n": 6211,
+    "alto_plus": {
+     "area_share_pct": 69.28,
+     "hit_pct": 94.12,
+     "lift": 1.36,
+     "lift_terrain": 1.27,
+     "ratio": 1.067
+    },
+    "critico": {
+     "area_share_pct": 38.206,
+     "hit_pct": 88.24,
+     "lift": 2.31,
+     "lift_terrain": 1.16,
+     "ratio": 1.995
+    }
+   },
+   "rs_2024": {
+    "ap": 0.30085962475836786,
+    "auc": 0.6216764273872972,
+    "base_rate": 0.13594476873388842,
+    "n_pos": 4588,
+    "n": 33749,
+    "alto_plus": {
+     "area_share_pct": 4.311,
+     "hit_pct": 25.35,
+     "lift": 5.88,
+     "lift_terrain": 5.88,
+     "ratio": 1.0
+    },
+    "critico": {
+     "area_share_pct": 2.856,
+     "hit_pct": 16.74,
+     "lift": 5.86,
+     "lift_terrain": 5.86,
+     "ratio": 1.0
+    }
+   }
+  },
+  "best_pooled": {
+   "w": [
+    0.3,
+    0.1,
+    0.6
+   ],
+   "wa_2025": {
+    "ap": 0.06120526879588626,
+    "auc": 0.9641568876288193,
+    "base_rate": 0.003822271642226646,
+    "n_pos": 8408,
+    "n": 2199739,
+    "alto_plus": {
+     "area_share_pct": 8.565,
+     "hit_pct": 98.03,
+     "lift": 11.45,
+     "lift_terrain": 11.35,
+     "ratio": 1.008
+    },
+    "critico": {
+     "area_share_pct": 6.798,
+     "hit_pct": 95.44,
+     "lift": 14.04,
+     "lift_terrain": 13.87,
+     "ratio": 1.013
+    }
+   },
+   "rs_uruguai_2026": {
+    "ap": 0.030878914851496953,
+    "auc": 0.8805295447206973,
+    "base_rate": 0.0027370793753018837,
+    "n_pos": 17,
+    "n": 6211,
+    "alto_plus": {
+     "area_share_pct": 68.797,
+     "hit_pct": 94.12,
+     "lift": 1.37,
+     "lift_terrain": 1.28,
+     "ratio": 1.067
+    },
+    "critico": {
+     "area_share_pct": 45.597,
+     "hit_pct": 88.24,
+     "lift": 1.94,
+     "lift_terrain": 1.16,
+     "ratio": 1.672
+    }
+   },
+   "rs_2024": {
+    "ap": 0.30085962475836786,
+    "auc": 0.6216764273872972,
+    "base_rate": 0.13594476873388842,
+    "n_pos": 4588,
+    "n": 33749,
+    "alto_plus": {
+     "area_share_pct": 2.856,
+     "hit_pct": 16.74,
+     "lift": 5.86,
+     "lift_terrain": 5.86,
+     "ratio": 1.0
+    },
+    "critico": {
+     "area_share_pct": 1.929,
+     "hit_pct": 11.09,
+     "lift": 5.75,
+     "lift_terrain": 5.75,
+     "ratio": 1.0
+    }
+   }
+  },
+  "fit_wa_2025": {
+   "w": [
+    0.1,
+    0.1,
+    0.8
+   ],
+   "wa_2025": {
+    "ap": 0.06365829448911829,
+    "auc": 0.9644189965697637,
+    "base_rate": 0.003822271642226646,
+    "n_pos": 8408,
+    "n": 2199739,
+    "alto_plus": {
+     "area_share_pct": 8.192,
+     "hit_pct": 97.55,
+     "lift": 11.91,
+     "lift_terrain": 11.8,
+     "ratio": 1.009
+    },
+    "critico": {
+     "area_share_pct": 6.637,
+     "hit_pct": 95.05,
+     "lift": 14.32,
+     "lift_terrain": 14.14,
+     "ratio": 1.013
+    }
+   },
+   "rs_uruguai_2026": {
+    "ap": 0.00903040857037659,
+    "auc": 0.7544967615719197,
+    "base_rate": 0.0027370793753018837,
+    "n_pos": 17,
+    "n": 6211,
+    "alto_plus": {
+     "area_share_pct": 73.66,
+     "hit_pct": 94.12,
+     "lift": 1.28,
+     "lift_terrain": 1.2,
+     "ratio": 1.067
+    },
+    "critico": {
+     "area_share_pct": 62.663,
+     "hit_pct": 88.24,
+     "lift": 1.41,
+     "lift_terrain": 1.41,
+     "ratio": 1.0
+    }
+   },
+   "rs_2024": {
+    "ap": 0.30085962475836786,
+    "auc": 0.6216764273872972,
+    "base_rate": 0.13594476873388842,
+    "n_pos": 4588,
+    "n": 33749,
+    "alto_plus": {
+     "area_share_pct": 2.397,
+     "hit_pct": 13.91,
+     "lift": 5.8,
+     "lift_terrain": 5.8,
+     "ratio": 1.0
+    },
+    "critico": {
+     "area_share_pct": 1.553,
+     "hit_pct": 9.09,
+     "lift": 5.85,
+     "lift_terrain": 5.85,
+     "ratio": 1.0
+    }
+   }
+  },
+  "fit_rs_uruguai_2026": {
+   "w": [
+    0.3,
+    0.1,
+    0.6
+   ],
+   "wa_2025": {
+    "ap": 0.06120526879588626,
+    "auc": 0.9641568876288193,
+    "base_rate": 0.003822271642226646,
+    "n_pos": 8408,
+    "n": 2199739,
+    "alto_plus": {
+     "area_share_pct": 8.565,
+     "hit_pct": 98.03,
+     "lift": 11.45,
+     "lift_terrain": 11.35,
+     "ratio": 1.008
+    },
+    "critico": {
+     "area_share_pct": 6.798,
+     "hit_pct": 95.44,
+     "lift": 14.04,
+     "lift_terrain": 13.87,
+     "ratio": 1.013
+    }
+   },
+   "rs_uruguai_2026": {
+    "ap": 0.030878914851496953,
+    "auc": 0.8805295447206973,
+    "base_rate": 0.0027370793753018837,
+    "n_pos": 17,
+    "n": 6211,
+    "alto_plus": {
+     "area_share_pct": 68.797,
+     "hit_pct": 94.12,
+     "lift": 1.37,
+     "lift_terrain": 1.28,
+     "ratio": 1.067
+    },
+    "critico": {
+     "area_share_pct": 45.597,
+     "hit_pct": 88.24,
+     "lift": 1.94,
+     "lift_terrain": 1.16,
+     "ratio": 1.672
+    }
+   },
+   "rs_2024": {
+    "ap": 0.30085962475836786,
+    "auc": 0.6216764273872972,
+    "base_rate": 0.13594476873388842,
+    "n_pos": 4588,
+    "n": 33749,
+    "alto_plus": {
+     "area_share_pct": 2.856,
+     "hit_pct": 16.74,
+     "lift": 5.86,
+     "lift_terrain": 5.86,
+     "ratio": 1.0
+    },
+    "critico": {
+     "area_share_pct": 1.929,
+     "hit_pct": 11.09,
+     "lift": 5.75,
+     "lift_terrain": 5.75,
+     "ratio": 1.0
+    }
+   }
+  }
+ },
+ "recommendation": {
+  "serve": false,
+  "weights": [
+   0.3333333333333333,
+   0.3333333333333333,
+   0.3333333333333333
+  ],
+  "checks": {
+   "beats_uniform_on_both_nisar_cases": true,
+   "wins_out_of_sample_both_ways": false,
+   "keeps_rs_ems_within_5pct": true
+  }
+ },
+ "caveats": [
+  "Class cuts are fixed, so new weights change class areas; compare Critical km2 before serving.",
+  "rs_uruguai_2026 has few reference cells; its AP is noisy.",
+  "NISAR flood maps are candidates (provisional GCOV, thresholded), not ground truth.",
+  "rs_2024 is scored against Copernicus EMS, not NISAR (event predates NISAR).",
+  "Replay R and S here are the published 1 km series upsampled bilinearly; replay v2 builds R on 90 m directly."
+ ]
+}
