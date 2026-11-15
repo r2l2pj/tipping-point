@@ -529,6 +529,93 @@ def candidate_features(mask: np.ndarray, grid: TargetGrid, bbox, gpw, props: dic
 
 
 # --------------------------------------------------------------------------
+# Pair / polygon guards (second-judge review 2026-11-15: an artifact pair —
+# 25-look vs 100-look modes, -15 dB fallback threshold, polygons on the scene
+# edge outside RS/SC/PR — was published as flood candidates)
+# --------------------------------------------------------------------------
+EDGE_BUFFER_M = 2000.0
+DEFAULT_UFS = ("RS", "SC", "PR")
+
+
+def mode_token(granule_id: str) -> str | None:
+    """Acquisition-mode token of a NISAR GCOV id, e.g. '4005_DHDH_A' in
+    ..._024_D_101_4005_DHDH_A_2026... (bandwidth code, polarisation, mode)."""
+    parts = str(granule_id).split("_")
+    for i in range(len(parts) - 2):
+        if (parts[i].isdigit() and len(parts[i]) == 4 and parts[i + 1].isalpha()
+                and len(parts[i + 2]) == 1 and parts[i + 2].isalpha()):
+            return "_".join(parts[i:i + 3])
+    return None
+
+
+def pair_mismatch(pre_id: str, post_id: str, io: dict | None) -> str | None:
+    """Reason when pre and post are not the same acquisition mode, else None."""
+    io = io or {}
+    lp = (io.get("pre") or {}).get("looks")
+    lq = (io.get("post") or {}).get("looks")
+    if lp is not None and lq is not None and lp != lq:
+        return f"pre/post looks differ ({lp} vs {lq}): different acquisition modes, not comparable"
+    mp, mq = mode_token(pre_id), mode_token(post_id)
+    if mp and mq and mp != mq:
+        return f"pre/post acquisition modes differ ({mp} vs {mq}): not comparable"
+    return None
+
+
+def edge_zone(valid: np.ndarray, grid, bbox, buffer_m: float = EDGE_BUFFER_M) -> np.ndarray:
+    """True within `buffer_m` of the scene's valid-data edge or of the bbox edge."""
+    from scipy.ndimage import binary_erosion
+
+    k = max(1, int(round(buffer_m / grid.res)))
+    inner = binary_erosion(valid, iterations=k, border_value=0)
+    rows, cols = np.indices(valid.shape)
+    lon, lat = _pixel_lonlat(rows.ravel(), cols.ravel(), grid)
+    lon = np.asarray(lon).reshape(valid.shape)
+    lat = np.asarray(lat).reshape(valid.shape)
+    w, s_, e, n = bbox
+    dlat = buffer_m / 110574.0
+    dlon = buffer_m / (111320.0 * np.cos(np.deg2rad(lat)))
+    in_bbox = (lon >= w + dlon) & (lon <= e - dlon) & (lat >= s_ + dlat) & (lat <= n - dlat)
+    return ~(inner & in_bbox)
+
+
+def drop_touching(mask: np.ndarray, zone: np.ndarray) -> tuple[np.ndarray, int]:
+    """Remove every connected component of `mask` that touches `zone`."""
+    from scipy.ndimage import label
+
+    mask = np.asarray(mask, bool)
+    lab, n = label(mask)
+    if n == 0:
+        return mask, 0
+    bad = np.unique(lab[zone & (lab > 0)])
+    bad = bad[bad > 0]
+    return mask & ~np.isin(lab, bad), int(bad.size)
+
+
+def states_geom(boundaries_path, ufs=DEFAULT_UFS):
+    """Union of the IBGE municipal polygons of `ufs`, or None if unavailable."""
+    from shapely.geometry import shape
+    from shapely.ops import unary_union
+
+    try:
+        fc = json.loads(Path(boundaries_path).read_text())
+    except (OSError, ValueError, TypeError):
+        return None
+    geoms = [shape(f["geometry"]) for f in fc.get("features") or []
+             if str((f.get("properties") or {}).get("uf", "")).upper() in ufs]
+    return unary_union(geoms).buffer(0) if geoms else None
+
+
+def in_states(features: list[dict], region) -> list[dict]:
+    """Keep features whose representative point lies inside `region`."""
+    from shapely.geometry import shape
+
+    if region is None:
+        return features
+    return [f for f in features
+            if region.contains(shape(f["geometry"]).representative_point())]
+
+
+# --------------------------------------------------------------------------
 # Orchestration
 # --------------------------------------------------------------------------
 def _iso(dt: datetime | None) -> str | None:
@@ -538,7 +625,9 @@ def _iso(dt: datetime | None) -> str | None:
 def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
                  hand_path: Path | None = None, gpw_src: str | None = None,
                  now: datetime | None = None, lookback_days: int = 60,
-                 res: float = TARGET_RES_M, opener=open_gcov, log=print) -> dict:
+                 res: float = TARGET_RES_M, opener=open_gcov, log=print,
+                 boundaries_path: Path | None = None, ufs=DEFAULT_UFS,
+                 edge_buffer_m: float = EDGE_BUFFER_M, require_otsu: bool = True) -> dict:
     """Search → pair → read → detect → write flood_nisar.geojson + nisar_meta.json.
 
     `search(bbox, start, end)` returns fetch.nisar granule dicts and
@@ -553,6 +642,9 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     geo_path, meta_path = out_dir / "flood_nisar.geojson", out_dir / "nisar_meta.json"
+    bpath = (Path(boundaries_path) if boundaries_path
+             else out_dir.parent / "geojson" / "municipal_boundaries.geojson")
+    region = states_geom(bpath, ufs)
     reasons: dict[str, str] = {}
     meta = {
         "source": SOURCE,
@@ -563,6 +655,7 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
         "latency_h": None,
         "n_granules": 0,
         "pairs": [],
+        "rejected_pairs": [],
         "flooded_km2": None,
         "open_water_km2": None,
         "bright_km2": None,
@@ -641,8 +734,27 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
         if "null_reason" in data:
             reasons[f"pair {label}"] = data["null_reason"]
             continue
+        why = pair_mismatch(pre["granule_id"], post["granule_id"], data.get("io"))
+        if why:
+            reasons[f"pair {label}"] = why
+            meta["rejected_pairs"].append(
+                {"pre": pre["granule_id"], "post": post["granule_id"], "reason": why})
+            continue
         grid = data["grid"]
         det = detect(data["pre"], data["post"], grid, hand_path)
+        if require_otsu and det["stats"].get("threshold_method") != "otsu":
+            why = (f"water threshold fell back to {det['stats'].get('threshold_db')} dB "
+                   f"({det['stats'].get('threshold_method')}): per-scene calibration failed, "
+                   "pair not used")
+            reasons[f"pair {label}"] = why
+            meta["rejected_pairs"].append(
+                {"pre": pre["granule_id"], "post": post["granule_id"], "reason": why})
+            continue
+        zone = edge_zone(np.isfinite(data["pre"]) & np.isfinite(data["post"]), grid, bbox,
+                         edge_buffer_m)
+        det["flood"], n_edge = drop_touching(det["flood"], zone)
+        det["bright"], n_edge_b = drop_touching(det["bright"], zone)
+        del zone
         det0 = detect(data["pre"], data["post"], grid, None) if hand_path else None   # pre-gate
         del data["pre"], data["post"]
         props = {
@@ -660,6 +772,8 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
                                     {**props, "flood_type": "open-water", "confidence": "standard"})
         f_bright = candidate_features(det["bright"], grid, bbox, gpw,
                                       {**props, "flood_type": "bright", "confidence": "lower"})
+        n_before = len(f_open) + len(f_bright)
+        f_open, f_bright = in_states(f_open, region), in_states(f_bright, region)
         open_km2 = sum(f["properties"]["area_km2"] for f in f_open)
         if det0 is not None:
             f0 = candidate_features(det0["flood"], grid, bbox, gpw, dict(props))
@@ -686,11 +800,23 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
             "open_water_km2": round(open_km2, 3), "bright_km2": round(bright_km2, 3),
             "receded_km2": round(det["receded_km2"], 3),
             "polygons": len(f_open) + len(f_bright),
+            "dropped_edge_components": n_edge + n_edge_b,
+            "dropped_outside_states": n_before - len(f_open) - len(f_bright),
         })
         del det
 
     if not meta["pairs"]:
-        reasons.setdefault("pairs", "every paired granule failed to read (see pair reasons)")
+        if meta["rejected_pairs"]:
+            why = "; ".join(r["reason"] for r in meta["rejected_pairs"])
+            reasons["pairs"] = f"no comparable NISAR pair this pass ({why})"
+            meta["status"] = "no_usable_pair"
+            meta["status_label"] = ("No usable NISAR pair this pass — flood candidates not "
+                                    "computed (" + why + ")")
+            for k in ("flooded_km2", "new_km2", "receded_km2", "people_flooded",
+                      "open_water_km2", "bright_km2"):
+                reasons.setdefault(k, reasons["pairs"])
+        else:
+            reasons.setdefault("pairs", "every paired granule failed to read (see pair reasons)")
         return _finish(None)
     done = [p for p in plan["pairs"]
             if any(m["post"] == p["post"]["granule_id"] for m in meta["pairs"])]
@@ -726,4 +852,15 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
     if not hand_path:
         reasons["hand_excluded_km2"] = "no HAND raster: flood not HAND-gated"
     meta["hand_source"] = hand_source(hand_path)
+    if features:
+        meta["status"] = "candidates"
+        meta["status_label"] = f"{len(features)} NISAR flood candidate polygons (not confirmed)"
+    else:
+        meta["status"] = "no_new_flooding"
+        meta["status_label"] = ("No new flooding detected this pass (comparable pair, per-scene "
+                                "threshold, edge and RS/SC/PR filters applied)")
+    meta["filters"] = {"pair": "same looks + acquisition mode", "threshold": "per-scene Otsu only "
+                       "(fallback -> pair rejected)" if require_otsu else "any",
+                       "edge_buffer_m": edge_buffer_m,
+                       "states": list(ufs) if region is not None else None}
     return _finish(features)
