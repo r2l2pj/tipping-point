@@ -85,8 +85,9 @@ def export_t_ml(*, bbox=S.REGION_SERVE, model: str = "xgb_all", write_90m: bool 
             tmp90.write(q, 1, window=rasterio.windows.Window(
                 round((x0 - w) / res), round((n - y1) / res), shape[1], shape[0]))
         log.info("t_ml window %.0f,%.0f done", x0, y0)
-    _write_cog(out, km, from_origin(w, n, S.RES_EXPORT_1KM_DEG, S.RES_EXPORT_1KM_DEG),
-               desc="t_ml", nodata=np.nan)
+    tr_km = from_origin(w, n, S.RES_EXPORT_1KM_DEG, S.RES_EXPORT_1KM_DEG)
+    _write_cog(out, km, tr_km, desc="t_ml", nodata=np.nan)
+    write_t_ml_png(km, tr_km, bbox)
     if tmp90 is not None:
         tmp90.close()
         with rasterio.open(out.with_name("t_ml_90m.tmp.tif")) as src:
@@ -95,6 +96,34 @@ def export_t_ml(*, bbox=S.REGION_SERVE, model: str = "xgb_all", write_90m: bool 
                 dst.write(src.read())
         out.with_name("t_ml_90m.tmp.tif").unlink()
     return out
+
+
+T_ML_BREAKS = (0.2, 0.4, 0.6)   # same class breaks + palette as TPI (Baixo..Crítico)
+
+
+def write_t_ml_png(km: np.ndarray, transform, bbox) -> Path:
+    """data/ml/t_ml.png (EPSG:3857 RGBA, TPI palette) + data/ml/t_ml.json (bounds, legend)."""
+    from live.config import LABELS, PALETTE_HEX
+    from live.render import layer_png_3857
+
+    valid = np.isfinite(km)
+    cls = np.where(valid, np.digitize(np.nan_to_num(km), T_ML_BREAKS), 0).astype(np.uint8)
+    png, bounds = layer_png_3857(cls, transform, valid)
+    mldir = DATA_OUT / "ml"
+    mldir.mkdir(parents=True, exist_ok=True)
+    (mldir / "t_ml.png").write_bytes(png)
+    (mldir / "t_ml.json").write_text(json.dumps({
+        "layer": "t_ml", "png": "ml/t_ml.png", "cog": "cog/t_ml.tif",
+        "png_crs": "EPSG:3857", "bounds_lonlat": bounds, "cog_crs": "EPSG:4326",
+        "cog_res_deg": S.RES_EXPORT_1KM_DEG, "domain_bbox": list(bbox),
+        "value": "calibrated landslide susceptibility 0-1 (3a T_ML, XGBoost; 90 m model "
+                 "block-averaged to 0.01°). Relative, not an absolute frequency: trained "
+                 "case-control 1:3.",
+        "classes": [{"label": lab, "min": lo, "color": f"#{hx}"} for lab, lo, hx in
+                    zip(LABELS, (0.0, *T_ML_BREAKS), PALETTE_HEX, strict=True)],
+        "png_note": "Baixo is transparent (TPI convention)",
+    }, indent=2))
+    return mldir / "t_ml.png"
 
 
 def _write_cog(path: Path, arr: np.ndarray, transform, *, desc: str, nodata) -> None:
@@ -158,4 +187,61 @@ def export_metrics(case: str = "rs_2024") -> dict:
             {"model": "xgb_all (3a T_ML)", "rows": importance_rows(a["importance"], b3a["groups"]),
              "rf_permutation": a.get("importance_rf", {}).get("permutation_pr_auc_drop_test")}, indent=2))
     (mldir / "model_metrics.json").write_text(json.dumps(met, indent=2, default=str))
+    b3b_path = S.path("models", "bundle_3b.joblib")
+    if b3b_path.exists() and bb.get("importance"):
+        b3b = joblib.load(b3b_path)
+        (mldir / "feature_importance_3b.json").write_text(json.dumps(
+            {"model": "xgb_all (3b trigger, daily)", "group_labels": GROUP_LABELS,
+             "importance_type": "gain_share = XGBoost total_gain share (TRAIN fit); "
+                                "group_permutation_pr_auc_drop = TEST PR-AUC drop when the group is shuffled",
+             "rows": importance_rows(bb["importance"], b3b["groups"])}, indent=2))
+    (mldir / "ml_card.json").write_text(json.dumps(ml_card(met), indent=2, default=str))
     return blob
+
+
+GROUP_LABELS = {"rain": "Rain (IMERG)", "soil": "Soil (SMAP L4)", "terrain": "Terrain (NASADEM)",
+                "landcover": "Surface (MCD12Q1 + VIIRS NDVI)", "climate": "Climate (IMERG/SMAP means)",
+                "soil_texture": "Soil texture (SMAP L4 constants)"}
+CARD_KEYS = ("n", "n_pos", "base_rate", "threshold", "precision", "recall", "f1", "accuracy",
+             "pr_auc", "roc_auc", "tp", "fp", "fn", "tn")
+REGION_EVENT = {"south_southeast_brazil": "rs_2024", "north_america": "wa_2025"}
+
+
+def _slim(m: dict | None) -> dict | None:
+    return {k: m.get(k) for k in CARD_KEYS} if m else None
+
+
+def ml_card(met: dict) -> dict:
+    """Small app file for 'Did we get it right?': TEST only, GFS (operational) first."""
+    a, b = met.get("3a", {}), met.get("3b", {})
+    hz = b.get("horizons") or {}
+    card = {
+        "split": {
+            "3a": "TEST = ~20 % of ~50 km blocks (10 km buffer), S+SE Brazil; GLC <= 5 km + RS 2024",
+            "3b": "TRAIN/VAL = dated GLC/COOLR landslides worldwide 2015-2025 (95 % 2015-2018), "
+                  "split by event; TEST = unseen events RS 2024 (dated 2024-05-01, window "
+                  "Apr 29-May 2) + WA 2025 (8 dated WGS reports)",
+            "rows": {k: (v or {}).get("split_rows") for k, v in (("3a", a), ("3b", b))},
+        },
+        "t_ml": {k: _slim((v or {}).get("test")) for k, v in (a.get("models") or {}).items()},
+        "trigger": {},
+        "low_skill_horizons": ["7d", "14d"],
+        "models": {"xgb_all": "XGBoost (all features)", "rf_all": "RandomForest(200)",
+                   "rule_tpi": "TPI > 0.6 rule", "xgb_rain_only": "XGBoost rain only",
+                   "xgb_rain_soil": "XGBoost rain + soil", "climatology": "XGBoost no rain/soil"},
+    }
+    for h, d in hz.items():
+        if not isinstance(d, dict):
+            continue
+        card["trigger"][h] = {}
+        for src in ("gfs", "perfect"):
+            blk = d.get(src)
+            if not isinstance(blk, dict) or "reason" in blk:
+                card["trigger"][h][src] = {"reason": (blk or {}).get("reason", "not run")}
+                continue
+            card["trigger"][h][src] = {
+                name: {"test": _slim(v.get("test")),
+                       "by_event": {REGION_EVENT.get(r, r): _slim(m)
+                                    for r, m in (v.get("by_region") or {}).items()}}
+                for name, v in blk.items()}
+    return card
