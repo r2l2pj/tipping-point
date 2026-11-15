@@ -132,8 +132,14 @@
           114.58333333333333
         ],
         "n_warned": 6,
-        "n_issue_days": 21,
-        "basis": "GFS-forecast replay TPI: R_fc = score(obs IMERG daily <=D + GFS d1..dk) vs case climatology, S held at D, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
+        "n_issue_days": 20,
+        "skipped_issue_days": [
+          "2025-11-30"
+        ],
+        "skipped_reason": "no SMAP S for D-1 (series starts at the window start)",
+        "anchor_utc": "2025-12-09 00:35:00+00:00",
+        "alignment": "L28b: issue D 00Z; observed IMERG days <= D-1 only; GFS D 00Z run calendar days D..D+3; frame D+k = 3-day sum ending D+k",
+        "basis": "GFS-forecast replay TPI: R_fc = score(3-day sum ending D+k: obs IMERG days <= D-1 + GFS days D..D+k) vs case climatology, S held at D-1, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
       },
       "opera_fn_diagnosis": "raw FN 1.19M px = permanent/pre-existing water (pre_water 1.21M px) which our new-flood mask correctly excludes; like-for-like FN drops to 60.7k px"
     },
@@ -183,9 +189,9 @@
       "_null_reasons": {
         "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog has 16,027 points but none are dated",
         "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson has 16,027 points but none are dated: point-level lead times are undefined; fell back to cluster-lead vs damage_anchor",
-        "people_flooded": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
-        "flooded_km2": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
-        "flood_source": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "people_flooded": "no NISAR coverage — event predates launch (Jul 2025)",
+        "flooded_km2": "no NISAR coverage — event predates launch (Jul 2025)",
+        "flood_source": "no NISAR coverage — event predates launch (Jul 2025)",
         "rf_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data.",
         "rule_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data."
       },
@@ -300,16 +306,22 @@
       },
       "forecast_lead_time": {
         "forecast_source": "noaa-gfs",
-        "earliest_critical_issue": "2024-04-22",
-        "would_have_warned_h": 135.0,
-        "lead_h_median": 123.0,
+        "earliest_critical_issue": "2024-04-23",
+        "would_have_warned_h": 111.0,
+        "lead_h_median": 111.0,
         "lead_h_iqr": [
-          117.0,
-          129.0
+          111.0,
+          111.0
         ],
-        "n_warned": 2,
-        "n_issue_days": 16,
-        "basis": "GFS-forecast replay TPI: R_fc = score(obs IMERG daily <=D + GFS d1..dk) vs case climatology, S held at D, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
+        "n_warned": 1,
+        "n_issue_days": 15,
+        "skipped_issue_days": [
+          "2024-04-22"
+        ],
+        "skipped_reason": "no SMAP S for D-1 (series starts at the window start)",
+        "anchor_utc": "2024-04-27 15:00:00+00:00",
+        "alignment": "L28b: issue D 00Z; observed IMERG days <= D-1 only; GFS D 00Z run calendar days D..D+3; frame D+k = 3-day sum ending D+k",
+        "basis": "GFS-forecast replay TPI: R_fc = score(3-day sum ending D+k: obs IMERG days <= D-1 + GFS days D..D+k) vs case climatology, S held at D-1, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
       }
     }
   }
