@@ -133,7 +133,28 @@
         "n_warned": 6,
         "n_issue_days": 21,
         "basis": "GFS-forecast replay TPI: R_fc = score(obs IMERG daily <=D + GFS d1..dk) vs case climatology, S held at D, T static; critical = AOI max over slide/flood > 0.6 for depicted date <= anchor"
-      }
+      },
+      "opera_dswx_raw": {
+        "method": "all water, AOI, OPERA S1 DSWx 2025-12-15..18",
+        "tp": 9287,
+        "fp": 37576,
+        "fn": 1186683,
+        "iou": 0.0075,
+        "f1": 0.0149,
+        "precision": 0.1982,
+        "recall": 0.0078
+      },
+      "opera_dswx_like_for_like": {
+        "method": "new flood only (post-water AND NOT pre-water Dec1-7), cloud-free both dates, swath~AOI",
+        "tp": 8777,
+        "fp": 38086,
+        "fn": 60704,
+        "iou": 0.0816,
+        "f1": 0.1509,
+        "precision": 0.1873,
+        "recall": 0.1263
+      },
+      "opera_fn_diagnosis": "raw FN 1.19M px = permanent/pre-existing water (pre_water 1.21M px) which our new-flood mask correctly excludes; like-for-like FN drops to 60.7k px"
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -181,9 +202,9 @@
       "_null_reasons": {
         "never_critical_pct": "Cluster mode has no never-crossing denominator: clusters are defined by ever crossing Critical; the landslide catalog stub is empty (0 dated points)",
         "point_lead_times": "data/rs_2024/geojson/landslide_catalog.geojson is an empty stub (1 feature, 0 coordinates): no dated inventory points available; fell back to cluster-lead vs damage_anchor",
-        "people_flooded": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
-        "flooded_km2": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
-        "flood_source": "no NISAR coverage \u2014 event predates launch (Jul 2025)",
+        "people_flooded": "no NISAR coverage — event predates launch (Jul 2025)",
+        "flooded_km2": "no NISAR coverage — event predates launch (Jul 2025)",
+        "flood_source": "no NISAR coverage — event predates launch (Jul 2025)",
         "rf_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data.",
         "rule_auc": "No local labeled feature CSV/parquet table or trained ml/models/slide_xgb.json exists. Spatial block cross-validation and matched slope-rule baseline evaluation require labeled feature rows; synthetic test fixtures are not validation data."
       },
