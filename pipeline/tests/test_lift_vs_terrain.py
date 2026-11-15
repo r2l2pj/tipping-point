@@ -38,3 +38,29 @@ def test_domain_and_no_flag():
     dom = np.array([[True, False], [True, True]])
     r = lvt.lift_vs_terrain(tpi, t, np.array([1, 2]), dom, cut=0.4)
     assert r["n_ref"] == 1 and r["flagged_cells"] == 0 and r["lift"] is None and "reason" in r
+
+
+def test_m4_scorer_matches_m1_function():
+    import m4_cut_calibration as m4
+    rng = np.random.default_rng(0)
+    t = np.round(rng.random((30, 40)), 1)  # coarse T -> many ties
+    tpi = np.clip(t * rng.random((30, 40)) + 0.2, 0, 1)
+    tpi[0, :5] = np.nan
+    ref = rng.integers(0, t.size, 200)
+    dom = np.ones(t.shape, bool)
+    dom[-3:] = False
+    s = m4.Scorer(tpi, t, ref, dom)
+    for cut in (0.3, 0.5, 0.7):
+        a, b = s.at(cut), lvt.lift_vs_terrain(tpi, t, ref, dom, cut)
+        assert a["flagged_cells"] == b["flagged_cells"] and a["hit_pct"] == b["hit_pct"]
+        assert a["ratio"] == b["ratio"] and a["lift"] == b["lift"]
+
+
+def test_m4_calibrate_picks_lowest_cut_meeting_both_rules():
+    import m4_cut_calibration as m4
+    t = np.zeros((10, 10))
+    t[0, 0] = 1.0  # terrain points at cell 0; the truth is cell 99, which only the TPI ranks high
+    tpi = np.linspace(0, 0.98, 100).reshape(10, 10)
+    c = m4.calibrate(m4.Scorer(tpi, t, np.array([99])))
+    assert c["critico_area_only"] == c["critico_area_and_ratio"]
+    assert c["curve"][0]["area_pct"] > 2.0

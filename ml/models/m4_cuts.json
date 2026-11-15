@@ -1,0 +1,1710 @@
+{
+ "rule": "Cr\u00edtico cut = lowest cut with area <= 2.0 % and M1 ratio > 1, chosen on the calibration case only",
+ "suffix": "(served v2)",
+ "references": {
+  "rs_2024|slide|event": "rs_2024 landslide inventory points",
+  "rs_2024|slide|gfs24": "rs_2024 landslide inventory points",
+  "rs_2024|flood|event": "Copernicus EMS flood extent in the 5 EMS AOIs",
+  "rs_2024|flood|gfs24": "Copernicus EMS flood extent in the 5 EMS AOIs",
+  "wa_2025|slide|event": "wa_2025 landslide inventory points",
+  "wa_2025|slide|gfs24": "wa_2025 landslide inventory points",
+  "wa_2025|flood|event": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
+  "wa_2025|flood|gfs24": "NISAR flood candidates (area-weighted) in the NISAR raster extent",
+  "rs_uruguai_2026|flood|event": "7 NISAR new-water polygons, corridor, Sep 30 replay"
+ },
+ "splits": [
+  {
+   "hazard": "slide",
+   "frames": "event",
+   "calibrated_on": "rs_2024",
+   "n_ref_calibration": 16027,
+   "new_critico_cut": null,
+   "area_only_cut": 0.97,
+   "reason": "no cut on the 0.30-0.99 grid has <= 2 % area AND M1 ratio > 1",
+   "calibration_case": {
+    "old_critico": {
+     "cut": 0.6,
+     "area_pct": 10.749,
+     "flagged_cells": 459550,
+     "hit_pct": 85.24,
+     "lift": 7.93,
+     "terrain_hit_pct": 85.24,
+     "ratio": 1.0
+    },
+    "old_alto_plus": {
+     "cut": 0.4,
+     "area_pct": 14.186,
+     "flagged_cells": 606529,
+     "hit_pct": 90.9,
+     "lift": 6.41,
+     "terrain_hit_pct": 90.9,
+     "ratio": 1.0
+    }
+   },
+   "evaluation": {
+    "wa_2025": {
+     "n_ref": 15,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 22.629,
+      "flagged_cells": 497773,
+      "hit_pct": 60.0,
+      "lift": 2.65,
+      "terrain_hit_pct": 60.0,
+      "ratio": 1.0
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 26.641,
+      "flagged_cells": 586031,
+      "hit_pct": 66.67,
+      "lift": 2.5,
+      "terrain_hit_pct": 66.67,
+      "ratio": 1.0
+     },
+     "area_only": {
+      "cut": 0.97,
+      "area_pct": 8.732,
+      "flagged_cells": 192074,
+      "hit_pct": 13.33,
+      "lift": 1.53,
+      "terrain_hit_pct": 13.33,
+      "ratio": 1.0
+     }
+    }
+   }
+  },
+  {
+   "hazard": "slide",
+   "frames": "event",
+   "calibrated_on": "wa_2025",
+   "n_ref_calibration": 15,
+   "new_critico_cut": null,
+   "area_only_cut": null,
+   "reason": "no cut on the 0.30-0.99 grid has <= 2 % area AND M1 ratio > 1",
+   "calibration_case": {
+    "old_critico": {
+     "cut": 0.6,
+     "area_pct": 22.629,
+     "flagged_cells": 497773,
+     "hit_pct": 60.0,
+     "lift": 2.65,
+     "terrain_hit_pct": 60.0,
+     "ratio": 1.0
+    },
+    "old_alto_plus": {
+     "cut": 0.4,
+     "area_pct": 26.641,
+     "flagged_cells": 586031,
+     "hit_pct": 66.67,
+     "lift": 2.5,
+     "terrain_hit_pct": 66.67,
+     "ratio": 1.0
+    }
+   },
+   "evaluation": {
+    "rs_2024": {
+     "n_ref": 16027,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 10.749,
+      "flagged_cells": 459550,
+      "hit_pct": 85.24,
+      "lift": 7.93,
+      "terrain_hit_pct": 85.24,
+      "ratio": 1.0
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 14.186,
+      "flagged_cells": 606529,
+      "hit_pct": 90.9,
+      "lift": 6.41,
+      "terrain_hit_pct": 90.9,
+      "ratio": 1.0
+     }
+    }
+   }
+  },
+  {
+   "hazard": "flood",
+   "frames": "event",
+   "calibrated_on": "rs_2024",
+   "n_ref_calibration": 5156,
+   "new_critico_cut": null,
+   "area_only_cut": 0.74,
+   "reason": "no cut on the 0.30-0.99 grid has <= 2 % area AND M1 ratio > 1",
+   "calibration_case": {
+    "old_critico": {
+     "cut": 0.6,
+     "area_pct": 2.856,
+     "flagged_cells": 964,
+     "hit_pct": 14.9,
+     "lift": 5.21,
+     "terrain_hit_pct": 14.9,
+     "ratio": 1.0
+    },
+    "old_alto_plus": {
+     "cut": 0.4,
+     "area_pct": 4.311,
+     "flagged_cells": 1455,
+     "hit_pct": 22.56,
+     "lift": 5.23,
+     "terrain_hit_pct": 22.56,
+     "ratio": 1.0
+    }
+   },
+   "evaluation": {
+    "wa_2025": {
+     "n_ref": 257820,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 6.222,
+      "flagged_cells": 136866,
+      "hit_pct": 73.58,
+      "lift": 11.83,
+      "terrain_hit_pct": 94.53,
+      "ratio": 0.778
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 9.155,
+      "flagged_cells": 201393,
+      "hit_pct": 98.81,
+      "lift": 10.79,
+      "terrain_hit_pct": 98.26,
+      "ratio": 1.006
+     },
+     "area_only": {
+      "cut": 0.74,
+      "area_pct": 2.629,
+      "flagged_cells": 57841,
+      "hit_pct": 33.42,
+      "lift": 12.71,
+      "terrain_hit_pct": 55.97,
+      "ratio": 0.597
+     }
+    },
+    "rs_uruguai_2026": {
+     "n_ref": 18,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 12.252,
+      "flagged_cells": 761,
+      "hit_pct": 83.33,
+      "lift": 6.8,
+      "terrain_hit_pct": 13.4,
+      "ratio": 6.221
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 30.108,
+      "flagged_cells": 1870,
+      "hit_pct": 88.89,
+      "lift": 2.95,
+      "terrain_hit_pct": 32.92,
+      "ratio": 2.7
+     },
+     "area_only": {
+      "cut": 0.74,
+      "area_pct": 3.091,
+      "flagged_cells": 192,
+      "hit_pct": 27.78,
+      "lift": 8.99,
+      "terrain_hit_pct": 3.38,
+      "ratio": 8.219
+     }
+    }
+   }
+  },
+  {
+   "hazard": "flood",
+   "frames": "event",
+   "calibrated_on": "wa_2025",
+   "n_ref_calibration": 257820,
+   "new_critico_cut": null,
+   "area_only_cut": 0.79,
+   "reason": "no cut on the 0.30-0.99 grid has <= 2 % area AND M1 ratio > 1",
+   "calibration_case": {
+    "old_critico": {
+     "cut": 0.6,
+     "area_pct": 6.222,
+     "flagged_cells": 136866,
+     "hit_pct": 73.58,
+     "lift": 11.83,
+     "terrain_hit_pct": 94.53,
+     "ratio": 0.778
+    },
+    "old_alto_plus": {
+     "cut": 0.4,
+     "area_pct": 9.155,
+     "flagged_cells": 201393,
+     "hit_pct": 98.81,
+     "lift": 10.79,
+     "terrain_hit_pct": 98.26,
+     "ratio": 1.006
+    }
+   },
+   "evaluation": {
+    "rs_2024": {
+     "n_ref": 5156,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 2.856,
+      "flagged_cells": 964,
+      "hit_pct": 14.9,
+      "lift": 5.21,
+      "terrain_hit_pct": 14.9,
+      "ratio": 1.0
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 4.311,
+      "flagged_cells": 1455,
+      "hit_pct": 22.56,
+      "lift": 5.23,
+      "terrain_hit_pct": 22.56,
+      "ratio": 1.0
+     },
+     "area_only": {
+      "cut": 0.79,
+      "area_pct": 1.929,
+      "flagged_cells": 651,
+      "hit_pct": 9.87,
+      "lift": 5.12,
+      "terrain_hit_pct": 9.87,
+      "ratio": 1.0
+     }
+    },
+    "rs_uruguai_2026": {
+     "n_ref": 18,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 12.252,
+      "flagged_cells": 761,
+      "hit_pct": 83.33,
+      "lift": 6.8,
+      "terrain_hit_pct": 13.4,
+      "ratio": 6.221
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 30.108,
+      "flagged_cells": 1870,
+      "hit_pct": 88.89,
+      "lift": 2.95,
+      "terrain_hit_pct": 32.92,
+      "ratio": 2.7
+     },
+     "area_only": {
+      "cut": 0.79,
+      "area_pct": 0.837,
+      "flagged_cells": 52,
+      "hit_pct": 0.0,
+      "lift": 0.0,
+      "terrain_hit_pct": 0.92,
+      "ratio": 0.0
+     }
+    }
+   }
+  },
+  {
+   "hazard": "slide",
+   "frames": "gfs24",
+   "calibrated_on": "rs_2024",
+   "n_ref_calibration": 16027,
+   "new_critico_cut": null,
+   "area_only_cut": 0.41,
+   "reason": "no cut on the 0.30-0.99 grid has <= 2 % area AND M1 ratio > 1",
+   "calibration_case": {
+    "old_critico": {
+     "cut": 0.6,
+     "area_pct": 0.113,
+     "flagged_cells": 4841,
+     "hit_pct": 0.18,
+     "lift": 1.6,
+     "terrain_hit_pct": 2.37,
+     "ratio": 0.076
+    },
+    "old_alto_plus": {
+     "cut": 0.4,
+     "area_pct": 2.13,
+     "flagged_cells": 91069,
+     "hit_pct": 5.77,
+     "lift": 2.71,
+     "terrain_hit_pct": 39.92,
+     "ratio": 0.145
+    }
+   },
+   "evaluation": {
+    "wa_2025": {
+     "n_ref": 15,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 0.357,
+      "flagged_cells": 7856,
+      "hit_pct": 0.0,
+      "lift": 0.0,
+      "terrain_hit_pct": 0.56,
+      "ratio": 0.0
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 3.761,
+      "flagged_cells": 82739,
+      "hit_pct": 0.0,
+      "lift": 0.0,
+      "terrain_hit_pct": 5.88,
+      "ratio": 0.0
+     },
+     "area_only": {
+      "cut": 0.41,
+      "area_pct": 3.577,
+      "flagged_cells": 78688,
+      "hit_pct": 0.0,
+      "lift": 0.0,
+      "terrain_hit_pct": 5.6,
+      "ratio": 0.0
+     }
+    }
+   }
+  },
+  {
+   "hazard": "slide",
+   "frames": "gfs24",
+   "calibrated_on": "wa_2025",
+   "n_ref_calibration": 15,
+   "new_critico_cut": null,
+   "area_only_cut": 0.51,
+   "reason": "no cut on the 0.30-0.99 grid has <= 2 % area AND M1 ratio > 1",
+   "calibration_case": {
+    "old_critico": {
+     "cut": 0.6,
+     "area_pct": 0.357,
+     "flagged_cells": 7856,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 0.56,
+     "ratio": 0.0
+    },
+    "old_alto_plus": {
+     "cut": 0.4,
+     "area_pct": 3.761,
+     "flagged_cells": 82739,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 5.88,
+     "ratio": 0.0
+    }
+   },
+   "evaluation": {
+    "rs_2024": {
+     "n_ref": 16027,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 0.113,
+      "flagged_cells": 4841,
+      "hit_pct": 0.18,
+      "lift": 1.6,
+      "terrain_hit_pct": 2.37,
+      "ratio": 0.076
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 2.13,
+      "flagged_cells": 91069,
+      "hit_pct": 5.77,
+      "lift": 2.71,
+      "terrain_hit_pct": 39.92,
+      "ratio": 0.145
+     },
+     "area_only": {
+      "cut": 0.51,
+      "area_pct": 0.651,
+      "flagged_cells": 27850,
+      "hit_pct": 1.87,
+      "lift": 2.87,
+      "terrain_hit_pct": 13.64,
+      "ratio": 0.137
+     }
+    }
+   }
+  },
+  {
+   "hazard": "flood",
+   "frames": "gfs24",
+   "calibrated_on": "rs_2024",
+   "n_ref_calibration": 5156,
+   "new_critico_cut": null,
+   "area_only_cut": 0.3,
+   "reason": "no cut on the 0.30-0.99 grid has <= 2 % area AND M1 ratio > 1",
+   "calibration_case": {
+    "old_critico": {
+     "cut": 0.6,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    },
+    "old_alto_plus": {
+     "cut": 0.4,
+     "area_pct": 0.0,
+     "flagged_cells": 0,
+     "hit_pct": 0.0,
+     "lift": null,
+     "terrain_hit_pct": null,
+     "ratio": null
+    }
+   },
+   "evaluation": {
+    "wa_2025": {
+     "n_ref": 257820,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 0.009,
+      "flagged_cells": 196,
+      "hit_pct": 0.0,
+      "lift": 0.0,
+      "terrain_hit_pct": 0.19,
+      "ratio": 0.0
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 0.158,
+      "flagged_cells": 3480,
+      "hit_pct": 0.0,
+      "lift": 0.0,
+      "terrain_hit_pct": 3.37,
+      "ratio": 0.0
+     },
+     "area_only": {
+      "cut": 0.3,
+      "area_pct": 0.273,
+      "flagged_cells": 6013,
+      "hit_pct": 0.0,
+      "lift": 0.0,
+      "terrain_hit_pct": 5.82,
+      "ratio": 0.0
+     }
+    }
+   }
+  },
+  {
+   "hazard": "flood",
+   "frames": "gfs24",
+   "calibrated_on": "wa_2025",
+   "n_ref_calibration": 257820,
+   "new_critico_cut": null,
+   "area_only_cut": 0.3,
+   "reason": "no cut on the 0.30-0.99 grid has <= 2 % area AND M1 ratio > 1",
+   "calibration_case": {
+    "old_critico": {
+     "cut": 0.6,
+     "area_pct": 0.009,
+     "flagged_cells": 196,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 0.19,
+     "ratio": 0.0
+    },
+    "old_alto_plus": {
+     "cut": 0.4,
+     "area_pct": 0.158,
+     "flagged_cells": 3480,
+     "hit_pct": 0.0,
+     "lift": 0.0,
+     "terrain_hit_pct": 3.37,
+     "ratio": 0.0
+    }
+   },
+   "evaluation": {
+    "rs_2024": {
+     "n_ref": 5156,
+     "old_critico": {
+      "cut": 0.6,
+      "area_pct": 0.0,
+      "flagged_cells": 0,
+      "hit_pct": 0.0,
+      "lift": null,
+      "terrain_hit_pct": null,
+      "ratio": null
+     },
+     "old_alto_plus": {
+      "cut": 0.4,
+      "area_pct": 0.0,
+      "flagged_cells": 0,
+      "hit_pct": 0.0,
+      "lift": null,
+      "terrain_hit_pct": null,
+      "ratio": null
+     },
+     "area_only": {
+      "cut": 0.3,
+      "area_pct": 0.0,
+      "flagged_cells": 0,
+      "hit_pct": 0.0,
+      "lift": null,
+      "terrain_hit_pct": null,
+      "ratio": null
+     }
+    }
+   }
+  }
+ ],
+ "curves": {
+  "rs_2024|slide|event": [
+   {
+    "cut": 0.3,
+    "area_pct": 15.089,
+    "flagged_cells": 645142,
+    "hit_pct": 91.91,
+    "lift": 6.09,
+    "terrain_hit_pct": 91.91,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 14.712,
+    "flagged_cells": 629019,
+    "hit_pct": 91.49,
+    "lift": 6.22,
+    "terrain_hit_pct": 91.49,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 14.186,
+    "flagged_cells": 606529,
+    "hit_pct": 90.9,
+    "lift": 6.41,
+    "terrain_hit_pct": 90.9,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 13.505,
+    "flagged_cells": 577398,
+    "hit_pct": 89.94,
+    "lift": 6.66,
+    "terrain_hit_pct": 89.94,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 12.705,
+    "flagged_cells": 543186,
+    "hit_pct": 88.76,
+    "lift": 6.99,
+    "terrain_hit_pct": 88.76,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 11.818,
+    "flagged_cells": 505264,
+    "hit_pct": 87.26,
+    "lift": 7.38,
+    "terrain_hit_pct": 87.26,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 10.749,
+    "flagged_cells": 459550,
+    "hit_pct": 85.24,
+    "lift": 7.93,
+    "terrain_hit_pct": 85.24,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 9.56,
+    "flagged_cells": 408726,
+    "hit_pct": 82.68,
+    "lift": 8.65,
+    "terrain_hit_pct": 82.68,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 8.283,
+    "flagged_cells": 354134,
+    "hit_pct": 79.07,
+    "lift": 9.55,
+    "terrain_hit_pct": 79.05,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 6.975,
+    "flagged_cells": 298233,
+    "hit_pct": 74.09,
+    "lift": 10.62,
+    "terrain_hit_pct": 74.09,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 5.658,
+    "flagged_cells": 241886,
+    "hit_pct": 68.38,
+    "lift": 12.09,
+    "terrain_hit_pct": 68.35,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 4.403,
+    "flagged_cells": 188236,
+    "hit_pct": 60.77,
+    "lift": 13.8,
+    "terrain_hit_pct": 60.76,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 3.262,
+    "flagged_cells": 139472,
+    "hit_pct": 51.68,
+    "lift": 15.84,
+    "terrain_hit_pct": 51.68,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 2.274,
+    "flagged_cells": 97221,
+    "hit_pct": 41.64,
+    "lift": 18.31,
+    "terrain_hit_pct": 41.64,
+    "ratio": 1.0
+   }
+  ],
+  "rs_2024|slide|gfs24": [
+   {
+    "cut": 0.3,
+    "area_pct": 4.103,
+    "flagged_cells": 175432,
+    "hit_pct": 12.39,
+    "lift": 3.02,
+    "terrain_hit_pct": 58.68,
+    "ratio": 0.211
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 3.049,
+    "flagged_cells": 130359,
+    "hit_pct": 8.78,
+    "lift": 2.88,
+    "terrain_hit_pct": 49.7,
+    "ratio": 0.177
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 2.13,
+    "flagged_cells": 91069,
+    "hit_pct": 5.77,
+    "lift": 2.71,
+    "terrain_hit_pct": 39.92,
+    "ratio": 0.145
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 1.364,
+    "flagged_cells": 58315,
+    "hit_pct": 3.82,
+    "lift": 2.8,
+    "terrain_hit_pct": 28.55,
+    "ratio": 0.134
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 0.757,
+    "flagged_cells": 32381,
+    "hit_pct": 2.23,
+    "lift": 2.94,
+    "terrain_hit_pct": 15.85,
+    "ratio": 0.141
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 0.331,
+    "flagged_cells": 14148,
+    "hit_pct": 0.99,
+    "lift": 2.98,
+    "terrain_hit_pct": 6.93,
+    "ratio": 0.142
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 0.113,
+    "flagged_cells": 4841,
+    "hit_pct": 0.18,
+    "lift": 1.6,
+    "terrain_hit_pct": 2.37,
+    "ratio": 0.076
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 0.017,
+    "flagged_cells": 710,
+    "hit_pct": 0.01,
+    "lift": 0.75,
+    "terrain_hit_pct": 0.35,
+    "ratio": 0.036
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 0.002,
+    "flagged_cells": 88,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.04,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 0.0,
+    "flagged_cells": 19,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.01,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   }
+  ],
+  "rs_2024|flood|event": [
+   {
+    "cut": 0.3,
+    "area_pct": 4.311,
+    "flagged_cells": 1455,
+    "hit_pct": 22.56,
+    "lift": 5.23,
+    "terrain_hit_pct": 22.56,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 4.311,
+    "flagged_cells": 1455,
+    "hit_pct": 22.56,
+    "lift": 5.23,
+    "terrain_hit_pct": 22.56,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 4.311,
+    "flagged_cells": 1455,
+    "hit_pct": 22.56,
+    "lift": 5.23,
+    "terrain_hit_pct": 22.56,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 4.311,
+    "flagged_cells": 1455,
+    "hit_pct": 22.56,
+    "lift": 5.23,
+    "terrain_hit_pct": 22.56,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 3.532,
+    "flagged_cells": 1192,
+    "hit_pct": 18.35,
+    "lift": 5.19,
+    "terrain_hit_pct": 18.35,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 3.532,
+    "flagged_cells": 1192,
+    "hit_pct": 18.35,
+    "lift": 5.19,
+    "terrain_hit_pct": 18.35,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 2.856,
+    "flagged_cells": 964,
+    "hit_pct": 14.9,
+    "lift": 5.21,
+    "terrain_hit_pct": 14.9,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 2.856,
+    "flagged_cells": 964,
+    "hit_pct": 14.9,
+    "lift": 5.21,
+    "terrain_hit_pct": 14.9,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 2.397,
+    "flagged_cells": 809,
+    "hit_pct": 12.37,
+    "lift": 5.16,
+    "terrain_hit_pct": 12.37,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 1.929,
+    "flagged_cells": 651,
+    "hit_pct": 9.87,
+    "lift": 5.12,
+    "terrain_hit_pct": 9.87,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 1.553,
+    "flagged_cells": 524,
+    "hit_pct": 8.09,
+    "lift": 5.21,
+    "terrain_hit_pct": 8.09,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 1.191,
+    "flagged_cells": 402,
+    "hit_pct": 6.15,
+    "lift": 5.16,
+    "terrain_hit_pct": 6.15,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 0.963,
+    "flagged_cells": 325,
+    "hit_pct": 4.87,
+    "lift": 5.06,
+    "terrain_hit_pct": 4.87,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 0.714,
+    "flagged_cells": 241,
+    "hit_pct": 3.55,
+    "lift": 4.97,
+    "terrain_hit_pct": 3.55,
+    "ratio": 1.0
+   }
+  ],
+  "rs_2024|flood|gfs24": [
+   {
+    "cut": 0.3,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   }
+  ],
+  "wa_2025|slide|event": [
+   {
+    "cut": 0.3,
+    "area_pct": 27.88,
+    "flagged_cells": 613298,
+    "hit_pct": 73.33,
+    "lift": 2.63,
+    "terrain_hit_pct": 73.33,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 27.331,
+    "flagged_cells": 601216,
+    "hit_pct": 73.33,
+    "lift": 2.68,
+    "terrain_hit_pct": 66.67,
+    "ratio": 1.1
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 26.641,
+    "flagged_cells": 586031,
+    "hit_pct": 66.67,
+    "lift": 2.5,
+    "terrain_hit_pct": 66.67,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 25.825,
+    "flagged_cells": 568078,
+    "hit_pct": 66.67,
+    "lift": 2.58,
+    "terrain_hit_pct": 60.0,
+    "ratio": 1.111
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 24.905,
+    "flagged_cells": 547836,
+    "hit_pct": 60.0,
+    "lift": 2.41,
+    "terrain_hit_pct": 60.0,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 23.852,
+    "flagged_cells": 524687,
+    "hit_pct": 60.0,
+    "lift": 2.52,
+    "terrain_hit_pct": 60.0,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 22.629,
+    "flagged_cells": 497773,
+    "hit_pct": 60.0,
+    "lift": 2.65,
+    "terrain_hit_pct": 60.0,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 21.243,
+    "flagged_cells": 467285,
+    "hit_pct": 60.0,
+    "lift": 2.82,
+    "terrain_hit_pct": 46.67,
+    "ratio": 1.286
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 19.705,
+    "flagged_cells": 433463,
+    "hit_pct": 46.67,
+    "lift": 2.37,
+    "terrain_hit_pct": 46.67,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 18.03,
+    "flagged_cells": 396614,
+    "hit_pct": 46.67,
+    "lift": 2.59,
+    "terrain_hit_pct": 46.67,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 16.202,
+    "flagged_cells": 356412,
+    "hit_pct": 46.67,
+    "lift": 2.88,
+    "terrain_hit_pct": 46.67,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 14.18,
+    "flagged_cells": 311932,
+    "hit_pct": 40.0,
+    "lift": 2.82,
+    "terrain_hit_pct": 40.0,
+    "ratio": 1.0
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 11.918,
+    "flagged_cells": 262164,
+    "hit_pct": 26.67,
+    "lift": 2.24,
+    "terrain_hit_pct": 13.33,
+    "ratio": 2.0
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 9.737,
+    "flagged_cells": 214181,
+    "hit_pct": 13.33,
+    "lift": 1.37,
+    "terrain_hit_pct": 13.33,
+    "ratio": 1.0
+   }
+  ],
+  "wa_2025|slide|gfs24": [
+   {
+    "cut": 0.3,
+    "area_pct": 6.123,
+    "flagged_cells": 134701,
+    "hit_pct": 6.67,
+    "lift": 1.09,
+    "terrain_hit_pct": 9.58,
+    "ratio": 0.696
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 4.832,
+    "flagged_cells": 106283,
+    "hit_pct": 6.67,
+    "lift": 1.38,
+    "terrain_hit_pct": 7.56,
+    "ratio": 0.882
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 3.761,
+    "flagged_cells": 82739,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 5.88,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 2.86,
+    "flagged_cells": 62911,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 4.47,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 2.102,
+    "flagged_cells": 46246,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 3.29,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 1.267,
+    "flagged_cells": 27866,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 1.98,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 0.357,
+    "flagged_cells": 7856,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.56,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 0.16,
+    "flagged_cells": 3509,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.25,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 0.08,
+    "flagged_cells": 1767,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.13,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   }
+  ],
+  "wa_2025|flood|event": [
+   {
+    "cut": 0.3,
+    "area_pct": 9.627,
+    "flagged_cells": 211758,
+    "hit_pct": 98.87,
+    "lift": 10.27,
+    "terrain_hit_pct": 98.5,
+    "ratio": 1.004
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 9.458,
+    "flagged_cells": 208058,
+    "hit_pct": 98.87,
+    "lift": 10.45,
+    "terrain_hit_pct": 98.43,
+    "ratio": 1.004
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 9.155,
+    "flagged_cells": 201393,
+    "hit_pct": 98.81,
+    "lift": 10.79,
+    "terrain_hit_pct": 98.26,
+    "ratio": 1.006
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 8.756,
+    "flagged_cells": 192616,
+    "hit_pct": 98.02,
+    "lift": 11.19,
+    "terrain_hit_pct": 97.94,
+    "ratio": 1.001
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 8.163,
+    "flagged_cells": 179563,
+    "hit_pct": 96.97,
+    "lift": 11.88,
+    "terrain_hit_pct": 97.34,
+    "ratio": 0.996
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 7.449,
+    "flagged_cells": 163852,
+    "hit_pct": 93.07,
+    "lift": 12.5,
+    "terrain_hit_pct": 96.49,
+    "ratio": 0.965
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 6.222,
+    "flagged_cells": 136866,
+    "hit_pct": 73.58,
+    "lift": 11.83,
+    "terrain_hit_pct": 94.53,
+    "ratio": 0.778
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 4.785,
+    "flagged_cells": 105267,
+    "hit_pct": 46.01,
+    "lift": 9.61,
+    "terrain_hit_pct": 89.35,
+    "ratio": 0.515
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 3.65,
+    "flagged_cells": 80301,
+    "hit_pct": 40.26,
+    "lift": 11.03,
+    "terrain_hit_pct": 77.71,
+    "ratio": 0.518
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 2.487,
+    "flagged_cells": 54714,
+    "hit_pct": 28.72,
+    "lift": 11.55,
+    "terrain_hit_pct": 52.95,
+    "ratio": 0.542
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 1.509,
+    "flagged_cells": 33199,
+    "hit_pct": 12.63,
+    "lift": 8.37,
+    "terrain_hit_pct": 32.13,
+    "ratio": 0.393
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 0.975,
+    "flagged_cells": 21453,
+    "hit_pct": 8.67,
+    "lift": 8.89,
+    "terrain_hit_pct": 20.76,
+    "ratio": 0.417
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 0.587,
+    "flagged_cells": 12917,
+    "hit_pct": 5.49,
+    "lift": 9.35,
+    "terrain_hit_pct": 12.5,
+    "ratio": 0.439
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 0.307,
+    "flagged_cells": 6744,
+    "hit_pct": 1.11,
+    "lift": 3.62,
+    "terrain_hit_pct": 6.53,
+    "ratio": 0.17
+   }
+  ],
+  "wa_2025|flood|gfs24": [
+   {
+    "cut": 0.3,
+    "area_pct": 0.273,
+    "flagged_cells": 6013,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 5.82,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 0.222,
+    "flagged_cells": 4875,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 4.72,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 0.158,
+    "flagged_cells": 3480,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 3.37,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 0.096,
+    "flagged_cells": 2112,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 2.04,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 0.062,
+    "flagged_cells": 1357,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 1.31,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 0.029,
+    "flagged_cells": 644,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.62,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 0.009,
+    "flagged_cells": 196,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.19,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 0.002,
+    "flagged_cells": 37,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.04,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   }
+  ],
+  "rs_uruguai_2026|flood|event": [
+   {
+    "cut": 0.3,
+    "area_pct": 37.9,
+    "flagged_cells": 2354,
+    "hit_pct": 94.44,
+    "lift": 2.49,
+    "terrain_hit_pct": 41.44,
+    "ratio": 2.279
+   },
+   {
+    "cut": 0.35,
+    "area_pct": 34.197,
+    "flagged_cells": 2124,
+    "hit_pct": 88.89,
+    "lift": 2.6,
+    "terrain_hit_pct": 37.39,
+    "ratio": 2.377
+   },
+   {
+    "cut": 0.4,
+    "area_pct": 30.108,
+    "flagged_cells": 1870,
+    "hit_pct": 88.89,
+    "lift": 2.95,
+    "terrain_hit_pct": 32.92,
+    "ratio": 2.7
+   },
+   {
+    "cut": 0.45,
+    "area_pct": 25.439,
+    "flagged_cells": 1580,
+    "hit_pct": 88.89,
+    "lift": 3.49,
+    "terrain_hit_pct": 27.81,
+    "ratio": 3.196
+   },
+   {
+    "cut": 0.5,
+    "area_pct": 20.093,
+    "flagged_cells": 1248,
+    "hit_pct": 88.89,
+    "lift": 4.42,
+    "terrain_hit_pct": 21.97,
+    "ratio": 4.046
+   },
+   {
+    "cut": 0.55,
+    "area_pct": 15.408,
+    "flagged_cells": 957,
+    "hit_pct": 88.89,
+    "lift": 5.77,
+    "terrain_hit_pct": 16.85,
+    "ratio": 5.276
+   },
+   {
+    "cut": 0.6,
+    "area_pct": 12.252,
+    "flagged_cells": 761,
+    "hit_pct": 83.33,
+    "lift": 6.8,
+    "terrain_hit_pct": 13.4,
+    "ratio": 6.221
+   },
+   {
+    "cut": 0.65,
+    "area_pct": 8.565,
+    "flagged_cells": 532,
+    "hit_pct": 72.22,
+    "lift": 8.43,
+    "terrain_hit_pct": 9.36,
+    "ratio": 7.712
+   },
+   {
+    "cut": 0.7,
+    "area_pct": 5.039,
+    "flagged_cells": 313,
+    "hit_pct": 72.22,
+    "lift": 14.33,
+    "terrain_hit_pct": 5.51,
+    "ratio": 13.108
+   },
+   {
+    "cut": 0.75,
+    "area_pct": 2.721,
+    "flagged_cells": 169,
+    "hit_pct": 11.11,
+    "lift": 4.08,
+    "terrain_hit_pct": 2.97,
+    "ratio": 3.735
+   },
+   {
+    "cut": 0.8,
+    "area_pct": 0.564,
+    "flagged_cells": 35,
+    "hit_pct": 0.0,
+    "lift": 0.0,
+    "terrain_hit_pct": 0.62,
+    "ratio": 0.0
+   },
+   {
+    "cut": 0.85,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.9,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   },
+   {
+    "cut": 0.95,
+    "area_pct": 0.0,
+    "flagged_cells": 0,
+    "hit_pct": 0.0,
+    "lift": null,
+    "terrain_hit_pct": null,
+    "ratio": null
+   }
+  ]
+ }
+}
