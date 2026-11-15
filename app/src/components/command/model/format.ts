@@ -1,5 +1,6 @@
 // Date, hour and number text for the Command Center (took over the old
 // tabs/format.ts). It lives here because src/lib is owned by other work.
+import { fmtMonthDayClock } from "@/lib/dateParts";
 import { fmtDataDate, fmtDataStamp, fmtDate, fmtDateTime } from "@/lib/layers";
 import { NOT_PUBLISHED } from "./types";
 
@@ -16,15 +17,9 @@ export const fmtBrt = (iso?: string | null): string => {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   if (!/T|\d:\d/.test(iso)) return fmtDate(iso);
-  return (
-    d.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "America/Sao_Paulo",
-    }) + " BRT"
-  );
+  // Built from parts, not toLocaleString: engines print "Nov 15, 05:29 PM" or
+  // "Nov 15 at 05:29 PM", which breaks hydration.
+  return `${fmtMonthDayClock(d, "America/Sao_Paulo", "12h")} BRT`;
 };
 
 // Short step date: "Dec 10". Calendar date, no shift.

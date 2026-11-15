@@ -1,5 +1,6 @@
 // One data-status signal for the screen. Replaces the fallback banner, the
 // stale pill and isMockDerived of the old screen.
+import { fmtClock } from "@/lib/dateParts";
 import { ageText, fmtBrt } from "./format";
 import type { CcBundle } from "./types";
 
@@ -56,7 +57,7 @@ const BRT = "America/Sao_Paulo";
 export function brtClock(iso: string, nowMs?: number): string {
   const t = new Date(iso);
   if (Number.isNaN(t.getTime())) return iso;
-  const time = t.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: BRT });
+  const time = fmtClock(t, BRT, "24h");
   const day = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: BRT });
   const sameDay = nowMs !== undefined && day(t) === day(new Date(nowMs));
   const date = t.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: BRT });

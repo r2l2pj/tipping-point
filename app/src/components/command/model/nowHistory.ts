@@ -4,6 +4,7 @@
 // manifest's PNG paths resolve under its own run directory. Map only: the
 // panel keeps the latest run's figures.
 import { resolveAsset } from "@/lib/contract";
+import { fmtClock } from "@/lib/dateParts";
 import type { ManifestLayer } from "@/lib/types";
 import type { CcBundle } from "./types";
 
@@ -17,7 +18,7 @@ export function runLabel(iso: string, newestIso?: string): string {
   const t = new Date(iso);
   if (Number.isNaN(t.getTime())) return iso;
   const opt = { timeZone: "America/Sao_Paulo" } as const;
-  const hm = t.toLocaleTimeString("en-GB", { ...opt, hour: "2-digit", minute: "2-digit", hour12: false });
+  const hm = fmtClock(t, opt.timeZone, "24h");
   const day = (d: Date) => d.toLocaleDateString("en-US", { ...opt, month: "short", day: "numeric" });
   return newestIso && day(new Date(newestIso)) !== day(t) ? `${day(t)} ${hm}` : hm;
 }
