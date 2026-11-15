@@ -12,6 +12,8 @@ import { HOURS } from "./model/hours";
 const STEP_PX = 40;
 const STEP_DENSE_PX = 30;
 const DENSE_FROM = 16;
+// Room kept beside the selected step when the track scrolls it into view.
+const SCROLL_MARGIN_PX = 12;
 
 const MARK_BG = (c: StepMark["color"]) => (c === "red" ? "bg-[#bd0026]" : c === "blue" ? "bg-[#2166ac]" : "bg-[#b06f00]");
 
@@ -62,14 +64,27 @@ export default function TimelineBar({
   // scrolls, never the page).
   const track = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    // PR #5 (teammate): a step's offsetLeft is relative to its offsetParent,
+    // not the track, so the position comes from bounding boxes plus the
+    // track's own scrollLeft; the date label can be wider than a dense step.
     const box = track.current;
     const el = box?.querySelector<HTMLElement>('[aria-pressed="true"]');
     if (!box || !el) return;
-    const left = el.offsetLeft;
-    if (left < box.scrollLeft) box.scrollLeft = Math.max(0, left - 8);
-    else if (left + el.offsetWidth > box.scrollLeft + box.clientWidth) {
-      box.scrollLeft = left + el.offsetWidth - box.clientWidth + 8;
+    const own = el.getBoundingClientRect();
+    let from = own.left;
+    let to = own.right;
+    for (const part of el.querySelectorAll("span")) {
+      const r = part.getBoundingClientRect();
+      from = Math.min(from, r.left);
+      to = Math.max(to, r.right);
     }
+    const boxRect = box.getBoundingClientRect();
+    const origin = boxRect.left + box.clientLeft - box.scrollLeft; // content x = 0
+    const start = from - origin - SCROLL_MARGIN_PX;
+    const end = to - origin + SCROLL_MARGIN_PX;
+    // The browser clamps scrollLeft to the scrollable range.
+    if (start < box.scrollLeft) box.scrollLeft = start;
+    else if (end > box.scrollLeft + box.clientWidth) box.scrollLeft = end - box.clientWidth;
   }, [dayIndex, n]);
   const chipText = mapFrame && isGfsFrame(mapFrame) ? forecastChip(mapFrame, undefined) : forecastTag;
   const stepTag = (s: Step) =>
