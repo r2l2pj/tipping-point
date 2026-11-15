@@ -235,6 +235,10 @@ index input.
   DSWx-S1 has no 2024 granules over RS. OPERA RTC-S1 does exist
   (2024-05-08/11) but is pending an Earthdata EULA approval, so
   `flooded_km2` / `people_flooded` stay null with a reason.
+- Replay TPI is no-data on a few land cells outside SMAP coverage: RS 2024
+  4.3 km² (outside JRC open water), WA 2025 8.0 km². Filling them by the L31
+  nearest-cell rule changes the published numbers by < 0.05 % (RS peak-day
+  flood Crítico +3.0 km² of 7,646.8), so replay numbers stay as published.
 - R1 (DSWx-S1) can flag smooth or bare surfaces as water. The confidence rules
   reduce but do not remove this. The rain-support rule has no flow routing.
 - GUNW/coherence landslide detection is moot for wa_2025 (no event-crossing
