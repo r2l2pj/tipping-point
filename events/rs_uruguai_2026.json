@@ -53,5 +53,103 @@
   ],
   "status": "v0 — flood candidates from a teammate pair, to be reproduced; candidates, never confirmed",
   "data_basis": "v0: NISAR flood candidates from a teammate pair (GCOV provisional 010D, 2026-09-30 -> 10-12); our own NISAR GCOV stack and the TPI replay are in progress",
-  "forecast_source": null
+  "forecast_source": null,
+  "forecast_proof": {
+    "question": "Would the upstream-rain signal have warned Uruguaiana before the Oct 2026 Uruguay River flood?",
+    "answer_short": "Yes, 5 days before the river reached flood stage at Uruguaiana (Oct 5) and 8 days before the Itaqui displacement (Oct 8): satellite rain already observed over the upstream basin (IMERG Early) plus the NOAA GFS run of Sep 30 put the basin 3-day total above the season's 99th percentile. Second rise: 6 days before Oct 29 (>= p95, Oct 23). The GFS forecast alone did not flag either rise; local rain at Uruguaiana never reached its own 99th percentile.",
+    "truth": {
+      "source": "ANA telemetry (ServiceANA), daily median level",
+      "flood_stage_m": 8.5,
+      "uruguaiana_77150000": {
+        "crossings": [
+          [
+            "2026-10-05",
+            "2026-10-21"
+          ],
+          [
+            "2026-10-29",
+            "2026-10-31"
+          ]
+        ],
+        "crest": [
+          "2026-10-16",
+          10.02
+        ],
+        "near_threshold": [
+          "2026-11-12",
+          "max 8.52 m, red alert"
+        ]
+      },
+      "itaqui_75900000": {
+        "crossings": [
+          [
+            "2026-10-05",
+            "2026-10-20"
+          ]
+        ],
+        "crest": [
+          "2026-10-16",
+          9.93
+        ]
+      },
+      "impact": {
+        "2026-10-08": "Itaqui: 29 people displaced"
+      }
+    },
+    "signal": {
+      "basin": "Uruguay River upstream of the Uruguaiana gauge, HydroBASINS v1c lev07, 192,578 km2 (73-point 0.5 deg lattice)",
+      "rain": "basin-mean 3-day and 7-day totals ending D..D+6: observed IMERG Early (days < D) + NOAA GFS 00Z run of D (days >= D)",
+      "climatology": "NASA POWER IMERG Final daily 2001-2025, Sep-Nov; 3-day p95 62.5 / p99 100.3 mm; 7-day p95 119.5 / p99 152.1 mm"
+    },
+    "lead_time_days": {
+      "uruguaiana_flood_stage_2026-10-05": {
+        "p99_first_issue": "2026-09-30",
+        "p99": 5,
+        "p95_first_issue_in_runup": "2026-09-29",
+        "p95": 6
+      },
+      "itaqui_displacement_2026-10-08": {
+        "p99": 8,
+        "p95": 9
+      },
+      "uruguaiana_flood_stage_2026-10-29": {
+        "p95_first_issue": "2026-10-23",
+        "p95": 6,
+        "p99": null
+      },
+      "gfs_forecast_only": "no flag before either crossing (Sep 29 run: 50.7 mm 3-day vs p95 62.5; observed Sep 28-29: 93 mm)",
+      "local_rain_at_uruguaiana": "72 h rain never >= local 3-day P99 (max 0.85x, Oct 6) -> a local-rain index would not have warned"
+    },
+    "false_alarms": {
+      "p99": "0 of 1 flagged issues",
+      "p95_strict_median_basis": "Sep 18 + Nov 1-6 (Nov 1-6 precede the Nov 12-13 red alert at 8.46-8.52 m)",
+      "p95_daily_max_basis": "1 (Sep 18)",
+      "p95_flagged_issues": 19,
+      "p95_during_flood": "4-5"
+    },
+    "where": {
+      "method": "river corridor HAND <= 5 m (90 m HAND) inside the AOI vs the radar new-water candidate polygons at Uruguaiana (7 polygons, 1.85 km2, about 29 people)",
+      "share_of_flooded_candidate_area_flagged": 0.538,
+      "share_of_people_in_it_flagged": 0.574,
+      "flagged_share_of_aoi": 0.364,
+      "lift_vs_random": 1.48,
+      "people_in_flagged_corridor_gpw2020": 20885.0,
+      "hand_le_10m": {
+        "share": 1.0,
+        "aoi_share": 0.625,
+        "lift": 1.6
+      },
+      "reading": "the signal points to the river corridor, not to specific neighbourhoods: the floodplain is flat (lift 1.5)"
+    },
+    "caveats": [
+      "IMERG Final is not out for Sep-Nov 2026: observed rain is IMERG Early (Early ran 1.34x Final on RS 2024 Apr 27). Scaling Early by 1/1.34: Sep 30 basin 3-day 75.7 mm (< p99 100.3, >= p95 62.5) -> still 5 d before Oct 5 at p95; second rise first flag moves from Oct 23 to Oct 24 -> 5 d before Oct 29.",
+      "Flood-candidate polygons are candidates, never confirmed; 082D NISAR pairs are dominated by rice-paddy flooding and are not used here.",
+      "SGB publishes hours-ahead level forecasts (e.g. 9.91 m for 23:00 on Oct 13) and Defesa Civil RS issued alerts (cota de alerta Oct 28); no public alert dated before Oct 5 was found -> no claim of being earlier than official warnings.",
+      "'Would have given N days notice', never 'prevented'."
+    ],
+    "files": {
+      "tool": "tools/uruguai_forecast_proof.py",
+      "doc": ".crew/research/uruguai-forecast-proof.md"
+    }
+  }
 }
