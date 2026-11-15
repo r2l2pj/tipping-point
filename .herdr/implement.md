@@ -70,6 +70,21 @@ visible Nov 1.
 - `python -m live.now_manifest --out-dir data/now`.
 - `uv run pytest live/tests pipeline/tests` → **753 passed**.
 
+## Rerun on the same-mode pair (conductor-approved, commit 876544e)
+
+- `fetch/nisar.py pair_latest_pass`: pre pool now iterates all granules (not
+  the per-frame dedupe) and prefers granules matching the post's
+  `rn.mode_token` — future runs auto-pick same-mode products; +2 tests.
+- `14_response_nisar.py` rerun on the Now domain (HAND via symlink to the
+  main checkout's local hand_m.tif, GPW via vsicurl): paired 4005 Oct-25 →
+  4005 Nov-6 automatically. Outcome: **no_usable_pair** — Otsu per-scene
+  calibration failed on the partial-swath overlap, threshold fell back to
+  -15.0 dB → pair rejected (`rejected_pairs` records it). flood_nisar.geojson
+  deleted by the pipeline; manifest pruned the `flood_nisar` product;
+  nisar layers/timeseries stay (app gates on meta.status).
+- Published: main dbf2402..876544e, fallback snapshot pushed
+  (FALLBACK_ALLOW_DROP for the deleted flood_nisar.geojson).
+
 ## Caveats
 
 - Cross-track context dates have different incidence — levels indicative
