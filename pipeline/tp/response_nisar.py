@@ -725,6 +725,12 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
         pre, post = p["pre"], p["post"]
         label = f"{post['track']:03d}{post['look']}_{post['frame']:03d}"
         log(f"[nisar] {label}: pre {pre['granule_id']} -> post {post['granule_id']}")
+        why = pair_mismatch(pre["granule_id"], post["granule_id"], None)   # mode from ids: no read
+        if why:
+            reasons[f"pair {label}"] = why
+            meta["rejected_pairs"].append(
+                {"pre": pre["granule_id"], "post": post["granule_id"], "reason": why})
+            continue
         try:
             data = read_pair(pre["h5_url"], post["h5_url"], bbox, token=token, res=res,
                              opener=opener)
