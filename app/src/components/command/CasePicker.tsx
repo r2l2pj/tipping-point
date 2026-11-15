@@ -15,6 +15,13 @@ import { Icon, ICON } from "./ui";
 export const NOW_TITLE = "Now — Southern Brazil";
 const TOUR_KEY = "tp-start-here-dismissed"; // same key as the old card
 
+// The guided tour opens by itself only on a plain first visit: never on a
+// deep link (?case= / ?day= / ?compare= / ?view= / ?city= …) — a demo or
+// shared link must land on what it names, not under a menu (lead-app).
+export function shouldAutoOpenTour(search: string, dismissed: boolean, wide: boolean): boolean {
+  return wide && !dismissed && new URLSearchParams(search).size === 0;
+}
+
 export function caseLabel(bundle: CcBundle | undefined): string {
   if (!bundle) return "No case loaded";
   return bundle.mode === "live" ? NOW_TITLE : bundle.title;
@@ -46,7 +53,7 @@ export default function CasePicker({
   useEffect(() => {
     if (!onTour || !stops.length) return;
     try {
-      if (window.localStorage.getItem(TOUR_KEY) !== "1" && window.matchMedia("(min-width: 900px)").matches) {
+      if (shouldAutoOpenTour(window.location.search, window.localStorage.getItem(TOUR_KEY) === "1", window.matchMedia("(min-width: 900px)").matches)) {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- read once after mount (no storage on the server)
         setOpen(true);
       }

@@ -242,9 +242,9 @@ export function initialState(
     compareOpen: link.compare === "night-lights" ? "night-lights" : link.compare || link.view === "compare" ? "forecast" : null,
     compareSides: undefined,
     detailsOpen: false,
-    // lead-ux (Lucas: map first): the drawer opens closed; a Radar deep link
-    // (?compare=radar) opens it on the Radar tab with the pass chips.
-    layersOpen: link.compare === "radar",
+    // Lucas (override): the drawer is OPEN on wide screens on first load —
+    // judges see the NISAR data at once (phones: the sheet peeks).
+    layersOpen: true,
     listExpanded: false,
     chartAsTable: false,
     nisarChange: undefined,

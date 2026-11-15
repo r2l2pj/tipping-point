@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { CommandCenterView } from "./CommandCenter";
 import type { PanelTab } from "./PanelTabs";
 import { bundle, liveBundle } from "./model/fixtures";
+import { defaultTab, nisarPeek } from "./model/peek";
 
 const noop = () => {};
 const UNAVAILABLE = { state: "unavailable", alerts: [] } as const;
@@ -32,12 +33,12 @@ describe("one drawer", () => {
     expect(tabs(html)).toEqual(["alerts", "map"]);
     expect(html).toContain('aria-label="Public alerts"');
   });
-  test("Lucas: drawer CLOSED on first load (wide and phones); an edge tab opens it; page never scrolls", () => {
+  test("Lucas override: drawer OPEN on wide screens; the phone sheet peeks one NISAR line; page never scrolls", () => {
     const html = render();
-    expect(html).toContain('data-drawer="closed"');
+    expect(html).toContain('data-drawer="open"');
     expect(html).toContain('data-sheet="closed"');
-    expect(html).toContain("data-drawer-open");
-    expect(html).toContain("Details ›");
+    expect(html).toContain("data-sheet-peek");
+    expect(html).toContain("Details ›"); // the edge tab, shown once the drawer is closed
     expect(html).toContain("cc-root flex h-dvh flex-col overflow-hidden");
   });
 });
@@ -55,5 +56,19 @@ describe("thin timeline", () => {
     expect(html).toContain("h-12"); // 48 px bar
     expect(html).toContain("data-mark-caption"); // the day's mark floats above the bar
     expect(html).toContain(">Forecast (NOAA GFS)<");
+  });
+});
+
+describe("NISAR first (Lucas override)", () => {
+  const card = (o: object) => ({ pair: true, nisar: true, headline: "NISAR radar images available", dates: "Sep 30, 2026 → Oct 12, 2026",
+    flooded: { label: "Flooded area (NISAR)", value: "1.8 km²" }, candidates: { label: "", value: "", note: "" }, ...o }) as never;
+  test("replay with a NISAR pair opens on the NISAR tab; Now and replays without NISAR on Overview", () => {
+    expect(defaultTab(bundle({ id: "rs_uruguai_2026" }), card({}))).toBe("radar");
+    expect(defaultTab(liveBundle(), card({}))).toBe("overview");
+    expect(defaultTab(bundle({ id: "rs_2024" }), card({ pair: false }))).toBe("overview");
+  });
+  test("the peek line names NISAR, the area as candidates and the pass dates; no pair -> the card status", () => {
+    expect(nisarPeek(card({}))).toBe("NISAR · 1.8 km² flooded area (candidates) · Sep 30, 2026 → Oct 12, 2026");
+    expect(nisarPeek(card({ pair: false, flooded: undefined, headline: "Awaiting the next NISAR pass" }))).toBe("Awaiting the next NISAR pass");
   });
 });

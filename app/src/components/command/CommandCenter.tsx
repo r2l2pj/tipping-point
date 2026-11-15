@@ -15,6 +15,7 @@ import ReplayCityCard from "./ReplayCityCard";
 import { parsePlaces, type Place, type Places } from "./model/places";
 import { placesDailyUrl, replayDayClass, replaySource, type ReplayPlace } from "./model/replayPlaces";
 import PanelTabs, { type PanelTab } from "./PanelTabs";
+import { defaultTab, nisarPeek } from "./model/peek";
 import { headlineFor } from "./model/headline";
 import { geoUrl } from "@/lib/layers";
 import PanelSection from "./PanelSection";
@@ -145,9 +146,9 @@ export function CommandCenterView({
   const [hourPick, setHourPick] = useState<{ caseId: string; hour: string | null }>({ caseId: "", hour: null });
   const [replayCity, setReplayCity] = useState<ReplayPlace>();
   // L52 U1: right-panel tabs (content moved, nothing deleted).
-  // Lucas: every case lands on the map + Overview; only a radar swipe link
-  // opens the Radar tab.
-  const [tab, setTab] = useState<PanelTab | "all">(panelTab ?? (deepLink?.compare === "radar" ? "radar" : "overview"));
+  // Lucas (override): replay cases with NISAR open on the NISAR tab, Now on
+  // Overview (null = that case default; a radar swipe link opens NISAR).
+  const [tab, setTab] = useState<PanelTab | "all" | null>(panelTab ?? (deepLink?.compare === "radar" ? "radar" : null));
   // Lucas: Now steps through the last Now runs (every 3 h) — lead-analysis
   // now/history. Map only; the panel keeps the latest figures.
   const historyUrl = liveCase && declared(liveCase, "history")
@@ -219,6 +220,7 @@ export function CommandCenterView({
   if (prevActive !== state.activeId) {
     setPrevActive(state.activeId);
     if (replayCity) setReplayCity(undefined);
+    if (tab !== "all") setTab(null); // the new case opens on its own default tab
   }
 
   useEffect(() => {
@@ -387,7 +389,8 @@ export function CommandCenterView({
     : ["overview", "map", "forecast", "radar", ...(!sparse || areas.length > 0 ? ["places" as const] : [])];
   // The Public Alerts view has its own first tab; a tab that does not exist
   // in the view in sight falls back to that view's first tab.
-  const tabNow: PanelTab = tab === "all" ? tabsShown[0] : tabsShown.includes(tab) ? tab : tabsShown[0];
+  const wantTab: PanelTab = tab === null || tab === "all" ? (view === "public" ? tabsShown[0] : defaultTab(bundle, radar)) : tab;
+  const tabNow: PanelTab = tabsShown.includes(wantTab) ? wantTab : tabsShown[0];
   const show = (t: PanelTab) => tab === "all" || t === tabNow;
   const areaTile = criticalAreaTile(bundle, state.hazard, step?.date, step?.day, overlayFrame);
   const peopleT = peopleTile(bundle, step?.date, step?.day, overlayFrame);
@@ -487,13 +490,13 @@ export function CommandCenterView({
             (closable; the map's layers button reopens it on the Map tab).
             Phones: a bottom sheet over the full-screen map, closed by default
             (its tab row is the peek). The Layers column is the "Map" tab. */}
-        {/* Lucas: the drawer opens closed; a slim edge tab opens it over the map. */}
+        {/* Wide: once the drawer is closed (✕), a slim edge tab opens it again. */}
         <button type="button" data-drawer-open aria-label="Show details" title="Show details"
           onClick={() => {
             if (window.matchMedia("(min-width: 900px)").matches) dispatch({ type: "toggleLayersOpen" });
             else setDrawer(true);
           }}
-          className={`absolute right-0 top-1/2 z-30 flex -translate-y-1/2 items-center gap-1 rounded-l-xl border border-r-0 border-cc-line bg-cc-surface px-1.5 py-3 text-[13px] font-semibold text-cc-ink shadow-[0_2px_10px_rgba(0,0,0,0.3)] [writing-mode:vertical-rl] ${state.layersOpen ? "min-[900px]:hidden" : ""} ${drawer ? "max-[899px]:hidden" : ""}`}>
+          className={`absolute right-0 top-1/2 z-30 flex -translate-y-1/2 max-[899px]:hidden items-center gap-1 rounded-l-xl border border-r-0 border-cc-line bg-cc-surface px-1.5 py-3 text-[13px] font-semibold text-cc-ink shadow-[0_2px_10px_rgba(0,0,0,0.3)] [writing-mode:vertical-rl] ${state.layersOpen ? "min-[900px]:hidden" : ""}`}>
           Details ›
         </button>
         <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-end gap-2 p-2 min-[900px]:grid min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:grid-rows-[minmax(0,1fr)_auto] min-[900px]:gap-3 min-[900px]:p-3">
@@ -518,8 +521,9 @@ export function CommandCenterView({
         </div>
 
         <div ref={panelRef} data-drawer={state.layersOpen ? "open" : "closed"} data-sheet={drawer ? "open" : "closed"}
-          className={`pointer-events-auto flex min-h-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:self-start min-[900px]:max-h-full ${state.layersOpen ? "" : "min-[900px]:hidden"} ${drawer ? "" : "max-[899px]:hidden"}`}>
+          className={`pointer-events-auto flex min-h-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:self-start min-[900px]:max-h-full ${state.layersOpen ? "" : "min-[900px]:hidden"}`}>
         <SituationPanel label={view === "public" ? "Public alerts" : "Situation overview"} sheetOpen={drawer}
+          peek={view === "public" ? "Public alerts" : nisarPeek(radar)} onPeek={() => setDrawer(true)}
           header={tab !== "all" ? (
             <PanelTabs tabs={tabsShown} tab={tabNow} onTab={(t) => { setTab(t); setDrawer(true); }}
               onClose={() => {

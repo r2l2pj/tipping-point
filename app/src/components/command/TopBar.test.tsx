@@ -4,7 +4,7 @@
 // @ts-expect-error -- bun:test resolves under `bun test`
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import CasePicker, { NOW_TITLE, caseLabel } from "./CasePicker";
+import CasePicker, { NOW_TITLE, caseLabel, shouldAutoOpenTour } from "./CasePicker";
 import TopBar from "./TopBar";
 import { CommandCenterView } from "./CommandCenter";
 import { bundle, liveBundle } from "./model/fixtures";
@@ -89,4 +89,12 @@ describe("UX 4/8: fewer chips on the map", () => {
     expect(now).toContain("data-basemap-toggle");
     expect(now).not.toContain('aria-label="Basemap"');
   });
+});
+
+test("the tour opens by itself only on a plain first visit on a wide screen, never on a deep link", () => {
+  expect(shouldAutoOpenTour("", false, true)).toBe(true);
+  expect(shouldAutoOpenTour("?compare=radar&case=wa_2025", false, true)).toBe(false);
+  expect(shouldAutoOpenTour("?day=2026-09-30", false, true)).toBe(false);
+  expect(shouldAutoOpenTour("", true, true)).toBe(false); // dismissed
+  expect(shouldAutoOpenTour("", false, false)).toBe(false); // phone
 });
