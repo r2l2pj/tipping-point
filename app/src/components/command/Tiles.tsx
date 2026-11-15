@@ -1,11 +1,14 @@
-import type { Tile } from "./model/tiles";
+import { CRITICAL_TEXT, type Tile } from "./model/tiles";
 import { Icon, ICON, Value } from "./ui";
 
 function TileCard({ tile, icon }: { tile: Tile; icon: React.ReactNode }) {
   return (
     <div className={`flex min-w-[150px] flex-1 flex-col rounded-[10px] border border-cc-line bg-cc-well px-3 py-2 ${tile.dimmed ? "opacity-60" : ""}`}>
       <div className="flex items-center gap-1.5 text-xs font-semibold text-cc-muted">{icon}{tile.label}</div>
-        <div className="mt-0.5 text-[22px] leading-tight tabular-nums" title={tile.title}><Value text={tile.value} missing={tile.missing} /></div>
+        <div className="mt-0.5 text-[22px] leading-tight tabular-nums" title={tile.title} style={!tile.missing && tile.color ? { color: tile.color } : undefined}><Value text={tile.value} missing={tile.missing} /></div>
+        {tile.critical && (
+          <div className="text-sm font-semibold tabular-nums" style={{ color: CRITICAL_TEXT }} data-critical>Critical: {tile.critical}</div>
+        )}
         {(tile.asOf || tile.note) && (
           <div className="text-xs text-cc-faint">
             {[tile.note, tile.asOf ? `as of ${tile.asOf}` : undefined].filter(Boolean).join(" · ")}

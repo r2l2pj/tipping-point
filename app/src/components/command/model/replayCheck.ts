@@ -441,7 +441,7 @@ export function handCheck(m: M): HandCheck | undefined {
 
 export interface Evidence {
   hasMetrics: boolean;
-  scarHit?: string; // WA-size inventories: the 500 m scar share (Details only)
+  scarHit?: string; // WA-size inventories: the 100 m scar share (Details only)
   hand?: HandCheck;
   floodStats: Stat[];
   floodNote: string;

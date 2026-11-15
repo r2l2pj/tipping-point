@@ -18,7 +18,15 @@ export interface Tile {
   asOf?: string; // "as of <date>"
   dimmed: boolean; // the selected step is not the day of the snapshot
   title?: string; // tooltip on the value
+  // L59 (C5): the number's colour follows the class it counts, and Now adds
+  // the Critical share under the High-or-Critical figure.
+  color?: string;
+  critical?: string;
 }
+
+// Text shades of the High / Critical class colours (readable on the card).
+export const HIGH_TEXT = "#b4500f";
+export const CRITICAL_TEXT = "#bd0026";
 
 const snapshot = (bundle: CcBundle): { iso?: string; text?: string } => {
   if (bundle.mode === "live") {
@@ -127,7 +135,10 @@ export function criticalAreaTile(bundle: CcBundle, hazard: Hazard, stepDate?: st
     const alert = isRecord(sv?.alert_km2) ? (sv!.alert_km2 as Record<string, unknown>) : undefined;
     const hc = alert ? (finite(alert.any_today_or_d1) ? alert.any_today_or_d1 : alert.any) : undefined;
     if (alert && finite(hc)) {
-      return finish(bundle, stepDate, "High or Critical area", hc, fmtKm2, "summary", "flood or landslide, today or tomorrow · Brazilian land only");
+      const crit = isRecord(sv?.critical_km2) ? (sv!.critical_km2 as Record<string, unknown>) : undefined;
+      const c = crit ? (finite(crit.any_today_or_d1) ? crit.any_today_or_d1 : crit.any) : undefined;
+      const t = finish(bundle, stepDate, "High or Critical area", hc, fmtKm2, "summary", "flood or landslide, today or tomorrow · Brazilian land only");
+      return { ...t, color: HIGH_TEXT, critical: finite(c) ? fmtKm2(c) : undefined };
     }
     // Critical only, per hazard (summary v1 or v2; see liveCriticalKm2).
     const own = bundle.summary?.critical_km2?.[hazard];
@@ -178,7 +189,8 @@ function peopleTileRaw(bundle: CcBundle, stepDate: string | undefined, day: DayP
     const v3 = isRecord((s as Record<string, unknown> | undefined)?.alert_km2);
     const alertPeople = (s as Record<string, unknown> | undefined)?.people_alert;
     if (v3 && finite(alertPeople)) {
-      return finish(bundle, stepDate, label, alertPeople, fmtPeople, "summary", "in High or Critical areas, today or tomorrow");
+      const t = finish(bundle, stepDate, label, alertPeople, fmtPeople, "summary", "in High or Critical areas, today or tomorrow");
+      return { ...t, color: HIGH_TEXT, critical: finite(s?.people_critical) ? fmtPeople(s!.people_critical) : undefined };
     }
     return finish(bundle, stepDate, label, s?.people_critical ?? s?.people_exposed, fmtPeople, "summary",
       v3 && finite(s?.people_critical) ? "in Critical areas, today or tomorrow" : undefined);
