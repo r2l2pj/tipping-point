@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T18:04:13Z",
+  "updated_at": "2026-11-15T18:15:19Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7122,7 +7122,7 @@
         -29.05
       ],
       "forecast_source": null,
-      "data_basis": "NISAR GCOV (provisional + V1): our track 010 D stack Sep 18 → Nov 5 2026 (HH/HV frames + change maps; 0 gated flood candidates — the per-scene threshold sat at the −15 dB clamp on every pair) and track 082 D context frames; a teammate's NISAR Sep 30 → Oct 12 map (7 candidate polygons, 1.82 km²); upstream-basin rain forecast proof (IMERG Early + NOAA GFS, retrospective test). Local rain index (TPI) not replayed: local rain never reached its P99.",
+      "data_basis": "NISAR GCOV (provisional + V1): our track 010 D stack Sep 18 → Nov 5 2026 (HH/HV frames + change maps; 0 gated flood candidates — the per-scene threshold sat at the −15 dB clamp on every pair) and track 082 D context frames; a teammate's NISAR Sep 30 → Oct 12 map (7 candidate polygons, 1.82 km²); upstream-basin rain forecast proof (IMERG Early + NOAA GFS, retrospective test). Local TPI-flood replay Sep 28 → Oct 20 (IMERG Early + NOAA GFS issues Sep 28 → Oct 6).",
       "layers": [
         {
           "id": "hand_low",
@@ -7991,6 +7991,1110 @@
           "label": "NISAR radar before (teammate render)",
           "note": "v0 teammate render (EPSG:3857 false-colour) of the NISAR GCOV provisional pair 010D f103; our own frames replace it",
           "track": "010D"
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-09-28",
+          "png": "rs_uruguai_2026/png/tpi_flood_20260928.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20260928.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-09-29",
+          "png": "rs_uruguai_2026/png/tpi_flood_20260929.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20260929.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/tpi_flood_20260930.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20260930.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 813.47
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-01",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261001.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261001.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 703.26
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-02",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261002.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261002.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 55.54
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-03",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261003.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261003.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-04",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261004.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261004.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-05",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261005.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261005.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-06",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261006.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261006.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-07",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261007.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261007.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-08",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261008.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261008.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-09",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261009.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261009.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 42.95
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-10",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261010.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261010.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-11",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261011.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261011.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 1762.06
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261012.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261012.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-13",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261013.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261013.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-14",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261014.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261014.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-15",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261015.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261015.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-16",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261016.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261016.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-17",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261017.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261017.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-18",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261018.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261018.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-19",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261019.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261019.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood",
+          "date": "2026-10-20",
+          "png": "rs_uruguai_2026/png/tpi_flood_20261020.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_flood_obs_20261020.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": false,
+          "kind": "observed",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-09-29",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20260929.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260928.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20260930.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260929.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-10-01",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20261001.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260930.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 6.41
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-10-02",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20261002.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261001.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-10-03",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20261003.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261002.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-10-04",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20261004.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261003.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-10-05",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20261005.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261004.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-10-06",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20261006.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261005.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d1",
+          "date": "2026-10-07",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d1_20261007.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261006.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20260930.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260928.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-10-01",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20261001.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260929.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-10-02",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20261002.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260930.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-10-03",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20261003.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261001.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-10-04",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20261004.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261002.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-10-05",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20261005.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261003.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-10-06",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20261006.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261004.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-10-07",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20261007.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261005.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d2",
+          "date": "2026-10-08",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d2_20261008.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261006.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 4201.54
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-01",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261001.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260928.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-28",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-02",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261002.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260929.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-29",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-03",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261003.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20260930.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-09-30",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-04",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261004.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261001.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-01",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-05",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261005.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261002.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-02",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-06",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261006.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261003.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-03",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-07",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261007.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261004.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-04",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 0.0
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-08",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261008.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261005.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-05",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 673.61
+        },
+        {
+          "id": "tpi_flood_gfs_d3",
+          "date": "2026-10-09",
+          "png": "rs_uruguai_2026/png/tpi_flood_gfs_d3_20261009.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_tpi_gfs_20261006.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.25,
+            -29.846985,
+            -56.453196,
+            -29.05
+          ],
+          "forecast": true,
+          "issued": "2026-10-06",
+          "forecast_source": "noaa-gfs",
+          "kind": "forecast",
+          "critical_km2": 4322.43
         }
       ],
       "metrics": "metrics.json#rs_uruguai_2026",
@@ -8009,6 +9113,7 @@
         "nisar_timeseries": "rs_uruguai_2026/nisar_timeseries.json",
         "flood_candidates": "rs_uruguai_2026/geojson/flood_confirmed.geojson",
         "nisar_polarization": null,
+        "places_daily": "rs_uruguai_2026/places_daily.json",
         "flood_nisar_20261012": "rs_uruguai_2026/geojson/flood_nisar_20261012.geojson",
         "flood_nisar_20261024": "rs_uruguai_2026/geojson/flood_nisar_20261024.geojson",
         "flood_nisar_20261105": "rs_uruguai_2026/geojson/flood_nisar_20261105.geojson"

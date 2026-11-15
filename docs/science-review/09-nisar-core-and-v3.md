@@ -196,9 +196,7 @@ Live Now additionally keeps only RS/SC/PR land. The live Southern Brazil pair (0
   climatology, the same product mix as §1.
 - **Pitch wording:** "tested retrospectively", never "the live index uses upstream rain".
 
-**TPI replay: cut (conductor, 13:55).** Local rain index not replayed for this case; local rain at Uruguaiana never reached its own P99 — the flood was driven by upstream-basin rain (see forecast_proof). The replay was
-cut because of OOM risk during the recording. When it is done after submission it must use
-`clim_imerg_0p1.tif`, not the legacy (scrambled) `doy_*.tif` files.
+**TPI-flood replay (run 15:15, `tools/rs_uruguai_tpi_flood_replay.py`, clim_imerg_0p1).** Local TPI-flood (IMERG Early rain vs the IMERG Final climatology, SMAP L4, terrain) read Critical over the Uruguay River corridor in the bands of Sep 30 – Oct 2 (rain Sep 28–30; up to 813 km² Critical), 3–5 days before Uruguaiana reached flood stage on Oct 5, and again Oct 9 & 11 before the Oct 16 crest. The NOAA GFS run of Sep 29 showed High for Sep 30, the Sep 30 run Critical for Oct 1, the Oct 2 run High for Oct 3–5. Caveat: IMERG Early runs wetter than Final; the river flood itself was driven by upstream-basin rain (see forecast_proof).
 
 ---
 
