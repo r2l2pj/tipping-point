@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "sync:data": "bun scripts/sync-data.mjs",
-    "predev": "bun run sync:data",
-    "prebuild": "bun run sync:data"
+    "predev": "bun scripts/sync-data.mjs --auto",
+    "prebuild": "bun scripts/sync-data.mjs --auto"
   },
   "dependencies": {
     "@google/earthengine": "^1.7.52",
