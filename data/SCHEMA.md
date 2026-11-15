@@ -531,7 +531,8 @@ extent' — dissolved per AOI+product+image date, EPSG:4326, props `aoi`,
 `permanent_water_excluded`, `area_km2`; BLP `hydrographyA` permanent/reference
 water subtracted), `rs_2024/geojson/flood_ems_aoi.geojson` (the five EMS AOI
 extents), `rs_2024/geojson/landslide_ems.geojson` (`6-Mass Movement`
-polygons — reported, not scored), `rs_2024/flood_ems_meta.json` (activation,
+polygons — scored by `tools/rs_ems_landslide.py`, next section),
+`rs_2024/flood_ems_meta.json` (activation,
 AOIs, products with versions/image dates/sensors/download URLs, licence).
 
 **Coverage limit (applies to every flood_ems key):** EMSR720 mapped only five
@@ -552,6 +553,34 @@ evidence, not AOI-wide.
 `flood_ems*` never touches `flooded_km2` / `flood_warned_pct` — those keep
 their existing semantics (`flood_warned_pct` stays null pending the ASF
 route; `flood_ems` is the reference-map validation, a different question).
+
+### EMSR720 landslide reference — `landslide_ems*` + `scar_ems*` (rs_2024)
+
+Producer `tools/rs_ems_landslide.py` (reuses `tools/rs_ems_validation.py`
+loaders/AOI logic and `tools/warned_before.py` ANCHORS/frame conventions).
+The 497 member polygons of `rs_2024/geojson/landslide_ems.geojson`
+(photo-interpreted `6-Mass Movement`, imagery 2024-05-06..05-15, ~6.4 km²) are
+the landslide reference. **The same coverage limit applies: scored ONLY inside
+the five EMS AOI extents — Taquari-valley-only evidence, and the slides are
+undated** (post-event imagery shows scars, not failure times; all scored
+against the L37 onset 2024-04-29 03:00Z).
+
+| key | unit | definition |
+|---|---|---|
+| `landslide_ems_n` / `landslide_ems_km2` | count / km² | EMS mass-movement member polygons (geodesic area) |
+| `landslide_ems_warned_observed_pct` / `_critical_pct` | % of the 497 polygons | ANY ~90 m TPI_slide cell the polygon touches is Alto+ (> 0.4) [Crítico > 0.6] in the observed band dated **2024-04-29** (all information before the 04-29 03Z onset) |
+| `landslide_ems_warned_gfs_{24,48,72}h_pct` / `_critical_pct` | % of the 497 polygons | same any-cell-touched rule vs the GFS 00Z run issued 2024-04-28/27/26 (max over d1..d3 `_slide` frames depicting dates ≤ the onset day) — the `slide_warned_*` by-lead convention, polygons instead of points |
+| `scar_ems_hit_{100,500}m_pct` | % of the 497 polygons | ≥1 OPERA DIST scar candidate within r m (polygon-to-polygon, UTM 22S; candidates restricted to those whose representative point falls inside the AOI extents — 150 of 2,849) |
+| `scar_ems_precision_{100,500}m_pct` | % of the 150 in-AOI candidates | within r m of an EMS polygon |
+| `scar_ems_baseline` | object | random-placement null (science-review D2): same count (150) of placements per seed on steep terrain — T_slide > 0 = NASADEM slope ≥ 15° on the ~90 m grid (the scar product's terrain gate, from the case T_slide COG; the 1″ `steep15_1as.tif` mask it used is a gitignored static asset) — inside the AOI extents, buffered to circles with areas drawn from the in-AOI candidate distribution; `seeds` (200), per-metric `mean` + `ci95` (2.5/97.5 percentiles), `method`, `slope_source`, `lift_precision` |
+| `scar_ems_lift_{100,500}m` | ratio | observed `scar_ems_hit_*m_pct` / baseline mean |
+| `landslide_ems` | object | `tpi_warned` (per-date observed curve + per-lead GFS rows, all four variants: `{any_cell, centroid_cell} × {alto_plus, critico}`, count + area-weighted), `scar` (observed/baseline/lift), `inventory_16027` (published point-inventory numbers + `same_lead_order`), `definitions`, `licence`, `coverage_limit`, `scope` |
+| `landslide_ems_method` | text | one-paragraph method + caveats |
+
+`landslide_ems_warned_*` differs from `slide_warned_*` in BOTH the damage
+reference (497 EMS polygons in five small AOIs vs 16,027 inventory points
+AOI-wide) and the cell rule (any-cell-touched vs the point's own cell — more
+permissive); the order comparison lives in `landslide_ems.inventory_16027`.
 
 ## data/now/ — the live bundle
 

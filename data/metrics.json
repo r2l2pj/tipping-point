@@ -4402,7 +4402,446 @@
         ],
         "scope": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only"
       },
-      "flood_ems_method": "Copernicus EMS Rapid Mapping activation EMSR720 (event GLIDE FL-2024-000063-BRA, activated 2024-05-03) mapped the May 2024 Rio Grande do Sul floods with semi-automatic SAR delineation (DEL products: COSMO-SkyMed, RADARSAT-2, PAZ) and photo-interpreted optical grading (GRA: Pleiades Neo, GeoEye-1, WorldView-3) on five small Taquari-valley AOIs — Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza. All '5-Flood' polygons (observedEventA 'Flooded area' and 'Flood trace', plus DEL_MONIT 'Maximum flood extent') were unioned per AOI+image date, minus the BLP hydrographyA permanent/reference-water layer, rasterized centre-in onto the ~90 m TPI_flood grid (area-weighted variant at >=50% coverage reported alongside), and scored ONLY inside the EMS AOI extents. IMPORTANT COVERAGE LIMIT: the EMS AOIs cover ~51.6-51.9 W, 29.0-29.3 S — Porto Alegre, Guaiba, Canoas, Eldorado do Sul and Sao Leopoldo were never mapped, so every score is Taquari-valley-only evidence, not AOI-wide. For each EMS image date E, IoU/F1/precision/recall compare EMS flood cells with TPI_flood Alto+ (>0.4) and Critico (>0.6) in (a) the observed band dated E (rain days E-3..E-1) and (b) the GFS 00Z run issued 24 h before E restricted to frames depicting dates <= E. 'Flagged before onset' measures the % of the EMS flood footprint already Alto+/Critico in the observed band dated 2024-04-29 and in the GFS runs issued 2024-04-26/27/28 (onset 2024-04-29 03:00Z; tools/warned_before.py evaluate/by_lead). Caveats: EMS polygons are imagery-mapped extent at a moment — they miss flooding under cloud/vegetation, GRA 'Flood trace' marks earlier water no longer present, and the EMS image date E pairs loosely with our frame convention (observed band E = rain E-3..E-1, GFS frames depicting E = rain E-2..E; docs/conventions-dates.md)."
+      "flood_ems_method": "Copernicus EMS Rapid Mapping activation EMSR720 (event GLIDE FL-2024-000063-BRA, activated 2024-05-03) mapped the May 2024 Rio Grande do Sul floods with semi-automatic SAR delineation (DEL products: COSMO-SkyMed, RADARSAT-2, PAZ) and photo-interpreted optical grading (GRA: Pleiades Neo, GeoEye-1, WorldView-3) on five small Taquari-valley AOIs — Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza. All '5-Flood' polygons (observedEventA 'Flooded area' and 'Flood trace', plus DEL_MONIT 'Maximum flood extent') were unioned per AOI+image date, minus the BLP hydrographyA permanent/reference-water layer, rasterized centre-in onto the ~90 m TPI_flood grid (area-weighted variant at >=50% coverage reported alongside), and scored ONLY inside the EMS AOI extents. IMPORTANT COVERAGE LIMIT: the EMS AOIs cover ~51.6-51.9 W, 29.0-29.3 S — Porto Alegre, Guaiba, Canoas, Eldorado do Sul and Sao Leopoldo were never mapped, so every score is Taquari-valley-only evidence, not AOI-wide. For each EMS image date E, IoU/F1/precision/recall compare EMS flood cells with TPI_flood Alto+ (>0.4) and Critico (>0.6) in (a) the observed band dated E (rain days E-3..E-1) and (b) the GFS 00Z run issued 24 h before E restricted to frames depicting dates <= E. 'Flagged before onset' measures the % of the EMS flood footprint already Alto+/Critico in the observed band dated 2024-04-29 and in the GFS runs issued 2024-04-26/27/28 (onset 2024-04-29 03:00Z; tools/warned_before.py evaluate/by_lead). Caveats: EMS polygons are imagery-mapped extent at a moment — they miss flooding under cloud/vegetation, GRA 'Flood trace' marks earlier water no longer present, and the EMS image date E pairs loosely with our frame convention (observed band E = rain E-3..E-1, GFS frames depicting E = rain E-2..E; docs/conventions-dates.md).",
+      "landslide_ems_n": 497,
+      "landslide_ems_km2": 6.371,
+      "landslide_ems_warned_observed_pct": 31.99,
+      "landslide_ems_warned_observed_critical_pct": 0.0,
+      "landslide_ems_warned_gfs_24h_pct": 81.09,
+      "landslide_ems_warned_gfs_24h_critical_pct": 20.72,
+      "landslide_ems_warned_gfs_48h_pct": 0.0,
+      "landslide_ems_warned_gfs_48h_critical_pct": 0.0,
+      "landslide_ems_warned_gfs_72h_pct": 0.0,
+      "landslide_ems_warned_gfs_72h_critical_pct": 0.0,
+      "scar_ems_hit_100m_pct": 27.36,
+      "scar_ems_precision_100m_pct": 68.67,
+      "scar_ems_lift_100m": 3.28,
+      "scar_ems_hit_500m_pct": 54.53,
+      "scar_ems_precision_500m_pct": 80.67,
+      "scar_ems_lift_500m": 1.11,
+      "scar_ems_baseline": {
+        "seeds": 200,
+        "n_random_per_seed": 150,
+        "slope_source": "T_slide > 0 (slope >= 15 deg, GEE NASADEM on the ~90 m grid; the same slope floor the scar product gates on, read from the case T_slide COG — the 1-arc-second steep15_1as.tif mask it actually used is a gitignored static asset)",
+        "placement": "uniform point in a random steep cell, inside the AOI union",
+        "sizes": "circle of area drawn with replacement from the in-AOI candidate areas",
+        "method": "per seed: draw n steep cells with replacement, place a uniform point in each (rejected outside the AOI union), buffer to a circle of a sampled candidate area, recompute hit/precision; mean + 2.5/97.5 percentiles over seeds",
+        "hit_100m_pct": {
+          "mean": 8.33,
+          "ci95": [
+            5.23,
+            11.28
+          ]
+        },
+        "hit_500m_pct": {
+          "mean": 48.95,
+          "ci95": [
+            42.86,
+            55.56
+          ]
+        },
+        "precision_100m_pct": {
+          "mean": 18.3,
+          "ci95": [
+            12.0,
+            24.67
+          ]
+        },
+        "precision_500m_pct": {
+          "mean": 71.27,
+          "ci95": [
+            63.33,
+            79.33
+          ]
+        },
+        "lift_precision": {
+          "100m": 3.75,
+          "500m": 1.13
+        },
+        "definition": "random placements of the same count as the in-AOI candidates on steep terrain inside the EMS AOIs; hit/precision recomputed per seed; ci95 = 2.5/97.5 percentiles over seeds; lift = observed / baseline mean"
+      },
+      "landslide_ems": {
+        "activation": "EMSR720",
+        "licence": "Copernicus EMS — free use with attribution: © European Union, Copernicus Emergency Management Service",
+        "source": "Copernicus EMS Rapid Mapping EMSR720",
+        "coverage_limit": "EMSR720 covers only five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza); Porto Alegre/Guaiba metro flood not mapped by EMS — scores are Taquari-valley-only",
+        "scope": "scored ONLY inside the EMS AOI extents (flood_ems_aoi.geojson)",
+        "reference": {
+          "n_polygons": 497,
+          "area_km2": 6.371,
+          "note": "member polygons of geojson/landslide_ems.geojson; imagery-mapped, undated"
+        },
+        "tpi_warned": {
+          "n_polygons": 497,
+          "area_km2": 6.371,
+          "n_polygons_no_domain_cell": 0,
+          "n_polygons_centroid_offgrid": 0,
+          "onset_utc": "2024-04-29T03:00:00+00:00",
+          "anchor_label": "event onset: first deaths of the event (2 flood deaths, Paverama, 2024-04-29); heavy rain from 2024-04-27, stalled from 04-29",
+          "anchor_source": "MetSul laudo https://metsul.com/wp-content/uploads/2024/06/metsul-laudo_V4_assinado.pdf ; Jornal do Comércio 2024-04-29 https://www.jornaldocomercio.com/geral/2024/04/1152501-homem-morre-arrastado-pela-correnteza-em-paverama.html ; SGB https://rigeo.sgb.gov.br/bitstream/doc/25165/1/guimaraes_et_al_evento_catastrofico_serra_rs.pdf",
+          "observed_by_date": [
+            {
+              "band_date": "2024-04-29",
+              "hours_before_onset": 3.0,
+              "tpi_source": "observed",
+              "any_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 159,
+                  "pct": 31.99,
+                  "hit_area_km2": 4.021,
+                  "area_pct": 63.11
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                }
+              },
+              "centroid_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 80,
+                  "pct": 16.1,
+                  "hit_area_km2": 1.088,
+                  "area_pct": 17.08
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                }
+              }
+            },
+            {
+              "band_date": "2024-04-30",
+              "hours_before_onset": -21.0,
+              "tpi_source": "observed",
+              "any_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 457,
+                  "pct": 91.95,
+                  "hit_area_km2": 6.204,
+                  "area_pct": 97.37
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 419,
+                  "pct": 84.31,
+                  "hit_area_km2": 6.043,
+                  "area_pct": 94.84
+                }
+              },
+              "centroid_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 369,
+                  "pct": 74.25,
+                  "hit_area_km2": 4.535,
+                  "area_pct": 71.18
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 276,
+                  "pct": 55.53,
+                  "hit_area_km2": 2.752,
+                  "area_pct": 43.19
+                }
+              }
+            },
+            {
+              "band_date": "2024-05-01",
+              "hours_before_onset": -45.0,
+              "tpi_source": "observed",
+              "any_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 464,
+                  "pct": 93.36,
+                  "hit_area_km2": 6.216,
+                  "area_pct": 97.56
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 436,
+                  "pct": 87.73,
+                  "hit_area_km2": 6.128,
+                  "area_pct": 96.18
+                }
+              },
+              "centroid_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 393,
+                  "pct": 79.07,
+                  "hit_area_km2": 4.654,
+                  "area_pct": 73.04
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 330,
+                  "pct": 66.4,
+                  "hit_area_km2": 3.724,
+                  "area_pct": 58.44
+                }
+              }
+            },
+            {
+              "band_date": "2024-05-02",
+              "hours_before_onset": -69.0,
+              "tpi_source": "observed",
+              "any_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 464,
+                  "pct": 93.36,
+                  "hit_area_km2": 6.216,
+                  "area_pct": 97.56
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 437,
+                  "pct": 87.93,
+                  "hit_area_km2": 6.131,
+                  "area_pct": 96.23
+                }
+              },
+              "centroid_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 394,
+                  "pct": 79.28,
+                  "hit_area_km2": 4.658,
+                  "area_pct": 73.11
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 336,
+                  "pct": 67.61,
+                  "hit_area_km2": 3.86,
+                  "area_pct": 60.58
+                }
+              }
+            }
+          ],
+          "gfs_by_lead": [
+            {
+              "lead_h": 24,
+              "gfs_issue": "2024-04-28",
+              "hours_before_onset": 27.0,
+              "gfs_frames": [
+                "issued 2024-04-28 d1_slide -> 2024-04-29"
+              ],
+              "tpi_source": "gfs",
+              "any_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 403,
+                  "pct": 81.09,
+                  "hit_area_km2": 5.939,
+                  "area_pct": 93.21
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 103,
+                  "pct": 20.72,
+                  "hit_area_km2": 2.726,
+                  "area_pct": 42.78
+                }
+              },
+              "centroid_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 283,
+                  "pct": 56.94,
+                  "hit_area_km2": 3.269,
+                  "area_pct": 51.31
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 35,
+                  "pct": 7.04,
+                  "hit_area_km2": 0.307,
+                  "area_pct": 4.82
+                }
+              }
+            },
+            {
+              "lead_h": 48,
+              "gfs_issue": "2024-04-27",
+              "hours_before_onset": 51.0,
+              "gfs_frames": [
+                "issued 2024-04-27 d1_slide -> 2024-04-28",
+                "issued 2024-04-27 d2_slide -> 2024-04-29"
+              ],
+              "tpi_source": "gfs",
+              "any_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                }
+              },
+              "centroid_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                }
+              }
+            },
+            {
+              "lead_h": 72,
+              "gfs_issue": "2024-04-26",
+              "hours_before_onset": 75.0,
+              "gfs_frames": [
+                "issued 2024-04-26 d1_slide -> 2024-04-27",
+                "issued 2024-04-26 d2_slide -> 2024-04-28",
+                "issued 2024-04-26 d3_slide -> 2024-04-29"
+              ],
+              "tpi_source": "gfs",
+              "any_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                }
+              },
+              "centroid_cell": {
+                "alto_plus": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                },
+                "critico": {
+                  "n": 497,
+                  "hit_n": 0,
+                  "pct": 0.0,
+                  "hit_area_km2": 0.0,
+                  "area_pct": 0.0
+                }
+              }
+            }
+          ]
+        },
+        "inventory_16027": {
+          "n_points": 16027,
+          "unit": "% of inventory points (point's TPI cell — not any-cell-touched)",
+          "gfs_24h_pct": 36.45,
+          "gfs_48h_pct": 0.0,
+          "gfs_72h_pct": 0.0,
+          "observed_29_pct": 3.66,
+          "ems_gfs_pct": [
+            81.09,
+            0.0,
+            0.0
+          ],
+          "same_lead_order": true
+        },
+        "scar": {
+          "n_candidates_total": 2849,
+          "n_candidates_in_aoi": 150,
+          "candidates_in_aoi_km2": 1.254,
+          "radii_m": [
+            100,
+            500
+          ],
+          "observed": {
+            "n_ems": 497,
+            "n_candidates": 150,
+            "hit_100m_pct": 27.36,
+            "hit_500m_pct": 54.53,
+            "precision_100m_pct": 68.67,
+            "precision_500m_pct": 80.67
+          },
+          "baseline": {
+            "seeds": 200,
+            "n_random_per_seed": 150,
+            "slope_source": "T_slide > 0 (slope >= 15 deg, GEE NASADEM on the ~90 m grid; the same slope floor the scar product gates on, read from the case T_slide COG — the 1-arc-second steep15_1as.tif mask it actually used is a gitignored static asset)",
+            "placement": "uniform point in a random steep cell, inside the AOI union",
+            "sizes": "circle of area drawn with replacement from the in-AOI candidate areas",
+            "method": "per seed: draw n steep cells with replacement, place a uniform point in each (rejected outside the AOI union), buffer to a circle of a sampled candidate area, recompute hit/precision; mean + 2.5/97.5 percentiles over seeds",
+            "hit_100m_pct": {
+              "mean": 8.33,
+              "ci95": [
+                5.23,
+                11.28
+              ]
+            },
+            "hit_500m_pct": {
+              "mean": 48.95,
+              "ci95": [
+                42.86,
+                55.56
+              ]
+            },
+            "precision_100m_pct": {
+              "mean": 18.3,
+              "ci95": [
+                12.0,
+                24.67
+              ]
+            },
+            "precision_500m_pct": {
+              "mean": 71.27,
+              "ci95": [
+                63.33,
+                79.33
+              ]
+            }
+          },
+          "lift": {
+            "hit_100m": 3.28,
+            "hit_500m": 1.11,
+            "precision_100m": 3.75,
+            "precision_500m": 1.13
+          }
+        },
+        "definitions": {
+          "warned_polygon": "polygon counts when ANY ~90 m TPI_slide cell it touches is Alto+ (>0.4) [Critico >0.6]; centroid_cell = only the cell containing the centroid; polygons with no in-domain cell / NaN TPI stay in the denominator",
+          "area_weighted": "share weighted by geodesic polygon area km2 (equirectangular cos(lat))",
+          "observed": "series band dated D (rain D-3..D-1; band 2024-04-29 = all information before the 04-29 03Z onset)",
+          "gfs_lead": "GFS 00Z run issued on the UTC date (onset - lead_h); max over d1..d3 _slide frames depicting dates <= the onset day",
+          "hit": "% of EMS polygons with >=1 candidate within r m (UTM 22S polygon distance)",
+          "precision": "% of candidates inside the AOI extents within r m of an EMS polygon",
+          "domain": "cells whose centre is inside an EMS AOI extent (all_touched=False)"
+        }
+      },
+      "landslide_ems_method": "Copernicus EMS Rapid Mapping activation EMSR720 photo-interpreted 497 landslide ('6-Mass Movement') polygons (~6.4 km²) on the five Taquari-valley AOIs (Guapore, Encantado, Roca Sales, Das Antas Dam, Santa Tereza) from post-event optical imagery acquired 2024-05-06..05-15 (Pleiades Neo, GeoEye-1) — the slides are UNDATED: imagery shows the scars, not the failure time, so every polygon is scored against the L37 event onset 2024-04-29 03:00Z. (A) Each member polygon takes every ~90 m TPI_slide cell it touches (all_touched rasterization clipped to the EMS AOI extents; centroid-cell variant alongside) and counts as warned when ANY touched cell is Alto+ (> 0.4) [Crítico > 0.6]; shares are reported as polygon counts and geodesic-area weighted. Sources: the observed series bands dated 2024-04-29..05-02 (curve) and the GFS 00Z runs issued 2024-04-28/27/26 (24/48/72 h before onset; max over d1..d3 _slide frames depicting dates <= the onset day — the warned_before by_lead convention). (B) Scar candidates = OPERA DIST-ALERT-HLS vegetation-loss polygons inside the same AOI extents (representative-point containment): hit rate = % of EMS polygons with a candidate within 100/500 m; precision = % of in-AOI candidates within 100/500 m of an EMS polygon (polygon-to-polygon, UTM 22S). Random baseline (science-review item D2): the same number of random placements per seed on steep terrain (T_slide > 0, i.e. NASADEM slope >= 15 deg — the scar product's own terrain gate, read from the case T_slide COG because the 1\" steep15_1as.tif it used is a gitignored static asset) inside the AOI extents, each buffered to a circle whose area is drawn with replacement from the in-AOI candidate areas; 200 seeds; mean and 95 % interval (2.5/97.5 percentiles); lift = observed / baseline mean. Caveats: EMS mapped only five small AOIs — scores are Taquari-valley-only, not AOI-wide; slides are undated (post-event imagery); polygons are imagery-mapped extent at a moment and miss cloud/vegetation-hidden slides; any-cell-touched is more permissive than the published point-cell scoring of the 16,027-point inventory."
     }
   }
 }
