@@ -34,3 +34,7 @@ static/cache/
 # static geo downloads (large rasters stay local; manifests are committed)
 data/now/static/*/*
 !data/now/static/*/manifest.json
+
+# ML training store (rebuilt by `python -m ml.local db`; Lucas publishes the full one deliberately)
+data/ml/*.sqlite
+data/ml/*.sqlite.tmp
