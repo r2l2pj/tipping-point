@@ -11,7 +11,50 @@
         48.5
       ],
       "reference_date": "2025-12-10",
-      "layers": []
+      "layers": [],
+      "timeline_marks": [
+        {
+          "date": "2025-11-22",
+          "label": "NISAR pass (track 172 D)",
+          "kind": "nisar"
+        },
+        {
+          "date": "2025-12-03",
+          "label": "Forecast index Critical on landslide-prone cells (NOAA GFS run of Dec 3) — not where it later flooded",
+          "kind": "signal"
+        },
+        {
+          "date": "2025-12-04",
+          "label": "NISAR pass (track 172 D)",
+          "kind": "nisar"
+        },
+        {
+          "date": "2025-12-05",
+          "label": "NWS Seattle Flood Watch issued (16:10 PST), incl. landslide risk",
+          "kind": "event"
+        },
+        {
+          "date": "2025-12-08",
+          "label": "Heavy rain begins; Skagit County EOC fully activated (21:00 PST)",
+          "kind": "event",
+          "landing": true
+        },
+        {
+          "date": "2025-12-09",
+          "label": "Landslides, road closures and evacuations (Dec 9-10, Snohomish/King)",
+          "kind": "event"
+        },
+        {
+          "date": "2025-12-11",
+          "label": "River records on the Skagit and Snohomish (Dec 11-12)",
+          "kind": "event"
+        },
+        {
+          "date": "2025-12-16",
+          "label": "NISAR pass (track 172 D)",
+          "kind": "nisar"
+        }
+      ]
     },
     {
       "id": "rs-2024-05",
