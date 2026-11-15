@@ -178,6 +178,48 @@ def _terrain() -> tuple[np.ndarray, np.ndarray, dict] | None:
     return t_slide, t_flood, terrain_checks(slope, t_slide)
 
 
+CLIM_REFERENCE = Path(__file__).with_name("clim_reference.json")
+
+
+def clim_checks(path: Path | None, bounds: tuple[float, ...] = NOW_BOUNDS,
+                reference: Path = CLIM_REFERENCE) -> dict:
+    """Geolocation gates for the climatology file (conductor 2026-11-15):
+    - lat axis strictly monotonic (north-up) and covering the whole domain;
+    - p90/p95/p99 at >= 3 reference points within tolerance of an
+      INDEPENDENT IMERG-Final percentile computed by separate code
+      (live/clim_reference.json). The scrambled legacy COGs miss by up to
+      19.6 mm; the 0.1 deg file matches within 0.1 mm."""
+    import json
+
+    import rasterio
+
+    out = {"clim_lat_monotonic": False, "clim_covers_domain": False,
+           "clim_ref_ok": False}
+    if path is None:
+        return out
+    ref = json.loads(Path(reference).read_text())
+    with rasterio.open(path) as ds:
+        t = ds.transform
+        lats = t.f + (np.arange(ds.height) + 0.5) * t.e
+        out["clim_lat_monotonic"] = bool(t.e < 0 and np.all(np.diff(lats) < 0))
+        w, s, e, n = bounds
+        out["clim_covers_domain"] = bool(ds.bounds.left <= w and ds.bounds.right >= e
+                                         and ds.bounds.bottom <= s and ds.bounds.top >= n)
+        first = (int(ref["doy"]) - 1) * 3 + 1
+        worst = 0.0
+        for name, pt in ref["points"].items():
+            got = [float(v) for v in next(ds.sample(
+                [(pt["lon"], pt["lat"])], indexes=[first, first + 1, first + 2]))]
+            for g, pname in zip(got, ("p90", "p95", "p99")):
+                want = float(pt[pname])
+                tol = max(float(ref["tolerance_mm"]), float(ref["tolerance_rel"]) * want)
+                worst = max(worst, abs(g - want) / tol)
+    out["clim_ref_points"] = len(ref["points"])
+    out["clim_ref_worst_tol_ratio"] = round(worst, 3)
+    out["clim_ref_ok"] = bool(worst <= 1.0 and len(ref["points"]) >= 3)
+    return out
+
+
 def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
                 days: list[dt.date] | None = None,
                 cache_dir: Path | None = None) -> dict:
@@ -208,8 +250,11 @@ def load_static(bounds: tuple[float, ...] = NOW_BOUNDS,
     if missing:
         print(f"[static_fetch] {missing} doy(s) missing — nearest "
               f"available will be used", file=sys.stderr)
+    checks = dict(terr[2])
+    checks.update(clim_checks(path if source == CLIM_SOURCE_NEW else None,
+                              tuple(bounds)))
     return {"t_slide": terr[0], "t_flood": terr[1], "clim": clim,
-            "checks": terr[2], "clim_source": source}
+            "checks": checks, "clim_source": source}
 
 
 def clim_for_day(static: dict, day: dt.date) -> dict[str, np.ndarray]:

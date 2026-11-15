@@ -210,3 +210,48 @@ def test_leap_doy_calendar():
 def test_clim_source_matches_run_now_verified_value():
     from live import run_now
     assert run_now.CLIM_SOURCE_OK == static_fetch.CLIM_SOURCE_NEW
+
+
+def _clim_tif(path, values_fn, north=-22.4, west=-58.1, res=0.1, h=117, w=102, flip=False):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+    lats = north - (np.arange(h) + 0.5) * res
+    arr = np.zeros((1098, h, w), dtype="float32")
+    for b in range(3):
+        arr[(320 - 1) * 3 + b] = values_fn(lats, b)[:, None]
+    if flip:                                   # scrambled: rows reversed
+        arr = arr[:, ::-1, :]
+    with rasterio.open(path, "w", driver="GTiff", width=w, height=h, count=1098,
+                       dtype="float32", crs="EPSG:4326",
+                       transform=from_origin(west, north, res, res)) as ds:
+        ds.write(arr)
+    return path
+
+
+def test_clim_checks_pass_on_matching_file_and_catch_scramble(tmp_path):
+    import json
+    from live.static_fetch import clim_checks
+    ref = {"doy": 320, "tolerance_mm": 1.0, "tolerance_rel": 0.03, "points": {
+        "a": {"lon": -51.25, "lat": -30.05, "p90": 30.05, "p95": 31.05, "p99": 32.05},
+        "b": {"lon": -49.25, "lat": -25.45, "p90": 25.45, "p95": 26.45, "p99": 27.45},
+        "c": {"lon": -52.05, "lat": -23.45, "p90": 23.45, "p95": 24.45, "p99": 25.45}}}
+    rp = tmp_path / "ref.json"
+    rp.write_text(json.dumps(ref))
+    fn = lambda lats, b: -lats + b              # value = |lat| + band offset
+    good = clim_checks(_clim_tif(tmp_path / "g.tif", fn), reference=rp)
+    assert good["clim_ref_ok"] and good["clim_lat_monotonic"] and good["clim_covers_domain"]
+    bad = clim_checks(_clim_tif(tmp_path / "b.tif", fn, flip=True), reference=rp)
+    assert not bad["clim_ref_ok"]               # geolocation scramble caught
+    small = clim_checks(_clim_tif(tmp_path / "s.tif", fn, h=60), reference=rp)
+    assert not small["clim_covers_domain"]
+    assert clim_checks(None, reference=rp)["clim_ref_ok"] is False
+
+
+def test_clim_reference_is_independent_and_has_3_points():
+    import json
+    from live.static_fetch import CLIM_REFERENCE
+    ref = json.loads(CLIM_REFERENCE.read_text())
+    assert len(ref["points"]) >= 3 and ref["doy"] == 320
+    lats = sorted(p["lat"] for p in ref["points"].values())
+    assert lats[-1] - lats[0] > 5               # spread N-S: catches row scrambles

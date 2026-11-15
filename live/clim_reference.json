@@ -1,0 +1,29 @@
+{
+ "_about": "Independent IMERG Final (GPM_3IMERGDF V07, GES DISC OPeNDAP point reads, own parser) 3-day-accumulation percentiles, 2001-2023, +-30 d step 3 (483 samples), leap-calendar doy. Used by static_fetch.clim_checks to catch geolocation/scramble errors in the climatology file (2026-11-15: legacy doy COGs were two squashed domain copies).",
+ "doy": 320,
+ "tolerance_mm": 1.0,
+ "tolerance_rel": 0.03,
+ "points": {
+  "porto_alegre": {
+   "lon": -51.25,
+   "lat": -30.05,
+   "p90": 36.79,
+   "p95": 50.14,
+   "p99": 108.65
+  },
+  "curitiba": {
+   "lon": -49.25,
+   "lat": -25.45,
+   "p90": 42.7,
+   "p95": 55.13,
+   "p99": 73.71
+  },
+  "norte_pr": {
+   "lon": -52.05,
+   "lat": -23.45,
+   "p90": 47.0,
+   "p95": 67.62,
+   "p99": 104.71
+  }
+ }
+}
