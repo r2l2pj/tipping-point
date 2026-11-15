@@ -19,7 +19,7 @@ import {
 import { CHANGE_OPACITY_DEFAULT, CHANGE_OPACITY_MIN, parseChangeLink, type NisarChangeSel } from "./model/nisarChange";
 import type { ComparePair } from "./model/radar";
 import { viewLayers, type ViewId } from "./model/views";
-import { defaultSides, mainTrackDays, normSide, nisarDefaults, parseSideSpec, presetSides, sideDays, viewCompareLayer, type ComparePresetId, type Sides } from "./model/sideCompare";
+import { defaultSides, isRiskLayer, mainTrackDays, normSide, nisarDefaults, parseSideSpec, presetSides, sideDays, viewCompareLayer, type ComparePresetId, type Side, type Sides } from "./model/sideCompare";
 import { nisarTracks } from "./model/radar";
 import { caseHasHazard, defaultStepIndex, floodPostDate, stepsFor, type IssueLead } from "./model/steps";
 import type { CcBundle, Hazard } from "./model/types";
@@ -407,7 +407,17 @@ export function reduce(
     }
     case "setHazard": {
       if (!bundle || action.hazard === state.hazard) return state;
-      return { ...state, hazard: action.hazard, layers: swapForHazard(bundle, state.layers, action.hazard) };
+      // Lucas (BUG): with Compare ⇆ open, every risk side (TPI flood /
+      // landslide, observed or forecast) follows the hazard switch and keeps
+      // its date and lead; NISAR / rain / satellite / ML sides stay.
+      const follow = (x: Side): Side =>
+        isRiskLayer(x.layer) && x.layer !== action.hazard
+          ? normSide(bundle, stepsFor(bundle), action.hazard, { ...x, layer: action.hazard })
+          : x;
+      const compareSides = state.compareSides
+        ? { ...state.compareSides, L: follow(state.compareSides.L), R: follow(state.compareSides.R) }
+        : state.compareSides;
+      return { ...state, hazard: action.hazard, layers: swapForHazard(bundle, state.layers, action.hazard), compareSides };
     }
     case "setProbHorizon": {
       // Conductor: picking a horizon chip returns to the ML view (today).
@@ -475,7 +485,20 @@ export function reduce(
       if (action.pol !== undefined) merged.pol = action.pol;
       if (action.track !== undefined) merged.track = action.track;
       if (action.horizon !== undefined) merged.horizon = action.horizon;
-      return { ...state, compareSides: { ...cur, [action.side]: normSide(bundle, stepsFor(bundle), state.hazard, merged) } };
+      const steps = stepsFor(bundle);
+      const moved = normSide(bundle, steps, state.hazard, merged);
+      const next: Sides = { ...cur, [action.side]: moved };
+      // 'Forecast vs what happened' (link): LEFT issued X for X+k, RIGHT
+      // observed X+k — a new day or lead on one side moves the other; another
+      // layer, or LEFT observed / RIGHT forecast, ends the link.
+      if (cur.link) {
+        const other = action.side === "L" ? "R" : "L";
+        const keeps = action.layer === undefined &&
+          (action.side === "L" ? (moved.lead ?? 0) > 0 : (moved.lead ?? 0) === 0);
+        if (!keeps) delete next.link;
+        else next[other] = normSide(bundle, steps, state.hazard, { ...cur[other], date: moved.date });
+      }
+      return { ...state, compareSides: next };
     }
     case "openCompare": {
       if (!bundle) return state;

@@ -56,6 +56,9 @@ export function pickTpiFrame(
     (l) =>
       l.png &&
       l.date === day.date &&
+      // L61: the flood + NISAR frames are picked on purpose (floodNisar),
+      // never as the day's plain index frame.
+      !/^tpi_flood_nisar/.test(l.id) &&
       // 6-hourly frames (lead-analysis 'datetime') are picked by the hour
       // chips only, never as a day's frame.
       !(l as unknown as { datetime?: unknown }).datetime &&

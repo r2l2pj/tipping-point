@@ -15,11 +15,13 @@ import {
 } from "./model/layerRegistry";
 import { classRows, HATCH_SWATCH, layerLegendRows } from "./model/legend";
 import { fmtDataDate } from "./model/format";
-import { caseHasHazard } from "./model/steps";
+import { caseHasHazard, hazardMissingText } from "./model/steps";
 import { HAZARD_LABEL, type CcBundle, type Hazard } from "./model/types";
 import { OPACITY_DEFAULT, OPACITY_MIN } from "./state";
 import { Icon, ICON } from "./ui";
 import { activeView, viewLayers, VIEWS, type ViewId } from "./model/views";
+import { FLOOD_NISAR_LABEL, floodNisarFrame, hasFloodNisar, NISAR_WATER_COLOR, NISAR_WATER_LABEL } from "./model/floodNisar";
+import { setFloodNisar, useFloodNisar } from "./useFloodNisar";
 
 const GROUPS: LayerGroup[] = ["Analysis", "Observations", "Replay evidence"];
 const VIEW_ICON: Record<ViewId, string> = {
@@ -127,7 +129,8 @@ export default function LayersColumn({
                   role="radio"
                   aria-checked={hazard === h}
                   disabled={!has}
-                  title={has ? undefined : "no map layer for this case"}
+                  title={has ? undefined : hazardMissingText(h)}
+                  aria-describedby={has ? undefined : "hazard-missing"}
                   onClick={() => onHazard(h)}
                   className={`min-h-10 rounded-xl border-2 px-2 text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-45 ${hazard === h ? "border-cc-accent bg-cc-accent text-white" : "border-cc-line"}`}
                 >
@@ -136,7 +139,11 @@ export default function LayersColumn({
               );
             })}
           </div>
+          {(["flood", "slide"] as Hazard[]).filter((h) => !caseHasHazard(bundle, h)).slice(0, 1).map((h) => (
+            <p key={h} id="hazard-missing" data-hazard-missing={h} className="m-0 mt-1 text-xs text-cc-muted">{hazardMissingText(h)}</p>
+          ))}
 
+          {hazard === "flood" && hasFloodNisar(bundle) && <FloodNisarToggle />}
           <Legend bundle={bundle} layers={layers} hazard={hazard} stepDate={stepDate} probHorizon={probHorizon} changeCyan={changeCyan} className="mt-2.5 shrink-0" />
 
           {onOpacity && (
@@ -269,11 +276,14 @@ export function Legend({
 }) {
   const swatch = "inline-block h-4 w-[22px] shrink-0 rounded-[3px]";
   const tpiOn = layers.includes("tpi");
+  // L61: the flood + NISAR frame of the day (default Flood look).
+  const fnOn = useFloodNisar();
+  const fn = tpiOn && hazard === "flood" && fnOn && !!floodNisarFrame(bundle, stepDate);
   return (
     <div className={className} data-legend={compact ? "compact" : "full"}>
       {/* The TPI classes only when the TPI is on (Now's ML view has its own
           legend row; two scales on screen contradict each other). */}
-      {tpiOn && <div className={`mb-1.5 font-semibold ${compact ? "text-xs" : "text-sm"}`}>{legendTitle(hazard, compact)}</div>}
+      {tpiOn && <div className={`mb-1.5 font-semibold ${compact ? "text-xs" : "text-sm"}`} data-legend-title>{fn ? FLOOD_NISAR_LABEL : legendTitle(hazard, compact)}</div>}
       <div className={`flex flex-col gap-1 ${compact ? "text-xs" : "text-[13px]"}`}>
         {tpiOn && classRows(bundle).map((c) => (
           <span key={c.key} className="inline-flex items-center gap-2.5">
@@ -285,6 +295,12 @@ export function Legend({
           <span className="inline-flex items-center gap-2.5">
             <span aria-hidden="true" className={swatch} style={{ background: HATCH_SWATCH }} />
             Hatched: forecast
+          </span>
+        )}
+        {fn && (
+          <span className="inline-flex items-center gap-2.5" data-legend-nisar-water>
+            <span aria-hidden="true" className={swatch} style={{ background: NISAR_WATER_COLOR }} />
+            {NISAR_WATER_LABEL}
           </span>
         )}
         {layerLegendRows(bundle, layers, probHorizon, stepDate, changeCyan).map((r) => r.note ? (
@@ -315,3 +331,19 @@ export const legendTitle = (hazard: Hazard, compact = false) =>
 
 export const legendSource = (stepDate?: string) =>
   `TPI 0–1 from NASA GPM IMERG rain, SMAP soil moisture and NASADEM terrain${stepDate ? ` · ${fmtDataDate(stepDate)}` : ""}`;
+
+// L61: "Flood risk + NISAR" (default) | "Rain index only".
+function FloodNisarToggle() {
+  const on = useFloodNisar();
+  return (
+    <div role="group" aria-label="Flood view" data-flood-nisar className="mt-1.5 grid grid-cols-2 gap-1">
+      {([[true, "Flood risk + NISAR"], [false, "Rain index only"]] as const).map(([v, label]) => (
+        <button key={label} type="button" aria-pressed={on === v} data-flood-nisar-btn={v ? "nisar" : "rain"}
+          onClick={() => setFloodNisar(v)}
+          className={`rounded-lg px-2 py-1 text-xs font-semibold ${on === v ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}

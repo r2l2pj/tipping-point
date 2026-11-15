@@ -94,9 +94,9 @@ test("compareLayers: only layers the case has are offered; live offers ml", () =
 test("risk labels: observed vs forecast", () => {
   const ok = sidesCompare(uy, { L: { layer: "flood", date: "2026-09-27", lead: 0 }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
   expect(ok.pair?.before.url).toContain("tpi_flood_2026-09-27.png");
-  expect(ok.pair?.before.label).toBe("Observed Sep 27 (NASA IMERG + SMAP)");
+  expect(ok.pair?.before.label).toBe("Observed Sep 27 (NASA IMERG + SMAP) · Flood TPI");
   const fc = sidesCompare(uy, { L: { layer: "flood", date: "2026-09-30", lead: 3 }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
-  expect(fc.pair?.before.label).toBe("Forecast for Sep 30, issued Sep 27 (NOAA GFS)");
+  expect(fc.pair?.before.label).toBe("NOAA forecast issued Sep 27 for Sep 30 (+3 d) · Flood TPI");
   expect(fc.pair?.before.url).toContain("gfs_d3_2026-09-30.png");
 });
 
@@ -135,8 +135,10 @@ test("any day vs any day; identical sides say 'Pick a different date'", () => {
   // Missing sides keep the swipe open and name the gap.
   const missing = sidesCompare(uy, { L: { layer: "nisar", date: "2026-10-30" }, R: { layer: "nisar", date: "2026-10-12" } });
   expect(missing.missing?.L).toContain("No NISAR pass for Oct 30");
-  expect(missing.pair?.before.url).toBe(missing.pair?.after.url);
-  expect(missing.pair?.before.label).toContain("not published");
+  // …basemap only on the missing side (never the other side's image).
+  expect(missing.pair?.before.url).toBe("");
+  expect(missing.pair?.after.url).toContain("nisar_hh_20261012_010D.png");
+  expect(missing.pair?.before.label).toContain("No NISAR pass for Oct 30");
 });
 
 // --- presets -------------------------------------------------------------------
@@ -329,4 +331,80 @@ test("NASA OPERA surface water in Compare where the case has it: WA validation i
   expect(n.pair?.before.label).not.toMatch(/S1|Sentinel/);
   const uyNone = { id: "rs_uruguai_2026", mode: "replay", bbox: [0, 0, 1, 1], manifest: { layers: [] } } as never;
   expect(compareLayers(uyNone, [], "flood").map((l) => l.id)).not.toContain("opera");
+});
+
+// --- per-hazard side → frame (Lucas BUG: Landslide Compare showed flood) ----
+
+// Two-hazard replay (RS / WA shape): observed tpi_flood + tpi_slide every
+// day, GFS runs for both hazards; flood-only replay (Uruguaiana shape); live
+// (Now shape): tpi_<hz>_d0..d3.
+const both = {
+  id: "wa_2025", mode: "replay", bbox: [0, 0, 1, 1],
+  manifest: {
+    event: "wa_2025",
+    layers: [
+      ...DAYS.map(frame),
+      ...DAYS.map((date) => ({ id: "tpi_slide", date, png: `tpi_slide_${date}.png`, bounds: [0, 0, 1, 1] })),
+      gfs(3, "2026-09-27", "2026-09-30"),
+      gfs(1, "2026-09-27", "2026-09-28"),
+      { id: "tpi_slide_gfs_d3", issued: "2026-09-27", date: "2026-09-30", png: "slide_gfs_d3_2026-09-30.png", forecast_source: "noaa-gfs" },
+      { id: "tpi_slide_gfs_d1", issued: "2026-09-27", date: "2026-09-28", png: "slide_gfs_d1_2026-09-28.png", forecast_source: "noaa-gfs" },
+    ],
+  },
+} as never;
+const NOW_DAYS = ["2026-11-15", "2026-11-16", "2026-11-17", "2026-11-18"];
+const live = {
+  id: "now", mode: "live", bbox: [0, 0, 1, 1],
+  manifest: {
+    event: "now",
+    layers: (["flood", "slide"] as const).flatMap((hz) => NOW_DAYS.map((date, k) => ({
+      id: `tpi_${hz}_d${k}`, date, png: `png/tpi_${hz}_d${k}.png`, bounds: [0, 0, 1, 1], ...(k ? { forecast: true } : {}),
+    }))),
+  },
+} as never;
+
+for (const [name, b, st, day] of [["replay (RS/WA)", both, steps, "2026-09-30"], ["live (Now)", live, mkSteps(NOW_DAYS), "2026-11-16"]] as const) {
+  test(`${name}: each risk side shows ITS hazard's frame, observed and forecast`, () => {
+    for (const hz of ["flood", "slide"] as const) {
+      const r = sidesCompare(b, { L: { layer: hz, date: DAYS[1], lead: 0 }, R: { layer: hz, date: day, lead: 0 } });
+      expect(r.pair?.after.url).toContain(`tpi_${hz}_`);
+      expect(r.pair?.after.label).toContain(hz === "slide" ? "Landslide" : "Flood");
+      expect(r.missing?.R).toBeUndefined();
+      expect(sideDays(b, st, hz, { layer: hz, date: "" }).length).toBe(st.length);
+    }
+  });
+}
+
+test("replay forecast side per hazard: the GFS frame of that hazard, issued X for X+k", () => {
+  const s = sidesCompare(both, { L: { layer: "slide", date: "2026-09-30", lead: 3 }, R: { layer: "slide", date: "2026-09-30", lead: 0 } });
+  expect(s.pair?.before.url).toContain("slide_gfs_d3_2026-09-30.png");
+  expect(s.pair?.before.label).toBe("NOAA forecast issued Sep 27 for Sep 30 (+3 d) · Landslide TPI");
+  expect(s.pair?.after.url).toContain("tpi_slide_2026-09-30.png");
+  // A day with no run issued / a run without that lead says which.
+  expect(sidesCompare(both, { L: { layer: "slide", date: "2026-09-29", lead: 3 }, R: { layer: "slide", date: "2026-09-30", lead: 0 } }).missing?.L)
+    .toBe("No NOAA run issued Sep 26, 2026");
+  expect(sidesCompare(both, { L: { layer: "slide", date: "2026-09-29", lead: 2 }, R: { layer: "slide", date: "2026-09-30", lead: 0 } }).missing?.L)
+    .toBe("The NOAA run issued Sep 27, 2026 has no +2 d frame");
+});
+
+test("flood-only case: Landslide is listed disabled with the reason, never a blank or flood side", () => {
+  const lay = compareLayers(uy, steps, "flood");
+  const slide = lay.find((l) => l.id === "slide");
+  expect(slide?.disabled).toBe("Landslide index not computed for this flood case");
+  expect(sideDays(uy, steps, "slide", { layer: "slide", date: "" })).toEqual([]);
+  const r = sidesCompare(uy, { L: { layer: "slide", date: "2026-09-30", lead: 0 }, R: { layer: "flood", date: "2026-09-30", lead: 0 } });
+  expect(r.missing?.L).toBe("Landslide index not computed for this flood case");
+  expect(r.pair?.before.url).toBe(""); // never the flood frame on a landslide side
+  expect(r.pair?.before.label).toContain("Landslide index not computed for this flood case");
+  // Defaults never pick the disabled layer.
+  expect(defaultSides(uy, steps, 4, "slide", 0)?.R.layer).not.toBe("slide");
+});
+
+test("forecast side: the picker lists ISSUE days (● = NOAA run), date = X + lead", () => {
+  const d = sideDays(both, steps, "slide", { layer: "slide", date: "2026-09-30", lead: 3 });
+  const x = d.find((e) => e.issue === "2026-09-27")!;
+  expect(x).toMatchObject({ date: "2026-09-30", run: true, label: "● Sep 27, 2026" });
+  expect(d.find((e) => e.issue === "2026-09-28")).toMatchObject({ date: "2026-10-01", run: false, label: "Sep 28, 2026" });
+  // normSide keeps a forecast side on its issue day + lead.
+  expect(normSide(both, steps, "slide", { layer: "slide", date: "2026-09-28", lead: 1 })).toEqual({ layer: "slide", date: "2026-09-28", lead: 1 });
 });

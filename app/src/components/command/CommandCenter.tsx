@@ -56,6 +56,7 @@ import TimelineBar from "./TimelineBar";
 import TopBar, { type View } from "./TopBar";
 import { useGeo } from "./useGeo";
 import { useInsets } from "./useInsets";
+import { agreementText, nisarAgreement } from "./model/floodNisar";
 
 export interface CommandCenterProps {
   cases: CcBundle[];
@@ -132,8 +133,11 @@ export function CommandCenterView({
   // City search (Lucas): places.json of the live run (lead-analysis). A
   // pick in Now opens the live card; a pick in a replay case stays there —
   // the source is that case's municipalities (replaySource).
+  // geoUrl, not declared(): an old manifest that never lists `places` (the
+  // frozen bundled copy, an older SQLite table) still serves the canonical
+  // places.json — only an explicit `places: null` (declared absent) hides it.
   const liveCase = cases.find((c) => c.mode === "live");
-  const placesUrl = liveCase && declared(liveCase, "places")
+  const placesUrl = liveCase
     ? geoUrl(liveCase, caseDirOf(liveCase), "places", "places.json")
     : undefined;
   const [city, setCity] = useState<{ place: Place; dates: string[] }>();
@@ -524,6 +528,20 @@ export function CommandCenterView({
                       <button type="button" onClick={() => onCity(headlineData.top, places)} className="mt-1.5 rounded-lg bg-cc-accent px-3 py-1.5 text-sm font-semibold text-white">Show me</button>
                     </section>
                   )}
+                  {(() => {
+                    // L61: lead-ml's NISAR agreement — how much of the water
+                    // NISAR saw the index had flagged days before.
+                    const a = nisarAgreement(bundle);
+                    if (!a) return null;
+                    const t = agreementText(a);
+                    return (
+                      <section aria-label="NISAR agreement" data-nisar-agreement className="rounded-xl border border-cc-line px-3 py-2 text-[13px]">
+                        <p className="m-0 font-semibold">{t.main}</p>
+                        {t.more && <p className="m-0 text-cc-muted">{t.more}</p>}
+                        <p className="m-0 text-xs text-cc-muted">NISAR water = candidate (very dark radar outside permanent water)</p>
+                      </section>
+                    );
+                  })()}
               <StartHere cases={cases} dispatch={dispatch} />
                 {showAffected && <div>
                   <h3 className="m-0 mb-1 text-[13px] font-semibold text-cc-muted">Who is affected</h3>

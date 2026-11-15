@@ -178,6 +178,21 @@ def merge_nisar_layers(manifest: dict, out_dir: Path) -> None:
     manifest["layers"] = layers
 
 
+def merge_nisar_tpi(manifest: dict, out_dir: Path) -> None:
+    """L61 flood index with NISAR-observed water (live/now_nisar_tpi.py):
+    tpi_flood_nisar_d0..d3 + the nisar_water overlay, when their files exist."""
+    layers = [l for l in manifest.get("layers", [])
+              if not str(l.get("id", "")).startswith(("tpi_flood_nisar_", "nisar_water"))]
+    meta = out_dir / "nisar_tpi" / "layers.json"
+    if meta.is_file():
+        try:
+            nl = json.loads(meta.read_text()).get("layers", [])
+            layers += [l for l in nl if (out_dir / l["png"]).is_file()]
+        except ValueError as exc:
+            print(f"[now_manifest] bad nisar_tpi/layers.json: {exc}", file=sys.stderr)
+    manifest["layers"] = layers
+
+
 def finalize(out_dir: Path) -> dict:
     add_observed_to_alerts(out_dir)
     mpath = out_dir / "manifest.json"
@@ -197,6 +212,7 @@ def finalize(out_dir: Path) -> dict:
             manifest["response"] = frag["response"]
     merge_p_trigger(manifest, out_dir)
     merge_nisar_layers(manifest, out_dir)
+    merge_nisar_tpi(manifest, out_dir)
     products = manifest.setdefault("products", {})
     for key, rel in OPTIONAL_PRODUCTS.items():
         products.setdefault(key, rel)

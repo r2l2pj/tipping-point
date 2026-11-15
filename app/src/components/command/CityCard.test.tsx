@@ -42,9 +42,16 @@ describe("City search box", () => {
     expect(html).toContain('placeholder="Search a city ( / )"');
     expect(html).toContain('role="combobox"');
   });
-  test("absent when no live run declares places", () => {
-    const html = renderToStaticMarkup(<CommandCenterView cases={[liveBundle()]} alertList={UNAVAILABLE} view="command" onView={noop} />);
+  test("absent when the live run declares places absent (products.places: null)", () => {
+    const html = renderToStaticMarkup(<CommandCenterView cases={[liveBundle({ products: { places: null } } as never)]} alertList={UNAVAILABLE} view="command" onView={noop} />);
     expect(html).not.toContain("data-city-search");
+  });
+  // Regression (t5w, 2026-11-15): a manifest that predates the `places` key
+  // (the frozen bundled copy, an older SQLite docs table) must not hide the
+  // box — the canonical now/places.json is fetched by its fixed name.
+  test("still mounts when the manifest does not declare places (stale copy)", () => {
+    const html = renderToStaticMarkup(<CommandCenterView cases={[liveBundle()]} alertList={UNAVAILABLE} view="command" onView={noop} />);
+    expect(html).toContain("data-city-search");
   });
   test("Replay: a 'Back to live' chip on the map; none in Now", () => {
     const replay = renderToStaticMarkup(<CommandCenterView cases={[live, bundle()]} alertList={UNAVAILABLE} view="command" onView={noop} initialCase="wa_2025" />);

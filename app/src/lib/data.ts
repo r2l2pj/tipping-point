@@ -722,6 +722,7 @@ export async function getCaseBundle(
     forecastLeadTime,
     responseSummaryRaw,
     distRaw,
+    nisarAgreementRaw,
   ] = await Promise.all([
     loadMetrics(ctx, entry?.metrics ?? `metrics.json#${canonical}`, dirs),
     loadProduct<SeriesDaily>(
@@ -758,6 +759,11 @@ export async function getCaseBundle(
       : undefined,
     now
       ? loadProduct<unknown>(ctx, canonical, rawProducts, "dist_meta", DIST_META)
+      : undefined,
+    // L61: lead-ml's NISAR agreement for the live run (cases carry it in
+    // metrics.json#<case>.nisar_agreement).
+    now
+      ? loadProduct<unknown>(ctx, canonical, rawProducts, "nisar_agreement", "nisar_agreement.json")
       : undefined,
   ]);
   const dist = now ? toNowDist(distRaw) : undefined;
@@ -911,7 +917,7 @@ export async function getCaseBundle(
     metrics,
     // Nested landslide_hit -> flat event-day landslide_hit_pct (the day
     // matching referenceDate, else the last per_day entry).
-    metricsView: flattenLandslideHit(toMetricsView(metrics), referenceDate),
+    metricsView: withNisarAgreement(flattenLandslideHit(toMetricsView(metrics), referenceDate), nisarAgreementRaw),
     summary,
     nowAlerts,
     response,
@@ -1003,4 +1009,12 @@ export async function getCaseBundle(
     (credentialed && (layersEmpty || (attempted && !anyContent)));
 
   return bundle;
+}
+
+// L61: Now's now/nisar_agreement.json lands on metricsView.nisar_agreement
+// (cases already carry it in their metrics node); a published metrics key wins.
+function withNisarAgreement(view: MetricsView | undefined, raw: unknown): MetricsView | undefined {
+  if (!isRecord(raw) || Array.isArray(raw)) return view;
+  if (view && isRecord((view as Record<string, unknown>).nisar_agreement)) return view;
+  return { ...(view ?? {}), nisar_agreement: raw } as MetricsView;
 }

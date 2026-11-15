@@ -46,6 +46,8 @@ export interface MapLayerOptions {
   // lon/lat bounds of an EPSG:3857 PNG. Without it the nisar toggle keeps
   // its manifest lookup.
   radarFrame?: { url: string; bounds?: [number, number, number, number] };
+  // L61: NISAR-observed water (candidate) drawn over the flood + NISAR frame.
+  nisarWater?: { url: string; bounds?: [number, number, number, number] };
 }
 
 export interface OverlayVisibility {
