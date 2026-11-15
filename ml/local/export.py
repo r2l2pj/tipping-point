@@ -513,6 +513,9 @@ def ml_card_v2(met: dict) -> dict:
                            "GFS scored only on issue days with an archived run")
     if met.get("by_lead"):
         card["by_lead"] = _slim_by_lead(met["by_lead"])
+    if met.get("by_lead_onset"):   # L37: k to the documented onset = headline lead time
+        card["by_lead_onset"] = _slim_by_lead(met["by_lead_onset"])
+        card["by_lead_headline"] = "by_lead_onset"
     return card
 
 
