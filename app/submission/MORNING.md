@@ -9,7 +9,7 @@ Fill these before you click (search the files for the brackets):
 2. Member names (`[member names]` on the page, `[names]` on slide 1). Every member must be registered at **Florianópolis** (not waitlisted) and on the **Members** tab; 1–6 people; nobody can be added after submission closes.
 3. App URL: done — https://tippingpoint.l17s.dev (VPS, L39) is in FORM §4, the project-page "Try it" links, the READMEs, the deck and the video close card.
 4. `[VIDEO LINK]` in FORM §3, after upload (≤30 s, test it in a private window).
-5. Voice: if the VO is text-to-speech, replace `[if the VO is TTS, say so here]` on the page (Use of AI) and in `ai-declaration.md`; if it is a human voice, delete the bracket.
+5. Voice: replace `[synthetic or recorded — Lucas]` in `ai-declaration.md`, FORM §6, the project page "Use of AI" and both READMEs ("Use of AI"). If synthetic, also state it in the video description and the file metadata (`ffmpeg -metadata comment="Voiceover: AI-generated text-to-speech"`). The two explainer diagrams are AI-drawn and already carry an "AI-assisted diagram" label.
 6. Local Event is filled: Florianópolis (Founder Haus, Jurerê).
 8. Deck: the backup `slides.pdf` carries a DRAFT stamp; remove it (`.crew/deck/deck.html`) and rebuild before linking.
 7. Project page images: upload `.crew/deck/explainer/what-nisar-sees.png` and `future-of-nisar.png` where the page says *Figure (upload as an image here)*, then delete those italic notes.
