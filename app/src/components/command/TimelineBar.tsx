@@ -101,41 +101,47 @@ export default function TimelineBar({
     if (i === eventIndex) return true;
     return (i - eventIndex) % 2 === 0 && Math.abs(i - eventIndex) !== 1;
   };
-  const small = "inline-flex h-[38px] w-10 shrink-0 items-center justify-center rounded-lg border border-cc-line-strong bg-cc-surface disabled:cursor-not-allowed disabled:opacity-50";
+  // Quiet controls: the steps and the map are the subject, not the buttons.
+  const small = "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-cc-line bg-cc-surface text-cc-muted hover:border-cc-line-strong hover:text-cc-ink disabled:cursor-not-allowed disabled:opacity-50";
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border border-cc-line bg-cc-surface px-4 py-2 shadow-[0_4px_18px_rgba(0,0,0,0.28)]">
       {/* The controls take their own row above the steps (Lucas), and wrap
           on a narrow screen so the card, not the page, holds them. */}
       <div className="flex w-full min-w-0 flex-wrap items-center gap-2" data-timeline-controls>
         <button type="button" onClick={onPlayToggle} disabled={n < 2} aria-label={playing ? "Pause" : "Play"}
-          className="inline-flex h-[46px] w-[50px] shrink-0 items-center justify-center rounded-[10px] bg-cc-accent text-white disabled:cursor-not-allowed disabled:opacity-50">
-          <Icon d={playing ? ICON.pause : ICON.play} size={20} fill={!playing} strokeWidth={playing ? 3 : 2.2} />
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-cc-accent-line bg-cc-accent-soft text-cc-accent hover:border-cc-accent disabled:cursor-not-allowed disabled:opacity-50">
+          <Icon d={playing ? ICON.pause : ICON.play} size={14} fill={!playing} strokeWidth={playing ? 3 : 2.2} />
         </button>
         <button type="button" onClick={onPrev} disabled={n === 0 || dayIndex <= 0} aria-label="Previous step" className={small}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
             <path d="M19 5v14l-10-7z" /><path d="M6 5v14" fill="none" strokeLinecap="round" />
           </svg>
         </button>
         <button type="button" onClick={onNext} disabled={n === 0 || dayIndex >= n - 1} aria-label="Next step" className={small}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
             <path d="M5 5v14l10-7z" /><path d="M18 5v14" fill="none" strokeLinecap="round" />
           </svg>
         </button>
         {/* Lucas: a date picker, not only the step dots. */}
         {n > 1 && (
+          // Own arrow: the native one sits against the border with no gap.
+          <span className="relative inline-flex min-w-0 max-w-full items-center">
           <select aria-label="Pick a day" value={dayIndex} onChange={(e) => onSeek(Number(e.target.value))} data-day-picker
-            className="h-[38px] min-w-0 max-w-full rounded-lg border border-cc-line-strong bg-cc-surface px-2 text-sm font-semibold text-cc-ink">
+            className="h-8 min-w-0 max-w-full appearance-none rounded-md border border-cc-line bg-cc-surface pl-2.5 pr-8 text-[13px] font-medium text-cc-ink hover:border-cc-line-strong">
             {steps.map((s) => (
               <option key={s.date} value={s.index}>{fmtDate(s.date)}{s.forecast ? " (forecast)" : ""}{forecastDates?.has(s.date) ? " · ● NOAA forecast" : ""}</option>
             ))}
           </select>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+            className="pointer-events-none absolute right-2.5 text-cc-muted"><path d="M6 9l6 6 6-6" /></svg>
+          </span>
         )}
         {runs && (
           <div role="group" aria-label="Now run (BRT)" className="flex flex-wrap items-center gap-1" data-runs>
             <span className="text-xs font-semibold text-cc-muted">Run</span>
             {runs.list.map((r, i) => (
               <button key={r.id} type="button" aria-pressed={runs.picked === r.id} onClick={() => runs.onPick(i === 0 ? null : r.id)}
-                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${runs.picked === r.id ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>
+                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${runs.picked === r.id ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line text-cc-muted hover:text-cc-ink"}`}>
                 {i === 0 ? `Latest · ${r.label}` : r.label}
               </button>
             ))}
@@ -144,10 +150,10 @@ export default function TimelineBar({
         {hours && hours.available.length > 0 && (
           <div role="group" aria-label="Hour (UTC)" className="flex flex-wrap items-center gap-1" data-hours>
             <button type="button" aria-pressed={hours.hour === null} onClick={() => hours.onHour(null)}
-              className={`rounded-md px-2 py-1 text-xs font-semibold ${hours.hour === null ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>Day</button>
+              className={`rounded-md px-2 py-1 text-xs font-semibold ${hours.hour === null ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line text-cc-muted hover:text-cc-ink"}`}>Day</button>
             {HOURS.filter((h) => hours.available.includes(h)).map((h) => (
               <button key={h} type="button" aria-pressed={hours.hour === h} onClick={() => hours.onHour(h)}
-                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${hours.hour === h ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>{h}Z</button>
+                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${hours.hour === h ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line text-cc-muted hover:text-cc-ink"}`}>{h}Z</button>
             ))}
           </div>
         )}
