@@ -948,3 +948,14 @@ def test_trigger_model_monotone_with_crossing_calibrators(tmp_path):
                      p99_daily=ones * 50, p99_3day=ones * 60)
     assert (out["p_trigger_72h"] >= out["p_trigger_48h"]).all()      # running max applied
     assert (out["p_trigger_48h"] >= out["p_trigger_24h"]).all()
+
+
+def test_by_lead_horizon_mapping():
+    from ml.local.by_lead import horizon_for_lead
+    got = {k: horizon_for_lead(k) for k in range(14)}
+    assert got[0] == "24h" and got[1] == "48h" and got[2] == "72h"
+    assert all(got[k] == "7d" for k in range(3, 7))
+    assert all(got[k] == "14d" for k in range(7, 14))
+    import pytest
+    with pytest.raises(ValueError):
+        horizon_for_lead(14)
