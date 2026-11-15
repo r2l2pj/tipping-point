@@ -131,3 +131,17 @@ def test_now_caches_climatology_before_run():
         "data/static/south_brazil/clim/clim_imerg_0p1.tif"
     assert steps[cache]["with"]["key"].startswith("clim-imerg-0p1-")
     assert cache < _run_idx(steps, "live/jobs.py now")
+
+
+def test_now_watchdog_dispatches_stale_now_runs():
+    _text, doc = _load("now-watchdog.yml")
+    on = _on(doc)
+    crons = [c["cron"] for c in on["schedule"]]
+    assert len(crons) >= 2 and all(not c.startswith("0 ") and not c.startswith("17 ")
+                                   for c in crons)          # other minutes than now.yml
+    assert "workflow_dispatch" in on
+    assert doc["permissions"] == {"actions": "write", "contents": "read"}
+    run = doc["jobs"]["watchdog"]["steps"][0]["run"]
+    assert "gh workflow run now.yml" in run
+    assert "--status success" in run and "12600" in str(doc["jobs"]["watchdog"]["steps"][0]["env"])
+    assert "queued" in run and "in_progress" in run           # never stacks runs
