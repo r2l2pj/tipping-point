@@ -11,6 +11,7 @@ import { boundsToImageCoordinates } from "@/lib/tpi";
 import { cameraPatch, clipPathFor, dragStep, pctFromClientX, SWIPE_MAX_PCT, SWIPE_MIN_PCT } from "@/lib/swipe";
 import { FLOODED_FILL, FLOODED_OUTLINE, type ComparePair } from "./model/radar";
 import { ISSUE_LEADS, type IssueLead } from "./model/steps";
+import type { Sides } from "./model/sideCompare";
 
 // Same worker fix and the same dark basemap as Map.tsx.
 setWorkerUrl("/maplibre-gl-worker.js");
@@ -33,14 +34,22 @@ export default function CompareOverlay({
   onClose,
   controlsRef,
   init,
-  forecastCtl,
+  sidesCtl,
 }: {
   pair: ComparePair;
   onClose: () => void;
   controlsRef: MutableRefObject<CompareControls | null>;
   init?: { before?: string; after?: string; pol?: "HH" | "HV" };
   // L52 (forecast swipe): the lead chips; `lead` is the pair's own lead.
-  forecastCtl?: { lead: IssueLead; leads: readonly IssueLead[]; onLead: (k: IssueLead) => void };
+  // Lucas: generic Compare ⇆ — LEFT / RIGHT day + Observed | Forecast k each.
+  sidesCtl?: {
+    sides: Sides;
+    days: { date: string; label: string }[];
+    canForecast: boolean;
+    warning?: string;
+    missing?: { L?: string; R?: string };
+    onSide: (side: "L" | "R", patch: { date?: string; lead?: IssueLead }) => void;
+  };
 }) {
   const [pol, setPol] = useState<"HH" | "HV">(init?.pol ?? "HH");
   const stack = pair.stack;
@@ -68,21 +77,36 @@ export default function CompareOverlay({
   return (
     <>
       <CompareMaps key={`${pol}-${bi}-${ai}`} pair={shown} onClose={onClose} controlsRef={controlsRef} />
-      {(hasHv || forecastCtl) && (
-        <div className={`absolute z-30 flex -translate-x-1/2 flex-col items-center gap-1 ${forecastCtl ? "top-20" : stack ? "top-12" : "top-3"}`}
+      {(hasHv || sidesCtl) && (
+        <div className={`absolute z-30 flex -translate-x-1/2 flex-col items-center gap-1 ${sidesCtl ? "top-20" : stack ? "top-12" : "top-3"}`}
           // Centred on the visible map, never under the floating cards.
           style={{ left: "calc(var(--cc-il, 0px) + (100% - var(--cc-il, 0px) - var(--cc-ir, 0px)) / 2)",
             maxWidth: "calc(100% - var(--cc-il, 0px) - var(--cc-ir, 0px) - 24px)" }}>
-          {forecastCtl && (
-            <div role="group" aria-label="Forecast lead" data-forecast-leads
-              className="flex items-center gap-1 rounded-full border border-cc-line-strong bg-white/95 p-[3px] shadow">
-              <span className="px-1.5 text-xs text-cc-muted">Lead</span>
-              {ISSUE_LEADS.map((k) => (
-                <button key={k} type="button" aria-pressed={forecastCtl.lead === k}
-                  disabled={!forecastCtl.leads.includes(k)}
-                  onClick={() => forecastCtl.onLead(k)}
-                  className={`${seg(forecastCtl.lead === k)} disabled:opacity-40`}>{k} {k === 1 ? "day" : "days"} before</button>
-              ))}
+          {sidesCtl && (
+            <div className="flex flex-col gap-1 rounded-xl border border-cc-line-strong bg-white/95 px-2 py-1.5 text-xs shadow" data-compare-sides>
+              {(["L", "R"] as const).map((side) => {
+                const s = sidesCtl.sides[side];
+                return (
+                  <div key={side} role="group" aria-label={side === "L" ? "Left side" : "Right side"} className="flex flex-wrap items-center gap-1" data-side={side}>
+                    <span className="w-9 font-semibold text-cc-muted">{side === "L" ? "Left" : "Right"}</span>
+                    <select aria-label={`${side === "L" ? "Left" : "Right"} day`} value={s.date} onChange={(e) => sidesCtl.onSide(side, { date: e.target.value })}
+                      className="h-7 rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold">
+                      {sidesCtl.days.map((d) => <option key={d.date} value={d.date}>{d.label}</option>)}
+                    </select>
+                    {sidesCtl.canForecast && (
+                      <>
+                        <button type="button" aria-pressed={s.lead === 0} onClick={() => sidesCtl.onSide(side, { lead: 0 })} className={seg(s.lead === 0)}>Observed</button>
+                        <button type="button" aria-pressed={s.lead > 0} onClick={() => sidesCtl.onSide(side, { lead: s.lead || 3 })} className={seg(s.lead > 0)}>Forecast</button>
+                        {s.lead > 0 && ISSUE_LEADS.map((k) => (
+                          <button key={k} type="button" aria-pressed={s.lead === k} onClick={() => sidesCtl.onSide(side, { lead: k })} className={seg(s.lead === k)}>{k} d before</button>
+                        ))}
+                      </>
+                    )}
+                    {sidesCtl.missing?.[side] && <span className="italic text-cc-muted">{sidesCtl.missing[side]}</span>}
+                  </div>
+                );
+              })}
+              {sidesCtl.warning && <p className="m-0 font-semibold text-cc-warn" role="status" data-compare-warning>{sidesCtl.warning}</p>}
             </div>
           )}
           {hasHv && (

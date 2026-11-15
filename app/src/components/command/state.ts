@@ -18,6 +18,7 @@ import {
 } from "./model/layerRegistry";
 import type { ComparePair } from "./model/radar";
 import { viewLayers, type ViewId } from "./model/views";
+import { defaultSides, type Sides } from "./model/sideCompare";
 import { caseHasHazard, defaultStepIndex, floodPostDate, stepsFor, type IssueLead } from "./model/steps";
 import type { CcBundle, Hazard } from "./model/types";
 
@@ -40,6 +41,8 @@ export interface ScreenState {
   calloutExpanded: boolean;
   compareOpen: ComparePair["kind"] | null;
   compareInit?: { before?: string; after?: string; pol?: "HH" | "HV" }; // deep link, first open only
+  // Lucas: the generic Compare ⇆ — LEFT / RIGHT day + Observed | Forecast k.
+  compareSides?: Sides;
   fitTo?: [number, number, number, number]; // deep link ?fit=<layer>: initial map bounds
   // L52: Dark / Satellite / Streets chip on the map. The featured replay
   // opens on Satellite (case default); a ?basemap= link wins.
@@ -71,6 +74,7 @@ export type Action =
   | { type: "toggleCallout" }
   | { type: "openCompare"; kind: ComparePair["kind"] }
   | { type: "closeCompare" }
+  | { type: "setCompareSide"; side: "L" | "R"; date?: string; lead?: IssueLead }
   // Lucas: NISAR swipe dates are chips in the Radar card.
   | { type: "setCompareDates"; before?: string; after?: string }
   | { type: "toggleDetails" }
@@ -188,7 +192,7 @@ export function initialState(
   // ?case= link / map chip).
   const first = linked ?? cases.find((c) => c.mode === "live") ?? cases.find(isFeatured) ?? cases[0];
   const hazard = hazardFor(first, "slide");
-  return {
+  const st: ScreenState = {
     activeId: first?.id ?? "",
     lastReplayId: first?.mode === "replay" ? first.id : null,
     dayIndex: linkedDay(first, initialDay) ?? defaultStepIndex(stepsFor(first), first),
@@ -209,11 +213,15 @@ export function initialState(
     calloutExpanded: false,
     compareOpen: link.compare === "radar" ? "radar" : link.compare === "forecast" || link.view === "compare" ? "forecast" : null,
     compareInit: { before: link.before, after: link.after, pol: link.pol === "HV" ? "HV" : link.pol === "HH" ? "HH" : undefined },
+    compareSides: undefined,
     detailsOpen: false,
     layersOpen: true,
     listExpanded: false,
     chartAsTable: false,
   };
+  // ?compare=forecast&lead=k&day=D → LEFT = forecast for D issued D−k, RIGHT = observed D.
+  if (st.compareOpen === "forecast" && first) st.compareSides = defaultSides(stepsFor(first), st.dayIndex, st.issueLead);
+  return st;
 }
 
 function selectCase(state: ScreenState, cases: readonly CcBundle[], id: string): ScreenState {
@@ -384,9 +392,19 @@ export function reduce(
     case "toggleCallout":
       return state.selectedArea === null
         ? state : { ...state, calloutExpanded: !state.calloutExpanded };
+    case "setCompareSide": {
+      const cur = state.compareSides ?? defaultSides(stepsFor(bundle), state.dayIndex, state.issueLead);
+      if (!cur) return state;
+      const s = cur[action.side];
+      return { ...state, compareSides: { ...cur, [action.side]: { date: action.date ?? s.date, lead: action.lead ?? s.lead } } };
+    }
     case "openCompare":
       // Opening the comparison keeps the layers; closing restores the map.
-      return { ...state, compareOpen: action.kind, playing: false };
+      return {
+        ...state, compareOpen: action.kind, playing: false,
+        // A fresh generic compare starts from the selected day (never stale sides).
+        compareSides: action.kind === "forecast" ? defaultSides(stepsFor(bundle), state.dayIndex, state.issueLead) : state.compareSides,
+      };
     case "closeCompare":
       return { ...state, compareOpen: null };
     case "setCompareDates":

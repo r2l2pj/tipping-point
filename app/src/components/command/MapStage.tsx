@@ -68,6 +68,8 @@ export default function MapStage({
   compareDefaults,
   hourFrame,
   hour,
+  sidesCtl,
+  compareNisarDefaults,
 }: {
   bundle: CcBundle;
   steps: Step[];
@@ -90,6 +92,9 @@ export default function MapStage({
   // Lucas: a 6-hourly TPI frame picked with the timeline hour chips.
   hourFrame?: ManifestLayer;
   hour?: string | null;
+  sidesCtl?: React.ComponentProps<typeof CompareOverlay>["sidesCtl"];
+  // NISAR swipe defaults around the selected day (stack dates).
+  compareNisarDefaults?: { before?: string; after?: string };
 }) {
   const [map, setMap] = useState<MapInstance | null>(null);
   const [bearing, setBearing] = useState(0);
@@ -347,6 +352,14 @@ export default function MapStage({
         </div>
       )}
 
+      {/* Lucas: Compare ⇆ in Now too — any two days of the run. */}
+      {!comparing && bundle.mode === "live" && steps.length > 1 && (
+        <button type="button" data-compare-now onClick={() => dispatch({ type: "openCompare", kind: "forecast" })}
+          className={`absolute z-10 ${chip} !py-1 !text-xs`} style={{ left: L(14), bottom: B(showHorizons ? 104 : 70) }}>
+          Compare ⇆
+        </button>
+      )}
+
       {/* Lucas: one map view at a time — Observed | Forecast | Compare ⇆.
           The user picks the target day on the timeline; Forecast shows the
           NOAA GFS run issued 1–3 days before it. Compare opens only from its
@@ -458,10 +471,10 @@ export default function MapStage({
 
       {comparePair && (
         <CompareOverlay key={`${bundle.id}-${comparePair.kind}-${comparePair.before.url}-${comparePair.after.url}`} pair={comparePair}
-          init={{ ...state.compareInit, before: state.compareInit?.before ?? compareDefaults?.before, after: state.compareInit?.after ?? compareDefaults?.after }}
-          forecastCtl={comparePair.kind === "forecast"
-            ? { lead: comparePair.lead ?? 0, leads: [1, 2, 3], onLead: (k) => dispatch({ type: "setIssueLead", lead: k }) }
-            : undefined}
+          init={{ ...state.compareInit,
+            before: state.compareInit?.before ?? compareNisarDefaults?.before ?? compareDefaults?.before,
+            after: state.compareInit?.after ?? compareNisarDefaults?.after ?? compareDefaults?.after }}
+          sidesCtl={comparePair.kind === "forecast" ? sidesCtl : undefined}
           controlsRef={compare} onClose={() => dispatch({ type: "closeCompare" })} />
       )}
 

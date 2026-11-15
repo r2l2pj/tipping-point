@@ -24,10 +24,11 @@ import { expandLayerUrls } from "./model/layerUrls";
 import { priorityAreas } from "./model/areas";
 import { availability, missingText } from "./model/availability";
 import { dataStatus, freshnessText } from "./model/dataStatus";
-import { classLabel, fmtKm2 } from "./model/format";
+import { classLabel, fmtDate, fmtKm2 } from "./model/format";
 import { layerRows, visibleLayerRows } from "./model/layerRegistry";
 import { caseDirOf, declared, effectiveBundle, productUrl, withLazy, zonesAreTrimmed } from "./model/lazy";
-import { forecastCompare } from "./model/forecastCompare";
+import { forecastCompare, hasGfsFrames } from "./model/forecastCompare";
+import { defaultSides, nisarDefaults, sidesCompare } from "./model/sideCompare";
 import { nightLightsCompare, radarCard } from "./model/radar";
 import { evidence, replayCheckRows } from "./model/replayCheck";
 import { sourceRows } from "./model/sources";
@@ -332,13 +333,23 @@ export function CommandCenterView({
   const rows = visibleLayerRows(layerRows(bundle, state.layers, state.hazard, step?.date, state.probHorizon))
     .filter((r) => !sparse || r.available || r.on);
   const nightLights = nightLightsCompare(bundle);
+  // Lucas: the generic Compare ⇆ (LEFT / RIGHT day + Observed | Forecast k).
+  const sidesNow = state.compareSides ?? defaultSides(steps, state.dayIndex, state.issueLead);
+  const sidesInfo = state.compareOpen === "forecast" && sidesNow
+    ? {
+        sides: sidesNow,
+        result: sidesCompare(bundle, sidesNow, state.hazard),
+        days: steps.map((s) => ({ date: s.date.slice(0, 10), label: `${fmtDate(s.date)}${s.forecast ? " (forecast)" : ""}` })),
+        canForecast: bundle.mode === "replay" && hasGfsFrames(bundle),
+      }
+    : undefined;
   const comparePair =
     state.compareOpen === "radar" ? radar.compare.pair
     : state.compareOpen === "night-lights" ? nightLights.pair
     // L52: forecast vs observed — the pair follows the timeline day and
     // the lead chips (state.issueLead); both sides change together.
     : state.compareOpen === "forecast"
-      ? forecastCompare(bundle, step?.date, state.hazard, effectiveLead(bundle, step?.date, state.hazard, state.issueLead || 3)).pair
+      ? sidesInfo?.result.pair
       : undefined;
   const snap = zoneSnapshot(bundle, step?.date);
   // The ML card's global tables travel on one case only (page budget).
@@ -416,6 +427,12 @@ export function CommandCenterView({
           compareDefaults={{ before: radar.preIso, after: radar.postIso }}
           hourFrame={hourFrameFor(bundle, state.hazard, step?.date, hour)}
           hour={hour}
+          sidesCtl={sidesInfo ? {
+            sides: sidesInfo.sides, days: sidesInfo.days, canForecast: sidesInfo.canForecast,
+            warning: sidesInfo.result.warning, missing: sidesInfo.result.missing,
+            onSide: (side, patch) => dispatch({ type: "setCompareSide", side, ...patch }),
+          } : undefined}
+          compareNisarDefaults={nisarDefaults(radar.compare.pair?.stack?.dates ?? [], step?.date)}
           cityOutline={!live ? replayCity?.outline : undefined}
           featuredCase={(() => {
             const f = cases.find((c) => c.mode === "replay" && isFeatured(c));
@@ -518,8 +535,8 @@ export function CommandCenterView({
                   hideMissing={sparse}
                   swipeDates={state.compareOpen === "radar" && radar.compare.pair?.stack ? {
                     dates: radar.compare.pair.stack.dates,
-                    before: state.compareInit?.before ?? radar.preIso ?? radar.compare.pair.stack.dates[0],
-                    after: state.compareInit?.after ?? radar.postIso ?? radar.compare.pair.stack.dates[radar.compare.pair.stack.dates.length - 1],
+                    before: state.compareInit?.before ?? nisarDefaults(radar.compare.pair.stack.dates, step?.date).before ?? radar.compare.pair.stack.dates[0],
+                    after: state.compareInit?.after ?? nisarDefaults(radar.compare.pair.stack.dates, step?.date).after ?? radar.compare.pair.stack.dates[radar.compare.pair.stack.dates.length - 1],
                     onPick: (before, after) => dispatch({ type: "setCompareDates", before, after }),
                   } : undefined}
                   radar={radar}

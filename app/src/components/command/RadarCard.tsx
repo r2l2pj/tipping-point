@@ -190,21 +190,22 @@ function SwipeDatePicker({ dates, before, after, onPick }: { dates: string[]; be
   const chip = (on: boolean) => `rounded-md px-2 py-0.5 text-xs font-semibold ${on ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`;
   const short = (d: string) => fmtDate(d).replace(/,\s*\d{4}$/, "");
   const next = (d: string) => dates.find((x) => x > d) ?? d;
-  const prev = (d: string) => [...dates].reverse().find((x) => x < d) ?? d;
   return (
     <div className="mt-1.5 grid w-full gap-1 text-xs" data-swipe-dates>
+      {/* Lucas (bug): two independent pickers; After is always later than
+          Before, so the two halves never show the same pass. */}
       <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Radar date before">
         <span className="w-12 text-cc-muted">Before</span>
-        {dates.map((d) => (
+        {dates.slice(0, -1).map((d) => (
           <button key={d} type="button" aria-pressed={d === before} className={chip(d === before)}
-            onClick={() => onPick(d, d >= after ? next(d) : after)}>{short(d)}</button>
+            onClick={() => onPick(d, after > d ? after : next(d))}>{short(d)}</button>
         ))}
       </div>
       <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Radar date after">
         <span className="w-12 text-cc-muted">After</span>
-        {dates.map((d) => (
+        {dates.filter((d) => d > before).map((d) => (
           <button key={d} type="button" aria-pressed={d === after} className={chip(d === after)}
-            onClick={() => onPick(d <= before ? prev(d) : before, d)}>{short(d)}</button>
+            onClick={() => onPick(before, d)}>{short(d)}</button>
         ))}
       </div>
     </div>

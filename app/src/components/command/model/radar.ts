@@ -144,7 +144,8 @@ export function nisarStack(bundle: CcBundle): NisarStack | undefined {
     const b = Array.isArray(l.bounds) && l.bounds.length === 4 ? (l.bounds as BBox) : undefined;
     const name = sensorName(sensorOf(l));
     if (name !== "NISAR radar") allNisar = false;
-    (frames[day] ??= {})[pol] = { url, label: `${name} ${pol} — ${fmtDate(day)}`, bounds: b };
+    const track = typeof l.track === "string" ? ` (track ${l.track})` : "";
+    (frames[day] ??= {})[pol] = { url, label: `${name} ${pol} — ${fmtDate(day)}${track}`, bounds: b };
   }
   const dates = Object.keys(frames).filter((d) => frames[d].HH || frames[d].HV).sort();
   return dates.length >= 2 ? { dates, frames, title: allNisar ? "NISAR radar dates" : "Radar dates" } : undefined;
