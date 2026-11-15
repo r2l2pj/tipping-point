@@ -80,7 +80,9 @@ POWER_URL = "https://power.larc.nasa.gov/api/temporal/daily/point"
 POWER_PARAM = "IMERG_PRECTOT"
 POWER_FILL = -999.0
 POWER_START = "20010101"      # IMERG starts 2001-01-01
-POWER_MIN_INTERVAL = 0.35     # polite per-request spacing across workers
+POWER_MIN_INTERVAL = 1.5      # per-request spacing across workers (0.35 s hit HTTP 429)
+POWER_COOLDOWN_S = 90.0       # on 429 every worker pauses this long (x attempt)
+POWER_TRIES_429 = 8
 
 GFS_BUCKET_START = dt.date(2021, 3, 23)   # gfs.YYYYMMDD/HH/atmos/ keys begin
 
@@ -164,25 +166,40 @@ class _RateLimit:
                 time.sleep(gap)
             self._last = time.monotonic()
 
+    def cooldown(self, seconds: float) -> None:
+        """Push the next allowed start for EVERY worker ``seconds`` ahead."""
+        with self._lock:
+            self._last = max(self._last, time.monotonic() + seconds - self._dt)
+
 
 _POWER_RL = _RateLimit(POWER_MIN_INTERVAL)
 
 
 def _power_get(params: dict) -> dict:
     """Anonymous GET against NASA POWER — no Earthdata token attached."""
-    _POWER_RL.wait()
     last: Exception | None = None
-    for i in range(4):
+    n429 = 0
+    i = 0
+    while i < 4 and n429 < POWER_TRIES_429:
+        _POWER_RL.wait()
         try:
             r = requests.get(POWER_URL, params=params, timeout=120)
-            if r.status_code == 429 or r.status_code >= 500:
+            if r.status_code == 429:          # rate limited: global pause, not a failure
+                n429 += 1
+                last = RuntimeError("POWER HTTP 429")
+                log.warning("power: HTTP 429 -> all workers pause %.0f s", POWER_COOLDOWN_S * n429)
+                _POWER_RL.cooldown(POWER_COOLDOWN_S * n429)
+                continue
+            if r.status_code >= 500:
                 last = RuntimeError(f"POWER HTTP {r.status_code}")
+                i += 1
                 time.sleep(2 ** i)
                 continue
             r.raise_for_status()
             return r.json()
         except requests.RequestException as e:
             last = e
+            i += 1
             time.sleep(2 ** i)
     raise RuntimeError(f"POWER GET failed after retries: {params}") from last
 
@@ -984,7 +1001,7 @@ def _power_path(lonc: float, latc: float) -> Path:
     return settings.path("power", f"{latc:.2f}_{lonc:.2f}.json")
 
 
-def fetch_power_points(lon, lat, workers: int = 4) -> Path:
+def fetch_power_points(lon, lat, workers: int = 2) -> Path:
     """Full IMERG daily series (2001..today) per distinct 0.1-deg cell.
 
     Cached at DATA_DIR/power/<lat>_<lon>.json; existing files only fetch
@@ -1032,12 +1049,20 @@ def fetch_power_points(lon, lat, workers: int = 4) -> Path:
         return "ok"
 
     done = 0
+    failed = []
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        for _ in ex.map(work, cells):
+        for cell, st in zip(cells, ex.map(work, cells), strict=True):
             done += 1
+            if st == "failed":
+                failed.append(cell)
             if done % 100 == 0:
-                log.info("power: %d/%d cells", done, len(cells))
-    log.info("power: %d cells fetched (%d cached)", done, len(cells))
+                log.info("power: %d/%d cells (%d failed)", done, len(cells), len(failed))
+    if failed:   # one slow serial retry pass after a pause
+        log.warning("power: retrying %d failed cells after %.0f s", len(failed), POWER_COOLDOWN_S)
+        time.sleep(POWER_COOLDOWN_S)
+        failed = [c for c in failed if work(c) == "failed"]
+    log.info("power: %d cells, %d still failed (rows there get NaN rain; rerun fetches them)",
+             len(cells), len(failed))
     return settings.path("power")
 
 
