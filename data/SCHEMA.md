@@ -134,7 +134,12 @@ the app uses it for layer hints).
   the single root metrics file), `data_dates`, `products`,
   `forecast_source`, `_null_reasons`.
 - `data_dates`: the freshest date of each input actually used —
-  `{imerg, smap, gfs_issued?, nisar_pre?, nisar_post?, ...}`.
+  `{imerg, smap, gfs_issued?, nisar_pre?, nisar_post?, ...}`. In the `now`
+  bundle `smap` is the SPL4SMGP granule stamp as ISO UTC
+  (`"2026-11-10T22:30:00Z"`, the raw granule id when unparseable), with
+  `smap_granule` (file name, no CMR suffix), `smap_age_days` (whole days on
+  the America/Sao_Paulo calendar) and `smap_label` (pt-BR
+  `"SMAP de dd/mm, N dias"`).
 - `forecast_source`: `"perfect-forecast"` for replay cases (D+1..D+3 =
   observed IMERG as forecast), `"noaa-gfs"` for the live bundle. The app must
   render forecast days differently (never like observed).
@@ -374,7 +379,10 @@ everything else. Overwritten every 3 h by `live/run_now.py` via
 { "schema": "tipping-point/now@2",
   "mode": "live", "updated_at": "2026-11-15T09:00:00Z",
   "bounds": [-58.0, -34.0, -48.0, -22.5],
-  "data_dates": { "imerg": "...", "smap": "...", "gfs_issued": "..." },
+  "data_dates": { "imerg": "...", "smap": "2026-11-10T22:30:00Z",
+    "smap_granule": "SMAP_L4_SM_gph_20261110T223000_Vv8013_001.h5",
+    "smap_age_days": 5, "smap_label": "SMAP de 10/11, 5 dias",
+    "gfs_issued": "..." },
   "layers": [
     { "id": "tpi_slide_d0", "date": "2026-11-15",
       "png": "png/tpi_slide_d0.png", "cog": "cog/tpi_slide_today.tif",
@@ -402,7 +410,8 @@ Paths inside this file are relative to `data/now/`. Layers are
   "people_exposed": 0,
   "forecast_source": "noaa-gfs",
   "classes_km2": { "Baixo": 0.0, "Moderado": 0.0, "Alto": 0.0, "Crítico": 0.0 },
-  "data_dates": { "imerg": "...", "smap": "...", "gfs_issued": "..." } }
+  "data_dates": { "imerg": "...", "smap": "...", "smap_granule": "...",
+    "smap_age_days": 5, "smap_label": "...", "gfs_issued": "..." } }
 ```
 
 `people_critical` and `people_exposed` are both emitted with the same value

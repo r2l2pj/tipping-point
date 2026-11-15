@@ -333,6 +333,7 @@ def run(args) -> dict:
     imerg_cogs = write_imerg_cogs(imerg_daily, args.out_dir / "cog" / "imerg_early")
     imerg_cog_ok = imerg_cogs_match_source(imerg_daily, imerg_cogs)
     sm_lats, sm_lons, sm_vals, smap_date = fetch.fetch_smap_l4(tuple(args.bounds))
+    smap_fields = fetch.smap_date_fields(smap_date, dt.datetime.now(dt.UTC))
     fc_daily_da, gfs_issued = fetch.fetch_gfs_daily(tuple(args.bounds), today)
     nisar = [] if args.no_nisar else fetch.nisar_recent_passes(
         tuple(args.bounds), NISAR_LOOKBACK_DAYS)
@@ -472,7 +473,7 @@ def run(args) -> dict:
         "forecast_source": "noaa-gfs",        # v4 metrics key (D+1..D+3)
         "imerg_source": imerg_source,         # honest stand-in labeling
         "classes_km2": classes_km2,
-        "data_dates": {"imerg": imerg_date, "smap": smap_date,
+        "data_dates": {"imerg": imerg_date, **smap_fields,
                         "gfs_issued": gfs_issued,
                         "clim_doy_used": static.get("clim_doy_used"),
                         "clim_source": static.get("clim_source")},
@@ -554,7 +555,7 @@ def run(args) -> dict:
     updated_at = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")
     manifest = build_manifest(
         tuple(args.bounds), updated_at,
-        {"imerg": imerg_date, "smap": smap_date, "gfs_issued": gfs_issued,
+        {"imerg": imerg_date, **smap_fields, "gfs_issued": gfs_issued,
          "imerg_obs_through": str(obs_through), "forecast_from": str(today),
          "clim_doy_used": static.get("clim_doy_used")},
         layers, nisar)

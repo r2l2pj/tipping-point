@@ -334,6 +334,54 @@ def test_smap_l4_reads_root_coords_and_crops_bbox(monkeypatch, tmp_path):
     assert pid == "FAKE-SPL4SMGP"
 
 
+def _utc(y, mo, d, h=0, mi=0, s=0):
+    return dt.datetime(y, mo, d, h, mi, s, tzinfo=dt.UTC)
+
+
+GRANULE = "SMAP_L4_SM_gph_20261110T223000_Vv8013_001.h5_u9loH5HD"
+
+
+def test_smap_date_fields_parses_iso_and_strips_cmr_suffix():
+    f = fetch.smap_date_fields(GRANULE, _utc(2026, 11, 15, 12))
+    assert f["smap"] == "2026-11-10T22:30:00Z"
+    assert f["smap_granule"] == "SMAP_L4_SM_gph_20261110T223000_Vv8013_001.h5"
+    assert f["smap_age_days"] == 5
+    assert f["smap_label"] == "SMAP de 10/11, 5 dias"
+
+
+def test_smap_date_fields_age_zero_and_one():
+    f0 = fetch.smap_date_fields(GRANULE, _utc(2026, 11, 10, 23, 30))
+    assert f0["smap_age_days"] == 0 and f0["smap_label"] == "SMAP de 10/11, hoje"
+    f1 = fetch.smap_date_fields(GRANULE, _utc(2026, 11, 11, 12))
+    assert f1["smap_age_days"] == 1 and f1["smap_label"] == "SMAP de 10/11, 1 dia"
+
+
+def test_smap_date_fields_brt_day_boundary():
+    # 2026-11-15T02:00Z is 23:00 on 14/11 in BRT — still the same calendar day
+    g = "SMAP_L4_SM_gph_20261114T103000_Vv8013_001.h5_ab12Cd34"
+    f = fetch.smap_date_fields(g, _utc(2026, 11, 15, 2))
+    assert f["smap"] == "2026-11-14T10:30:00Z"
+    assert f["smap_age_days"] == 0 and f["smap_label"] == "SMAP de 14/11, hoje"
+    # one hour later UTC it rolls over to 15/11 in BRT
+    f2 = fetch.smap_date_fields(g, _utc(2026, 11, 15, 3, 30))
+    assert f2["smap_age_days"] == 1 and f2["smap_label"] == "SMAP de 14/11, 1 dia"
+
+
+def test_smap_date_fields_unparseable_keeps_raw_string():
+    for bad in ("SPL4SMGP-test",
+                "SMAP_L4_SM_gph_20261340T223000_Vv8013_001.h5_x"):  # no 34th day
+        f = fetch.smap_date_fields(bad, _utc(2026, 11, 15))
+        assert f["smap"] == bad
+        assert f["smap_age_days"] is None and f["smap_label"] is None
+        assert f["smap_granule"] == re.sub(r"(\.h5)_.*$", r"\1", bad)
+
+
+def test_smap_date_fields_no_cmr_suffix_no_timestamp():
+    g = "SMAP_L4_SM_gph_20261110T223000_Vv8013_001.h5"
+    f = fetch.smap_date_fields(g, _utc(2026, 11, 15, 12))
+    assert f["smap_granule"] == g and f["smap"] == "2026-11-10T22:30:00Z"
+
+
 def test_gds_get_retries_readtimeout_then_succeeds(monkeypatch):
     """Two ReadTimeouts then a good response: returns text after 3 calls."""
     import time

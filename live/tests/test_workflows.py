@@ -141,7 +141,25 @@ def test_now_watchdog_dispatches_stale_now_runs():
                                    for c in crons)          # other minutes than now.yml
     assert "workflow_dispatch" in on
     assert doc["permissions"] == {"actions": "write", "contents": "read"}
-    run = doc["jobs"]["watchdog"]["steps"][0]["run"]
-    assert "gh workflow run now.yml" in run
-    assert "--status success" in run and "12600" in str(doc["jobs"]["watchdog"]["steps"][0]["env"])
+    steps = doc["jobs"]["watchdog"]["steps"]
+    dispatch = next(s for s in steps if "gh workflow run now.yml" in s.get("run", ""))
+    run = dispatch["run"]
+    assert "--status success" in run and "12600" in str(dispatch["env"])
     assert "queued" in run and "in_progress" in run           # never stacks runs
+
+
+def test_now_watchdog_stale_alarm_after_dispatch():
+    """L13b: a final step reads the PUBLISHED Now manifest off the fallback
+    branch and fails the run (owner email) when updated_at is > 6 h old —
+    and it must run after the dispatch step so a dispatch still happens."""
+    _text, doc = _load("now-watchdog.yml")
+    steps = doc["jobs"]["watchdog"]["steps"]
+    dispatch = next(i for i, s in enumerate(steps)
+                    if "gh workflow run now.yml" in s.get("run", ""))
+    stale = next(i for i, s in enumerate(steps)
+                 if "live.staleness" in s.get("run", ""))
+    assert stale > dispatch and stale == len(steps) - 1
+    run = steps[stale]["run"]
+    assert "git fetch" in run and "FETCH_HEAD:data/now/manifest.json" in run
+    assert "21600" in str(steps[stale].get("env", {}))
+    assert _on(doc)["workflow_dispatch"]["inputs"]["stale_after_s"]["default"] == "21600"
