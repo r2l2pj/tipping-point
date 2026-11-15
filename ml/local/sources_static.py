@@ -656,10 +656,31 @@ def fetch_ndvi(year: int = settings.NDVI_YEAR,
 
 
 # --- HAND ---------------------------------------------------------------------
+def _cached_hand() -> Path:
+    return settings.DATA_DIR / "static90" / "hand_m.tif"
+
+
 def _hand_path() -> Path | None:
+    """HAND (EDA/serving context only, never a model feature). Copied into
+    DATA_DIR so the index survives the repo dropping its terrain rasters (548471b)."""
+    cached = _cached_hand()
+    if cached.exists() and cached.stat().st_size > 0:
+        return cached
     for p in (LOCAL_HAND, SHARED_HAND):
         if p.exists() and p.stat().st_size > 0:
-            return p
+            import shutil
+            cached.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(p, cached)
+            return cached
+    return None
+
+
+def _hand_ok(idx: dict) -> str | None:
+    h = idx.get("hand")
+    if h and Path(h).exists():
+        return h
+    if h:
+        print(f"WARNING HAND {h} missing — hand_m = NaN (context only, not a feature)", file=sys.stderr)
     return None
 
 
@@ -749,7 +770,7 @@ def _write_vrt(idx: dict) -> Path | None:
                 f'xOff="{bx0:.6f}" yOff="{by0:.6f}" xSize="{bx1 - bx0:.6f}" '
                 f'ySize="{by1 - by0:.6f}"', nodata=nod))
             lines.append("  </VRTRasterBand>")
-        hand = idx.get("hand")
+        hand = _hand_ok(idx)
         if hand:
             with rasterio.open(hand) as ds:
                 tr, hh, ww = ds.transform, ds.height, ds.width
@@ -867,7 +888,7 @@ def sample_static(lon, lat) -> pd.DataFrame:
             fills = (255.0,) if name == "landcover" else ()
             out[band] = _sample_raster(ds, 1, lo, la, scale_nan=fills)
 
-    hand = idx.get("hand")
+    hand = _hand_ok(idx)
     if hand:
         with rasterio.open(hand) as ds:
             out["hand_m"] = _sample_raster(ds, 1, lo, la)
@@ -958,7 +979,7 @@ def static_on_grid(transform: Affine, shape: tuple[int, int],
         rs = Resampling.nearest if name == "landcover" else Resampling.average
         fill(root / rel, [(1, name)], rs,
              src_nodata=255.0 if name == "landcover" else np.nan)
-    if "hand_m" in bands and idx.get("hand"):
+    if "hand_m" in bands and _hand_ok(idx):
         fill(idx["hand"], [(1, "hand_m")], Resampling.average)
     if "landcover" in out:
         out["landcover"][out["landcover"] == 255] = np.nan
