@@ -101,6 +101,7 @@ export interface CompareSide {
   sensor?: string; // sensorName() of the layer — "NISAR radar" | "Radar"
   // Fixed dB stretch of the frame PNG (lead-analysis stretch_db / legend).
   stretch?: { min: number; max: number };
+  coverage?: number; // lead-analysis coverage_pct: share of the case box the pass imaged
 }
 export interface ComparePair {
   kind: "radar" | "night-lights" | "forecast";
@@ -211,6 +212,7 @@ export function nisarTracks(bundle: CcBundle): NisarTrackStack[] {
       mode: typeof mode === "string" ? mode : undefined,
       sensor: name,
       stretch: stretchOf(l),
+      ...(typeof l.coverage_pct === "number" ? { coverage: l.coverage_pct } : {}),
     };
     byTrack.set(track, t);
   }
@@ -423,6 +425,7 @@ export interface RadarCard {
   compare: CompareOption;
   series?: NisarSeriesView; // L42, WA replay
   hypothesisLine?: string; // L42: lead-analysis double-bounce test, when supported
+  provisional?: boolean; // the NISAR product is provisional (sensor field)
   nextLook?: string; // L43 live: "Next NISAR look: …"
   framing?: string; // L43 live framing line (with nextLook)
   extras: NisarExtra[]; // manifest layers kind 'nisar_extra'
@@ -545,6 +548,7 @@ function baseRadarCard(bundle: CcBundle): RadarCard {
   return {
     pair,
     nisar: radarSensor(bundle).nisar,
+    provisional: radarSensor(bundle).note === "provisional",
     headline: pair
       ? (radarSensor(bundle).nisar
           ? "NISAR radar images available" // conductor (v6): plain headline, no product code

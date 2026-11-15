@@ -97,11 +97,11 @@ const waStack = () => stack(...DAYS.map((d) => nframe(d)));
 const reason = (s: ReturnType<typeof resolveChangePair>): string | undefined =>
   "reason" in s ? s.reason : undefined;
 
-describe("default pair (last pass before the day vs first on/after it)", () => {
-  test("brackets the selected day on the case default track", () => {
+describe("default pair (Lucas: follows the timeline — previous pass → the pass on/before the day)", () => {
+  test("after = newest pass on/before the day, before = the previous one on its track", () => {
     const d = defaultChangePair(waStack(), "2025-12-20");
-    expect(d.before?.date).toBe("2025-12-16");
-    expect(d.after?.date).toBe("2025-12-28");
+    expect(d.before?.date).toBe("2025-12-04");
+    expect(d.after?.date).toBe("2025-12-16");
     expect(d.pol).toBe("HH");
   });
   test("a pass ON the day is the 'after'; edges clamp to a real pair", () => {
@@ -124,7 +124,7 @@ describe("default pair (last pass before the day vs first on/after it)", () => {
 describe("resolveChangePair", () => {
   test("default selection resolves the day's pair", () => {
     const spec = resolveChangePair(waStack(), {}, "2025-12-20");
-    expect(spec).toMatchObject({ label: "Dec 16, 2025 → Dec 28, 2025 · HH · track 172D" });
+    expect(spec).toMatchObject({ label: "Dec 4, 2025 → Dec 16, 2025 · HH · track 172D" }); // follows the day: previous → current
   });
   test("explicit picks ('<date>|<track>'); a reversed pick is sorted", () => {
     const spec = resolveChangePair(waStack(), { before: "2025-12-28|172D", after: "2025-12-04|172D" });
@@ -171,7 +171,7 @@ describe("resolveChangePair", () => {
 describe("selection + deep link", () => {
   test("a bare date picks the default track's pass; '<date>|<track>' sticks", () => {
     const s = changeSelection(waStack(), { before: "2025-12-04" }, "2025-12-20");
-    expect(s).toEqual({ before: "2025-12-04|172D", after: "2025-12-28|172D", pol: "HH" });
+    expect(s).toEqual({ before: "2025-12-04|172D", after: "2025-12-16|172D", pol: "HH" });
     const twoTracks = stack(nframe("2025-12-04"), nframe("2025-12-16", { track: "010D" }), nframe("2025-12-28"));
     const t = changeSelection(twoTracks, { before: "2025-12-16|010D" }, "2025-12-20");
     expect(t.before).toBe("2025-12-16|010D");

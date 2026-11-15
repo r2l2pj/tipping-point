@@ -10,11 +10,11 @@ import AreaCallout from "./AreaCallout";
 import AreaPins from "./AreaPins";
 import CompareOverlay, { type CompareControls } from "./CompareOverlay";
 import { Legend } from "./LayersColumn";
+import LegendChip from "./LegendChip";
 import LocatorInset from "./LocatorInset";
 import MapTools from "./MapTools";
 import { pinAreas, type PriorityArea } from "./model/areas";
 import { BASEMAP_LABEL, BASEMAP_ORDER } from "./model/basemap";
-import { STATUS_WORD, type DataStatus } from "./model/dataStatus";
 import { hasGfsFrames } from "./model/forecastCompare";
 import { isRiskLayer } from "./model/sideCompare";
 import { fmtDate } from "./model/format";
@@ -22,7 +22,13 @@ import { layerStateFor, overlaysFor } from "./model/layerRegistry";
 import { resolveChangePair } from "./model/nisarChange";
 import { useNisarChangeImage } from "./useNisarChange";
 import { activeView } from "./model/views";
-import { passLabel, passValue, radarFrame, radarPasses, type Pol } from "./model/radarFrame";
+import { passLabel, passValue, radarFrame, radarPasses, swathEdgeNote, type Pol } from "./model/radarFrame";
+import { riverWindow, type LonLatBox } from "./model/riverWindow";
+import { setRadarLook, useRadarLook, useTintedUrl, useWaterUrl } from "./useWaterRed";
+import { WATER_RED_LEGEND } from "./model/waterRamp";
+import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
+import { useFloodNisar } from "./useFloodNisar";
+import { useRadarPassRequest } from "./useRadarPick";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -35,6 +41,9 @@ import { shortCaption } from "./model/caption";
 import type { ManifestLayer } from "@/lib/types";
 import type { Action, ScreenState } from "./state";
 import type { Insets } from "./useInsets";
+
+// L61: the NISAR water overlay in the flooded-area red (FLOODED_FILL).
+const WATER_RGB = [255, 31, 31] as const;
 
 // Offsets from the stage edges: the floating cards plus a margin.
 const L = (px: number) => `calc(var(--cc-il, 0px) + ${px}px)`;
@@ -60,14 +69,12 @@ export default function MapStage({
   steps,
   state,
   areas,
-  status,
   comparePair,
   dispatch,
   onToggleLayers,
   insets,
   stageRef,
   focus,
-  featuredCase,
   cityPin,
   cityOutline,
   hourFrame,
@@ -78,13 +85,11 @@ export default function MapStage({
   steps: Step[];
   state: ScreenState;
   areas: PriorityArea[];
-  status: DataStatus;
   comparePair: ComparePair | undefined;
   dispatch: (a: Action) => void;
   onToggleLayers: () => void;
   insets: Insets; // space covered by the floating cards
   stageRef: React.RefObject<HTMLDivElement | null>;
-  featuredCase?: { id: string; short: string };
   focus?: MapFocus;
   cityPin?: CityPin;
   // L52 replay city pick: the municipality polygon, drawn as an accent
@@ -98,6 +103,7 @@ export default function MapStage({
   const [map, setMap] = useState<MapInstance | null>(null);
   const [bearing, setBearing] = useState(0);
   const [capOpen, setCapOpen] = useState(false);
+  const [bmOpen, setBmOpen] = useState(false); // basemap choices
   const compare = useRef<CompareControls | null>(null);
   const step = steps[state.dayIndex];
 
@@ -117,16 +123,71 @@ export default function MapStage({
   // unless the user picked another pass or HV. A new day drops the pass
   // pick (the frame follows the timeline) but keeps the polarization.
   const radarPassList = useMemo(() => radarPasses(bundle), [bundle]);
-  const [rPick, setRPick] = useState<{ date?: string; track?: string; pol: Pol }>({ pol: "HH" });
+  const [rPick, setRPick] = useState<{ date?: string; track?: string; pol: Pol; forDay?: string }>({ pol: "HH" });
   const [rPickDay, setRPickDay] = useState(step?.date);
   if (rPickDay !== step?.date) {
     setRPickDay(step?.date);
-    setRPick((p) => ({ pol: p.pol }));
+    // A pick made for the new day (river's dance bar) survives the seek.
+    setRPick((p) => ((p.date && p.date === step?.date) || (p.forDay && p.forDay === step?.date?.slice(0, 10)) ? p : { pol: p.pol }));
+  }
+  // River's dance: a bar asks for one pass (date + track) — once per request.
+  const passReq = useRadarPassRequest();
+  const [seenReq, setSeenReq] = useState(0);
+  if (passReq && passReq.n !== seenReq) {
+    setSeenReq(passReq.n);
+    setRPick((p) => ({ date: passReq.date, track: passReq.track ?? "", pol: p.pol, ...(passReq.forDay ? { forDay: passReq.forDay } : {}) }));
   }
   const radarOn = !comparePair && activeView(state.layers) === "radar" && radarPassList.length > 0;
   const rFrame = useMemo(
     () => (radarOn ? radarFrame(radarPassList, step?.date, rPick) : undefined),
     [radarOn, radarPassList, step?.date, rPick]
+  );
+  // Lucas: Jhonatan's 30 × 30 km river window (Uruguaiana): every NISAR pass
+  // fills it. The Radar — NISAR view fits it when it opens and on every
+  // river's-dance click; the user stays free to zoom out.
+  const riverWin = useMemo(() => riverWindow(bundle), [bundle]);
+  const [viewBox, setViewBox] = useState<LonLatBox>();
+  useEffect(() => {
+    if (!map) return;
+    const read = () => {
+      const b = map.getBounds();
+      setViewBox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+    };
+    map.on("moveend", read);
+    return () => { map.off("moveend", read); };
+  }, [map]);
+  useEffect(() => {
+    if (!map || !radarOn || !riverWin) return;
+    map.fitBounds([[riverWin[0], riverWin[1]], [riverWin[2], riverWin[3]]], {
+      padding: { top: 70, bottom: insets.bottom + 30, left: insets.left + 30, right: insets.right + 30 }, duration: 600,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fit on entering the view and on a dance click only
+  }, [map, radarOn, riverWin, passReq?.n]);
+  // The swath-edge note only when the visible map runs past the frame's
+  // missing side (zoomed out, or a pass that does not fill the window).
+  const swathNote = rFrame && viewBox
+    ? swathEdgeNote(rFrame.pass, rFrame.bounds, bundle.bbox as LonLatBox | undefined, viewBox) : undefined;
+  // Lucas: 'Water in red' (default) recolours the frame — darker = redder.
+  const radarLook = useRadarLook();
+  const radarUrl = useWaterUrl(rFrame?.url, rFrame?.stretch, radarLook === "water");
+  // L61: Flood + TPI on an observed day → the flood + NISAR frame when
+  // lead-analysis published one for the day, with the NISAR water on top.
+  const floodNisarOn = useFloodNisar();
+  const fnFrame = useMemo(
+    () => (floodNisarOn && state.hazard === "flood" && state.layers.includes("tpi") && !issued && !hourFrame
+      ? floodNisarFrame(bundle, step?.date) : undefined),
+    [floodNisarOn, state.hazard, state.layers, issued, hourFrame, bundle, step?.date]
+  );
+  const fnWater = useMemo(() => {
+    const l = fnFrame ? nisarWaterLayer(bundle, step?.date, fnFrame) : undefined;
+    const url = l ? assetUrl(caseDirOf(bundle), l.png) : undefined;
+    return l && url ? { url, bounds: l.bounds } : undefined;
+  }, [fnFrame, bundle, step?.date]);
+  // Lucas: NISAR water reads RED like the candidate polygons (#ff1f1f).
+  const fnWaterRed = useTintedUrl(fnWater?.url, WATER_RGB);
+  const fnWaterShown = useMemo(
+    () => (fnWater && fnWaterRed ? { url: fnWaterRed, bounds: fnWater.bounds } : undefined),
+    [fnWater, fnWaterRed]
   );
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
   const gfsAny = useMemo(() => hasGfsFrames(bundle), [bundle]);
@@ -143,7 +204,7 @@ export default function MapStage({
       frameDate: step?.date,
       overlays: overlaysFor(state.layers),
       probHorizon: state.probHorizon,
-      frameLayer: issued ?? hourFrame,
+      frameLayer: issued ?? hourFrame ?? fnFrame,
       // L52: the satellite underlay is dated by the case (its reference day);
       // live gets the latest imagery GIBS published.
       basemap: state.basemap,
@@ -154,9 +215,10 @@ export default function MapStage({
       opacity: state.overlayOpacity,
       changeImage,
       changeOpacity: state.changeOpacity,
-      radarFrame: rFrame ? { url: rFrame.url, bounds: rFrame.bounds } : undefined,
+      radarFrame: rFrame && radarUrl ? { url: radarUrl, bounds: rFrame.bounds } : undefined,
+      nisarWater: fnWaterShown,
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame]
+    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, rFrame, radarUrl, fnFrame, fnWaterShown]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
@@ -263,14 +325,14 @@ export default function MapStage({
   }, [map]);
 
   // Bounds of the map view for the locator; one update per frame while moving.
-  const [viewBox, setViewBox] = useState<[number, number, number, number] | null>(null);
+  const [locatorView, setLocatorView] = useState<[number, number, number, number] | null>(null);
   useEffect(() => {
     if (!map) return;
     let frame = 0;
     const read = () => {
       frame = 0;
       const b = map.getBounds();
-      setViewBox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+      setLocatorView([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
     };
     const onMove = () => { if (!frame) frame = requestAnimationFrame(read); };
     map.on("move", onMove);
@@ -320,7 +382,9 @@ export default function MapStage({
     ? { text: hourForecastCaption(step.date, hour, hourFc.issued, HAZARD_LABEL[state.hazard]), forecast: true }
     : mapCaption(bundle, steps, state.dayIndex, state.hazard, state.layers, effLead);
   // L52 merged view: name the NISAR pass while the outlines are on screen.
-  const captionNote = floodCaptionNote(bundle, step?.date, state.layers);
+  const passNote = floodCaptionNote(bundle, step?.date, state.layers);
+  const fnNote = floodNisarNote(fnFrame);
+  const captionNote = passNote + fnNote;
   // Prod regression: the ML forecast horizon must be on the map, not only in
   // the Layers panel (closed on phones).
   const probHorizons = useMemo(() => probHorizonsAvailable(bundle.manifest?.layers), [bundle]);
@@ -334,7 +398,7 @@ export default function MapStage({
   return (
     <div
       ref={stageRef}
-      className="relative overflow-hidden bg-cc-map max-[899px]:h-[60vh] max-[899px]:min-h-[400px] min-[900px]:absolute min-[900px]:inset-0"
+      className="absolute inset-0 overflow-hidden bg-cc-map"
       style={{
         "--cc-il": `${insets.left}px`,
         "--cc-ir": `${insets.right}px`,
@@ -363,24 +427,8 @@ export default function MapStage({
         </svg>
       </div>
 
-      <span data-status={status.kind} className={`absolute top-3 z-10 ${chip} !text-xs tracking-[0.02em]`} style={{ left: L(56) }}>
-        {STATUS_WORD[status.kind]}
-      </span>
-
-      {!comparing && featuredCase && bundle.mode === "live" && (
-        <button type="button" data-featured-case onClick={() => dispatch({ type: "goTo", id: featuredCase.id, hazard: "flood" })}
-          className={`absolute top-3 z-10 ${chip} !text-xs font-semibold text-cc-accent`} style={{ left: L(140) }}>
-          <span className="max-[639px]:hidden">Open the </span>{featuredCase.short}<span className="max-[639px]:hidden"> case</span> →
-        </button>
-      )}
-
-      {/* Nav (Lucas): one click from any past event back to the live map. */}
-      {!comparing && bundle.mode === "replay" && (
-        <button type="button" data-back-to-live onClick={() => dispatch({ type: "setMode", mode: "now" })}
-          className={`absolute top-3 z-10 ${chip} !text-xs font-semibold text-cc-accent`} style={{ left: L(152) }}>
-          ← Back to live<span className="max-[639px]:hidden"> (Now)</span>
-        </button>
-      )}
+      {/* lead-ux: the Live / Replay word, "Open the Uruguaiana case" and
+          "Back to live" chips moved to the top bar (case picker + "← Now"). */}
 
       {!comparing && showHorizons && (
         <div role="radiogroup" aria-label="Forecast horizon" data-horizons
@@ -400,6 +448,10 @@ export default function MapStage({
         <div role="group" aria-label="NISAR radar frame" data-radar-frame
           className={`absolute z-10 flex max-w-[calc(100%-28px)] flex-col items-start gap-1 ${chip} !py-1`} style={{ left: L(14), top: 52 }}>
           <span data-radar-chip className="text-xs font-semibold">{rFrame.chip}{rFrame.note ? ` (${rFrame.note})` : ""}</span>
+          <span data-radar-follow={rFrame.pinned ? "pinned" : "timeline"} className="text-[11px] font-medium text-cc-muted">
+            {rFrame.pinned ? `Pinned: ${fmtDate(rFrame.pass.date)} — the next timeline step follows the day again` : "Following the timeline"}
+          </span>
+          {swathNote && <span className="text-[11px] font-medium text-cc-warn" data-swath-note>{swathNote}</span>}
           <div className="flex flex-wrap items-center gap-1">
             {(["HH", "HV"] as const).map((p) => {
               const has = !!rFrame.pass.frames[p];
@@ -426,7 +478,21 @@ export default function MapStage({
               </select>
             </label>
           </div>
-          <span className="text-[11px] font-medium text-cc-muted">Dark = smooth surface (open water) · bright = buildings, trees</span>
+          <div role="group" aria-label="Radar colours" data-radar-look className="flex flex-wrap items-center gap-1">
+            {([["water", "Water in red"], ["plain", "Plain radar"]] as const).map(([k, label]) => (
+              <button key={k} type="button" aria-pressed={radarLook === k} data-radar-look-btn={k}
+                onClick={() => setRadarLook(k)}
+                className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${radarLook === k ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>{label}</button>
+            ))}
+          </div>
+          {radarLook === "water" ? (
+            <span className="flex items-center gap-1 text-[11px] font-medium text-cc-muted" data-water-legend>
+              <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm" style={{ background: "linear-gradient(90deg,#9a9a9a,#ff1f1f)" }} />
+              {WATER_RED_LEGEND}{rFrame.stretch ? "" : " (approximate: brightness scale not declared for this frame)"}
+            </span>
+          ) : (
+            <span className="text-[11px] font-medium text-cc-muted">Dark = smooth surface (open water) · bright = buildings, trees</span>
+          )}
         </div>
       )}
 
@@ -462,12 +528,12 @@ export default function MapStage({
             })}
           </div>
           {state.issueLead > 0 && (
-            <div role="group" aria-label="Forecast issued" className="flex flex-wrap items-center gap-1" data-issue-leads>
+            <div role="group" aria-label="Forecast lead (days after the NOAA issue day)" className="flex flex-wrap items-center gap-1" data-issue-leads>
               {([1, 2, 3] as IssueLead[]).map((k) => (
                 <button key={k} type="button" aria-pressed={effLead === k}
                   onClick={() => dispatch({ type: "setIssueLead", lead: k })}
                   className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${effLead === k ? "bg-cc-accent text-white" : fLeads.includes(k) ? "border border-cc-line-strong" : "border border-dashed border-cc-line-strong text-cc-muted"}`}>
-                  {k} {k === 1 ? "day" : "days"} before
+                  +{k}{k === 3 ? " days" : ""}
                 </button>
               ))}
             </div>
@@ -475,7 +541,7 @@ export default function MapStage({
           {state.issueLead > 0 && step && effLead !== state.issueLead && (
             <p className="m-0 text-xs font-medium text-cc-muted" data-lead-note>
               {fLeads.length
-                ? `No NOAA run archived for ${fmtDate(shiftDay(step.date, -state.issueLead))} — showing ${effLead} ${effLead === 1 ? "day" : "days"} before`
+                ? `No NOAA run issued ${fmtDate(shiftDay(step.date, -state.issueLead))} — showing the run issued ${fmtDate(shiftDay(step.date, -effLead))} (+${effLead} d)`
                 : `No NOAA forecast archived for ${fmtDate(step.date)}`}
             </p>
           )}
@@ -499,7 +565,7 @@ export default function MapStage({
             <button type="button" data-caption title={full} aria-expanded={capOpen} onClick={() => setCapOpen((o) => !o)}
               className={`${chip} max-w-full truncate !py-0.5 text-left ${caption.forecast ? "border-2 border-dashed border-cc-forecast-ink" : ""}`}>
               <span className="sr-only">{full} </span>
-              <span aria-hidden="true">{shortCaption(caption.text, caption.forecast)}{hourFrame && !issued ? ` · ${hourLabel(hourFrame).split(", ").pop()}` : ""}{captionNote.startsWith(" · next NISAR pass") ? captionNote : ""} ⓘ</span>
+              <span aria-hidden="true">{shortCaption(caption.text, caption.forecast)}{hourFrame && !issued ? ` · ${hourLabel(hourFrame).split(", ").pop()}` : ""}{passNote.startsWith(" · next NISAR pass") ? passNote : ""}{fnNote} ⓘ</span>
             </button>
           </div>
         );
@@ -509,26 +575,27 @@ export default function MapStage({
         <div className="absolute z-10 flex flex-col items-end gap-1.5" style={{ right: R(14), bottom: B(12) }}>
           {/* Basemap switcher (L52): a row above the locator inset, clear of
               the horizon chips (left) and the City card (top-centre). */}
-          <div role="group" aria-label="Basemap" data-basemap
-            className={`flex items-center gap-1 ${chip} !py-0.5`}>
-            {BASEMAP_ORDER.map((b) => (
-              <button key={b} type="button" aria-pressed={state.basemap === b}
-                onClick={() => dispatch({ type: "setBasemap", basemap: b })}
-                className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${state.basemap === b ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>
-                {BASEMAP_LABEL[b]}
-              </button>
-            ))}
-          </div>
+          {/* lead-ux: one "Dark ▾" button; the three choices open above it. */}
+          {bmOpen && (
+            <div role="group" aria-label="Basemap" data-basemap
+              className={`flex items-center gap-1 ${chip} !py-0.5`}>
+              {BASEMAP_ORDER.map((b) => (
+                <button key={b} type="button" aria-pressed={state.basemap === b}
+                  onClick={() => { dispatch({ type: "setBasemap", basemap: b }); setBmOpen(false); }}
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${state.basemap === b ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>
+                  {BASEMAP_LABEL[b]}
+                </button>
+              ))}
+            </div>
+          )}
+          <button type="button" data-basemap-toggle aria-expanded={bmOpen} aria-label={`Basemap: ${BASEMAP_LABEL[state.basemap]}`}
+            onClick={() => setBmOpen((o) => !o)} className={`${chip} !py-0.5 !text-xs font-semibold`}>
+            {BASEMAP_LABEL[state.basemap]} ▾
+          </button>
           <div className="flex items-end gap-2">
-            <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan}
-              className={`rounded-[10px] bg-white/95 px-2.5 py-2 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)] max-[639px]:hidden ${state.layersOpen ? "min-[900px]:hidden" : ""}`} />
-            {/* Phones: the legend is collapsed by default so it does not cover
-                the map and the timeline chips; one tap opens it. */}
-            <details data-legend-phone className="min-[640px]:hidden rounded-[10px] bg-white/95 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-              <summary className="cursor-pointer list-none px-2.5 py-1.5 text-xs font-semibold">Legend</summary>
-              <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan} className="max-h-[50vh] overflow-y-auto px-2.5 pb-2" />
-            </details>
-            <LocatorInset bbox={bundle.bbox} view={viewBox} onRecenter={() => fit(500)} className="max-[899px]:hidden" />
+            {/* lead-ux: ONE legend chip at every width; a tap opens the full legend. */}
+            <LegendChip bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} changeCyan={state.changeCyan} />
+            <LocatorInset bbox={bundle.bbox} view={locatorView} onRecenter={() => fit(500)} className="max-[899px]:hidden" />
           </div>
         </div>
       )}
@@ -548,7 +615,9 @@ export default function MapStage({
       )}
 
       {comparePair && (
-        <CompareOverlay key={`${bundle.id}-${comparePair.kind}-${comparePair.before.url}-${comparePair.after.url}`} pair={comparePair}
+        <CompareOverlay key={`${bundle.id}-${comparePair.kind}-${comparePair.before.url}-${comparePair.after.url}`}
+          // Uruguaiana: a NISAR pair (side by side or Change) opens on the river window.
+          pair={riverWin && (comparePair.before.pol || comparePair.after.pol) ? { ...comparePair, bounds: riverWin } : comparePair}
           sidesCtl={comparePair.kind === "forecast" ? sidesCtl : undefined}
           controlsRef={compare} onClose={() => dispatch({ type: "closeCompare" })} />
       )}

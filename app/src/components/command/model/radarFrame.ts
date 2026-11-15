@@ -7,6 +7,7 @@ import { canonicalCaseId } from "@/lib/contract";
 import { assetUrl } from "@/lib/layers";
 import { fmtDate } from "./format";
 import { nisarTracks, sensorName, sensorOf } from "./radar";
+import { stretchOf, type Stretch } from "./changeComposite";
 import type { CcBundle } from "./types";
 
 type BBox = [number, number, number, number];
@@ -15,7 +16,8 @@ export type Pol = "HH" | "HV";
 export interface RadarPass {
   date: string; // YYYY-MM-DD
   track: string; // "" when the manifest carries none
-  frames: Partial<Record<Pol, { url: string; bounds?: BBox }>>;
+  frames: Partial<Record<Pol, { url: string; bounds?: BBox; stretch?: Stretch }>>;
+  coverage?: number; // % of the case box this pass imaged (lead-analysis)
   sensor: string; // "NISAR radar" | "Radar"
 }
 
@@ -26,7 +28,9 @@ export interface RadarFrame {
   pol: Pol;
   url: string;
   bounds?: BBox;
+  stretch?: Stretch; // fixed dB stretch (undefined: not declared)
   chip: string; // "NISAR HH · Oct 12, 2026 · track 010D"
+  pinned: boolean; // a manual pick (until the next timeline move), else following the timeline
   note?: string; // why the frame is not on/before the day
 }
 
@@ -44,10 +48,11 @@ export function radarPasses(bundle: CcBundle): RadarPass[] {
         const frames: RadarPass["frames"] = {};
         for (const p of ["HH", "HV"] as const) {
           const side = f[p];
-          if (side?.url) frames[p] = { url: side.url, bounds: side.bounds };
+          if (side?.url) frames[p] = { url: side.url, bounds: side.bounds, stretch: side.stretch };
         }
         const any = f.HH ?? f.HV;
-        out.push({ date: d, track: s.track, frames, sensor: any?.sensor ?? "NISAR radar" });
+        const cov = f.HH?.coverage ?? f.HV?.coverage;
+        out.push({ date: d, track: s.track, frames, sensor: any?.sensor ?? "NISAR radar", ...(cov !== undefined ? { coverage: cov } : {}) });
       }
     }
   } else {
@@ -65,7 +70,7 @@ export function radarPasses(bundle: CcBundle): RadarPass[] {
       const key = `${date}|${track}`;
       const p = byDay.get(key) ?? { date, track, frames: {}, sensor: sensorName(sensorOf(l)) };
       const b = Array.isArray(l.bounds) && l.bounds.length === 4 ? (l.bounds as BBox) : undefined;
-      p.frames[pol] ??= { url, bounds: b };
+      p.frames[pol] ??= { url, bounds: b, stretch: stretchOf(l) };
       byDay.set(key, p);
     }
     out.push(...byDay.values());
@@ -73,14 +78,43 @@ export function radarPasses(bundle: CcBundle): RadarPass[] {
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.track.localeCompare(b.track));
 }
 
-// Main track = the one with the most passes (010D Uruguaiana, 172D WA).
+// Main track: the fullest coverage of the case box when lead-analysis
+// publishes coverage_pct (conductor: 082D 83 % over 010D 40 % at
+// Uruguaiana), else the one with the most passes (010D Uruguaiana, 172D WA).
 export function mainTrack(passes: readonly RadarPass[]): string {
-  const n = new Map<string, number>();
-  for (const p of passes) n.set(p.track, (n.get(p.track) ?? 0) + 1);
-  return [...n.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? "";
+  const n = new Map<string, { k: number; cov: number[] }>();
+  for (const p of passes) {
+    const e = n.get(p.track) ?? { k: 0, cov: [] };
+    e.k += 1;
+    if (p.coverage !== undefined) e.cov.push(p.coverage);
+    n.set(p.track, e);
+  }
+  const med = (v: number[]) => (v.length ? [...v].sort((a, b) => a - b)[Math.floor(v.length / 2)] : -1);
+  return [...n.entries()].sort((a, b) => med(b[1].cov) - med(a[1].cov) || b[1].k - a[1].k || a[0].localeCompare(b[0]))[0]?.[0] ?? "";
 }
 
-export const passLabel = (p: RadarPass): string => `${fmtDate(p.date)}${p.track ? ` · ${p.track}` : ""}`;
+export const passLabel = (p: RadarPass): string =>
+  `${fmtDate(p.date)}${p.track ? ` · ${p.track}` : ""}${p.coverage !== undefined ? ` · ${Math.round(p.coverage)} % of area` : ""}`;
+
+// A pass that did not image the whole case box: which side it misses
+// (coverage_pct < 90, else its frame bounds vs the case box). With `view`,
+// only when the visible map runs past the frame's edge on that side (the
+// user can see the missing part — never inside the river window).
+export function swathEdgeNote(pass: RadarPass, bounds: BBox | undefined, caseBox: BBox | undefined, view?: BBox): string | undefined {
+  const partial = pass.coverage !== undefined ? pass.coverage < 90
+    : !!(bounds && caseBox && (bounds[0] > caseBox[0] + 0.05 || bounds[2] < caseBox[2] - 0.05 || bounds[1] > caseBox[1] + 0.05 || bounds[3] < caseBox[3] - 0.05));
+  if (!partial) return undefined;
+  const side = bounds && caseBox
+    ? bounds[2] < caseBox[2] - 0.05 ? "east" : bounds[0] > caseBox[0] + 0.05 ? "west" : bounds[3] < caseBox[3] - 0.05 ? "north" : bounds[1] > caseBox[1] + 0.05 ? "south" : undefined
+    : undefined;
+  if (view && bounds) {
+    const past = side === "east" ? view[2] > bounds[2] : side === "west" ? view[0] < bounds[0]
+      : side === "north" ? view[3] > bounds[3] : side === "south" ? view[1] < bounds[1]
+      : view[0] < bounds[0] || view[2] > bounds[2] || view[1] < bounds[1] || view[3] > bounds[3];
+    if (!past) return undefined;
+  }
+  return `swath edge — NISAR did not image the ${side ? `${side} part` : "whole area"} on this pass`;
+}
 export const passValue = (p: RadarPass): string => `${p.date}|${p.track}`;
 
 // The frame to draw: the user's pick when it exists, else the main-track
@@ -90,13 +124,17 @@ export function radarFrame(passes: readonly RadarPass[], day: string | undefined
   const wantPol: Pol = pick?.pol ?? "HH";
   let pass = pick?.date ? passes.find((p) => p.date === pick.date && (pick.track === undefined || p.track === pick.track)) : undefined;
   let note: string | undefined;
+  const pinned = !!pass;
   if (!pass) {
+    // Lucas (follow the timeline): the newest pass on/before the day on ANY
+    // track (the main track first on a shared date), so Play steps through
+    // every pass (Sep 30, Oct 5, Oct 12, Oct 17 … at Uruguaiana).
     const track = mainTrack(passes);
-    const onTrack = passes.filter((p) => p.track === track);
-    const d = day ?? onTrack[onTrack.length - 1].date;
-    pass = [...onTrack].reverse().find((p) => p.date <= d);
+    const d = day ?? passes[passes.length - 1].date;
+    pass = [...passes].filter((p) => p.date <= d)
+      .sort((a, b) => b.date.localeCompare(a.date) || Number(b.track === track) - Number(a.track === track))[0];
     if (!pass) {
-      pass = onTrack[0];
+      pass = passes.filter((p) => p.track === track)[0] ?? passes[0];
       note = `first pass after ${fmtDate(d)}`;
     }
   }
@@ -109,6 +147,8 @@ export function radarFrame(passes: readonly RadarPass[], day: string | undefined
     pol,
     url: f.url,
     bounds: f.bounds,
+    stretch: f.stretch,
+    pinned,
     chip: `${name} ${pol} · ${fmtDate(pass.date)}${pass.track ? ` · track ${pass.track}` : ""}`,
     ...(note ? { note } : {}),
   };

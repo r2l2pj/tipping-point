@@ -38,8 +38,22 @@ export function isGfsFrame(l: {
   return /gfs/i.test(l.forecast_source ?? "") || /_gfs_d[1-3]$/.test(l.id ?? "");
 }
 
+// Conductor (L61): a risk frame's family comes from its EXACT id, never a
+// substring — tpi_<family>[_gfs][_6h][_d<k>] with family flood | slide |
+// flood_nisar (the flood index with NISAR-observed water). "tpi_flood" is a
+// prefix of "tpi_flood_nisar", so substring matching mixed the two.
+export type TpiFamily = "flood" | "slide" | "flood_nisar";
+const TPI_ID_RE = /^tpi_(flood_nisar|flood|slide)(?:_gfs)?(?:_6h)?(?:_d\d+)?$/;
+export function tpiFamily(id: string | undefined): TpiFamily | undefined {
+  const m = TPI_ID_RE.exec(id ?? "");
+  return m ? (m[1] as TpiFamily) : undefined;
+}
+
 // The TPI PNG frame painted for a timeline day. `wanted` picks the family
-// ("slide" | "flood"; null = any). On a forecast day the real issued GFS
+// ("slide" | "flood" | "flood_nisar"; null = any plain family). A
+// tpi_flood_nisar* frame is returned ONLY when asked for ("flood_nisar"),
+// and then without fallback — the caller decides what to show instead.
+// Otherwise the wanted family wins, then another plain family of the day. On a forecast day the real issued GFS
 // frame wins (L22: perfect-forecast frames are only a labelled upper bound,
 // never the headline) — the latest issue on or before the reference date,
 // so the replay never peeks at a forecast issued after the anchor day. On
@@ -48,10 +62,11 @@ export function isGfsFrame(l: {
 export function pickTpiFrame(
   layers: ManifestLayer[] | undefined,
   day: { date: string; kind?: string } | undefined,
-  wanted: "slide" | "flood" | null,
+  wanted: TpiFamily | null,
   referenceDate?: string
 ): ManifestLayer | undefined {
   if (!day) return undefined;
+  const nisarFam = (l: ManifestLayer) => tpiFamily(l.id) === "flood_nisar";
   // A GFS run issued after the anchor day is never shown (no peeking).
   const candidates = (layers ?? []).filter(
     (l) =>
@@ -60,9 +75,11 @@ export function pickTpiFrame(
       // 6-hourly frames (lead-analysis 'datetime') are picked by the hour
       // chips only, never as a day's frame.
       !(l as unknown as { datetime?: unknown }).datetime &&
-      !(isGfsFrame(l) && referenceDate && l.issued && l.issued > referenceDate)
+      !(isGfsFrame(l) && referenceDate && l.issued && l.issued > referenceDate) &&
+      (wanted === "flood_nisar" ? nisarFam(l) : !nisarFam(l))
   );
-  const fam = (l: ManifestLayer) => !wanted || l.id.includes(wanted);
+  const exact = (l: ManifestLayer) => !!wanted && tpiFamily(l.id) === wanted;
+  const fam = (l: ManifestLayer) => !wanted || exact(l);
   if (day.kind === "forecast") {
     const gfs = candidates
       .filter((l) => isGfsFrame(l) && fam(l))
@@ -70,10 +87,11 @@ export function pickTpiFrame(
     if (gfs[0]) return gfs[0];
   }
   const rest = candidates.filter((l) => !isGfsFrame(l));
+  if (wanted === "flood_nisar") return rest.find(exact) ?? candidates.find(exact);
   return (
-    rest.find((l) => wanted && l.id.includes(wanted)) ??
+    rest.find(exact) ??
     rest[0] ??
-    candidates.find((l) => wanted && l.id.includes(wanted)) ??
+    candidates.find(exact) ??
     candidates[0]
   );
 }

@@ -4,6 +4,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import { canonicalCaseId } from "@/lib/contract";
 import { getAlerts, getCaseBundle, getDataJson, getEventsIndex, getMlArtifacts, getRootManifest } from "@/lib/data";
 import { slimHypothesis, slimNisarSeries } from "./model/nisarSeries";
+import { slimRiverDance } from "./model/riverDance";
 import { nextPassFrom } from "./model/nextPass";
 import { resolveAsset } from "@/lib/contract";
 import type { ManifestLayer } from "@/lib/types";
@@ -246,10 +247,19 @@ async function Loaded({ searchParams }: { searchParams?: Search }) {
     const dir = canonicalCaseId(b.id);
     return getDataJson(typeof p === "string" ? p : "nisar_hypothesis.json", dir).then(slimHypothesis).catch(() => undefined);
   }));
+  // Jhonatan's river's dance (lead-ml series/river_dance.json): listed in
+  // products, else the agreed path — only for cases with a NISAR series.
+  const dances = await Promise.all(eventBundles.map((b, i) => {
+    if (!b || !series[i]) return Promise.resolve(undefined);
+    const p = (b.products as Record<string, unknown> | undefined)?.river_dance;
+    const dir = canonicalCaseId(b.id);
+    return getDataJson(typeof p === "string" ? p : "series/river_dance.json", dir).then(slimRiverDance).catch(() => undefined);
+  }));
   const cases: CcBundle[] = [];
   eventBundles.forEach((bundle, i) => {
     if (bundle) cases.push({ ...bundle, nullReasons: nullReasons(root, events[i].id),
-      ...(series[i] ? { nisarSeries: series[i] } : {}), ...(hypotheses[i] ? { nisarHypothesis: hypotheses[i] } : {}) });
+      ...(series[i] ? { nisarSeries: series[i] } : {}), ...(hypotheses[i] ? { nisarHypothesis: hypotheses[i] } : {}),
+      ...(dances[i] ? { riverDance: dances[i] } : {}) });
   });
   // Run time of the live case: the `updated_at` of the live node itself. The
   // loader falls back to the root manifest time, which is the time of the

@@ -68,6 +68,38 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | Optical **100%** cloud, **20** HLS scenes | `cloud_pct` (100.0), `hls_scenes` (20) | P |
 | HAND ≤ **15 m** vs floods ~**16 m** above the river; ROC **0.61 / 0.85**, WA **0.93 → 0.83** | `docs/t-flood-fix-eval.md` (not in metrics.json) | R, A |
 
+## NISAR in the index (L61 / L63, filled 2026-11-15)
+
+| Number | Key | Used in |
+|---|---|---|
+| Uruguaiana pass Oct 12, 2026, 010D; 612 km² single-pass water (the agreement's base) | `cases.rs_uruguai_2026.nisar_agreement_pass_date`, `_pass_track`, `nisar_agreement_water_km2_single_pass` 612.27 | R A P S K |
+| Uruguaiana served map Oct 12: 1,106 km² NISAR water in the case box (passes Sep 30–Oct 12); 822 km² on the floodplain raised | `cases.rs_uruguai_2026.nisar_water_km2_case_box` 1105.61, `nisar_raised_km2_floodplain` 822.03 (`nisar_agreement.map_12d`) | R A P |
+| 9% of it Critical 10 days earlier (Oct 2), on 4% of the land: 2.2×, 1.7× terrain alone | `cases.rs_uruguai_2026.nisar_agreement_win_critical_{hit_pct 8.95, best_day, days_before 10, area_pct 4.067, lift 2.2, m1 1.743}` | R A P S K |
+| High-or-above at chance: 17% on 18% of the land, same day (Oct 2) | `cases.rs_uruguai_2026.nisar_agreement.window_12d.per_day["2026-10-02"].alto_plus` (t1bs: 17.4 / 17.8, lift 0.98) | R A P |
+| 0% on the pass day; 0% in NOAA GFS runs 1–3 d before | `cases.rs_uruguai_2026.nisar_agreement_obs_critical_hit_pct`, `_obs_hit_pct`, `_fc{1,2,3}d_hit_pct` = 0.0 | R A P S K |
+| 15% of the NISAR water off HAND ≤ 5 m | `cases.rs_uruguai_2026.nisar_agreement_outside_floodplain_pct` 14.8 | R A P S |
+| GFS window (published, not quoted): Critical run Oct 5 → Oct 8, 49.6%, lift 1.18 | `cases.rs_uruguai_2026.nisar_agreement_gfswin_critical_*` | — |
+| Now: 227 km² NISAR water on land, Nov 5 pass (010D), 10 d old; index flags 0% | `data/now/summary.json` `nisar_water.{water_km2 227.3, pass_date, pass_track, age_days}`; `data/now/nisar_agreement.json` `observed.*.hit_pct` 0.0 | P |
+| Now: 88.8% of it off HAND ≤ 5 m | `data/now/summary.json` `nisar_water.outside_floodplain_pct` (NOT nisar_agreement.json, whose field is null) | P |
+| Rule: only floodplain (HAND ≤ 5 m) NISAR water raises the flood index (main 777aa88) | `summary.nisar_water.rule`, `.raised_km2`; per layer `nisar_raised_km2` | R A P |
+| Washington: 2.0 km² single-pass water, Dec 16, 172D; 9.9% off floodplain | `cases.wa_2025.nisar_agreement.{water_km2, pass, outside_floodplain_pct}` | R A P |
+| Washington Dec 12 (4 d before): High+ 79.41% on 9.161% (8.67×, M1 0.856); Critical 50.53% on 6.226% (8.12×, M1 0.554) | `cases.wa_2025.nisar_agreement.window_12d.per_day["2025-12-12"]` (Critical = `best_day.critico`) | R A P S K |
+| Washington pass day 3% (High+); GFS 1–3 d 0% | `cases.wa_2025.nisar_agreement.observed.alto_plus.hit_pct` 3.21, `.forecast.lead_{1,2,3}d.*.hit_pct` 0.0 | R A P |
+
+## What we learned about NISAR + the river's dance (verified by lead-analysis / lead-ml)
+
+| Number | Key / source |
+|---|---|
+| WA Otsu never fired, fixed −15 dB | `cases.wa_2025.threshold_db` = −15.0 |
+| UY pairs at the −15 dB clamp: 010D Sep 30→Oct 12, Oct 24→Nov 5; 082D Sep 23→Oct 5/17/29 | `cases.rs_uruguai_2026.nisar_reproduction`, `.nisar_pairs[0]`, `.nisar_082d` |
+| clamped mask covers 99.3% of the 7 teammate polygons (1.82 km²), IoU 0.014 | `cases.rs_uruguai_2026.nisar_reproduction` |
+| 202 of 212 km² field darkening, Oct 5 (082D) | `cases.rs_uruguai_2026.nisar_082d` |
+| 1.76 / 15.7 km² ungated darkening, Oct 24→Nov 5 | `cases.rs_uruguai_2026.radar_darkening_corridor_km2` 1.762, `radar_darkening_fields_km2` 15.732, `radar_darkening_pair` (NOT the png note's 5.62/11.88, older definition) |
+| 45% vs 5%, 8.6× (8.562) | `data/wa_2025/nisar_hypothesis.json` result_paragraph |
+| River's dance: 9 passes Sep 18→Nov 5, r = 0.92 vs Uruguaiana gauge (−15 dB, 010D+082D) | `data/rs_uruguai_2026/series/river_dance.json` `pearson_stage_newwater` 0.918, `n` 9, `pearson_by_track` 010D 0.911 (5) / 082D 0.954 (4), `pearson_stage_newwater_floodplain_only` 0.966; gauge = ANA 77150000 daily median stage on the pass date |
+| River's dance: 46–52% of new water off HAND ≤ 5 m on flood passes, 61–85% on low passes | `river_dance.json` `passes[].new_water_outside_floodplain_pct` |
+| SME2 0.23→0.25→0.23 vs SMAP 0.24→0.32→0.41; 68–75% recommended | notes of `nisar_sme2_<date>_010D` in `data/rs_uruguai_2026/png/_index.json` |
+
 ## Other numbers (sources outside metrics.json)
 
 | Number | Source | Where |
@@ -84,7 +116,7 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 
 ## Retired — never say
 
-36% / 8.8× (v1 RS forecast) as a headline · "46% of landslides within 500 m" · "175 km² Critical three days before" · "55,000 people exposed" · "three days before the peak" · 1,681,783 / 254,263 / 1,488,833 / 229,782 people · 1.85 km² (on-grid area; use 1.8 km² = `flooded_km2`) · "GFS under-forecast the RS peak by about half" on slides/deck (the README keeps it with its source numbers, row above) · "people are lower bounds (~12% low)" (old resample; counts are now native-grid) · "most of the WA Critical area is high/snow terrain" (A3 not confirmed: about 40%) · the 2.7× RS lift as evidence that rain locates slides.
+36% / 8.8× (v1 RS forecast) as a headline · "4,093 km²" live NISAR water (sea-pixel bug, fixed 2ad4b2f) · "46% of landslides within 500 m" · "175 km² Critical three days before" · "55,000 people exposed" · "three days before the peak" · 1,681,783 / 254,263 / 1,488,833 / 229,782 people · 1.85 km² (on-grid area; use 1.8 km² = `flooded_km2`) · "GFS under-forecast the RS peak by about half" on slides/deck (the README keeps it with its source numbers, row above) · "people are lower bounds (~12% low)" (old resample; counts are now native-grid) · "most of the WA Critical area is high/snow terrain" (A3 not confirmed: about 40%) · the 2.7× RS lift as evidence that rain locates slides.
 
 ## Grep proof (run after any copy change)
 

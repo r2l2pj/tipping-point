@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T21:49:24Z",
+  "updated_at": "2026-11-15T23:20:55Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -3096,6 +3096,367 @@
           "attribution": "NISAR (NASA/ISRO), ASF DAAC — Beta product"
         },
         {
+          "id": "nisar_hh_20251017_005A",
+          "date": "2025-10-17",
+          "png": "wa_2025/png/nisar_hh_20251017_005A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 005A · 2025-10-17",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.2,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
+        },
+        {
+          "id": "nisar_hh_20251022_071D",
+          "date": "2025-10-22",
+          "png": "wa_2025/png/nisar_hh_20251022_071D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.3136,
+            46.999345,
+            -121.499591,
+            47.9244
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 071D · 2025-10-22",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 071D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "071D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 31.3,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.3136,
+              46.99979999999999,
+              -121.49999999999999,
+              47.9244
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            65
+          ]
+        },
+        {
+          "id": "nisar_hh_20251029_005A",
+          "date": "2025-10-29",
+          "png": "wa_2025/png/nisar_hh_20251029_005A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 005A · 2025-10-29",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 85.9,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
+        },
+        {
+          "id": "nisar_hh_20251029_172D",
+          "date": "2025-10-29",
+          "png": "wa_2025/png/nisar_hh_20251029_172D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 172D · 2025-10-29",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
+        },
+        {
+          "id": "nisar_hh_20251105_100D",
+          "date": "2025-11-05",
+          "png": "wa_2025/png/nisar_hh_20251105_100D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            47.272875,
+            -121.835725,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 100D · 2025-11-05",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 100D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "100D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 28.4,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              47.273399999999995,
+              -121.83659999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64
+          ]
+        },
+        {
+          "id": "nisar_hh_20251115_071D",
+          "date": "2025-11-15",
+          "png": "wa_2025/png/nisar_hh_20251115_071D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.3136,
+            46.999345,
+            -121.499591,
+            47.9244
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 071D · 2025-11-15",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 071D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "071D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 31.6,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.3136,
+              46.99979999999999,
+              -121.49999999999999,
+              47.9244
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            65
+          ]
+        },
+        {
           "id": "nisar_hh_20251122_172D",
           "date": "2025-11-22",
           "png": "wa_2025/png/nisar_hh_20251122_172D.png",
@@ -3124,18 +3485,218 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "label": "NISAR radar HH · track 172D · 2025-11-22",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
+        },
+        {
+          "id": "nisar_hh_20251204_005A",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/nisar_hh_20251204_005A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 005A · 2025-12-04",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.1,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
+        },
+        {
+          "id": "nisar_hh_20251223_106A",
+          "date": "2025-12-23",
+          "png": "wa_2025/png/nisar_hh_20251223_106A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 106A · 2025-12-23",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 106A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "106A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            25,
+            26
+          ]
+        },
+        {
+          "id": "nisar_hh_20251228_005A",
+          "date": "2025-12-28",
+          "png": "wa_2025/png/nisar_hh_20251228_005A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HH · track 005A · 2025-12-28",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.2,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hh_20251228_172D",
@@ -3166,18 +3727,37 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "label": "NISAR radar HH · track 172D · 2025-12-28",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hh_change",
@@ -3197,6 +3777,307 @@
           ],
           "forecast": false,
           "kind": "observed"
+        },
+        {
+          "id": "nisar_hv_20251017_005A",
+          "date": "2025-10-17",
+          "png": "wa_2025/png/nisar_hv_20251017_005A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 005A · 2025-10-17",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.2,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
+        },
+        {
+          "id": "nisar_hv_20251022_071D",
+          "date": "2025-10-22",
+          "png": "wa_2025/png/nisar_hv_20251022_071D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.3136,
+            46.999345,
+            -121.499591,
+            47.9244
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 071D · 2025-10-22",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 071D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "071D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 31.3,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.3136,
+              46.99979999999999,
+              -121.49999999999999,
+              47.9244
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            65
+          ]
+        },
+        {
+          "id": "nisar_hv_20251029_005A",
+          "date": "2025-10-29",
+          "png": "wa_2025/png/nisar_hv_20251029_005A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 005A · 2025-10-29",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 85.9,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
+        },
+        {
+          "id": "nisar_hv_20251029_172D",
+          "date": "2025-10-29",
+          "png": "wa_2025/png/nisar_hv_20251029_172D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 172D · 2025-10-29",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
+        },
+        {
+          "id": "nisar_hv_20251105_100D",
+          "date": "2025-11-05",
+          "png": "wa_2025/png/nisar_hv_20251105_100D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            47.272875,
+            -121.835725,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 100D · 2025-11-05",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 100D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "100D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 28.4,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              47.273399999999995,
+              -121.83659999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64
+          ]
         },
         {
           "id": "nisar_hv_20251110_172D",
@@ -3227,18 +4108,97 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "label": "NISAR radar HV · track 172D · 2025-11-10",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
+        },
+        {
+          "id": "nisar_hv_20251115_071D",
+          "date": "2025-11-15",
+          "png": "wa_2025/png/nisar_hv_20251115_071D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.3136,
+            46.999345,
+            -121.499591,
+            47.9244
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 071D · 2025-11-15",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 071D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "071D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 31.6,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.3136,
+              46.99979999999999,
+              -121.49999999999999,
+              47.9244
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            65
+          ]
         },
         {
           "id": "nisar_hv_20251122_172D",
@@ -3269,18 +4229,218 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "label": "NISAR radar HV · track 172D · 2025-11-22",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
+        },
+        {
+          "id": "nisar_hv_20251204_005A",
+          "date": "2025-12-04",
+          "png": "wa_2025/png/nisar_hv_20251204_005A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 005A · 2025-12-04",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.1,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
+        },
+        {
+          "id": "nisar_hv_20251223_106A",
+          "date": "2025-12-23",
+          "png": "wa_2025/png/nisar_hv_20251223_106A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 106A · 2025-12-23",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 106A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "106A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            25,
+            26
+          ]
+        },
+        {
+          "id": "nisar_hv_20251228_005A",
+          "date": "2025-12-28",
+          "png": "wa_2025/png/nisar_hv_20251228_005A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1)",
+          "label": "NISAR radar HV · track 005A · 2025-12-28",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 005A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "005A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 86.2,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            26
+          ]
         },
         {
           "id": "nisar_hv_20251228_172D",
@@ -3311,18 +4471,37 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
           "label": "NISAR radar HV · track 172D · 2025-12-28",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hv_change",
@@ -3372,10 +4551,10 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "forecast": false,
           "kind": "nisar_frame",
@@ -3384,10 +4563,29 @@
             -7.47
           ],
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_hv_pre",
@@ -3418,10 +4616,10 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "forecast": false,
           "kind": "nisar_frame",
@@ -3430,10 +4628,29 @@
             -7.92
           ],
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_post",
@@ -3464,18 +4681,37 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "forecast": false,
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_pre",
@@ -3506,18 +4742,37 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "forecast": false,
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_ref",
@@ -3548,18 +4803,37 @@
             ]
           },
           "bounds": [
-            -122.6,
-            46.997768,
-            -121.49765,
-            47.646
+            -122.6004,
+            46.99913,
+            -121.499535,
+            48.5004
           ],
           "forecast": false,
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
-          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (200 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_BETA_V1, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (60 m; same grid for every pass of track 172D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "172D"
+          "track": "172D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 100.0,
+          "grid": {
+            "deg": 0.0006,
+            "bounds_4326": [
+              -122.6004,
+              46.99979999999999,
+              -121.49999999999999,
+              48.5004
+            ]
+          },
+          "mode": "4005_DHDH_A",
+          "frames": [
+            64,
+            65
+          ]
         },
         {
           "id": "nisar_sme2_20251122_172D",
@@ -7714,154 +8988,851 @@
           "note": "ungated >3 dB HH darkening Oct 24 -> Nov 5 (per-scene Otsu never fired — no flood candidates); corridor 5.62 km² geodesic vs fields 11.88 km²"
         },
         {
+          "id": "nisar_hh_20260810_132A",
+          "date": "2026-08-10",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260810_132A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -57.169,
+            -30.600545,
+            -55.297548,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HH · track 132A · 2026-08-10",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 132A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "132A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 60.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.169000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
+        },
+        {
+          "id": "nisar_hh_20260813_010D",
+          "date": "2026-08-13",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260813_010D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HH · track 010D · 2026-08-13",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
+        },
+        {
+          "id": "nisar_hh_20260817_060A",
+          "date": "2026-08-17",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260817_060A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.600903,
+            -55.876707,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HH · track 060A · 2026-08-17",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 060A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "060A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 68.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -55.877,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
+        },
+        {
+          "id": "nisar_hh_20260818_082D",
+          "date": "2026-08-18",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260818_082D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HH · track 082D · 2026-08-18",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
+        },
+        {
+          "id": "nisar_hh_20260822_132A",
+          "date": "2026-08-22",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260822_132A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -57.169,
+            -30.600545,
+            -55.297548,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HH · track 132A · 2026-08-22",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 132A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "132A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 60.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.169000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
+        },
+        {
+          "id": "nisar_hh_20260825_010D",
+          "date": "2026-08-25",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260825_010D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HH · track 010D · 2026-08-25",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
+        },
+        {
           "id": "nisar_hh_20260918",
           "date": "2026-09-18",
           "png": "rs_uruguai_2026/png/nisar_hh_20260918.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20260918_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
+        },
+        {
+          "id": "nisar_hh_20260922_060A",
+          "date": "2026-09-22",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260922_060A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.600903,
+            -55.876707,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HH · track 060A · 2026-09-22",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 060A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HH",
+          "track": "060A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 68.5,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -55.877,
+              -28.2
+            ]
+          },
+          "mode": "2005_SHSH_A",
+          "frames": [
+            162,
+            163
+          ]
         },
         {
           "id": "nisar_hh_20260923",
           "date": "2026-09-23",
           "png": "rs_uruguai_2026/png/nisar_hh_20260923_082D.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20260923_082D_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
-          "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20260930",
           "date": "2026-09-30",
           "png": "rs_uruguai_2026/png/nisar_hh_20260930.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20260930_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261005",
           "date": "2026-10-05",
           "png": "rs_uruguai_2026/png/nisar_hh_20261005_082D.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261005_082D_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
-          "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261012",
           "date": "2026-10-12",
           "png": "rs_uruguai_2026/png/nisar_hh_20261012.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261012_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261017",
           "date": "2026-10-17",
           "png": "rs_uruguai_2026/png/nisar_hh_20261017_082D.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261017_082D_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
-          "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261024",
           "date": "2026-10-24",
           "png": "rs_uruguai_2026/png/nisar_hh_20261024.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261024_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
-          "sensor": "NISAR (GCOV)",
-          "source": "NISAR GCOV (ASF)",
+          "sensor": "NISAR",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261028",
@@ -7882,29 +9853,68 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "polarization": "HH",
-          "track": "060A"
+          "track": "060A",
+          "coverage_pct": 68.4
         },
         {
           "id": "nisar_hh_20261029",
           "date": "2026-10-29",
           "png": "rs_uruguai_2026/png/nisar_hh_20261029_082D.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261029_082D_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
           ],
           "kind": "nisar_frame",
-          "sensor": "NISAR (GCOV)",
-          "source": "NISAR GCOV (ASF)",
-          "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "sensor": "NISAR",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_20261102",
@@ -7925,28 +9935,68 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "polarization": "HH",
-          "track": "132A"
+          "track": "132A",
+          "coverage_pct": 60.3
         },
         {
           "id": "nisar_hh_20261105",
           "date": "2026-11-05",
           "png": "rs_uruguai_2026/png/nisar_hh_20261105.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261105_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
-          "sensor": "NISAR (GCOV)",
-          "source": "NISAR GCOV (ASF)",
+          "sensor": "NISAR",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hh_change_20261012",
@@ -8001,154 +10051,790 @@
           "track": "010D"
         },
         {
+          "id": "nisar_hv_20260810_132A",
+          "date": "2026-08-10",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260810_132A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -57.169,
+            -30.600545,
+            -55.297548,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HV · track 132A · 2026-08-10",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 132A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "132A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 60.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.169000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
+        },
+        {
+          "id": "nisar_hv_20260813_010D",
+          "date": "2026-08-13",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260813_010D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HV · track 010D · 2026-08-13",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
+        },
+        {
+          "id": "nisar_hv_20260817_060A",
+          "date": "2026-08-17",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260817_060A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.600903,
+            -55.876707,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HV · track 060A · 2026-08-17",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 060A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "060A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 68.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -55.877,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
+        },
+        {
+          "id": "nisar_hv_20260818_082D",
+          "date": "2026-08-18",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260818_082D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HV · track 082D · 2026-08-18",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
+        },
+        {
+          "id": "nisar_hv_20260822_132A",
+          "date": "2026-08-22",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260822_132A.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -57.169,
+            -30.600545,
+            -55.297548,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HV · track 132A · 2026-08-22",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 132A); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "132A",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 60.4,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.169000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            162,
+            163
+          ]
+        },
+        {
+          "id": "nisar_hv_20260825_010D",
+          "date": "2026-08-25",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260825_010D.png",
+          "cog": null,
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
+          "bounds": [
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "label": "NISAR radar HV · track 010D · 2026-08-25",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
+          "polarization": "HV",
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
+        },
+        {
           "id": "nisar_hv_20260918",
           "date": "2026-09-18",
           "png": "rs_uruguai_2026/png/nisar_hv_20260918.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20260918_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20260923",
           "date": "2026-09-23",
           "png": "rs_uruguai_2026/png/nisar_hv_20260923_082D.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20260923_082D_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
-          "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20260930",
           "date": "2026-09-30",
           "png": "rs_uruguai_2026/png/nisar_hv_20260930.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20260930_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261005",
           "date": "2026-10-05",
           "png": "rs_uruguai_2026/png/nisar_hv_20261005_082D.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261005_082D_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
-          "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261012",
           "date": "2026-10-12",
           "png": "rs_uruguai_2026/png/nisar_hv_20261012.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261012_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261017",
           "date": "2026-10-17",
           "png": "rs_uruguai_2026/png/nisar_hv_20261017_082D.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261017_082D_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
           ],
           "kind": "nisar_frame",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
-          "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261024",
           "date": "2026-10-24",
           "png": "rs_uruguai_2026/png/nisar_hv_20261024.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261024_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
-          "sensor": "NISAR (GCOV)",
-          "source": "NISAR GCOV (ASF)",
+          "sensor": "NISAR",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261028",
@@ -8169,29 +10855,68 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "polarization": "HV",
-          "track": "060A"
+          "track": "060A",
+          "coverage_pct": 68.4
         },
         {
           "id": "nisar_hv_20261029",
           "date": "2026-10-29",
           "png": "rs_uruguai_2026/png/nisar_hv_20261029_082D.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261029_082D_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -57.803,
+            -30.601183,
+            -55.297693,
+            -28.2
           ],
           "kind": "nisar_frame",
-          "sensor": "NISAR (GCOV)",
-          "source": "NISAR GCOV (ASF)",
-          "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "sensor": "NISAR",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 082D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "082D"
+          "track": "082D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 82.6,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -57.803000000000004,
+              -30.6,
+              -55.299,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_20261102",
@@ -8212,28 +10937,68 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "polarization": "HV",
-          "track": "132A"
+          "track": "132A",
+          "coverage_pct": 60.3
         },
         {
           "id": "nisar_hv_20261105",
           "date": "2026-11-05",
           "png": "rs_uruguai_2026/png/nisar_hv_20261105.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261105_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "nisar_frame",
-          "sensor": "NISAR (GCOV)",
-          "source": "NISAR GCOV (ASF)",
+          "sensor": "NISAR",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_change_20261012",
@@ -8292,84 +11057,240 @@
           "date": "2026-10-12",
           "png": "rs_uruguai_2026/png/nisar_hv_20261012.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261012_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "observed",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_hv_pre",
           "date": "2026-09-30",
           "png": "rs_uruguai_2026/png/nisar_hv_20260930.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20260930_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "observed",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HV",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_post",
           "date": "2026-10-12",
           "png": "rs_uruguai_2026/png/nisar_hh_20261012.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261012_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "observed",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_pre",
           "date": "2026-09-30",
           "png": "rs_uruguai_2026/png/nisar_hh_20260930.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20260930_60m.tif",
-          "legend": [
-            "dark = low backscatter (smooth open water)",
-            "bright = high backscatter (urban, flooded vegetation)"
-          ],
+          "legend": {
+            "unit": "dB",
+            "db_min": -25.0,
+            "db_max": 0.0,
+            "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+            "stops": [
+              {
+                "v": -25,
+                "color": "#000000",
+                "label": "−25 dB · smooth (open water; HV: bare/water)"
+              },
+              {
+                "v": -12.5,
+                "color": "#808080",
+                "label": "−12.5 dB"
+              },
+              {
+                "v": 0,
+                "color": "#ffffff",
+                "label": "0 dB · bright (urban, flooded trees)"
+              }
+            ]
+          },
           "bounds": [
-            -57.252403,
-            -29.851198,
-            -56.445749,
-            -29.048826
+            -58.0,
+            -30.60148,
+            -56.676233,
+            -28.2
           ],
           "kind": "observed",
           "sensor": "NISAR (GCOV provisional)",
-          "source": "NISAR GCOV (ASF)",
+          "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+          "note": "Backscatter, ONE fixed -25..0 dB stretch for every NISAR frame (100 m; same grid for every pass of track 010D); compare two passes of the SAME track. Not a flood map.",
           "polarization": "HH",
-          "track": "010D"
+          "track": "010D",
+          "stretch_db": {
+            "db_min": -25.0,
+            "db_max": 0.0
+          },
+          "coverage_pct": 40.2,
+          "grid": {
+            "deg": 0.001,
+            "bounds_4326": [
+              -58.0,
+              -30.6,
+              -56.677,
+              -28.2
+            ]
+          },
+          "mode": "2005_DHDH_A",
+          "frames": [
+            103,
+            104
+          ]
         },
         {
           "id": "nisar_sme2_20260918_010D",

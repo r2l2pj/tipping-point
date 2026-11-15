@@ -2,7 +2,7 @@
 // lead k (1–3 d): left = the NOAA GFS TPI frame issued D−k depicting D,
 // right = the observed TPI frame on D. Pure: the button, the lead chips
 // and the overlay all read this result; no pair means a short reason.
-import { assetUrl, isGfsFrame } from "@/lib/layers";
+import { assetUrl, isGfsFrame, tpiFamily } from "@/lib/layers";
 import type { ManifestLayer } from "@/lib/types";
 import { fmtDate } from "./format";
 import { caseDirOf } from "./lazy";
@@ -50,7 +50,7 @@ function observedFrame(
     (l) =>
       !!l.png &&
       l.date?.slice(0, 10) === day &&
-      l.id.startsWith(`tpi_${hazard}`) &&
+      tpiFamily(l.id) === hazard && // exact family: never tpi_flood_nisar
       !isGfsFrame(l)
   );
   return (

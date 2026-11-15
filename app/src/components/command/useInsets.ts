@@ -25,7 +25,7 @@ export function useInsets(
   useEffect(() => {
     const measure = () => {
       const s = stage.current?.getBoundingClientRect();
-      if (!s || !window.matchMedia(WIDE).matches) return setInsets(ZERO);
+      if (!s) return setInsets(ZERO);
       const edge = (el: HTMLElement | null) => {
         const r = el?.getBoundingClientRect();
         return r && r.width > 0 && r.height > 0 ? r : undefined;
@@ -33,10 +33,16 @@ export function useInsets(
       const l = edge(left.current);
       const r = edge(right.current);
       const b = edge(bottom.current);
-      const next = {
+      // Phones (lead-ux 1/8): the timeline and the sheet float at the
+      // bottom, full width — they cover the bottom only.
+      const next = window.matchMedia(WIDE).matches ? {
         left: l ? Math.max(0, Math.round(l.right - s.left)) : 0,
         right: r ? Math.max(0, Math.round(s.right - r.left)) : 0,
         bottom: b ? Math.max(0, Math.round(s.bottom - b.top)) : 0,
+      } : {
+        left: 0,
+        right: 0,
+        bottom: Math.max(0, ...[b, r].map((e) => (e ? Math.round(s.bottom - e.top) : 0))),
       };
       setInsets((prev) =>
         prev.left === next.left && prev.right === next.right && prev.bottom === next.bottom ? prev : next

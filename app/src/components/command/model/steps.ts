@@ -9,6 +9,8 @@ import {
   isForecastLayer,
   isGfsFrame,
   pickTpiFrame,
+  tpiFamily,
+  type TpiFamily,
 } from "@/lib/layers";
 import type { DayPoint, ManifestLayer } from "@/lib/types";
 import { fmtDate, fmtDayShort } from "./format";
@@ -35,7 +37,8 @@ export interface Step {
 const tpiFrames = (bundle: CcBundle): ManifestLayer[] =>
   (bundle.manifest?.layers ?? []).filter(
     (l) =>
-      l.id.startsWith("tpi_") &&
+      // Exact family; L61 flood + NISAR frames depict the same days as tpi_flood.
+      (tpiFamily(l.id) === "flood" || tpiFamily(l.id) === "slide") &&
       l.png &&
       typeof l.date === "string" &&
       !(l as unknown as { datetime?: unknown }).datetime && // 6-hourly: hour chips only
@@ -230,6 +233,7 @@ export interface Frame {
   layer: ManifestLayer;
   hazard: Hazard;
   forecast: boolean;
+  family?: TpiFamily; // exact id family (flood_nisar = flood + NISAR water)
 }
 
 // The TPI frame the map hook draws for a date and a hazard choice — the
@@ -242,7 +246,7 @@ export interface Frame {
 export function frameFor(
   bundle: CcBundle,
   date: string | undefined,
-  wanted: Hazard
+  wanted: Hazard | TpiFamily
 ): Frame | undefined {
   if (!date) return undefined;
   const layer = pickTpiFrame(
@@ -251,11 +255,13 @@ export function frameFor(
     wanted,
     bundle.series?.reference_date ?? bundle.reference_date
   );
-  if (!layer || !layer.id.startsWith("tpi_")) return undefined;
+  const family = tpiFamily(layer?.id);
+  if (!layer || !family) return undefined;
   return {
     layer,
-    hazard: layer.id.includes("flood") ? "flood" : "slide",
+    hazard: family === "slide" ? "slide" : "flood",
     forecast: isForecastLayer(layer),
+    family,
   };
 }
 
@@ -293,6 +299,11 @@ export function forecastForDay(bundle: CcBundle, day: string | undefined, hazard
   const depicted = f?.layer.date?.slice(0, 10);
   return f && (depicted === undefined || depicted === day.slice(0, 10)) ? f : undefined;
 }
+// Lucas: one wording for an issued forecast everywhere (Compare sides and
+// the single Forecast view) — "NOAA forecast issued Sep 27 for Sep 30 (+3 d)".
+const noYear = (d: string) => fmtDate(d).replace(/,\s*\d{4}$/, "");
+export const noaaForecastLabel = (issue: string, target: string, k: number): string =>
+  `NOAA forecast issued ${noYear(issue)} for ${noYear(target)} (+${k} d)`;
 export const forecastLeadsForDay = (bundle: CcBundle, day: string | undefined, hazard: Hazard): IssueLead[] =>
   ISSUE_LEADS.filter((k) => forecastForDay(bundle, day, hazard, k));
 // Never a dead chip: a lead without an archived run falls back to the
@@ -309,9 +320,14 @@ export function effectiveLead(bundle: CcBundle, day: string | undefined, hazard:
 export const issueLeadsFor = (bundle: CcBundle, issueDate: string | undefined, hazard: Hazard): IssueLead[] =>
   ISSUE_LEADS.filter((k) => issuedFrame(bundle, issueDate, hazard, k));
 
+// Lucas: a case computed for one hazard only (Uruguaiana: flood) says so
+// wherever the other hazard would show — never a blank map.
+export const hazardMissingText = (h: Hazard): string =>
+  h === "slide" ? "Landslide index not computed for this flood case" : "Flood index not computed for this landslide case";
+
 export const caseHasHazard = (bundle: CcBundle, hazard: Hazard): boolean =>
   (bundle.manifest?.layers ?? []).some(
-    (l) => l.id.startsWith(`tpi_${hazard}`) && (l.png || l.cog)
+    (l) => tpiFamily(l.id) === hazard && (l.png || l.cog)
   );
 
 // Caption chip of the map: what is drawn, for which step. Says so when the
@@ -369,8 +385,8 @@ export function mapCaption(
     const f = forecastForDay(bundle, step.date, hazard, issueLead);
     const issued = shiftDay(step.date, -issueLead);
     return f
-      ? { text: `Forecast for ${fmtDate(step.date)}, issued ${fmtDate(issued)} (NOAA GFS) · ${HAZARD_LABEL[f.hazard]} TPI`, forecast: true }
-      : { text: `No NOAA run archived for ${fmtDate(issued)}`, forecast: false };
+      ? { text: `${noaaForecastLabel(issued, step.date, issueLead)} · ${HAZARD_LABEL[f.hazard]} TPI`, forecast: true }
+      : { text: `No NOAA run issued ${fmtDate(issued)}`, forecast: false };
   }
   if (bundle.riskPaused) return { text: `${RISK_PAUSED_TEXT} · ${when}`, forecast: false };
   // Conductor: in Now a forecast day of the timeline reads as the rain-index

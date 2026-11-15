@@ -15,9 +15,9 @@ import ReplayCityCard from "./ReplayCityCard";
 import { parsePlaces, type Place, type Places } from "./model/places";
 import { placesDailyUrl, replayDayClass, replaySource, type ReplayPlace } from "./model/replayPlaces";
 import PanelTabs, { type PanelTab } from "./PanelTabs";
+import { defaultTab, nisarPeek } from "./model/peek";
 import { headlineFor } from "./model/headline";
 import { geoUrl } from "@/lib/layers";
-import StartHere from "./StartHere";
 import PanelSection from "./PanelSection";
 import { observedRows, type AlertList } from "./model/alerts";
 import { expandLayerUrls } from "./model/layerUrls";
@@ -44,7 +44,7 @@ import RainSoilChart from "./RainSoilChart";
 import ReplayCheck from "./ReplayCheck";
 import SituationPanel from "./SituationPanel";
 import SourceAges from "./SourceAges";
-import { initialState, linkParams, PLAYBACK_MS, reduce, type Action, type ScreenState, type DeepLink, isFeatured } from "./state";
+import { initialState, linkParams, PLAYBACK_MS, reduce, type Action, type ScreenState, type DeepLink } from "./state";
 import StatusBlock from "./StatusBlock";
 import { hideMissingFor } from "./model/sparse";
 import { hasHourFrames, hourFrameFor, hoursOn } from "./model/hours";
@@ -56,6 +56,8 @@ import TimelineBar from "./TimelineBar";
 import TopBar, { type View } from "./TopBar";
 import { useGeo } from "./useGeo";
 import { useInsets } from "./useInsets";
+import { agreementText, nisarAgreement } from "./model/floodNisar";
+import { requestRadarPass, useRadarPassRequest } from "./useRadarPick";
 
 export interface CommandCenterProps {
   cases: CcBundle[];
@@ -132,8 +134,11 @@ export function CommandCenterView({
   // City search (Lucas): places.json of the live run (lead-analysis). A
   // pick in Now opens the live card; a pick in a replay case stays there —
   // the source is that case's municipalities (replaySource).
+  // geoUrl, not declared(): an old manifest that never lists `places` (the
+  // frozen bundled copy, an older SQLite table) still serves the canonical
+  // places.json — only an explicit `places: null` (declared absent) hides it.
   const liveCase = cases.find((c) => c.mode === "live");
-  const placesUrl = liveCase && declared(liveCase, "places")
+  const placesUrl = liveCase
     ? geoUrl(liveCase, caseDirOf(liveCase), "places", "places.json")
     : undefined;
   const [city, setCity] = useState<{ place: Place; dates: string[] }>();
@@ -141,10 +146,9 @@ export function CommandCenterView({
   const [hourPick, setHourPick] = useState<{ caseId: string; hour: string | null }>({ caseId: "", hour: null });
   const [replayCity, setReplayCity] = useState<ReplayPlace>();
   // L52 U1: right-panel tabs (content moved, nothing deleted).
-  // Lucas: every case lands on the map + Overview; only a radar swipe link
-  // opens the Radar tab.
-  const [tab, setTab] = useState<PanelTab | "all">(panelTab ?? (deepLink?.compare === "radar" ? "radar" : "overview"));
-  const show = (t: PanelTab) => tab === t || tab === "all";
+  // Lucas (override): replay cases with NISAR open on the NISAR tab, Now on
+  // Overview (null = that case default; a radar swipe link opens NISAR).
+  const [tab, setTab] = useState<PanelTab | "all" | null>(panelTab ?? (deepLink?.compare === "radar" ? "radar" : null));
   // Lucas: Now steps through the last Now runs (every 3 h) — lead-analysis
   // now/history. Map only; the panel keeps the latest figures.
   const historyUrl = liveCase && declared(liveCase, "history")
@@ -216,6 +220,7 @@ export function CommandCenterView({
   if (prevActive !== state.activeId) {
     setPrevActive(state.activeId);
     if (replayCity) setReplayCity(undefined);
+    if (tab !== "all") setTab(null); // the new case opens on its own default tab
   }
 
   useEffect(() => {
@@ -272,6 +277,7 @@ export function CommandCenterView({
     [loaded, fullZones, zonesUrl, scars, scarsUrl]
   );
   const steps = useMemo(() => stepsFor(bundle), [bundle]);
+  const passReq = useRadarPassRequest(); // river's dance: the bar asked for
   // places_daily (lead-analysis, tipping-point/places-daily@1): the shown
   // step day's observed flood class per municipality — replay only.
   const dailyUrl = bundle?.mode === "replay" ? placesDailyUrl(bundle) : undefined;
@@ -299,13 +305,15 @@ export function CommandCenterView({
   const panelRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const insets = useInsets(stageRef, layersRef, panelRef, timelineRef);
-  const root = `cc-root flex min-h-screen flex-col min-[900px]:h-dvh min-[900px]:overflow-hidden ${fontClass}`;
+  // lead-ux 1/8: map-first at every width — the page never scrolls; the
+  // drawer / sheet scrolls inside.
+  const root = `cc-root flex h-dvh flex-col overflow-hidden ${fontClass}`;
 
   if (!bundle || !radar) {
     return (
       <div className={root}>
         <TopBar cases={cases} bundle={undefined} view={view} onView={onView}
-          onMode={() => {}} onSelectCase={() => {}}
+          onSelectCase={() => {}}
           freshness="Unknown age · no data loaded" freshnessKind="unknown-age" />
         <main className="m-auto max-w-md">
           <p role="status" className="p-6 text-center text-[15px]">
@@ -377,7 +385,13 @@ export function CommandCenterView({
   // lead-analysis (WA): one honest line on forecast vs the NISAR flood area.
   const fnn = (bundle.metricsView as Record<string, unknown> | undefined)?.forecast_nisar_overlap_note;
   const forecastNisarNote = typeof fnn === "string" && fnn.trim() ? plainText(fnn.trim()) : undefined;
-  const tabsShown: PanelTab[] = ["overview", "forecast", "radar", ...(!sparse || areas.length > 0 ? ["places" as const] : []), "sources"];
+  const tabsShown: PanelTab[] = view === "public" ? ["alerts", "map"]
+    : ["overview", "map", "forecast", "radar", ...(!sparse || areas.length > 0 ? ["places" as const] : [])];
+  // The Public Alerts view has its own first tab; a tab that does not exist
+  // in the view in sight falls back to that view's first tab.
+  const wantTab: PanelTab = tab === null || tab === "all" ? (view === "public" ? tabsShown[0] : defaultTab(bundle, radar)) : tab;
+  const tabNow: PanelTab = tabsShown.includes(wantTab) ? wantTab : tabsShown[0];
+  const show = (t: PanelTab) => tab === "all" || t === tabNow;
   const areaTile = criticalAreaTile(bundle, state.hazard, step?.date, step?.day, overlayFrame);
   const peopleT = peopleTile(bundle, step?.date, step?.day, overlayFrame);
   const showAffected = !sparse || !areaTile.missing || !peopleT.missing || classesKm2.length > 0;
@@ -402,8 +416,9 @@ export function CommandCenterView({
         bundle={bundle}
         view={view}
         onView={onView}
-        onMode={(mode) => dispatch({ type: "setMode", mode })}
         onSelectCase={(id) => dispatch({ type: "selectCase", id })}
+        onTour={(a) => dispatch(a)}
+        onNow={bundle.mode === "replay" && cases.some((c) => c.mode === "live") ? () => dispatch({ type: "setMode", mode: "now" }) : undefined}
         freshness={freshnessText(status, nowMs)}
         freshnessKind={status.kind}
         search={searchSource && (
@@ -416,15 +431,14 @@ export function CommandCenterView({
         )}
       />
 
-      {/* Wide: the map fills the whole area and the cards float over it.
-          Narrow: one column (map, panel, timeline); Layers is a drawer. */}
+      {/* The map fills the whole area at every width; the timeline and the
+          one drawer (a bottom sheet on phones) float over it. */}
       <main className="relative min-h-0 flex-1">
         <MapStage
           bundle={live && runPick ? bundleForRun(bundle, runPick.run, runPick.manifest) : bundle}
           steps={steps}
           state={state}
           areas={areas}
-          status={status}
           comparePair={comparePair}
           dispatch={dispatch}
           insets={insets}
@@ -442,24 +456,29 @@ export function CommandCenterView({
             onPreset: (id) => dispatch({ type: "applyComparePreset", id }),
           } : undefined}
           cityOutline={!live ? replayCity?.outline : undefined}
-          featuredCase={(() => {
-            const f = cases.find((c) => c.mode === "replay" && isFeatured(c));
-            return f ? { id: f.id, short: "Uruguaiana Oct 2026" } : undefined;
-          })()}
           onToggleLayers={() => {
-            dispatch({ type: "toggleLayersOpen" });
-            setDrawer((d) => !d);
+            // The map's layers button: open the drawer (or sheet) on the Map
+            // tab; pressed again on the Map tab, it hides it.
+            const wide = window.matchMedia("(min-width: 900px)").matches;
+            const open = wide ? state.layersOpen : drawer;
+            if (open && tabNow === "map") {
+              if (wide) dispatch({ type: "toggleLayersOpen" }); else setDrawer(false);
+              return;
+            }
+            setTab("map");
+            if (wide && !state.layersOpen) dispatch({ type: "toggleLayersOpen" });
+            if (!wide) setDrawer(true);
           }}
         />
         {city && live && view === "command" && (
-          <div className="pointer-events-auto z-30 mx-3 mt-3 min-[900px]:absolute min-[900px]:left-1/2 min-[900px]:top-14 min-[900px]:mx-0 min-[900px]:mt-0 min-[900px]:w-[360px] min-[900px]:-translate-x-1/2">
+          <div className="pointer-events-auto relative z-30 mx-3 mt-3 min-[900px]:absolute min-[900px]:left-1/2 min-[900px]:top-14 min-[900px]:mx-0 min-[900px]:mt-0 min-[900px]:w-[360px] min-[900px]:-translate-x-1/2">
             <CityCard place={city.place} dates={city.dates}
               onShow={() => setFocus({ bbox: city.place.bbox, center: city.place.centroid, key: Date.now() })}
               onClose={() => { setCity(undefined); setCityParam(undefined); }} />
           </div>
         )}
         {replayCity && !live && view === "command" && (
-          <div className="pointer-events-auto z-30 mx-3 mt-3 min-[900px]:absolute min-[900px]:left-1/2 min-[900px]:top-14 min-[900px]:mx-0 min-[900px]:mt-0 min-[900px]:w-[360px] min-[900px]:-translate-x-1/2">
+          <div className="pointer-events-auto relative z-30 mx-3 mt-3 min-[900px]:absolute min-[900px]:left-1/2 min-[900px]:top-14 min-[900px]:mx-0 min-[900px]:mt-0 min-[900px]:w-[360px] min-[900px]:-translate-x-1/2">
             <ReplayCityCard place={replayCity}
               stepDate={step?.date}
               dayClass={replayDayClass(dailyRaw, replayCity.code, step?.date)}
@@ -467,40 +486,76 @@ export function CommandCenterView({
               onClose={() => setReplayCity(undefined)} />
           </div>
         )}
-        {drawer && (
-          <button type="button" aria-label="Close the Layers column" onClick={() => setDrawer(false)}
-            className="fixed inset-0 z-30 bg-black/40 min-[900px]:hidden" />
-        )}
-        <div className="pointer-events-none z-20 flex flex-col gap-3 p-3 min-[900px]:absolute min-[900px]:inset-0 min-[900px]:grid min-[900px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[900px]:grid-rows-[minmax(0,1fr)_auto]">
-        <div ref={layersRef} className="pointer-events-auto flex min-h-0 max-[899px]:contents min-[900px]:col-start-1 min-[900px]:row-start-1 min-[900px]:self-start min-[900px]:max-h-full">
-        <LayersColumn
-          bundle={bundle}
-          rows={rows}
-          hazard={state.hazard}
-          layers={state.layers}
-          notice={state.layerNotice}
-          probHorizon={state.probHorizon}
-          stepDate={step?.date}
-          onHazard={(hazard) => dispatch({ type: "setHazard", hazard })}
-          onToggle={(id) => dispatch({ type: "toggleLayer", id })}
-          onProbHorizon={(horizon) => dispatch({ type: "setProbHorizon", horizon })}
-          onClose={() => setDrawer(false)}
-          onView={(v) => dispatch({ type: "setView", view: v })}
-          satellite={{
-            on: state.basemap === "satellite",
-            toggle: () => dispatch({ type: "setBasemap", basemap: state.basemap === "satellite" ? "dark" : "satellite" }),
+        {/* lead-ux 1/8: ONE drawer. Wide: a 360 px panel on the right
+            (closable; the map's layers button reopens it on the Map tab).
+            Phones: a bottom sheet over the full-screen map, closed by default
+            (its tab row is the peek). The Layers column is the "Map" tab. */}
+        {/* Wide: once the drawer is closed (✕), a slim edge tab opens it again. */}
+        <button type="button" data-drawer-open aria-label="Show details" title="Show details"
+          onClick={() => {
+            if (window.matchMedia("(min-width: 900px)").matches) dispatch({ type: "toggleLayersOpen" });
+            else setDrawer(true);
           }}
-          opacity={state.overlayOpacity}
-          onOpacity={(value) => dispatch({ type: "setOpacity", value })}
-          changeCyan={state.changeCyan}
-          className={`${drawer ? "max-[899px]:flex" : "max-[899px]:hidden"} ${state.layersOpen ? "min-[900px]:flex" : "min-[900px]:hidden"}`}
-        />
-
+          className={`absolute right-0 top-1/2 z-30 flex -translate-y-1/2 max-[899px]:hidden items-center gap-1 rounded-l-xl border border-r-0 border-cc-line bg-cc-surface px-1.5 py-3 text-[13px] font-semibold text-cc-ink shadow-[0_2px_10px_rgba(0,0,0,0.3)] [writing-mode:vertical-rl] ${state.layersOpen ? "min-[900px]:hidden" : ""}`}>
+          Details ›
+        </button>
+        <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-end gap-2 p-2 min-[900px]:grid min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:grid-rows-[minmax(0,1fr)_auto] min-[900px]:gap-3 min-[900px]:p-3">
+        {/* Phones: the open sheet is a reading view — the timeline steps aside. */}
+        <div ref={timelineRef} className={`pointer-events-auto min-w-0 min-[900px]:col-start-1 min-[900px]:row-start-2 ${drawer ? "max-[899px]:hidden" : ""}`}>
+      <TimelineBar
+        emptyText={noStepsText(bundle)}
+        steps={steps}
+        marks={marks}
+        dayIndex={state.dayIndex}
+        playing={state.playing}
+        forecastTag={timelineForecastTag(bundle)}
+        mapFrame={mapFrame}
+        onSeek={(index) => dispatch({ type: "seek", index })}
+        onPrev={() => dispatch({ type: "prev" })}
+        onNext={() => dispatch({ type: "next" })}
+        onPlayToggle={() => dispatch({ type: "togglePlay" })}
+        forecastDates={live ? undefined : new Set(steps.filter((s) => forecastLeadsForDay(bundle, s.date, state.hazard).length > 0).map((s) => s.date))}
+        runs={live && runs.length > 1 ? { list: runs, picked: runPick?.run.id ?? runs[0].id, onPick: pickRun } : undefined}
+        hours={hasHourFrames(bundle, state.hazard) ? { available: hoursOn(bundle, state.hazard, step?.date), hour, onHour: (h) => setHourPick({ caseId: bundle.id, hour: h }) } : undefined}
+      />
         </div>
 
-        <div ref={panelRef} className="pointer-events-auto flex min-h-0 min-[900px]:col-start-3 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:self-start min-[900px]:max-h-full">
-        <SituationPanel label={view === "public" ? "Public alerts" : "Situation overview"}>
-          {view === "public" ? (
+        <div ref={panelRef} data-drawer={state.layersOpen ? "open" : "closed"} data-sheet={drawer ? "open" : "closed"}
+          className={`pointer-events-auto flex min-h-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:self-start min-[900px]:max-h-full ${state.layersOpen ? "" : "min-[900px]:hidden"}`}>
+        <SituationPanel label={view === "public" ? "Public alerts" : "Situation overview"} sheetOpen={drawer}
+          peek={view === "public" ? "Public alerts" : nisarPeek(radar)} onPeek={() => setDrawer(true)}
+          header={tab !== "all" ? (
+            <PanelTabs tabs={tabsShown} tab={tabNow} onTab={(t) => { setTab(t); setDrawer(true); }}
+              onClose={() => {
+                if (window.matchMedia("(min-width: 900px)").matches) dispatch({ type: "toggleLayersOpen" });
+                else setDrawer(false);
+              }}
+              sheetOpen={drawer} />
+          ) : undefined}>
+          {show("map") && (
+              <LayersColumn
+                bundle={bundle}
+                rows={rows}
+                hazard={state.hazard}
+                layers={state.layers}
+                notice={state.layerNotice}
+                probHorizon={state.probHorizon}
+                stepDate={step?.date}
+                onHazard={(hazard) => dispatch({ type: "setHazard", hazard })}
+                onToggle={(id) => dispatch({ type: "toggleLayer", id })}
+                onProbHorizon={(horizon) => dispatch({ type: "setProbHorizon", horizon })}
+                onView={(v) => dispatch({ type: "setView", view: v })}
+                satellite={{
+                  on: state.basemap === "satellite",
+                  toggle: () => dispatch({ type: "setBasemap", basemap: state.basemap === "satellite" ? "dark" : "satellite" }),
+                }}
+                opacity={state.overlayOpacity}
+                onOpacity={(value) => dispatch({ type: "setOpacity", value })}
+                changeCyan={state.changeCyan}
+                embedded
+              />
+          )}
+          {view === "public" ? (show("alerts") && <>
             <PublicAlertsPanel
               alertList={alertList}
               live={live}
@@ -513,9 +568,9 @@ export function CommandCenterView({
               stepDate={step?.date}
             >
             </PublicAlertsPanel>
-          ) : (
+            <SourceAges rows={sourceRows(bundle, nowMs)} />
+          </>) : (
             <>
-              {tab !== "all" && <PanelTabs tabs={tabsShown} tab={tab} onTab={setTab} />}
               {show("overview") && (
                 <>
                   {headlineData && places && (
@@ -524,7 +579,21 @@ export function CommandCenterView({
                       <button type="button" onClick={() => onCity(headlineData.top, places)} className="mt-1.5 rounded-lg bg-cc-accent px-3 py-1.5 text-sm font-semibold text-white">Show me</button>
                     </section>
                   )}
-              <StartHere cases={cases} dispatch={dispatch} />
+                  {(() => {
+                    // L61: lead-ml's NISAR agreement — how much of the water
+                    // NISAR saw the index had flagged days before.
+                    const a = nisarAgreement(bundle);
+                    if (!a) return null;
+                    const t = agreementText(a);
+                    return (
+                      <section aria-label="NISAR agreement" data-nisar-agreement className="rounded-xl border border-cc-line px-3 py-2 text-[13px]">
+                        <p className="m-0 text-xs font-semibold uppercase tracking-wide text-cc-muted">{t.label}</p>
+                        <p className="m-0 font-semibold">{t.main}</p>
+                        {t.more && <p className="m-0 text-cc-muted" data-agreement-details>{t.more}</p>}
+                        <p className="m-0 text-xs text-cc-muted">NISAR water = candidate (very dark radar outside permanent water)</p>
+                      </section>
+                    );
+                  })()}
                 {showAffected && <div>
                   <h3 className="m-0 mb-1 text-[13px] font-semibold text-cc-muted">Who is affected</h3>
                   <Tiles area={areaTile} people={peopleT} />
@@ -589,6 +658,23 @@ export function CommandCenterView({
                     };
                   })() : undefined}
                   radar={radar}
+                  dance={bundle.riverDance ? {
+                    d: bundle.riverDance,
+                    // The pass on the map: a bar's pass while the timeline sits on
+                    // the day it moved to (a pass outside the timeline), else the day.
+                    selected: passReq && passReq.forDay === step?.date.slice(0, 10) ? passReq.date : step?.date.slice(0, 10),
+                    // A bar: that day on the timeline, the Radar — NISAR view,
+                    // and that exact pass (date + track) on the map.
+                    onPass: (date: string, track?: string) => {
+                      const idx = steps.findIndex((x) => x.date.slice(0, 10) === date);
+                      const near = idx >= 0 ? idx : steps.reduce((bi, x, i) =>
+                        Math.abs(Date.parse(x.date) - Date.parse(date)) < Math.abs(Date.parse(steps[bi].date) - Date.parse(date)) ? i : bi, 0);
+                      requestRadarPass(date, track, steps[near]?.date.slice(0, 10));
+                      if (state.compareOpen) dispatch({ type: "closeCompare" });
+                      dispatch({ type: "seek", index: near });
+                      dispatch({ type: "setView", view: "radar" });
+                    },
+                  } : undefined}
                   floodOn={state.layers.includes("flood")}
                   compareOpen={nisarOpen}
                   onConfirm={() => dispatch({ type: "confirmRadar" })}
@@ -653,7 +739,7 @@ export function CommandCenterView({
                 />}
                 {rows.some((r) => r.id === "ptrigger" && r.available) && (
                   <p className="m-0 text-xs text-cc-faint">
-                    Relative likelihood of a rain-triggered landslide (24 h–14 d) is in the Layers column.
+                    Relative likelihood of a rain-triggered landslide (24 h–14 d) is in the Map tab.
                   </p>
                 )}
                   </PanelSection>
@@ -679,35 +765,14 @@ export function CommandCenterView({
 
                 </>
               )}
-              {show("sources") && <SourceAges rows={sourceRows(bundle, nowMs).filter((r) => !sparse || !r.missing)} />}
-            </>
-          )}
-          {view === "public" && <SourceAges rows={sourceRows(bundle, nowMs)} />}
-        </SituationPanel>
-        </div>
-
-        <div ref={timelineRef} className="pointer-events-auto min-w-0 min-[900px]:col-span-2 min-[900px]:col-start-1 min-[900px]:row-start-2">
-      <TimelineBar
-        emptyText={noStepsText(bundle)}
-        steps={steps}
-        marks={marks}
-        dayIndex={state.dayIndex}
-        playing={state.playing}
-        forecastTag={timelineForecastTag(bundle)}
-        mapFrame={mapFrame}
-        onSeek={(index) => dispatch({ type: "seek", index })}
-        onPrev={() => dispatch({ type: "prev" })}
-        onNext={() => dispatch({ type: "next" })}
-        onPlayToggle={() => dispatch({ type: "togglePlay" })}
-        forecastDates={live ? undefined : new Set(steps.filter((s) => forecastLeadsForDay(bundle, s.date, state.hazard).length > 0).map((s) => s.date))}
-        runs={live && runs.length > 1 ? { list: runs, picked: runPick?.run.id ?? runs[0].id, onPick: pickRun } : undefined}
-        hours={hasHourFrames(bundle, state.hazard) ? { available: hoursOn(bundle, state.hazard, step?.date), hour, onHour: (h) => setHourPick({ caseId: bundle.id, hour: h }) } : undefined}
-      />
-        </div>
-        </div>
-      </main>
-
-      <footer className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 px-5 pb-2 pt-1.5 text-xs text-cc-faint">
+              {/* lead-ux: Sources folded into the end of Overview (one tab less);
+                  the old footer (data credits + Methods) lives here too. */}
+              {(show("sources") || tabNow === "overview") && (
+                <details data-sources className="border-t border-cc-rule pt-2" open={tab === "sources" || tab === "all"}>
+                  <summary className="cursor-pointer text-sm font-semibold">Sources &amp; credits</summary>
+                  <div className="mt-2 flex flex-col gap-2">
+                  <SourceAges rows={sourceRows(bundle, nowMs).filter((r) => !sparse || !r.missing)} />
+                  <div className="flex flex-col gap-1.5 border-t border-cc-rule pt-2 text-xs text-cc-faint" data-credits>
         <span className="min-w-0 grow">
           Data: NASA GPM · SMAP · NASADEM · NISAR · OPERA · Forecast rain: NOAA GFS (the only non-NASA input) · Basemap © CARTO © OpenStreetMap · Boundaries ©{" "}
           {caseDirOf(bundle) === "wa_2025" ? "US Census · Landslide points: Washington Geological Survey" : "IBGE"} · Population: GPW (NASA SEDAC) / US Census
@@ -716,7 +781,18 @@ export function CommandCenterView({
         </span>
         {/* Judges (conductor): methods links, closed by default. */}
         <MethodsDrawer />
-      </footer>
+                </div>
+                  </div>
+                </details>
+              )}
+            </>
+          )}
+        </SituationPanel>
+        </div>
+
+        </div>
+      </main>
+
     </div>
   );
 }

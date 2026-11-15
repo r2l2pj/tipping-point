@@ -19,7 +19,7 @@ import {
 import { CHANGE_OPACITY_DEFAULT, CHANGE_OPACITY_MIN, parseChangeLink, type NisarChangeSel } from "./model/nisarChange";
 import type { ComparePair } from "./model/radar";
 import { viewLayers, type ViewId } from "./model/views";
-import { defaultSides, mainTrackDays, normSide, nisarDefaults, parseSideSpec, presetSides, sideDays, viewCompareLayer, type ComparePresetId, type Sides } from "./model/sideCompare";
+import { defaultSides, isRiskLayer, mainTrackDays, normSide, nisarDefaults, parseSideSpec, presetSides, sideDays, viewCompareLayer, type ComparePresetId, type Side, type Sides } from "./model/sideCompare";
 import { nisarTracks } from "./model/radar";
 import { caseHasHazard, defaultStepIndex, floodPostDate, stepsFor, type IssueLead } from "./model/steps";
 import type { CcBundle, Hazard } from "./model/types";
@@ -242,6 +242,8 @@ export function initialState(
     compareOpen: link.compare === "night-lights" ? "night-lights" : link.compare || link.view === "compare" ? "forecast" : null,
     compareSides: undefined,
     detailsOpen: false,
+    // Lucas (override): the drawer is OPEN on wide screens on first load —
+    // judges see the NISAR data at once (phones: the sheet peeks).
     layersOpen: true,
     listExpanded: false,
     chartAsTable: false,
@@ -373,7 +375,9 @@ export function reduce(
   };
   const manualSeek = (index: number): ScreenState => {
     const dayIndex = Math.min(last, Math.max(0, index));
-    return { ...state, ...dayLayers(dayIndex), dayIndex, playing: false };
+    // Lucas: a timeline move un-pins a picked NISAR change pair (the overlay
+    // follows the day again: previous pass → the pass on/before the day).
+    return { ...state, ...dayLayers(dayIndex), dayIndex, playing: false, nisarChange: undefined };
   };
 
   switch (action.type) {
@@ -403,11 +407,22 @@ export function reduce(
     case "tick": {
       if (!state.playing) return state;
       const dayIndex = Math.min(last, state.dayIndex + 1);
-      return { ...state, ...dayLayers(dayIndex), dayIndex, playing: dayIndex < last };
+      return { ...state, ...dayLayers(dayIndex), dayIndex, playing: dayIndex < last, nisarChange: undefined };
     }
     case "setHazard": {
       if (!bundle || action.hazard === state.hazard) return state;
-      return { ...state, hazard: action.hazard, layers: swapForHazard(bundle, state.layers, action.hazard) };
+      // Lucas (BUG): with Compare ⇆ open, every risk side (TPI flood /
+      // landslide, observed or forecast) follows the hazard switch and keeps
+      // its date and lead; NISAR / rain / satellite / ML sides stay.
+      // Flood + NISAR is a flood layer: Landslide maps it to the plain slide index.
+      const follow = (x: Side): Side =>
+        (isRiskLayer(x.layer) || (x.layer === "flood_nisar" && action.hazard === "slide")) && x.layer !== action.hazard
+          ? normSide(bundle, stepsFor(bundle), action.hazard, { ...x, layer: action.hazard })
+          : x;
+      const compareSides = state.compareSides
+        ? { ...state.compareSides, L: follow(state.compareSides.L), R: follow(state.compareSides.R) }
+        : state.compareSides;
+      return { ...state, hazard: action.hazard, layers: swapForHazard(bundle, state.layers, action.hazard), compareSides };
     }
     case "setProbHorizon": {
       // Conductor: picking a horizon chip returns to the ML view (today).
@@ -475,7 +490,20 @@ export function reduce(
       if (action.pol !== undefined) merged.pol = action.pol;
       if (action.track !== undefined) merged.track = action.track;
       if (action.horizon !== undefined) merged.horizon = action.horizon;
-      return { ...state, compareSides: { ...cur, [action.side]: normSide(bundle, stepsFor(bundle), state.hazard, merged) } };
+      const steps = stepsFor(bundle);
+      const moved = normSide(bundle, steps, state.hazard, merged);
+      const next: Sides = { ...cur, [action.side]: moved };
+      // 'Forecast vs what happened' (link): LEFT issued X for X+k, RIGHT
+      // observed X+k — a new day or lead on one side moves the other; another
+      // layer, or LEFT observed / RIGHT forecast, ends the link.
+      if (cur.link) {
+        const other = action.side === "L" ? "R" : "L";
+        const keeps = action.layer === undefined &&
+          (action.side === "L" ? (moved.lead ?? 0) > 0 : (moved.lead ?? 0) === 0);
+        if (!keeps) delete next.link;
+        else next[other] = normSide(bundle, steps, state.hazard, { ...cur[other], date: moved.date });
+      }
+      return { ...state, compareSides: next };
     }
     case "openCompare": {
       if (!bundle) return state;

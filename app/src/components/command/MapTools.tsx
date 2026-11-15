@@ -24,7 +24,7 @@ export default function MapTools({
   className?: string;
   style?: React.CSSProperties;
 }) {
-  const label = layersShown ? "Hide the Layers column" : "Show the Layers column";
+  const label = layersShown ? "Layers (hide the panel)" : "Layers";
   return (
     <div className={`flex flex-col gap-2 ${className}`} style={style}>
       <button type="button" onClick={onToggleLayers} aria-pressed={layersShown} aria-label={label} title={label}

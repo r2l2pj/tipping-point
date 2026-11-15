@@ -79,6 +79,7 @@ const SRC = {
   hand: "tp-hand",
   smap: "tp-smap",
   nisar: "tp-nisar",
+  nisarWater: "tp-nisar-water",
   water: "tp-water",
   flood: "tp-flood",
   floodPts: "tp-flood-pts",
@@ -108,6 +109,7 @@ const LYR = {
   hand: "tp-hand-lyr",
   smap: "tp-smap-lyr",
   nisar: "tp-nisar-lyr",
+  nisarWater: "tp-nisar-water-lyr",
   tpiRaster: "tp-tpi-raster",
   fcastHatch: "tp-fcast-hatch",
   waterFill: "tp-water-fill",
@@ -146,6 +148,7 @@ const DYNAMIC_IMG: [string, string][] = [
   [LYR.smap, SRC.smap],
   [LYR.nisar, SRC.nisar],
   [LYR.prob, SRC.prob],
+  [LYR.nisarWater, SRC.nisarWater],
   [LYR.opera, SRC.opera],
   [LYR.nl, SRC.nl],
   [LYR.tml, SRC.tml],
@@ -679,6 +682,17 @@ export function useMapLayers(
     // an image source on the after-frame bounds — above the risk raster and
     // water, below the flood (NISAR candidate) polygons. Its own opacity
     // slider, independent of the data-raster strength.
+    // L61: NISAR-observed water (candidate) over the flood + NISAR frame, in
+    // the flooded-area red at ~55 % — above the index and water, below the
+    // NISAR flood polygons (red fill + white outline).
+    const nw = options?.nisarWater;
+    if (nw) {
+      ensureImageLayer(map, SRC.nisarWater, LYR.nisarWater, nw.url, boundsToImageCoordinates(nw.bounds ?? bundle.bbox), 0.55, LYR.floodFill);
+      vis(LYR.nisarWater, true);
+    } else {
+      vis(LYR.nisarWater, false);
+    }
+
     const change = options?.changeImage;
     if (change) {
       ensureImageLayer(
@@ -922,7 +936,7 @@ export function useMapLayers(
       console.warn("MapLayers update failed (map kept alive)", err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity, options?.radarFrame?.url]);
+  }, [map, bundle, dayIndex, layers, showFlood, tab, activePng, overlayKey, options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity, options?.changeImage, options?.changeOpacity, options?.radarFrame?.url, options?.nisarWater?.url]);
 
   // Priority-zone pins — top 20 by rank (matches the side list), anchored
   // at the polygon label point (real files are Polygons, not Points).

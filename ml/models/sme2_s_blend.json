@@ -1,0 +1,66 @@
+{
+ "status": "EXPERIMENTAL \u2014 not served, not published",
+ "alpha": 0.5,
+ "days": [
+  {
+   "case": "wa_2025",
+   "date": "20251204",
+   "track": "172D",
+   "swath_cells": 689393,
+   "swath_share_pct": 31.0,
+   "v2_rebuild_mean_abs_err": 0.0,
+   "s_smap_mean_swath": 0.278,
+   "s_blend_mean_swath": 0.278,
+   "spearman_sme2_vs_smap": -0.539,
+   "tpi_mean_abs_change_swath": 0.0,
+   "critical_cells_v2": 0,
+   "critical_cells_blend": 0,
+   "agreement": "no NISAR water mask for 20251204 in /home/lucascoelho/.cache/lead-analysis/l61/wa_2025"
+  },
+  {
+   "case": "wa_2025",
+   "date": "20251216",
+   "track": "172D",
+   "swath_cells": 744407,
+   "swath_share_pct": 33.4,
+   "v2_rebuild_mean_abs_err": 0.0009,
+   "s_smap_mean_swath": 0.687,
+   "s_blend_mean_swath": 0.687,
+   "spearman_sme2_vs_smap": -0.434,
+   "tpi_mean_abs_change_swath": 0.0,
+   "critical_cells_v2": 0,
+   "critical_cells_blend": 0,
+   "agreement": "no NISAR water mask for 20251216 in /home/lucascoelho/.cache/lead-analysis/l61/wa_2025"
+  },
+  {
+   "case": "rs_uruguai_2026",
+   "date": "20260930",
+   "track": "010D",
+   "swath_cells": 22317,
+   "swath_share_pct": 34.5,
+   "v2_rebuild_mean_abs_err": 0.0,
+   "s_smap_mean_swath": 0.376,
+   "s_blend_mean_swath": 0.376,
+   "spearman_sme2_vs_smap": 0.067,
+   "tpi_mean_abs_change_swath": 0.0051,
+   "critical_cells_v2": 3583,
+   "critical_cells_blend": 3319,
+   "agreement": "no NISAR water mask for 20260930 in /home/lucascoelho/.cache/lead-analysis/l61/rs_uruguai_2026"
+  },
+  {
+   "case": "rs_uruguai_2026",
+   "date": "20261012",
+   "track": "010D",
+   "swath_cells": 22310,
+   "swath_share_pct": 34.4,
+   "v2_rebuild_mean_abs_err": 0.0,
+   "s_smap_mean_swath": 0.642,
+   "s_blend_mean_swath": 0.642,
+   "spearman_sme2_vs_smap": -0.336,
+   "tpi_mean_abs_change_swath": 0.0,
+   "critical_cells_v2": 0,
+   "critical_cells_blend": 0,
+   "agreement": "no NISAR water mask for 20261012 in /home/lucascoelho/.cache/lead-analysis/l61/rs_uruguai_2026"
+  }
+ ]
+}

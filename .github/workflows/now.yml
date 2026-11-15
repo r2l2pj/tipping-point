@@ -247,6 +247,14 @@ jobs:
           fi
           uv run python -m live.nisar_stack --now-dir data/now
 
+      # L61: NISAR inside the flood index — tpi_flood_nisar_d0..d3 =
+      # max(TPI_flood, 0.8 x NISAR water [HH < -18 dB, latest pass <= 12 d]).
+      - name: Flood index with NISAR-observed water (best-effort)
+        continue-on-error: true
+        env:
+          PYTHONPATH: ".:pipeline"
+        run: uv run python -m live.now_nisar_tpi --now-dir data/now
+
       # 'search for city': one compact record per IBGE municipality (TPI d0..d3,
       # P(trigger) max/p90, alert, people in High+), after P(trigger) + alerts.
       - name: Places summary (search for city, best-effort)
@@ -277,6 +285,16 @@ jobs:
           fi
           uv run python -m live.now_history --now-dir data/now
           uv run python tools/build_manifest.py
+
+      # L61 (lead-ml): nisar_agreement for Now — today's TPI d0 vs the NISAR water mask on the
+      # cells a pass observed (hit/area/lift at High+/Critical, pass age); forecast leads
+      # come from the restored history/<run>/cog archive, so this runs after 'Now history'.
+      # Writes data/now/nisar_agreement.json (before the sqlite mirror + publish).
+      - name: NISAR agreement for Now (best-effort)
+        continue-on-error: true
+        env:
+          PYTHONPATH: ".:pipeline"
+        run: uv run python tools/now_nisar_agreement.py --now-dir data/now
 
       # queryable mirror of the published JSON (after every producer and
       # manifest, before publish); exits 1 if > 50 MB

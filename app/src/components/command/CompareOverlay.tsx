@@ -4,19 +4,24 @@ import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import {
   Map as MapLibreMap,
   setWorkerUrl,
+  type ImageSource,
   type Map as MapInstance,
 } from "maplibre-gl";
+import { setRadarLook, useCompareMode, useRadarLook, useWaterUrl } from "./useWaterRed";
+import { WATER_RED_LEGEND } from "./model/waterRamp";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { boundsToImageCoordinates } from "@/lib/tpi";
 import { cameraPatch, clipPathFor, dragStep, pctFromClientX, SWIPE_MAX_PCT, SWIPE_MIN_PCT } from "@/lib/swipe";
 import { horizonLabel, type ProbHorizon } from "@/lib/layers";
 import { fmtDayShort } from "./model/format";
 import { FLOODED_FILL, FLOODED_HALO, FLOODED_OPACITY, FLOODED_OUTLINE, type ComparePair } from "./model/radar";
-import { ISSUE_LEADS, type IssueLead } from "./model/steps";
+import { ISSUE_LEADS, shiftDay, type IssueLead } from "./model/steps";
 import { CHANGE_LEGEND, changeBlockedReason, changeComposite, type BBox as ChangeBBox } from "./model/changeComposite";
 import {
   COMPARE_LAYER_LABEL,
   isRiskLayer,
+  issueDayOf,
+  sideSummary,
   type CompareLayer,
   type CompareLayerInfo,
   type ComparePresetId,
@@ -51,7 +56,7 @@ export default function CompareOverlay({
   sidesCtl?: {
     sides: Sides;
     layers: CompareLayerInfo[];
-    days: Record<"L" | "R", { date: string; label: string; value?: string; track?: string }[]>;
+    days: Record<"L" | "R", { date: string; label: string; value?: string; track?: string; issue?: string }[]>;
     presets: { id: ComparePresetId; label: string }[];
     warning?: string;
     note?: string;
@@ -65,103 +70,234 @@ export default function CompareOverlay({
     onPreset: (id: ComparePresetId) => void;
   };
 }) {
-  const seg = (on: boolean) =>
-    `rounded-full px-2.5 py-0.5 text-xs font-semibold ${on ? "bg-cc-accent text-white" : "text-cc-ink"}`;
-  const sel = "h-7 rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold";
   // Lucas: NISAR before/after can show the classic change composite (one
   // map, red = new water) — only for a same-track, same-pol NISAR pair.
-  const [mode, setMode] = useState<"side" | "change">("side");
+  // Lucas (demo bug): the overlay is re-mounted for every new pair (MapStage
+  // keys it by the image URLs), which reset this to "side" — picking a pass
+  // in the Change view threw you back to Side by side and the change picture
+  // never updated. The mode lives outside the component now.
+  const [mode, setMode] = useCompareMode();
   const bothNisarSides = !!sidesCtl && sidesCtl.sides.L.layer === "nisar" && sidesCtl.sides.R.layer === "nisar";
   const changeBlocked = sidesCtl ? changeBlockedReason(sidesCtl.sides.L, sidesCtl.sides.R) : "Change view needs two NISAR passes";
-  const changeOn = mode === "change" && bothNisarSides && !changeBlocked;
+  const changeOn = mode === "change" && bothNisarSides && !changeBlocked && !!pair.before.url && !!pair.after.url;
+  // Lucas: NISAR sides default to 'Water in red' (darker = redder); the
+  // Change view keeps the plain frames (it decodes the gray itself).
+  const look = useRadarLook();
+  const isRadar = (x: ComparePair["before"]) => !x.tiles && !x.geojson && (!!x.sensor || !!x.pol);
+  const anyRadar = isRadar(pair.before) || isRadar(pair.after);
+  const bUrl = useWaterUrl(isRadar(pair.before) ? pair.before.url : undefined, pair.before.stretch, look === "water");
+  const aUrl = useWaterUrl(isRadar(pair.after) ? pair.after.url : undefined, pair.after.stretch, look === "water");
+  const shown: ComparePair = {
+    ...pair,
+    before: { ...pair.before, url: bUrl ?? pair.before.url },
+    after: { ...pair.after, url: aUrl ?? pair.after.url },
+  };
   return (
     <>
       {changeOn
-        ? <ChangeMap pair={pair} onClose={onClose} />
-        : <CompareMaps pair={pair} onClose={onClose} controlsRef={controlsRef} />}
+        ? <ChangeMap pair={pair} onClose={sidesCtl ? undefined : onClose} />
+        : <CompareMaps pair={shown} onClose={sidesCtl ? undefined : onClose} controlsRef={controlsRef} />}
       {sidesCtl && (
-        <div className="absolute z-30 top-20 flex -translate-x-1/2 flex-col items-center gap-1"
-          // Centred on the visible map, never under the floating cards.
-          style={{ left: "calc(var(--cc-il, 0px) + (100% - var(--cc-il, 0px) - var(--cc-ir, 0px)) / 2)",
-            maxWidth: "calc(100% - var(--cc-il, 0px) - var(--cc-ir, 0px) - 24px)" }}>
-          <div className="flex flex-col gap-1 rounded-xl border border-cc-line-strong bg-white/95 px-2 py-1.5 text-xs shadow" data-compare-sides>
-            {!sidesCtl.nisarOnly && sidesCtl.presets.length > 0 && (
-              <div role="group" aria-label="Compare presets" data-compare-presets className="flex flex-wrap items-center gap-1">
-                {sidesCtl.presets.map((p) => (
-                  <button key={p.id} type="button" onClick={() => sidesCtl.onPreset(p.id)}
-                    className="rounded-full border border-cc-line-strong px-2.5 py-0.5 text-xs font-semibold text-cc-ink">{p.label}</button>
-                ))}
-              </div>
-            )}
-            {(["L", "R"] as const).map((side) => {
-              const s = sidesCtl.sides[side];
-              const name = side === "L" ? "Left" : "Right";
-              const info = sidesCtl.layers.find((l) => l.id === s.layer);
-              const days = sidesCtl.days[side];
-              const dayOpts = days.some((d) => d.date === s.date)
-                ? days
-                : [...days, { date: s.date, label: fmtDayShort(s.date) }];
-              return (
-                <div key={side} role="group" aria-label={`${name} side`} className="flex flex-wrap items-center gap-1" data-side={side}>
-                  <span className="w-9 font-semibold text-cc-muted">{name}</span>
-                  {!sidesCtl.nisarOnly && <select aria-label={`${name} layer`} value={s.layer}
-                    onChange={(e) => sidesCtl.onSide(side, { layer: e.target.value as CompareLayer })}
-                    className={sel} data-layer-select>
-                    {!info && <option value={s.layer}>{COMPARE_LAYER_LABEL[s.layer]}</option>}
-                    {sidesCtl.layers.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
-                  </select>}
-                  {/* NISAR: one list of every pass (date · track · mode), any order. */}
-                  <select aria-label={`${name} day`}
-                    value={s.layer === "nisar" && dayOpts.some((d) => d.value) ? `${s.date}|${s.track ?? ""}` : s.date}
-                    onChange={(e) => {
-                      const [date, track] = e.target.value.split("|");
-                      sidesCtl.onSide(side, track !== undefined ? { date, track } : { date });
-                    }}
-                    className={sel} data-day-select>
-                    {dayOpts.map((d) => <option key={d.value ?? d.date} value={d.value ?? d.date}>{d.label}</option>)}
-                  </select>
-                  {isRiskLayer(s.layer) && info?.canForecast && (
-                    <>
-                      <button type="button" aria-pressed={(s.lead ?? 0) === 0} onClick={() => sidesCtl.onSide(side, { lead: 0 })} className={seg((s.lead ?? 0) === 0)}>Observed</button>
-                      <button type="button" aria-pressed={(s.lead ?? 0) > 0} onClick={() => sidesCtl.onSide(side, { lead: s.lead || 3 })} className={seg((s.lead ?? 0) > 0)}>Forecast</button>
-                      {(s.lead ?? 0) > 0 && ISSUE_LEADS.map((k) => (
-                        <button key={k} type="button" aria-pressed={s.lead === k} onClick={() => sidesCtl.onSide(side, { lead: k })} className={seg(s.lead === k)}>{k} d before</button>
-                      ))}
-                    </>
-                  )}
-                  {s.layer === "nisar" && (info?.pols?.length ?? 0) > 1 && (
-                    <>
-                      {(info!.pols!).map((p) => (
-                        <button key={p} type="button" aria-pressed={(s.pol ?? "HH") === p} onClick={() => sidesCtl.onSide(side, { pol: p })} className={seg((s.pol ?? "HH") === p)}>{p}</button>
-                      ))}
-                    </>
-                  )}
-                  {s.layer === "ml" && (info?.horizons?.length ?? 0) > 0 && (
-                    <>
-                      {info!.horizons!.map((h) => (
-                        <button key={h} type="button" aria-pressed={(s.horizon ?? info!.horizons![0]) === h}
-                          onClick={() => sidesCtl.onSide(side, { horizon: h })} className={seg((s.horizon ?? info!.horizons![0]) === h)}>{horizonLabel(h)}</button>
-                      ))}
-                    </>
-                  )}
-                  {sidesCtl.missing?.[side] && <span className="italic text-cc-muted">{sidesCtl.missing[side]}</span>}
-                </div>
-              );
-            })}
-            {sidesCtl.warning && <p className="m-0 font-semibold text-cc-warn" role="status" data-compare-warning>{sidesCtl.warning}</p>}
-            {sidesCtl.note && <p className="m-0 text-cc-muted" data-compare-note>{sidesCtl.note}</p>}
-            {bothNisarSides && (
-              <div role="group" aria-label="NISAR view" className="flex flex-wrap items-center gap-1" data-change-mode>
-                <button type="button" aria-pressed={!changeOn} onClick={() => setMode("side")} className={seg(!changeOn)}>Side by side</button>
-                <button type="button" aria-pressed={changeOn} disabled={!!changeBlocked} title={changeBlocked}
-                  onClick={() => setMode("change")} className={`${seg(changeOn)} disabled:opacity-45`}>Change (red = new water)</button>
-                {changeBlocked && <span className="italic text-cc-muted" data-change-blocked>{changeBlocked}</span>}
-              </div>
-            )}
-          </div>
-        </div>
+        <CompareBar sidesCtl={sidesCtl} onClose={onClose}
+          radar={anyRadar ? {
+            value: changeOn ? "change" : look,
+            canChange: bothNisarSides,
+            changeBlocked: changeBlocked || (!pair.before.url || !pair.after.url ? "Both NISAR passes must be published" : undefined),
+            onChange: (v) => { if (v === "change") setMode("change"); else { setMode("side"); setRadarLook(v); } },
+          } : undefined} />
+      )}
+      {sidesCtl && anyRadar && !changeOn && look === "water" && (
+        <span className="pointer-events-none absolute z-30 flex items-center gap-1 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-semibold text-cc-ink shadow"
+          style={{ left: "calc(var(--cc-il, 0px) + 14px)", bottom: "calc(var(--cc-ib, 0px) + 96px)", maxWidth: "calc(100% - 28px)" }} data-water-legend>
+          <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm" style={{ background: "linear-gradient(90deg,#9a9a9a,#ff1f1f)" }} />
+          {WATER_RED_LEGEND}{(isRadar(pair.before) && !pair.before.stretch) || (isRadar(pair.after) && !pair.after.stretch) ? " (approximate)" : ""}
+        </span>
       )}
     </>
+  );
+}
+
+const barMemory: { open: "L" | "R" | null; alive: number } = { open: null, alive: 0 };
+type SidesCtl = NonNullable<React.ComponentProps<typeof CompareOverlay>["sidesCtl"]>;
+type RadarView = "water" | "plain" | "change";
+
+// lead-ux (audit §4 #7): Compare is a map MODE with one slim bar —
+// "Left [side ▾] ⇆ Right [side ▾] · Presets ▾ · ✕" (≤ 44 px at 1440, two
+// rows at most on a phone). Each side is one button; its popover holds the
+// layer, the day (the NOAA issue day on a forecast side) and Observed |
+// Forecast +1 · +2 · +3 / pol / horizon.
+function CompareBar({
+  sidesCtl,
+  onClose,
+  radar,
+}: {
+  sidesCtl: SidesCtl;
+  onClose: () => void;
+  radar?: { value: RadarView; canChange: boolean; changeBlocked?: string; onChange: (v: RadarView) => void };
+}) {
+  // MapStage re-keys the overlay on every new image, so a pick inside the
+  // popover remounts the bar: reopen the same side when that happens.
+  // React renders the new bar while the old one is still mounted
+  // (alive > 0): only then is it a remount, not a fresh Compare.
+  const [open, setOpen] = useState<"L" | "R" | null>(() => (barMemory.alive > 0 ? barMemory.open : null));
+  useEffect(() => { barMemory.alive += 1; return () => { barMemory.alive -= 1; }; }, []);
+  useEffect(() => { barMemory.open = open; }, [open]);
+  const barRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const down = (e: PointerEvent) => { if (!barRef.current?.contains(e.target as Node)) setOpen(null); };
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); setOpen(null); } };
+    document.addEventListener("pointerdown", down);
+    document.addEventListener("keydown", key, true);
+    return () => { document.removeEventListener("pointerdown", down); document.removeEventListener("keydown", key, true); };
+  }, [open]);
+  const seg = (on: boolean) =>
+    `rounded-full px-2.5 py-0.5 text-xs font-semibold ${on ? "bg-cc-accent text-white" : "text-cc-ink"}`;
+  const sel = "h-7 max-w-full rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold";
+  const mini = "h-8 shrink-0 rounded-lg border border-cc-line-strong bg-cc-surface px-1.5 text-xs font-semibold text-cc-ink";
+  const sideBtn = (side: "L" | "R") => {
+    const s = sidesCtl.sides[side];
+    const miss = sidesCtl.missing?.[side];
+    return (
+      <button type="button" data-side-btn={side} aria-haspopup="dialog" aria-expanded={open === side}
+        data-layer={s.layer} data-day={isRiskLayer(s.layer) && (s.lead ?? 0) > 0 ? issueDayOf(s) : s.date.slice(0, 10)}
+        data-lead={isRiskLayer(s.layer) ? (s.lead ?? 0) : undefined}
+        title={miss ? `${sideSummary(s)} — ${miss}` : sideSummary(s)}
+        onClick={() => setOpen(open === side ? null : side)}
+        // Phone: row 1 = Left + ✕, row 2 = Right + Presets / Radar view.
+        className={`flex h-8 min-w-0 items-center gap-1 rounded-lg border px-2 text-xs sm:max-w-[15rem] ${open === side ? "border-cc-accent" : "border-cc-line-strong"} ${side === "L" ? "order-1 max-w-[calc(100vw-120px)]" : "order-3 max-w-[calc(100vw-208px)]"}`}>
+        <span className="shrink-0 font-semibold text-cc-muted">{side === "L" ? "Left" : "Right"}</span>
+        <span className="truncate font-semibold text-cc-ink" data-side-summary>{sideSummary(s)}</span>
+        {miss && <span aria-label={miss} className="shrink-0 font-bold text-cc-warn">!</span>}
+        <span aria-hidden="true" className="shrink-0 text-cc-muted">▾</span>
+      </button>
+    );
+  };
+  const panel = (side: "L" | "R") => {
+    const s = sidesCtl.sides[side];
+    const name = side === "L" ? "Left" : "Right";
+    const info = sidesCtl.layers.find((l) => l.id === s.layer);
+    const days = sidesCtl.days[side];
+    // Forecast side: the picker is the ISSUE day X (● = a NOAA run was
+    // issued that day); the frame shown is X + lead.
+    const lead = isRiskLayer(s.layer) ? (s.lead ?? 0) : 0;
+    const issue = lead > 0 ? issueDayOf(s) : undefined;
+    const dayOpts = issue
+      ? (days.some((d) => d.issue === issue) ? days : [...days, { date: s.date, issue, label: fmtDayShort(issue) }])
+      : days.some((d) => d.date === s.date)
+        ? days
+        : [...days, { date: s.date, label: fmtDayShort(s.date) }];
+    return (
+      <div role="dialog" aria-label={`${name} side`} data-side={side}
+        className={`absolute left-0 top-full z-40 mt-1 flex w-[min(22rem,calc(100vw-32px))] flex-col gap-1.5 rounded-xl border border-cc-line-strong bg-white p-2 text-xs shadow-lg ${side === "R" ? "sm:left-auto sm:right-0" : ""}`}>
+        {!sidesCtl.nisarOnly && (
+          <label className="flex flex-col gap-0.5"><span className="text-cc-muted">Layer</span>
+            <select aria-label={`${name} layer`} value={s.layer}
+              onChange={(e) => sidesCtl.onSide(side, { layer: e.target.value as CompareLayer })}
+              className={sel} data-layer-select>
+              {!info && <option value={s.layer}>{COMPARE_LAYER_LABEL[s.layer]}</option>}
+              {sidesCtl.layers.map((l) => (
+                <option key={l.id} value={l.id} disabled={!!l.disabled} title={l.disabled}>
+                  {l.disabled ? `${l.label} — ${l.disabled}` : l.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {isRiskLayer(s.layer) && info?.canForecast && (
+          <div className="flex flex-wrap items-center gap-1" data-risk-mode>
+            <button type="button" aria-pressed={lead === 0} onClick={() => sidesCtl.onSide(side, { lead: 0 })} className={seg(lead === 0)}>Observed</button>
+            <button type="button" aria-pressed={lead > 0} onClick={() => sidesCtl.onSide(side, { lead: s.lead || 3 })} className={seg(lead > 0)}>Forecast</button>
+            {issue && ISSUE_LEADS.map((k) => (
+              <button key={k} type="button" aria-pressed={s.lead === k} data-lead={k}
+                onClick={() => sidesCtl.onSide(side, { lead: k, date: shiftDay(issue, k) })}
+                className={seg(s.lead === k)}>+{k}{k === 3 ? " days" : ""}</button>
+            ))}
+          </div>
+        )}
+        {/* NISAR: one list of every pass (date · track · mode), any order. */}
+        <label className="flex flex-col gap-0.5"><span className="text-cc-muted">{issue ? "NOAA forecast issued (● = run that day)" : "Day"}</span>
+          <select aria-label={issue ? `${name} forecast issue day` : `${name} day`}
+            value={issue ?? (s.layer === "nisar" && dayOpts.some((d) => d.value) ? `${s.date}|${s.track ?? ""}` : s.date)}
+            onChange={(e) => {
+              if (issue) { sidesCtl.onSide(side, { date: shiftDay(e.target.value, lead) }); return; }
+              const [date, track] = e.target.value.split("|");
+              sidesCtl.onSide(side, track !== undefined ? { date, track } : { date });
+            }}
+            className={sel} data-day-select data-issue-select={issue ? "" : undefined}>
+            {dayOpts.map((d) => {
+              const v = issue ? (d.issue ?? d.date) : (d.value ?? d.date);
+              return <option key={v} value={v}>{d.label}</option>;
+            })}
+          </select>
+        </label>
+        {s.layer === "nisar" && (info?.pols?.length ?? 0) > 1 && (
+          <div className="flex flex-wrap items-center gap-1">
+            {(info!.pols!).map((p) => (
+              <button key={p} type="button" aria-pressed={(s.pol ?? "HH") === p} onClick={() => sidesCtl.onSide(side, { pol: p })} className={seg((s.pol ?? "HH") === p)}>{p}</button>
+            ))}
+          </div>
+        )}
+        {s.layer === "ml" && (info?.horizons?.length ?? 0) > 0 && (
+          <div className="flex flex-wrap items-center gap-1">
+            {info!.horizons!.map((h) => (
+              <button key={h} type="button" aria-pressed={(s.horizon ?? info!.horizons![0]) === h}
+                onClick={() => sidesCtl.onSide(side, { horizon: h })} className={seg((s.horizon ?? info!.horizons![0]) === h)}>{horizonLabel(h)}</button>
+            ))}
+          </div>
+        )}
+        {sidesCtl.missing?.[side] && <p className="m-0 italic text-cc-muted">{sidesCtl.missing[side]}</p>}
+      </div>
+    );
+  };
+  return (
+    // Centred on the visible map, clear of the floating cards and of the map
+    // tool column (zoom / recenter) on the right; phone: left-aligned.
+    <div ref={barRef}
+      className="absolute left-2 top-2 z-30 w-max max-w-[calc(100%-72px)] sm:left-[var(--bar-x)] sm:max-w-[var(--bar-max)] sm:-translate-x-1/2"
+      style={{
+        "--bar-x": "calc(var(--cc-il, 0px) + (100% - var(--cc-il, 0px) - var(--cc-ir, 0px)) / 2)",
+        "--bar-max": "calc(100% - var(--cc-il, 0px) - var(--cc-ir, 0px) - 128px)",
+      } as React.CSSProperties}>
+      <div role="toolbar" aria-label="Compare" data-compare-sides data-compare-bar
+        className="flex flex-wrap items-center gap-1 rounded-xl border border-cc-line-strong bg-white/95 p-1 text-xs shadow">
+        {sideBtn("L")}
+        <span aria-hidden="true" className="order-2 hidden px-0.5 font-bold text-cc-muted sm:inline">⇆</span>
+        {sideBtn("R")}
+        {sidesCtl.sides.link && (
+          <span className="order-4 shrink-0 rounded-full bg-cc-accent/10 px-2 py-1 font-semibold text-cc-accent" data-compare-link
+            title="Both sides move together: forecast for a day vs what happened that day">Linked</span>
+        )}
+        {(sidesCtl.warning || sidesCtl.note) && (
+          <span role="status" className={`order-4 shrink-0 rounded-full px-2 py-1 font-semibold ${sidesCtl.warning ? "bg-cc-warn-soft text-cc-warn" : "text-cc-muted"}`}
+            title={sidesCtl.warning ?? sidesCtl.note} data-compare-warning={sidesCtl.warning ? "" : undefined} data-compare-note={sidesCtl.note ? "" : undefined}>
+            {sidesCtl.warning ?? "Different tracks"}
+          </span>
+        )}
+        {radar && (
+          <select aria-label="Radar view" value={radar.value} onChange={(e) => radar.onChange(e.target.value as RadarView)}
+            className={`order-4 w-[7rem] ${mini}`} data-radar-look data-change-mode={radar.canChange ? "" : undefined}>
+            <option value="water">Water in red</option>
+            <option value="plain">Plain radar</option>
+            {radar.canChange && (
+              <option value="change" disabled={!!radar.changeBlocked} title={radar.changeBlocked}>
+                {radar.changeBlocked ? `Change — ${radar.changeBlocked}` : "Change (red = new water)"}
+              </option>
+            )}
+          </select>
+        )}
+        {!sidesCtl.nisarOnly && sidesCtl.presets.length > 0 && (
+          <select aria-label="Compare presets" value="" data-compare-presets className={`order-4 w-[5.75rem] ${mini}`}
+            onChange={(e) => { if (e.target.value) { sidesCtl.onPreset(e.target.value as ComparePresetId); setOpen(null); } }}>
+            <option value="" disabled>Presets ▾</option>
+            {sidesCtl.presets.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+          </select>
+        )}
+        <button type="button" onClick={onClose} aria-label="Close compare" title="Close compare" data-compare-close
+          className="order-2 ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base font-bold text-cc-ink hover:bg-cc-line sm:order-5 sm:ml-0">✕</button>
+      </div>
+      {open && panel(open)}
+    </div>
   );
 }
 
@@ -171,10 +307,23 @@ function CompareMaps({
   controlsRef,
 }: {
   pair: ComparePair;
-  onClose: () => void;
+  onClose?: () => void; // undefined: the Compare bar's ✕ closes
   controlsRef: MutableRefObject<CompareControls | null>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // The two maps and the latest pair: a recoloured NISAR frame ('Water in
+  // red') swaps the image in place — the camera and the divider stay.
+  const maps = useRef<{ b?: MapInstance; a?: MapInstance }>({});
+  const latest = useRef(pair);
+  useEffect(() => {
+    latest.current = pair;
+    for (const [m, side] of [[maps.current.b, pair.before], [maps.current.a, pair.after]] as const) {
+      const src = m?.getSource("swipe-image") as ImageSource | undefined;
+      if (src && src.type === "image" && side.url && !side.tiles) {
+        try { src.updateImage({ url: side.url, coordinates: boundsToImageCoordinates(side.bounds ?? pair.bounds) }); } catch { /* keep the old image */ }
+      }
+    }
+  }, [pair, pair.before.url, pair.after.url]);
   const beforeEl = useRef<HTMLDivElement>(null);
   const afterEl = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -279,8 +428,9 @@ function CompareMaps({
         fit(map, 0);
       }
     };
-    beforeMap.on("load", () => onLoad(beforeMap, pair.before));
-    afterMap.on("load", () => onLoad(afterMap, pair.after));
+    maps.current = { b: beforeMap, a: afterMap };
+    beforeMap.on("load", () => onLoad(beforeMap, latest.current.before));
+    afterMap.on("load", () => onLoad(afterMap, latest.current.after));
 
     controlsRef.current = {
       zoomIn: () => beforeMap.zoomIn(),
@@ -289,6 +439,7 @@ function CompareMaps({
     };
     return () => {
       controlsRef.current = null;
+      maps.current = {};
       beforeMap.remove();
       afterMap.remove();
     };
@@ -315,8 +466,9 @@ function CompareMaps({
       <div className="absolute inset-0" style={{ clipPath: clipPathFor(pct) }}>
         <div ref={afterEl} className="h-full w-full" />
       </div>
-      <div className={tag} style={{ left: "calc(var(--cc-il, 0px) + 56px)", top: 44 }}>{pair.before.label}</div>
-      <div className={tag} style={{ right: "calc(var(--cc-ir, 0px) + 68px)" }}>{pair.after.label}</div>
+      {/* Below the slim Compare bar (top 8 px, ≤ 44 px tall). */}
+      <div className={tag} style={{ left: "calc(var(--cc-il, 0px) + 14px)", top: 58 }} data-swipe-tag="L">{pair.before.label}</div>
+      <div className={tag} style={{ right: "calc(var(--cc-ir, 0px) + 68px)", top: 58 }} data-swipe-tag="R">{pair.after.label}</div>
       {pair.flood && (
         <div data-swipe-legend className="pointer-events-none absolute bottom-12 z-10 flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-semibold text-cc-ink shadow"
           style={{ left: "calc(var(--cc-il, 0px) + 56px)" }}>
@@ -362,11 +514,11 @@ function CompareMaps({
           </svg>
         </div>
       </div>
-      <button type="button" onClick={onClose}
+      {onClose && <button type="button" onClick={onClose}
         style={{ bottom: "calc(var(--cc-ib, 0px) + 12px)" }}
         className="absolute left-1/2 z-30 -translate-x-1/2 rounded-lg bg-white px-3.5 py-2 text-[13px] font-semibold text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
         Close compare
-      </button>
+      </button>}
     </div>
   );
 }
@@ -374,7 +526,7 @@ function CompareMaps({
 // Lucas: ONE map with the before/after change composite (R = before HH,
 // G = B = after HH), computed in the browser from the two frame PNGs; the
 // NISAR flood candidates toggle on top.
-function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose: () => void }) {
+function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void }) {
   const el = useRef<HTMLDivElement>(null);
   const [img, setImg] = useState<{ url: string; bounds: ChangeBBox; stats: string } | { error: string }>();
   const [showFlood, setShowFlood] = useState(true);
@@ -426,9 +578,12 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose: () => void }
         map.addLayer({ id: "change-flood-halo", type: "line", source: "change-flood", paint: { "line-color": FLOODED_HALO, "line-width": 3.5, "line-opacity": 0.55 } });
         map.addLayer({ id: "change-flood-line", type: "line", source: "change-flood", paint: { "line-color": FLOODED_OUTLINE, "line-width": 1.5 } });
       }
-      map.fitBounds([[img.bounds[0], img.bounds[1]], [img.bounds[2], img.bounds[3]]], { padding: 60, duration: 0 });
+      // pair.bounds: both frames, or the river window (Uruguaiana) set by MapStage.
+      const fb = pair.bounds ?? img.bounds;
+      map.fitBounds([[fb[0], fb[1]], [fb[2], fb[3]]], { padding: 60, duration: 0 });
     });
     return () => { mapRef.current = null; map.remove(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the fit is read once per composite; a new bounds object must not rebuild the map
   }, [img, pair.flood]);
 
   useEffect(() => {
@@ -467,11 +622,11 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose: () => void }
           </label>
         )}
       </div>
-      <button type="button" onClick={onClose}
+      {onClose && <button type="button" onClick={onClose}
         style={{ bottom: "calc(var(--cc-ib, 0px) + 12px)" }}
         className="absolute left-1/2 z-30 -translate-x-1/2 rounded-lg bg-white px-3.5 py-2 text-[13px] font-semibold text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
         Close compare
-      </button>
+      </button>}
     </div>
   );
 }
