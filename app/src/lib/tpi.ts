@@ -219,7 +219,7 @@ export function fmtKm2(v?: number) {
   if (v == null) return "—";
   // A sub-0.05 area must not render as "0.0" — the zone exists.
   if (v > 0 && v < 0.05) return "<0.1 km²";
-  return `${v.toFixed(1)} km²`;
+  return `${v.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km²`;
 }
 
 export function fmtPeople(v?: number | null) {

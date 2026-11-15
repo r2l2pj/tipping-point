@@ -75,3 +75,19 @@ describe("NISAR first (Lucas override)", () => {
     expect(nisarPeek(card({ pair: false, flooded: undefined, headline: "Awaiting the next NISAR pass" }))).toBe("Awaiting the next NISAR pass");
   });
 });
+
+describe("QA pre-freeze", () => {
+  test("km² carry thousands separators", async () => {
+    const { fmtKm2 } = await import("./model/format");
+    expect(fmtKm2(636599.71)).toBe("636,599.7 km²");
+    expect(fmtKm2(3.3)).toBe("3.3 km²");
+    expect(fmtKm2(0.01)).toBe("<0.1 km²");
+  });
+  test("Now: the class table names its basis (selected hazard, today only)", () => {
+    const html = renderToStaticMarkup(<CommandCenterView cases={[liveBundle({ summary: { classes_km2: { landslide: { Baixo: 636599.7, Moderado: 149.9, Alto: 25.2, "Crítico": 0 } } } as never })]}
+      alertList={UNAVAILABLE} view="command" onView={noop} panelTab="overview" />);
+    expect(html).toContain("data-class-basis");
+    expect(html).toContain("index, today only");
+    expect(html).toContain("636,599.7 km²");
+  });
+});

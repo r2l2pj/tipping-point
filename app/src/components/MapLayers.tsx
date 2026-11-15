@@ -1008,7 +1008,7 @@ export function useMapLayers(
               typeof zp.tpi === "number" ? zp.tpi.toFixed(2) : "—"
             }` +
             (typeof zp.area_km2 === "number"
-              ? ` · ${zp.area_km2.toFixed(1)} km²`
+              ? ` · ${zp.area_km2.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km²`
               : "") +
             `</div>`
           )

@@ -36,7 +36,7 @@ import { sourceRows } from "./model/sources";
 import { statusChip } from "./model/status";
 import { chartForecastLabel, effectiveLead, forecastForDay, forecastLeadsForDay, forecastTag, frameFor, stepLabel, stepMarks, stepsFor, timelineForecastTag, noStepsText } from "./model/steps";
 import { criticalAreaTile, peopleTile, zoneSnapshot } from "./model/tiles";
-import type { CcBundle } from "./model/types";
+import { HAZARD_LABEL, type CcBundle } from "./model/types";
 import PriorityAreas from "./PriorityAreas";
 import PublicAlertsPanel from "./PublicAlertsPanel";
 import RadarCard from "./RadarCard";
@@ -392,8 +392,11 @@ export function CommandCenterView({
   const wantTab: PanelTab = tab === null || tab === "all" ? (view === "public" ? tabsShown[0] : defaultTab(bundle, radar)) : tab;
   const tabNow: PanelTab = tabsShown.includes(wantTab) ? wantTab : tabsShown[0];
   const show = (t: PanelTab) => tab === "all" || t === tabNow;
-  const areaTile = criticalAreaTile(bundle, state.hazard, step?.date, step?.day, overlayFrame);
-  const peopleT = peopleTile(bundle, step?.date, step?.day, overlayFrame);
+  // QA (pre-freeze): in Compare the Overview describes the selected day as
+  // observed — never the forecast side's own numbers (they read as "0 people").
+  const tileFrame = comparePair ? undefined : overlayFrame;
+  const areaTile = criticalAreaTile(bundle, state.hazard, step?.date, step?.day, tileFrame);
+  const peopleT = peopleTile(bundle, step?.date, step?.day, tileFrame);
   const showAffected = !sparse || !areaTile.missing || !peopleT.missing || classesKm2.length > 0;
 
   // Gap 2: the card's own geometry frames the map; a card without one falls
@@ -595,7 +598,14 @@ export function CommandCenterView({
                   <h3 className="m-0 mb-1 text-[13px] font-semibold text-cc-muted">Who is affected</h3>
                   <Tiles area={areaTile} people={peopleT} />
                   {classesKm2.length > 0 && (
-                    <dl className="mt-2 grid grid-cols-2 gap-x-4 text-[13px]" aria-label="Area by class">
+                    // QA: a different basis from the card above (that one: flood or
+                    // landslide, today or tomorrow) — say which, so the numbers never clash.
+                    <p className="m-0 mt-2 text-xs text-cc-muted" data-class-basis>
+                      Area by class: {HAZARD_LABEL[state.hazard].toLowerCase()} index, today only
+                    </p>
+                  )}
+                  {classesKm2.length > 0 && (
+                    <dl className="mt-1 grid grid-cols-2 gap-x-4 text-[13px]" aria-label="Area by class">
                       {classesKm2.map(([cls, km2]) => (
                         <div key={cls} className="flex items-center gap-2 border-t border-cc-rule py-1">
                           <span aria-hidden="true" className="h-3 w-3 shrink-0 rounded-[3px] border border-black/15"
