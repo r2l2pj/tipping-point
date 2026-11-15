@@ -48,6 +48,7 @@ windows shifted by one day.
 
 ## Known limitations
 
+- **People counts (one method, S03a).** Every people number is GPW v4.11 UN-adjusted 2020 population count on its **native 30″ grid**, each cell weighted by the fraction of its area covered by the mapped area (exact polygon ∩ cell intersection; unions de-duplicate overlaps). Now: R1 DSWx-S1 and R2 NISAR polygons, R3 summary, priority zones and the Now `summary.json` `people_*` (merged from R3) all use it (`tp.response_summary.people_geom`, `people_method`). **Exception, not yet unified:** the replay cases (`people_critical` in metrics/series/GFS layer stats, WA `people_flooded`, `scar_people`) use GPW resampled by Earth Engine to ~1 km (0.00898°), which undercounts by ~11–13 %: RS 2024-05-02 Crítico area holds 1.49 M people on that grid vs 1.68 M on the native grid (2024-04-30: 1.17 M vs 1.30 M). Treat case people as a lower bound; re-run on the native grid after submission.
 - **HAND radius served is 1500 m; 1000 m validates better.** The served
   `thresholds.hand_proxy_radius_m` is 1500 m (`config.yaml:27`), but the MERIT
   reference check scores 1000 m best (IoU 0.42 RS / 0.26 WA vs 0.34 / 0.19 at

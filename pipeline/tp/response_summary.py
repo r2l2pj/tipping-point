@@ -274,6 +274,76 @@ def people_in(mask: np.ndarray | None, pop: np.ndarray | None) -> int | None:
     return round(float(pop[mask].sum()))
 
 
+PEOPLE_METHOD = ("GPW v4.11 UN-adjusted 2020 count on its native 30 arc-sec grid, each cell "
+                 "weighted by the fraction of its area covered by the mapped polygons "
+                 "(exact polygon-cell intersection); unions deduplicate overlaps")
+
+
+def load_gpw_native(src: str | Path):
+    """(count array float64 >= 0, affine) of the GPW raster on its native grid."""
+    import rasterio
+
+    with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR"), rasterio.open(src) as ds:
+        if ds.crs is None or not ds.crs.is_geographic:
+            raise ValueError("GPW raster must be geographic (EPSG:4326)")
+        band = ds.read(1).astype(np.float64)
+        if ds.nodata is not None and not np.isnan(ds.nodata):
+            band = np.where(band == ds.nodata, np.nan, band)
+        band = np.nan_to_num(band, nan=0.0)
+        band[band < 0] = 0.0
+        return band, ds.transform
+
+
+def people_geom(geom, gpw) -> float | None:
+    """GPW people inside `geom` (lon/lat polygons), area-weighted on the native
+    GPW grid: sum over cells of count × area(cell ∩ geom) / area(cell). None
+    when GPW is absent; 0 for an empty/absent geometry."""
+    import shapely
+
+    if gpw is None:
+        return None
+    if geom is None or geom.is_empty:
+        return 0.0
+    arr, tr = gpw
+    a, e = tr.a, tr.e                       # e < 0 (north-up)
+    cell = abs(a * e)
+    total = 0.0
+    for part in getattr(geom, "geoms", [geom]):
+        if part.is_empty or part.area == 0:
+            continue
+        minx, miny, maxx, maxy = part.bounds
+        c0 = max(int(np.floor((minx - tr.c) / a)), 0)
+        c1 = min(int(np.floor((maxx - tr.c) / a)), arr.shape[1] - 1)
+        r0 = max(int(np.floor((maxy - tr.f) / e)), 0)
+        r1 = min(int(np.floor((miny - tr.f) / e)), arr.shape[0] - 1)
+        if c1 < c0 or r1 < r0:
+            continue
+        rr, cc = np.mgrid[r0:r1 + 1, c0:c1 + 1]
+        rr, cc = rr.ravel(), cc.ravel()
+        cnt = arr[rr, cc]
+        keep = cnt > 0
+        if not keep.any():
+            continue
+        rr, cc, cnt = rr[keep], cc[keep], cnt[keep]
+        x0 = tr.c + cc * a
+        y0 = tr.f + rr * e
+        boxes = shapely.box(x0, y0 + e, x0 + a, y0)
+        frac = shapely.area(shapely.intersection(boxes, part)) / cell
+        total += float((np.clip(frac, 0, 1) * cnt).sum())
+    return total
+
+
+def _people(geom, mask, pop, gpw) -> int | None:
+    """Area-weighted native-grid count when the native GPW is loaded; else the
+    legacy centre-sampled grid sum (tests / no native raster)."""
+    if mask is None:                 # input absent -> null (as before)
+        return None
+    if gpw is not None:
+        v = people_geom(geom, gpw)
+        return None if v is None else round(v)
+    return people_in(mask, pop)
+
+
 # ---------------------------------------------------------------------------
 # GeoJSON loading
 # ---------------------------------------------------------------------------
@@ -359,7 +429,7 @@ def _clip_km2(muni, geom) -> float:
 def zone_features(boundaries_fc: dict | None, grid: Grid,
                   unions: dict, masks: dict, pop: np.ndarray | None,
                   crit_geoms: list | None = None,
-                  crit_props: list[dict] | None = None) -> list[dict]:
+                  crit_props: list[dict] | None = None, gpw=None) -> list[dict]:
     """Ranked municipality features for priority_zones.geojson.
 
     `unions` (shapely, standard confidence): dswx, nisar, flood, flood_lower
@@ -400,7 +470,23 @@ def zone_features(boundaries_fc: dict | None, grid: Grid,
 
     # people: centre-sampled label raster of the member municipalities only
     p_by = {}
-    if pop is not None:
+    if gpw is not None:                  # area-weighted on the native GPW grid
+        n = len(rows) + 1
+        for key in ("flood", "flood_lower", "crit", "crit3", "exposed"):
+            u = unions.get(key)
+            if masks.get(key) is None:
+                p_by[key] = None
+                continue
+            if u is None:
+                p_by[key] = np.zeros(n)
+                continue
+            arr = np.zeros(n)
+            for k, r in enumerate(rows):
+                g = geoms[r["i"]]
+                if not u.is_empty and g.intersects(u):
+                    arr[k + 1] = people_geom(g.intersection(u), gpw)
+            p_by[key] = arr
+    elif pop is not None:
         labels = rasterize(((geoms[r["i"]], k + 1) for k, r in enumerate(rows)),
                            out_shape=grid.shape, transform=grid.transform,
                            fill=0, dtype="int32", all_touched=False)
@@ -494,7 +580,7 @@ def _load_flood_source(key: str, sid: str, geo_name: str, meta_name: str,
 
 
 def _source_block(key: str, src: dict, pop: np.ndarray | None,
-                  reasons: dict) -> dict:
+                  reasons: dict, gpw=None) -> dict:
     """Per-source block: geodesic areas, GPW people, meta timing copied."""
     meta = src["meta"]
     m = meta or {}
@@ -508,8 +594,8 @@ def _source_block(key: str, src: dict, pop: np.ndarray | None,
         "features_lower": src["n_lower"],
         "flooded_km2": km2(src["u_std"]),
         "flooded_km2_lower": km2(u_low_only),
-        "people_flooded": people_in(src["m_std"], pop),
-        "people_flooded_lower": people_in(m_low_only, pop),
+        "people_flooded": _people(src["u_std"], src["m_std"], pop, gpw),
+        "people_flooded_lower": _people(u_low_only, m_low_only, pop, gpw),
         "meta_flooded_km2": num_or_none(m.get("flooded_km2")),
         "latest_acquired": iso_or_none(m.get("latest_acquired")),
         "latency_h": num_or_none(m.get("latency_h")),
@@ -632,6 +718,7 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
 
     # ---- people (GPW now-static raster only) -------------------------------
     pop = None
+    gpw = None
     gpw_path = Path(gpw_src) if gpw_src else now_dir / GPW_NOW_REL
     people_src = None
     if not gpw_path.is_file():
@@ -640,15 +727,16 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
     else:
         try:
             pop = load_gpw_pop(gpw_path, grid)
+            gpw = load_gpw_native(gpw_path)
             people_src = people_label(gpw_path, now_dir)
         except Exception as e:  # noqa: BLE001 — GPW optional: people -> null + reason
             reasons["people"] = f"GPW unreadable ({type(e).__name__}); people_* null"
 
-    people_flooded = people_in(m_flood, pop)
-    people_flooded_lower = people_in(m_flood_lower, pop)
-    people_critical = people_in(m_crit3, pop)   # A8: Crítico only
-    people_alert = people_in(m_crit, pop)       # Alto or Crítico
-    people_exposed = people_in(m_exposed, pop)
+    people_flooded = _people(u_flood, m_flood, pop, gpw)
+    people_flooded_lower = _people(u_flood_lower, m_flood_lower, pop, gpw)
+    people_critical = _people(u_crit3, m_crit3, pop, gpw)   # A8: Crítico only
+    people_alert = _people(u_crit, m_crit, pop, gpw)        # Alto or Crítico
+    people_exposed = _people(u_exposed, m_exposed, pop, gpw)
     if m_flood is None:
         reasons.setdefault("people_flooded", "no flood-candidate inputs present")
     if m_crit is None:
@@ -668,7 +756,7 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
         reasons["priority_zones"] = "municipal boundaries not provided"
     if boundaries_fc is not None and not (boundaries_fc.get("features") or []):
         reasons["priority_zones"] = "municipal boundaries empty (0 features): zones not computed"
-    zones = zone_features(boundaries_fc, grid, unions, masks, pop,
+    zones = zone_features(boundaries_fc, grid, unions, masks, pop, gpw=gpw,
                           crit_geoms=crit_geoms, crit_props=crit_props)
     _write_fc(resp_dir / "priority_zones.geojson", zones)
     _write_fc(now_dir / ZONES_GEOJSON, zones)
@@ -676,7 +764,7 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
     # ---- response/summary.json --------------------------------------------
     sources = {}
     for key, sid, _, _ in FLOOD_SOURCES:
-        sources[sid] = _source_block(key, floods[key], pop, reasons)
+        sources[sid] = _source_block(key, floods[key], pop, reasons, gpw)
     crit_days = sorted({str(p.get("day")) for p in crit_props if p.get("day")})
     crit_classes: dict[str, int] = {}
     for p in crit_props:
@@ -715,6 +803,7 @@ def run_summary(bbox, now_dir: Path, *, load_boundaries=None,
         "priority_zones": {"geojson": str(ZONES_GEOJSON),
                            "municipalities": len(zones)},
         "people_source": people_src,
+        "people_method": PEOPLE_METHOD if people_src else None,
         "method": {
             "area": "geodesic polygon area (shapely union, pyproj.Geod WGS84)",
             "people": (f"GPW summed on a {res} deg EPSG:4326 grid, "

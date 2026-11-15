@@ -484,6 +484,7 @@ def candidate_features(mask: np.ndarray, grid: TargetGrid, bbox, gpw, props: dic
     from shapely.ops import unary_union
 
     from tp.polygonize import polygon_parts
+    from tp.response_summary import people_geom
 
     rows, cols = np.nonzero(mask)
     if rows.size == 0:
@@ -499,8 +500,6 @@ def candidate_features(mask: np.ndarray, grid: TargetGrid, bbox, gpw, props: dic
     labels, nlab = label(m)
     lab_px = labels[rows, cols]
     n_px = np.bincount(lab_px, minlength=nlab + 1)
-    ppl = (np.bincount(lab_px, weights=people_at(lon, lat, grid.px_km2, gpw), minlength=nlab + 1)
-           if gpw is not None else None)
 
     geoms: dict[int, list] = {}
     for geom, val in shapes(labels.astype(np.int32), mask=labels > 0, transform=grid.transform,
@@ -521,7 +520,9 @@ def candidate_features(mask: np.ndarray, grid: TargetGrid, bbox, gpw, props: dic
             "properties": {
                 **props,
                 "area_km2": round(float(n_px[lab_id] * grid.px_km2), 4),
-                "people": None if ppl is None else round(float(ppl[lab_id])),
+                # S03a: one method everywhere — GPW count on its native 30"
+                # grid, area-weighted by the PUBLISHED polygon (tp.response_summary)
+                "people": None if gpw is None else round(people_geom(geom, gpw)),
             },
         })
     return feats
@@ -705,7 +706,13 @@ def run_response(bbox, out_dir: Path, *, search, pair, token: str | None = None,
     meta["new_km2"] = meta["flooded_km2"]
     meta["receded_km2"] = round(tot["receded"], 3)
     if gpw is not None:
-        meta["people_flooded"] = int(sum(f["properties"]["people"] or 0 for f in features))
+        from tp.response_summary import PEOPLE_METHOD, people_geom
+        from shapely.geometry import shape as _shape
+        from shapely.ops import unary_union as _uu
+
+        u = _uu([_shape(f["geometry"]) for f in features]) if features else None
+        meta["people_flooded"] = round(people_geom(u, gpw) or 0.0)
+        meta["people_method"] = PEOPLE_METHOD
     meta["n_polygons"] = len(features)
     # what the HAND <= 15 m gate removed (open water; the bright layer exists
     # only with HAND, so it is not part of the comparison)
