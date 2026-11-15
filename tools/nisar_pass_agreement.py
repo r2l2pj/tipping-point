@@ -222,22 +222,27 @@ def score_of(w: dict, day: str | None, cls: str) -> dict:
 
 
 def slots(rec: dict) -> dict:
-    """Submission slots (L61 handoff) for both headline options: A = best pre-pass day in the
-    12-d window, B = strict pass day."""
+    """lead-submission slots (uy_*): ONE best day = the Critical best day of window_12d (High+ best
+    day if nothing reached Critical); High+ and Critical values both read on that same day."""
     k = flat_keys(rec)
-    p = f"{rec['pass']['date']} ({rec['pass']['track']})"
-    return {"A_window": {"label": HEADLINE_LABEL, "uru_high": k["nisar_agreement_win_hit_pct"], "uru_crit": k["nisar_agreement_win_critical_hit_pct"],
-                         "uru_area": k["nisar_agreement_win_critical_area_pct"], "uru_lift": k["nisar_agreement_win_critical_lift"],
-                         "uru_lift_high": k["nisar_agreement_win_lift"], "uru_m1": k["nisar_agreement_win_critical_m1"],
-                         "uru_lead": k["nisar_agreement_win_critical_days_before"], "best_day": k["nisar_agreement_win_critical_best_day"],
-                         "uru_pass": p, "uru_outside_fp": k["nisar_agreement_outside_floodplain_pct"],
-                         "uru_area_km2": k["nisar_agreement_water_km2"]},
-            "B_pass_day": {"uru_high": k["nisar_agreement_obs_hit_pct"], "uru_crit": k["nisar_agreement_obs_critical_hit_pct"],
-                           "uru_area": k["nisar_agreement_obs_critical_area_pct"], "uru_lift": k["nisar_agreement_obs_critical_lift"],
-                           "uru_m1": k["nisar_agreement_obs_critical_m1"], "uru_pass": p,
-                           "gfs_1d_high": k["nisar_agreement_fc1d_hit_pct"], "gfs_2d_high": k["nisar_agreement_fc2d_hit_pct"],
-                           "gfs_3d_high": k["nisar_agreement_fc3d_hit_pct"],
-                           "uru_outside_fp": k["nisar_agreement_outside_floodplain_pct"]}}
+    w = rec.get("window_12d") or {}
+    b = (w.get("best_day") or {})
+    day = (b.get("critico") or {}).get("day") or (b.get("alto_plus") or {}).get("day")
+    d = ((w.get("per_day") or {}).get(day) or {}) if day else {}
+    hp, cr = d.get("alto_plus") or {}, d.get("critico") or {}
+    fc = [k[f"nisar_agreement_fc{L}d_hit_pct"] for L in LEADS]
+    return {"label": HEADLINE_LABEL, "uy_pass": rec["pass"]["date"], "uy_track": rec["pass"]["track"],
+            "uy_best_day": day,
+            "uy_k": (dt.date.fromisoformat(rec["pass"]["date"]) - dt.date.fromisoformat(day)).days if day else None,
+            "uy_high": hp.get("hit_pct"), "uy_crit": cr.get("hit_pct"),
+            "uy_area": hp.get("area_pct"), "uy_area_crit": cr.get("area_pct"),
+            "uy_lift": hp.get("lift"), "uy_lift_crit": cr.get("lift"),
+            "uy_m1": hp.get("ratio_vs_terrain"), "uy_m1_crit": cr.get("ratio_vs_terrain"),
+            "uy_passday": k["nisar_agreement_obs_hit_pct"], "uy_passday_crit": k["nisar_agreement_obs_critical_hit_pct"],
+            "uy_gfs": {f"{L}d": v for L, v in zip(LEADS, fc)},
+            "uy_gfswin": {"issued": k["nisar_agreement_gfswin_critical_issued"], "valid": k["nisar_agreement_gfswin_critical_valid"],
+                          "hit_crit": k["nisar_agreement_gfswin_critical_hit_pct"], "lift_crit": k["nisar_agreement_gfswin_critical_lift"]},
+            "uy_outside_fp": k["nisar_agreement_outside_floodplain_pct"], "uy_water_km2": k["nisar_agreement_water_km2"]}
 
 
 def load_case(case: str, root: Path):

@@ -92,8 +92,8 @@ def test_window_flat_keys_and_slots(tmp_path):
     assert k["nisar_agreement_win_critical_days_before"] == 12
     assert k["nisar_agreement_win_critical_hit_pct"] == 50.0
     s = npa.slots(r)
-    assert s["A_window"]["uru_crit"] == 50.0 and s["A_window"]["uru_lead"] == 12
-    assert s["B_pass_day"]["uru_crit"] == 0.0 and s["A_window"]["uru_pass"] == "2026-10-12 (010D)"
+    assert s["uy_crit"] == 50.0 and s["uy_k"] == 12 and s["uy_best_day"] == "2026-09-30"
+    assert s["uy_passday_crit"] == 0.0 and s["uy_pass"] == "2026-10-12" and s["uy_high"] == 50.0
 
 
 def test_gfs_window_best_run_inside_window(tmp_path):
