@@ -1,8 +1,15 @@
-name: CI
+name: app-ci
 
+# L53 monorepo: the Next.js app lives in app/ (was tipping-point-app ci.yml).
 on:
   push:
+    paths: ["app/**", "data/manifest.json", ".github/workflows/app-ci.yml"]
   pull_request:
+    paths: ["app/**", "data/manifest.json", ".github/workflows/app-ci.yml"]
+
+defaults:
+  run:
+    working-directory: app
 
 jobs:
   ci:

@@ -1,7 +1,7 @@
 # Keepalive (Lucas): ping the production app every 10 minutes so it never
 # idles out; a failed ping fails the run and GitHub emails the repo owner.
 # No secrets.
-name: keepalive
+name: app-keepalive
 
 on:
   schedule:

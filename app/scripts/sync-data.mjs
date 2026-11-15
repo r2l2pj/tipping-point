@@ -10,7 +10,9 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { keepForPublic, neededTifs } from "./sync-filter.mjs";
 
-const REPO = process.env.DATA_REPO ?? path.resolve(import.meta.dirname, "../../tipping-point-data");
+// L53 monorepo: DATA_REPO is a repo ROOT (git fetch origin fallback runs there);
+// default = the monorepo root two levels up (app/scripts -> repo), not ../../data.
+const REPO = process.env.DATA_REPO ?? path.resolve(import.meta.dirname, "../..");
 
 // The data repo's working tree can be far behind what is published (Lucas's
 // box: 225 commits, no Uruguaiana case). Take data/ from origin/fallback —

@@ -1,0 +1,17 @@
+# L53 monorepo: the image builds app/ only. Exclude everything (7 GB .git,
+# COGs, the Python pipeline), then re-include the app sources.
+**
+!Dockerfile
+!app/**
+# Never ship secrets, local state or build output into the image.
+app/node_modules
+app/.next
+app/out
+app/coverage
+app/.data
+app/.env*
+app/**/*.pem
+app/**/*.json.key
+app/.herdr
+app/submission
+app/**/*.log

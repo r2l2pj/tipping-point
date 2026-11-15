@@ -16,8 +16,12 @@ for the running server. On a small
 VPS, build on another machine and `docker save | ssh vps docker load`.
 
 ```bash
-git clone https://github.com/r2l2pj/tipping-point-app.git && cd tipping-point-app
-git checkout freeze-1300            # or main
+# L53 monorepo: the app is in app/ of the data repo; the Dockerfile and
+# .dockerignore sit at the repo ROOT, so build from the root as before.
+# (Until the GitHub rename the repo is r2l2pj/tipping-point-data; after it,
+# r2l2pj/tipping-point — the old name redirects.)
+git clone --single-branch --filter=blob:none https://github.com/r2l2pj/tipping-point-data.git tipping-point && cd tipping-point   # blobless: skips the 7 GB COG history
+git checkout main
 docker build -t tipping-point-app \
   .
 docker run -d --name tp-app --restart unless-stopped \
@@ -75,7 +79,6 @@ they are **build** arguments, not runtime env.
 | Variable | When | Value |
 | --- | --- | --- |
 | `DATA_BASE_URL` | runtime | **Leave unset.** Unset already reads the GitHub raw `fallback` branch first (`https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`), then Neon, then the bundled copy. Setting it makes that URL the ONLY remote (no Neon fallback) — set it to the GitHub raw URL only if Neon must be skipped. |
-| `NEON_S3_ENDPOINT` | runtime | Optional, not a secret. Unset = built-in public bucket URL. |
 | `GEE_ENABLED` | runtime | **Unset** (L25: no Earth Engine at runtime). `GEE_PROJECT`, `GCP_SA_KEY` stay unset too. |
 | `APP_URL` | runtime | The new public URL, e.g. `https://tipping-point.example.org` (no trailing slash). |
 | `PORT` | runtime | Default `3000`. Match the `-p` mapping and the proxy. |
