@@ -405,6 +405,14 @@ def _swot_by_date(ser_dir: Path, case: str) -> dict[str, float]:
     return out
 
 
+def merge_index(existing: list[dict], produced: list[dict]) -> list[dict]:
+    """_index.json layers after a publish run: entries whose id the run did
+    not produce are kept (order preserved), then the run's own entries.
+    An id the run produced replaces all of that id's earlier entries."""
+    ids = {e["id"] for e in produced}
+    return [e for e in existing if e.get("id") not in ids] + list(produced)
+
+
 def publish_case(event_id: str, dry_run: bool = False,
                  data_dir: Path | None = None,
                  events_path: Path | None = None) -> dict:
@@ -794,14 +802,26 @@ def publish_case(event_id: str, dry_run: bool = False,
     _compact_geojsons(gj_dir, out, dry_run)
 
     # ---- sidecar for the manifest builder (U8b) ------------------------
+    # MERGE, never rebuild (2026-11-15 13:17 incident: a rebuild dropped the
+    # GFS / NISAR HV / night-lights entries other tools had added). Every
+    # layer id this run produced replaces its whole family (stale dates go);
+    # every other id already in the index is kept verbatim.
     index_path = png_dir / "_index.json"
     rel = str(index_path.relative_to(data_dir))
+    existing = []
+    if index_path.exists():
+        try:
+            existing = json.loads(index_path.read_text()).get("layers", [])
+        except (ValueError, AttributeError):
+            skip(rel, "existing _index.json unreadable - rebuilt from this run only")
+    merged = merge_index(existing, out["layers"])
+    out["index_kept"] = len(merged) - len(out["layers"])
     if dry_run:
         out["planned"].append(rel)
     else:
         index_path.parent.mkdir(parents=True, exist_ok=True)
         index_path.write_text(json.dumps(
-            {"layers": out["layers"]}, ensure_ascii=False, indent=2) + "\n")
+            {"layers": merged}, ensure_ascii=False, indent=2) + "\n")
         out["written"].append(rel)
 
     # ---- refresh data/events.json layers[] (runtime only) --------------
@@ -814,7 +834,7 @@ def publish_case(event_id: str, dry_run: bool = False,
                 e["layers"] = [
                     {"id": ent["id"], "date": ent["date"], "png": ent["png"],
                      **({"forecast": True} if ent.get("forecast") else {})}
-                    for ent in out["layers"]]
+                    for ent in merged]
         events_path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n")
         out["written"].append(str(events_path.relative_to(data_dir)))
     else:

@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 import rasterio
 from rasterio.transform import from_origin
-from tp.bundle import publish_case
+from tp.bundle import merge_index, publish_case
 
 RES = 0.01
 ORIGIN = (-52.0, -29.0)          # top-left corner, EPSG:4326 (RS AOI)
@@ -294,3 +294,35 @@ def test_critical_stats_matches_independent_count(tmp_path):
     peak = max(stats.items(), key=lambda kv: kv[1]["critical_km2"])
     assert peak[0] == "2024-05-02"
     assert peak[1]["critical_km2"] == s["critical_km2"]
+
+
+def test_merge_index_keeps_foreign_ids_and_replaces_own_family():
+    existing = [{"id": "nisar_hv_pre", "date": "2024-05-01"},
+                {"id": "tpi_slide", "date": "2024-04-30"},          # stale date
+                {"id": "tpi_flood_gfs_d1", "date": "2024-05-02", "issued": "2024-05-01"}]
+    produced = [{"id": "tpi_slide", "date": "2024-05-02"}]
+    got = merge_index(existing, produced)
+    assert [e["id"] for e in got] == ["nisar_hv_pre", "tpi_flood_gfs_d1", "tpi_slide"]
+    assert [e["date"] for e in got if e["id"] == "tpi_slide"] == ["2024-05-02"]
+
+
+def test_publish_case_merges_existing_index(tmp_path):
+    """Regression (2026-11-15 13:17): a re-publish must not drop index entries
+    added by other tools (GFS frames, NISAR HV, night lights)."""
+    d = _data_dir(tmp_path)
+    _write_cog(d / "cog" / "rs_2024_tpi_slide_20240502.tif", [_tpi(0.7)], ["20240502"])
+    foreign = [{"id": "tpi_slide_gfs_d1", "date": "2024-05-03", "issued": "2024-05-02",
+                "png": "rs_2024/png/tpi_slide_gfs_d1_20240503.png", "forecast": True},
+               {"id": "nisar_hv_post", "date": "2024-05-06", "png": "rs_2024/png/x.png"},
+               {"id": "tpi_slide", "date": "2024-04-01", "png": "rs_2024/png/old.png"}]
+    (d / "png" / "_index.json").write_text(json.dumps({"layers": foreign}))
+    (tmp_path / "data" / "events.json").write_text(json.dumps(
+        {"events": [{"id": "rs-2024-05", "layers": []}]}))
+    s = publish_case("rs-2024-05", data_dir=tmp_path / "data")
+    idx = json.loads((d / "png" / "_index.json").read_text())["layers"]
+    ids = [(e["id"], e["date"]) for e in idx]
+    assert ("tpi_slide_gfs_d1", "2024-05-03") in ids and ("nisar_hv_post", "2024-05-06") in ids
+    assert ("tpi_slide", "2024-05-02") in ids and ("tpi_slide", "2024-04-01") not in ids
+    assert s["index_kept"] == 2
+    ev = json.loads((tmp_path / "data" / "events.json").read_text())["events"][0]
+    assert {x["id"] for x in ev["layers"]} >= {"tpi_slide_gfs_d1", "nisar_hv_post", "tpi_slide"}
