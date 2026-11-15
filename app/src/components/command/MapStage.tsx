@@ -14,7 +14,6 @@ import LocatorInset from "./LocatorInset";
 import MapTools from "./MapTools";
 import { pinAreas, type PriorityArea } from "./model/areas";
 import { BASEMAP_LABEL, BASEMAP_ORDER } from "./model/basemap";
-import { STATUS_WORD, type DataStatus } from "./model/dataStatus";
 import { hasGfsFrames } from "./model/forecastCompare";
 import { isRiskLayer } from "./model/sideCompare";
 import { fmtDate } from "./model/format";
@@ -68,14 +67,12 @@ export default function MapStage({
   steps,
   state,
   areas,
-  status,
   comparePair,
   dispatch,
   onToggleLayers,
   insets,
   stageRef,
   focus,
-  featuredCase,
   cityPin,
   cityOutline,
   hourFrame,
@@ -86,13 +83,11 @@ export default function MapStage({
   steps: Step[];
   state: ScreenState;
   areas: PriorityArea[];
-  status: DataStatus;
   comparePair: ComparePair | undefined;
   dispatch: (a: Action) => void;
   onToggleLayers: () => void;
   insets: Insets; // space covered by the floating cards
   stageRef: React.RefObject<HTMLDivElement | null>;
-  featuredCase?: { id: string; short: string };
   focus?: MapFocus;
   cityPin?: CityPin;
   // L52 replay city pick: the municipality polygon, drawn as an accent
@@ -106,6 +101,7 @@ export default function MapStage({
   const [map, setMap] = useState<MapInstance | null>(null);
   const [bearing, setBearing] = useState(0);
   const [capOpen, setCapOpen] = useState(false);
+  const [bmOpen, setBmOpen] = useState(false); // basemap choices
   const compare = useRef<CompareControls | null>(null);
   const step = steps[state.dayIndex];
 
@@ -385,24 +381,8 @@ export default function MapStage({
         </svg>
       </div>
 
-      <span data-status={status.kind} className={`absolute top-3 z-10 ${chip} !text-xs tracking-[0.02em]`} style={{ left: L(56) }}>
-        {STATUS_WORD[status.kind]}
-      </span>
-
-      {!comparing && featuredCase && bundle.mode === "live" && (
-        <button type="button" data-featured-case onClick={() => dispatch({ type: "goTo", id: featuredCase.id, hazard: "flood" })}
-          className={`absolute top-3 z-10 ${chip} !text-xs font-semibold text-cc-accent`} style={{ left: L(140) }}>
-          <span className="max-[639px]:hidden">Open the </span>{featuredCase.short}<span className="max-[639px]:hidden"> case</span> →
-        </button>
-      )}
-
-      {/* Nav (Lucas): one click from any past event back to the live map. */}
-      {!comparing && bundle.mode === "replay" && (
-        <button type="button" data-back-to-live onClick={() => dispatch({ type: "setMode", mode: "now" })}
-          className={`absolute top-3 z-10 ${chip} !text-xs font-semibold text-cc-accent`} style={{ left: L(152) }}>
-          ← Back to live<span className="max-[639px]:hidden"> (Now)</span>
-        </button>
-      )}
+      {/* lead-ux: the Live / Replay word, "Open the Uruguaiana case" and
+          "Back to live" chips moved to the top bar (case picker + "← Now"). */}
 
       {!comparing && showHorizons && (
         <div role="radiogroup" aria-label="Forecast horizon" data-horizons
@@ -545,16 +525,23 @@ export default function MapStage({
         <div className="absolute z-10 flex flex-col items-end gap-1.5" style={{ right: R(14), bottom: B(12) }}>
           {/* Basemap switcher (L52): a row above the locator inset, clear of
               the horizon chips (left) and the City card (top-centre). */}
-          <div role="group" aria-label="Basemap" data-basemap
-            className={`flex items-center gap-1 ${chip} !py-0.5`}>
-            {BASEMAP_ORDER.map((b) => (
-              <button key={b} type="button" aria-pressed={state.basemap === b}
-                onClick={() => dispatch({ type: "setBasemap", basemap: b })}
-                className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${state.basemap === b ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>
-                {BASEMAP_LABEL[b]}
-              </button>
-            ))}
-          </div>
+          {/* lead-ux: one "Dark ▾" button; the three choices open above it. */}
+          {bmOpen && (
+            <div role="group" aria-label="Basemap" data-basemap
+              className={`flex items-center gap-1 ${chip} !py-0.5`}>
+              {BASEMAP_ORDER.map((b) => (
+                <button key={b} type="button" aria-pressed={state.basemap === b}
+                  onClick={() => { dispatch({ type: "setBasemap", basemap: b }); setBmOpen(false); }}
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${state.basemap === b ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>
+                  {BASEMAP_LABEL[b]}
+                </button>
+              ))}
+            </div>
+          )}
+          <button type="button" data-basemap-toggle aria-expanded={bmOpen} aria-label={`Basemap: ${BASEMAP_LABEL[state.basemap]}`}
+            onClick={() => setBmOpen((o) => !o)} className={`${chip} !py-0.5 !text-xs font-semibold`}>
+            {BASEMAP_LABEL[state.basemap]} ▾
+          </button>
           <div className="flex items-end gap-2">
             <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan}
               className={`rounded-[10px] bg-white/95 px-2.5 py-2 text-cc-ink shadow-[0_2px_8px_rgba(0,0,0,0.3)] max-[639px]:hidden ${state.layersOpen ? "min-[900px]:hidden" : ""}`} />

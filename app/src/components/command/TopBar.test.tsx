@@ -61,3 +61,32 @@ test("the Overview panel no longer carries the Start here card", () => {
   const panel = t.slice(t.indexOf("Overview"));
   expect(panel).not.toContain("Start here");
 });
+
+describe("UX 4/8: fewer chips on the map", () => {
+  const live = liveBundle();
+  const wa = bundle({ id: "wa_2025", title: "Washington, Dec 2025", updated_at: "2026-11-15T12:00:00Z" });
+  const render = (initialCase?: string) => renderToStaticMarkup(
+    <CommandCenterView cases={[live, wa]} alertList={{ state: "unavailable", alerts: [] }} view="command" onView={noop} initialCase={initialCase} />);
+  test("no Live/Replay word, no 'Open the … case' chip on the map", () => {
+    const now = render();
+    expect(now).not.toContain("data-featured-case");
+    // Replay data is not a warning: no status word at all.
+    expect(render("wa_2025")).not.toContain("data-status=");
+  });
+  test("a warning status (unknown age, stale, last saved) keeps its word, in the top bar", () => {
+    const now = render(); // fixture: no run time -> unknown age
+    const header = now.slice(now.indexOf("<header"), now.indexOf("</header>"));
+    expect(header).toContain('data-status="unknown-age"');
+  });
+  test("Replay keeps a one-click way back to Now — in the top bar", () => {
+    const replay = render("wa_2025");
+    const header = replay.slice(replay.indexOf("<header"), replay.indexOf("</header>"));
+    expect(header).toContain("data-back-to-live");
+    expect(render()).not.toContain("data-back-to-live");
+  });
+  test("basemap: one button naming the current basemap; the choices are closed", () => {
+    const now = render();
+    expect(now).toContain("data-basemap-toggle");
+    expect(now).not.toContain('aria-label="Basemap"');
+  });
+});

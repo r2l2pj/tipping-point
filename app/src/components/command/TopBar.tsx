@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import CasePicker from "./CasePicker";
 import type { Action } from "./state";
 import type { CcBundle } from "./model/types";
+import { STATUS_WORD, type DataStatusKind } from "./model/dataStatus";
 import { Icon, ICON } from "./ui";
 
 export type View = "command" | "public";
@@ -22,6 +23,7 @@ export default function TopBar({
   onView,
   onSelectCase,
   onTour,
+  onNow,
   freshness,
   freshnessKind,
   search,
@@ -32,6 +34,7 @@ export default function TopBar({
   onView: (v: View) => void;
   onSelectCase: (id: string) => void;
   onTour?: (a: Extract<Action, { type: "goTo" }>) => void;
+  onNow?: () => void; // Replay: one click back to the live map (Lucas)
   freshness: string;
   freshnessKind: string;
   search?: React.ReactNode;
@@ -63,6 +66,18 @@ export default function TopBar({
 
       <CasePicker cases={cases} bundle={bundle} freshness={freshness} freshnessKind={freshnessKind}
         onSelectCase={onSelectCase} onTour={onTour} />
+      {/* Honesty: a warning word when the data is not fresh live / replay data. */}
+      {freshnessKind !== "live" && freshnessKind !== "archive" && freshnessKind in STATUS_WORD && (
+        <span data-status={freshnessKind} className="shrink-0 rounded-full border border-[#e2c48a] bg-cc-warn-soft px-2.5 py-1 text-xs font-semibold text-cc-warn max-[899px]:hidden">
+          {STATUS_WORD[freshnessKind as DataStatusKind]}
+        </span>
+      )}
+      {onNow && (
+        <button type="button" data-back-to-live onClick={onNow} title="Back to live (Now)"
+          className="inline-flex h-10 shrink-0 items-center rounded-[10px] border border-cc-accent-line bg-cc-accent-soft px-2.5 text-xs font-semibold text-cc-accent">
+          ← Now
+        </button>
+      )}
 
       {view === "public" && (
         <button type="button" onClick={() => onView("command")} title="Back to the Command Center"

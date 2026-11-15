@@ -43,7 +43,7 @@ import RainSoilChart from "./RainSoilChart";
 import ReplayCheck from "./ReplayCheck";
 import SituationPanel from "./SituationPanel";
 import SourceAges from "./SourceAges";
-import { initialState, linkParams, PLAYBACK_MS, reduce, type Action, type ScreenState, type DeepLink, isFeatured } from "./state";
+import { initialState, linkParams, PLAYBACK_MS, reduce, type Action, type ScreenState, type DeepLink } from "./state";
 import StatusBlock from "./StatusBlock";
 import { hideMissingFor } from "./model/sparse";
 import { hasHourFrames, hourFrameFor, hoursOn } from "./model/hours";
@@ -408,6 +408,7 @@ export function CommandCenterView({
         onView={onView}
         onSelectCase={(id) => dispatch({ type: "selectCase", id })}
         onTour={(a) => dispatch(a)}
+        onNow={bundle.mode === "replay" && cases.some((c) => c.mode === "live") ? () => dispatch({ type: "setMode", mode: "now" }) : undefined}
         freshness={freshnessText(status, nowMs)}
         freshnessKind={status.kind}
         search={searchSource && (
@@ -428,7 +429,6 @@ export function CommandCenterView({
           steps={steps}
           state={state}
           areas={areas}
-          status={status}
           comparePair={comparePair}
           dispatch={dispatch}
           insets={insets}
@@ -446,10 +446,6 @@ export function CommandCenterView({
             onPreset: (id) => dispatch({ type: "applyComparePreset", id }),
           } : undefined}
           cityOutline={!live ? replayCity?.outline : undefined}
-          featuredCase={(() => {
-            const f = cases.find((c) => c.mode === "replay" && isFeatured(c));
-            return f ? { id: f.id, short: "Uruguaiana Oct 2026" } : undefined;
-          })()}
           onToggleLayers={() => {
             dispatch({ type: "toggleLayersOpen" });
             setDrawer((d) => !d);
