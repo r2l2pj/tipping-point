@@ -210,9 +210,10 @@ jobs:
             [ -s "$2" ] || curl -fsSL --retry 3 -o "$2" "$rel/$1"
             echo "$3  $2" | sha256sum -c -
           }
-          get p_trigger_xgb.json ml/models/p_trigger_xgb.json 2eba71d66b1939333a4eb6bd42a38ab5320fccd3d08b993ad86437f3044464ed
-          get p_trigger_xgb.meta.json ml/models/p_trigger_xgb.meta.json 44df91aa4c6473148a9f5dc1237a8e1b39b68d6f4182bb3459c20c081dce7b07
-          get ml_static_now.tif data/static/south_brazil/ml/ml_static_now.tif 721b92280fd6785581c78842056f8cd91a8619af7b26c6c367e16b3459be3612
+          # ML v2 (L40, 2026-11-15): T_ML retrained without RS (L32) + serve_combine in the meta
+          get p_trigger_xgb_v2.json ml/models/p_trigger_xgb.json a342d61698d60590d3e0e4d8b19fb0a0daf56a938bcf92958311fb2493e3b595
+          get p_trigger_xgb_v2.meta.json ml/models/p_trigger_xgb.meta.json 6b84d5729bf3daf7730770ce17d563d5ff2331ce4a718e2e9290265bc3c79f31
+          get ml_static_now_v2.tif data/static/south_brazil/ml/ml_static_now.tif a0070babee891e38e69d80ce148ec13884c51ab2e87abca24f0b460786b5cda7
           uv run python -m live.p_trigger
 
       - name: Finalize now manifest (merge response node, drop absent products)
