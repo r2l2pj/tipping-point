@@ -6,6 +6,7 @@
 import {
   assetUrl,
   geoUrl,
+  isGfsFrame,
   horizonLabel,
   isHorizonKey,
   probFrame,
@@ -28,8 +29,11 @@ import {
   type CompareSide,
 } from "./radar";
 import {
+  caseHasHazard,
   effectiveLead,
   forecastForDay,
+  hazardMissingText,
+  noaaForecastLabel,
   forecastLeadsForDay,
   frameFor,
   ISSUE_LEADS,
@@ -80,7 +84,9 @@ export interface Side {
   track?: string;            // nisar (Now ships one stack per track)
   horizon?: ProbHorizon;     // ml
 }
-export interface Sides { L: Side; R: Side }
+// `link` (preset 'Forecast vs what happened'): LEFT = the run issued X for
+// X+k, RIGHT = observed X+k — moving either side moves the other.
+export interface Sides { L: Side; R: Side; link?: boolean }
 export const bothNisar = (s: Sides | undefined): boolean =>
   !!s && s.L.layer === "nisar" && s.R.layer === "nisar";
 
@@ -117,11 +123,51 @@ const unionBounds = (a?: BBox, b?: BBox): BBox | undefined =>
 //
 // Each side's day list depends on its layer: only dates that exist.
 
+// Lucas (BUG, landslide compare): a risk side shows ITS hazard's frame or
+// nothing — frameFor/pickTpiFrame fall back to any frame of the day (the
+// flood one for a landslide side, or one of a flood-only case like
+// Uruguaiana), which put the wrong hazard (or a blank) on a side.
+export function riskFrame(bundle: CcBundle, day: string | undefined, hz: Hazard) {
+  const f = frameFor(bundle, day, hz);
+  return f && f.hazard === hz && f.layer.id.startsWith(`tpi_${hz}`) ? f : undefined;
+}
+
 function riskDays(bundle: CcBundle, steps: readonly Step[], hz: Hazard): { date: string; label: string }[] {
   return steps
-    .filter((s) => frameFor(bundle, s.date, hz) || forecastLeadsForDay(bundle, s.date, hz).length > 0)
+    .filter((s) => riskFrame(bundle, s.date, hz) || forecastLeadsForDay(bundle, s.date, hz).length > 0)
     .map((s) => ({ date: day10(s.date), label: `${fmtDate(s.date)}${s.forecast ? " (forecast)" : ""}` }));
 }
+
+// Lucas: a FORECAST side picks the ISSUE day X, then +1 · +2 · +3 days.
+// The list is the case's days plus every NOAA run issue day of the hazard;
+// ● marks the days a run was issued. `date` stays the frame's target X+k
+// (the side's own date), `issue` is the picker's value.
+const runIssueDays = (bundle: CcBundle, hz: Hazard): Set<string> => {
+  const ref = (bundle.series?.reference_date ?? bundle.reference_date)?.slice(0, 10);
+  return new Set(
+    (bundle.manifest?.layers ?? [])
+      .filter((l) => isGfsFrame(l) && l.id.startsWith(`tpi_${hz}_gfs_d`) && !!l.png && typeof l.issued === "string" &&
+        !(l as unknown as { datetime?: unknown }).datetime)
+      .map((l) => day10(l.issued))
+      .filter((d) => !ref || d <= ref)
+  );
+};
+export function issueDays(
+  bundle: CcBundle,
+  steps: readonly Step[],
+  hz: Hazard,
+  k: IssueLead
+): { date: string; label: string; issue: string; run: boolean }[] {
+  const runs = runIssueDays(bundle, hz);
+  const all = new Set([...steps.map((s) => day10(s.date)), ...runs]);
+  return [...all].filter(Boolean).sort().map((x) => ({
+    issue: x,
+    date: shiftDay(x, k),
+    run: runs.has(x),
+    label: `${runs.has(x) ? "● " : ""}${fmtDate(x)}`,
+  }));
+}
+export const issueDayOf = (s: Side): string => shiftDay(day10(s.date), -(s.lead ?? 0));
 
 const imergDate = (l: ManifestLayer): string | undefined => {
   if (typeof l.date === "string") return day10(l.date);
@@ -210,11 +256,11 @@ export function sideDays(
   steps: readonly Step[],
   hazard: Hazard,
   s: Side
-): { date: string; label: string }[] {
+): { date: string; label: string; issue?: string; run?: boolean }[] {
   switch (s.layer) {
     case "flood":
     case "slide":
-      return riskDays(bundle, steps, s.layer);
+      return (s.lead ?? 0) > 0 ? issueDays(bundle, steps, s.layer, s.lead!) : riskDays(bundle, steps, s.layer);
     case "rain":
       return rainDays(bundle);
     case "ml":
@@ -238,7 +284,9 @@ export interface CompareLayerInfo {
   pols?: ("HH" | "HV")[];                   // nisar
   tracks?: { id: string; days: string[] }[]; // nisar — only when >1 (Now)
   horizons?: ProbHorizon[];                 // ml
+  disabled?: string;                        // shown, not pickable — why
 }
+const pickable = (l: CompareLayerInfo) => !l.disabled;
 
 export function compareLayers(
   bundle: CcBundle,
@@ -252,6 +300,10 @@ export function compareLayers(
     const days = riskDays(bundle, steps, hz);
     if (days.length) {
       out.push({ id: hz, label: COMPARE_LAYER_LABEL[hz], days, ...(canForecast ? { canForecast: true } : {}) });
+    } else if (!caseHasHazard(bundle, hz)) {
+      // Lucas: a flood-only case (Uruguaiana) lists Landslide disabled with
+      // the reason — never a blank side.
+      out.push({ id: hz, label: COMPARE_LAYER_LABEL[hz], days: [], disabled: hazardMissingText(hz) });
     }
   }
   const rain = rainDays(bundle);
@@ -292,7 +344,7 @@ export function viewCompareLayer(
   on: readonly string[],
   hazard: Hazard
 ): CompareLayer | undefined {
-  const avail = new Set(compareLayers(bundle, steps, hazard).map((l) => l.id));
+  const avail = new Set(compareLayers(bundle, steps, hazard).filter(pickable).map((l) => l.id));
   if (on.includes("imerg") && avail.has("rain")) return "rain";
   if (on.includes("ptrigger") && avail.has("ml")) return "ml";
   // The risk index wins when it is on (the NISAR outlines are drawn over it);
@@ -338,7 +390,7 @@ export function defaultSides(
   const sel = steps[dayIndex] ?? steps[steps.length - 1];
   if (!sel) return undefined;
   const day = day10(sel.date);
-  const offered = compareLayers(bundle, steps, hazard);
+  const offered = compareLayers(bundle, steps, hazard).filter(pickable);
   const want = opts.layer && offered.some((l) => l.id === opts.layer)
     ? opts.layer
     : offered.some((l) => l.id === hazard)
@@ -423,7 +475,8 @@ export function presetSides(
       if (!riskDays(bundle, steps, hazard).length) return undefined;
       const lead = effectiveLead(bundle, day, hazard, 3);
       if (lead === 0) return undefined;
-      return { L: { layer: hazard, date: day, lead }, R: { layer: hazard, date: day, lead: 0 } };
+      // LEFT issued X = D−k for D, RIGHT observed D; linked (move together).
+      return { L: { layer: hazard, date: day, lead }, R: { layer: hazard, date: day, lead: 0 }, link: true };
     }
     case "nisar-pair": {
       const track = offeredTracks(bundle)[0]?.track || undefined;
@@ -579,20 +632,31 @@ function sideResolved(
     case "slide": {
       const hz = s.layer;
       const lead = s.lead ?? 0;
+      const tag = ` · ${HAZARD_LABEL[hz]} TPI`;
+      if (!caseHasHazard(bundle, hz)) {
+        const label = `${COMPARE_LAYER_LABEL[hz]} — ${short(day)}`;
+        return { label, missing: hazardMissingText(hz) };
+      }
       if (lead > 0) {
         const f = forecastForDay(bundle, day, hz, lead);
+        const issue = shiftDay(day, -lead);
+        const label = `${noaaForecastLabel(issue, day, lead)}${tag}`;
         return {
-          side: img(f?.layer, `Forecast for ${short(day)}, issued ${short(shiftDay(day, -lead))} (NOAA GFS)`),
-          label: `Forecast for ${short(day)}, issued ${short(shiftDay(day, -lead))} (NOAA GFS)`,
-          missing: `No NOAA run archived for ${fmtDate(shiftDay(day, -lead))}`,
+          side: img(f?.layer, label),
+          label,
+          missing: runIssueDays(bundle, hz).has(issue)
+            ? `The NOAA run issued ${fmtDate(issue)} has no +${lead} d frame`
+            : `No NOAA run issued ${fmtDate(issue)}`,
         };
       }
-      const f = frameFor(bundle, day, hz);
+      const f = riskFrame(bundle, day, hz);
       const live = bundle.mode === "live";
       const label = live
-        ? `${HAZARD_LABEL[f?.hazard ?? hz]} TPI — ${short(day)}${f?.forecast ? " (NOAA GFS forecast)" : ""}`
-        : `Observed ${short(day)} (NASA IMERG + SMAP)`;
-      return { side: img(f?.layer, label), label, missing: `No frame for ${fmtDate(day)}` };
+        ? `${HAZARD_LABEL[f?.hazard ?? hz]} TPI — ${short(day)}${
+          (f?.layer as { partly_forecast?: unknown } | undefined)?.partly_forecast === true ? " (partly NOAA GFS forecast)"
+          : f?.forecast ? " (NOAA GFS forecast)" : ""}`
+        : `Observed ${short(day)} (NASA IMERG + SMAP)${tag}`;
+      return { side: img(f?.layer, label), label, missing: `No ${hz === "slide" ? "landslide" : "flood"} index frame for ${fmtDate(day)}` };
     }
     case "rain": {
       const l = imergLayerFor(bundle, day);
@@ -648,8 +712,11 @@ export function sidesCompare(
   const r = sideResolved(bundle, sides.R);
   const missing = { L: l.side ? undefined : l.missing, R: r.side ? undefined : r.missing };
   // Keep the swipe open with whatever side exists, so the pickers stay usable.
-  const left = l.side ?? r.side, right = r.side ?? l.side;
-  if (!left || !right) return { kind, reason: missing.L ?? missing.R, missing };
+  // A missing side never borrows the other side's image (Lucas BUG: a
+  // Landslide side showed the flood frame): basemap only, the reason on its tag.
+  if (!l.side && !r.side) return { kind, reason: missing.L ?? missing.R, missing };
+  const empty = (x: typeof l, other: CompareSide): CompareSide => ({ url: "", label: x.label, bounds: other.bounds });
+  const left = l.side ?? empty(l, r.side!), right = r.side ?? empty(r, l.side!);
   // Jhonatan: the radar flood candidates over the swipe when a NISAR side
   // is on (their own colour).
   const floodUrl = [sides.L, sides.R].some((s) => s.layer === "nisar")
@@ -666,8 +733,8 @@ export function sidesCompare(
       kind,
       lead: isRiskLayer(sides.L.layer) ? (sides.L.lead ?? 0) : 0,
       bounds: unionBounds(l.side?.bounds, r.side?.bounds) ?? bundle.bbox,
-      before: { ...left, label: l.side ? l.label : `${l.label} — not published` },
-      after: { ...right, label: r.side ? r.label : `${r.label} — not published` },
+      before: { ...left, label: l.side ? l.label : `${l.label} — ${l.missing}` },
+      after: { ...right, label: r.side ? r.label : `${r.label} — ${r.missing}` },
       ...(floodUrl ? { flood: { url: floodUrl, label: floodLabels(bundle).layer } } : {}),
     },
   };

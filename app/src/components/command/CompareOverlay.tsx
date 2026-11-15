@@ -15,11 +15,12 @@ import { cameraPatch, clipPathFor, dragStep, pctFromClientX, SWIPE_MAX_PCT, SWIP
 import { horizonLabel, type ProbHorizon } from "@/lib/layers";
 import { fmtDayShort } from "./model/format";
 import { FLOODED_FILL, FLOODED_HALO, FLOODED_OPACITY, FLOODED_OUTLINE, type ComparePair } from "./model/radar";
-import { ISSUE_LEADS, type IssueLead } from "./model/steps";
+import { ISSUE_LEADS, shiftDay, type IssueLead } from "./model/steps";
 import { CHANGE_LEGEND, changeBlockedReason, changeComposite, type BBox as ChangeBBox } from "./model/changeComposite";
 import {
   COMPARE_LAYER_LABEL,
   isRiskLayer,
+  issueDayOf,
   type CompareLayer,
   type CompareLayerInfo,
   type ComparePresetId,
@@ -54,7 +55,7 @@ export default function CompareOverlay({
   sidesCtl?: {
     sides: Sides;
     layers: CompareLayerInfo[];
-    days: Record<"L" | "R", { date: string; label: string; value?: string; track?: string }[]>;
+    days: Record<"L" | "R", { date: string; label: string; value?: string; track?: string; issue?: string }[]>;
     presets: { id: ComparePresetId; label: string }[];
     warning?: string;
     note?: string;
@@ -70,13 +71,13 @@ export default function CompareOverlay({
 }) {
   const seg = (on: boolean) =>
     `rounded-full px-2.5 py-0.5 text-xs font-semibold ${on ? "bg-cc-accent text-white" : "text-cc-ink"}`;
-  const sel = "h-7 rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold";
+  const sel = "h-7 max-w-[12rem] rounded-md border border-cc-line-strong bg-cc-surface px-1 text-xs font-semibold";
   // Lucas: NISAR before/after can show the classic change composite (one
   // map, red = new water) — only for a same-track, same-pol NISAR pair.
   const [mode, setMode] = useState<"side" | "change">("side");
   const bothNisarSides = !!sidesCtl && sidesCtl.sides.L.layer === "nisar" && sidesCtl.sides.R.layer === "nisar";
   const changeBlocked = sidesCtl ? changeBlockedReason(sidesCtl.sides.L, sidesCtl.sides.R) : "Change view needs two NISAR passes";
-  const changeOn = mode === "change" && bothNisarSides && !changeBlocked;
+  const changeOn = mode === "change" && bothNisarSides && !changeBlocked && !!pair.before.url && !!pair.after.url;
   // Lucas: NISAR sides default to 'Water in red' (darker = redder); the
   // Change view keeps the plain frames (it decodes the gray itself).
   const look = useRadarLook();
@@ -98,7 +99,8 @@ export default function CompareOverlay({
         <div className="absolute z-30 top-20 flex -translate-x-1/2 flex-col items-center gap-1"
           // Centred on the visible map, never under the floating cards.
           style={{ left: "calc(var(--cc-il, 0px) + (100% - var(--cc-il, 0px) - var(--cc-ir, 0px)) / 2)",
-            maxWidth: "calc(100% - var(--cc-il, 0px) - var(--cc-ir, 0px) - 24px)" }}>
+            // Clear of the map tool column (zoom / recenter) on the right.
+            maxWidth: "calc(100% - var(--cc-il, 0px) - var(--cc-ir, 0px) - 128px)" }}>
           <div className="flex flex-col gap-1 rounded-xl border border-cc-line-strong bg-white/95 px-2 py-1.5 text-xs shadow" data-compare-sides>
             {!sidesCtl.nisarOnly && sidesCtl.presets.length > 0 && (
               <div role="group" aria-label="Compare presets" data-compare-presets className="flex flex-wrap items-center gap-1">
@@ -113,9 +115,15 @@ export default function CompareOverlay({
               const name = side === "L" ? "Left" : "Right";
               const info = sidesCtl.layers.find((l) => l.id === s.layer);
               const days = sidesCtl.days[side];
-              const dayOpts = days.some((d) => d.date === s.date)
-                ? days
-                : [...days, { date: s.date, label: fmtDayShort(s.date) }];
+              // Forecast side: the picker is the ISSUE day X (● = a NOAA
+              // run was issued that day); the frame shown is X + lead.
+              const lead = isRiskLayer(s.layer) ? (s.lead ?? 0) : 0;
+              const issue = lead > 0 ? issueDayOf(s) : undefined;
+              const dayOpts = issue
+                ? (days.some((d) => d.issue === issue) ? days : [...days, { date: s.date, issue, label: fmtDayShort(issue) }])
+                : days.some((d) => d.date === s.date)
+                  ? days
+                  : [...days, { date: s.date, label: fmtDayShort(s.date) }];
               return (
                 <div key={side} role="group" aria-label={`${name} side`} className="flex flex-wrap items-center gap-1" data-side={side}>
                   <span className="w-9 font-semibold text-cc-muted">{name}</span>
@@ -123,26 +131,37 @@ export default function CompareOverlay({
                     onChange={(e) => sidesCtl.onSide(side, { layer: e.target.value as CompareLayer })}
                     className={sel} data-layer-select>
                     {!info && <option value={s.layer}>{COMPARE_LAYER_LABEL[s.layer]}</option>}
-                    {sidesCtl.layers.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+                    {sidesCtl.layers.map((l) => (
+                      <option key={l.id} value={l.id} disabled={!!l.disabled} title={l.disabled}>
+                        {l.disabled ? `${l.label} — ${l.disabled}` : l.label}
+                      </option>
+                    ))}
                   </select>}
                   {/* NISAR: one list of every pass (date · track · mode), any order. */}
-                  <select aria-label={`${name} day`}
-                    value={s.layer === "nisar" && dayOpts.some((d) => d.value) ? `${s.date}|${s.track ?? ""}` : s.date}
+                  {issue && <span className="text-cc-muted">NOAA issued</span>}
+                  <select aria-label={issue ? `${name} forecast issue day` : `${name} day`}
+                    value={issue ?? (s.layer === "nisar" && dayOpts.some((d) => d.value) ? `${s.date}|${s.track ?? ""}` : s.date)}
                     onChange={(e) => {
+                      if (issue) { sidesCtl.onSide(side, { date: shiftDay(e.target.value, lead) }); return; }
                       const [date, track] = e.target.value.split("|");
                       sidesCtl.onSide(side, track !== undefined ? { date, track } : { date });
                     }}
-                    className={sel} data-day-select>
-                    {dayOpts.map((d) => <option key={d.value ?? d.date} value={d.value ?? d.date}>{d.label}</option>)}
+                    className={sel} data-day-select data-issue-select={issue ? "" : undefined}>
+                    {dayOpts.map((d) => {
+                      const v = issue ? (d.issue ?? d.date) : (d.value ?? d.date);
+                      return <option key={v} value={v}>{d.label}</option>;
+                    })}
                   </select>
                   {isRiskLayer(s.layer) && info?.canForecast && (
-                    <>
+                    <span className="inline-flex flex-wrap items-center gap-1" data-risk-mode>
                       <button type="button" aria-pressed={(s.lead ?? 0) === 0} onClick={() => sidesCtl.onSide(side, { lead: 0 })} className={seg((s.lead ?? 0) === 0)}>Observed</button>
                       <button type="button" aria-pressed={(s.lead ?? 0) > 0} onClick={() => sidesCtl.onSide(side, { lead: s.lead || 3 })} className={seg((s.lead ?? 0) > 0)}>Forecast</button>
-                      {(s.lead ?? 0) > 0 && ISSUE_LEADS.map((k) => (
-                        <button key={k} type="button" aria-pressed={s.lead === k} onClick={() => sidesCtl.onSide(side, { lead: k })} className={seg(s.lead === k)}>{k} d before</button>
+                      {issue && ISSUE_LEADS.map((k) => (
+                        <button key={k} type="button" aria-pressed={s.lead === k} data-lead={k}
+                          onClick={() => sidesCtl.onSide(side, { lead: k, date: shiftDay(issue, k) })}
+                          className={seg(s.lead === k)}>+{k}{k === 3 ? " days" : ""}</button>
                       ))}
-                    </>
+                    </span>
                   )}
                   {s.layer === "nisar" && (info?.pols?.length ?? 0) > 1 && (
                     <>
@@ -165,6 +184,7 @@ export default function CompareOverlay({
             })}
             {sidesCtl.warning && <p className="m-0 font-semibold text-cc-warn" role="status" data-compare-warning>{sidesCtl.warning}</p>}
             {sidesCtl.note && <p className="m-0 text-cc-muted" data-compare-note>{sidesCtl.note}</p>}
+            {sidesCtl.sides.link && <p className="m-0 text-cc-muted" data-compare-link>Both sides move together: forecast for a day vs what happened that day</p>}
             {anyRadar && !changeOn && (
               <div role="group" aria-label="Radar colours" className="flex flex-wrap items-center gap-1" data-radar-look>
                 {([["water", "Water in red"], ["plain", "Plain radar"]] as const).map(([k, label]) => (

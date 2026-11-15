@@ -462,12 +462,12 @@ export default function MapStage({
             })}
           </div>
           {state.issueLead > 0 && (
-            <div role="group" aria-label="Forecast issued" className="flex flex-wrap items-center gap-1" data-issue-leads>
+            <div role="group" aria-label="Forecast lead (days after the NOAA issue day)" className="flex flex-wrap items-center gap-1" data-issue-leads>
               {([1, 2, 3] as IssueLead[]).map((k) => (
                 <button key={k} type="button" aria-pressed={effLead === k}
                   onClick={() => dispatch({ type: "setIssueLead", lead: k })}
                   className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${effLead === k ? "bg-cc-accent text-white" : fLeads.includes(k) ? "border border-cc-line-strong" : "border border-dashed border-cc-line-strong text-cc-muted"}`}>
-                  {k} {k === 1 ? "day" : "days"} before
+                  +{k}{k === 3 ? " days" : ""}
                 </button>
               ))}
             </div>
@@ -475,7 +475,7 @@ export default function MapStage({
           {state.issueLead > 0 && step && effLead !== state.issueLead && (
             <p className="m-0 text-xs font-medium text-cc-muted" data-lead-note>
               {fLeads.length
-                ? `No NOAA run archived for ${fmtDate(shiftDay(step.date, -state.issueLead))} — showing ${effLead} ${effLead === 1 ? "day" : "days"} before`
+                ? `No NOAA run issued ${fmtDate(shiftDay(step.date, -state.issueLead))} — showing the run issued ${fmtDate(shiftDay(step.date, -effLead))} (+${effLead} d)`
                 : `No NOAA forecast archived for ${fmtDate(step.date)}`}
             </p>
           )}

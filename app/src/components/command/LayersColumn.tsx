@@ -15,7 +15,7 @@ import {
 } from "./model/layerRegistry";
 import { classRows, HATCH_SWATCH, layerLegendRows } from "./model/legend";
 import { fmtDataDate } from "./model/format";
-import { caseHasHazard } from "./model/steps";
+import { caseHasHazard, hazardMissingText } from "./model/steps";
 import { HAZARD_LABEL, type CcBundle, type Hazard } from "./model/types";
 import { OPACITY_DEFAULT, OPACITY_MIN } from "./state";
 import { Icon, ICON } from "./ui";
@@ -127,7 +127,8 @@ export default function LayersColumn({
                   role="radio"
                   aria-checked={hazard === h}
                   disabled={!has}
-                  title={has ? undefined : "no map layer for this case"}
+                  title={has ? undefined : hazardMissingText(h)}
+                  aria-describedby={has ? undefined : "hazard-missing"}
                   onClick={() => onHazard(h)}
                   className={`min-h-10 rounded-xl border-2 px-2 text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-45 ${hazard === h ? "border-cc-accent bg-cc-accent text-white" : "border-cc-line"}`}
                 >
@@ -136,6 +137,9 @@ export default function LayersColumn({
               );
             })}
           </div>
+          {(["flood", "slide"] as Hazard[]).filter((h) => !caseHasHazard(bundle, h)).slice(0, 1).map((h) => (
+            <p key={h} id="hazard-missing" data-hazard-missing={h} className="m-0 mt-1 text-xs text-cc-muted">{hazardMissingText(h)}</p>
+          ))}
 
           <Legend bundle={bundle} layers={layers} hazard={hazard} stepDate={stepDate} probHorizon={probHorizon} changeCyan={changeCyan} className="mt-2.5 shrink-0" />
 

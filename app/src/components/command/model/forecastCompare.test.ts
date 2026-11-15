@@ -196,6 +196,45 @@ describe("forecast compare state", () => {
     expect(bad.compareSides?.L.layer).not.toBe("bogus"); // defaults instead
   });
 
+  // Lucas (BUG): with Compare ⇆ open, Flood ↔ Landslide re-renders the risk
+  // sides (date + lead kept); a NISAR side stays as it was.
+  test("hazard switch with Compare open: risk sides follow, other sides stay", () => {
+    const s = initialState(cases, "rs_2024", "2024-05-03", { compare: "1", l: "flood:2024-05-03:2", r: "nisar:2024-05-03:HV" });
+    const flood = s.hazard === "flood" ? s : reduce(s, { type: "setHazard", hazard: "flood" }, cases);
+    const slid = reduce({ ...flood, compareSides: { L: { layer: "flood", date: "2024-05-03", lead: 2 }, R: flood.compareSides!.R } }, { type: "setHazard", hazard: "slide" }, cases);
+    expect(slid.hazard).toBe("slide");
+    expect(slid.compareSides?.L).toEqual({ layer: "slide", date: "2024-05-03", lead: 2 });
+    expect(slid.compareSides?.R).toEqual(flood.compareSides!.R);
+    const both = reduce({ ...flood, compareSides: { L: { layer: "flood", date: "2024-05-03", lead: 2 }, R: { layer: "flood", date: "2024-05-03", lead: 0 } } }, { type: "setHazard", hazard: "slide" }, cases);
+    expect(both.compareSides).toEqual({ L: { layer: "slide", date: "2024-05-03", lead: 2 }, R: { layer: "slide", date: "2024-05-03", lead: 0 } });
+    const back = reduce(both, { type: "setHazard", hazard: "flood" }, cases);
+    expect(back.compareSides?.L.layer).toBe("flood");
+    expect(back.compareSides?.R.layer).toBe("flood");
+  });
+
+  // Lucas: 'Forecast vs what happened' — both sides move together.
+  test("left issued X for X+k, right observed X+k; moving either moves the other", () => {
+    const s0 = initialState(cases, "rs_2024", "2024-05-03", { compare: "1", l: "flood:2024-05-03:2", r: "flood:2024-05-03" });
+    const s = reduce(s0, { type: "applyComparePreset", id: "forecast-observed" }, cases);
+    const sides = s.compareSides!;
+    expect(sides.link).toBe(true);
+    expect(sides.L.lead).toBeGreaterThan(0);
+    expect(sides.L.date).toBe(sides.R.date);
+    expect(sides.R.lead).toBe(0);
+    // RIGHT moves → LEFT follows (same lead, issue day moves).
+    const r = reduce(s, { type: "setCompareSide", side: "R", date: "2024-05-04" }, cases).compareSides!;
+    expect(r.R.date).toBe("2024-05-04");
+    expect(r.L.date).toBe(r.R.date);
+    expect(r.L.lead).toBe(sides.L.lead);
+    // Hazard switch keeps the link and the dates.
+    const hz = reduce({ ...s, compareSides: r }, { type: "setHazard", hazard: s.hazard === "flood" ? "slide" : "flood" }, cases).compareSides!;
+    expect(hz.link).toBe(true);
+    expect(hz.L.date).toBe(r.L.date);
+    // Another layer on one side ends the link.
+    const un = reduce({ ...s, compareSides: r }, { type: "setCompareSide", side: "L", layer: "rain" }, cases).compareSides!;
+    expect(un.link).toBeUndefined();
+  });
+
   test("?compare=forecast&lead=k&day=D seeds forecast-vs-observed sides", () => {
     const s = initialState(cases, "rs_2024", "2024-05-03", { compare: "forecast", lead: "2" });
     expect(s.compareSides?.L).toEqual({ layer: "flood", date: "2024-05-03", lead: 2 });
