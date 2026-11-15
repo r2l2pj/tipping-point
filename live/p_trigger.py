@@ -43,8 +43,10 @@ STATIC_BANDS = ("elevation", "slope", "aspect_sin", "aspect_cos", "curvature",
 TEXTURE_BANDS = ("clay", "sand", "porosity")
 SOIL_VARS = ("sm_surface", "sm_rootzone", "sm_profile_wetness")
 SMAP_TIME_TAG = "T103000"   # lead-ml trained on the 10:30Z granule only
+# default only: the frames served are the model meta's "horizons" (ML v2
+# serves 24h/72h/7d), so a model swap needs no code change here
 HORIZONS = {"24h": 1, "48h": 2, "72h": 3, "7d": 7, "14d": 14}
-LOW_SKILL = {"7d", "14d"}                 # L27: long-range forecast label
+LOW_SKILL_DAYS = 7                        # L27: horizons >= 7 d are long-range
 # probability bins -> RGBA (transparent below 2 %)
 PROB_STOPS = (0.02, 0.10, 0.25, 0.50, 0.75)
 PROB_RGB = ((255, 255, 178), (254, 204, 92), (253, 141, 60),
@@ -110,12 +112,13 @@ def obs_series(out_dir: Path, today: dt.date, lats, lons) -> np.ndarray:
 
 
 def frame_layers(today: dt.date, gfs_issued: str, files: dict,
-                 bounds: dict, model_meta: dict) -> list[dict]:
+                 bounds: dict, model_meta: dict,
+                 horizons: dict | None = None) -> list[dict]:
     layers = []
     issued = gfs_issued[:16].replace("T", " ") + " UTC"
     serve_label = model_meta.get("serve_label") or (
         "P(landslide trigger within H)")
-    for h, n in HORIZONS.items():
+    for h, n in sorted((horizons or HORIZONS).items(), key=lambda kv: kv[1]):
         if f"cog/p_trigger_{h}.tif" not in files:
             continue
         obs = [(today - dt.timedelta(days=k)).isoformat() for k in range(7, 0, -1)]
@@ -136,7 +139,7 @@ def frame_layers(today: dt.date, gfs_issued: str, files: dict,
                             f"{(today - dt.timedelta(days=1)):%b %-d} + NOAA GFS "
                             f"forecast to {(today + dt.timedelta(days=n - 1)):%b %-d} "
                             f"(issued {issued})"),
-            "low_skill": h in LOW_SKILL,
+            "low_skill": n >= LOW_SKILL_DAYS,
             "domain": ("Brazilian land only — product scope: no landslide labels "
                        "and no Brazilian civil-defence audience outside Brazil"),
             "model": {"name": model_meta.get("model") or model_meta.get("name", "p_trigger_xgb"),
@@ -157,6 +160,7 @@ def run(out_dir: Path, today: dt.date, bounds=NOW_BOUNDS, model_path=MODEL_PATH,
     lats, lons = dst_lats_lons(tuple(bounds))
     transform = dst_transform(tuple(bounds))
     tm = TriggerModel.load(Path(model_path))
+    horizons = dict(sorted(tm.horizons.items(), key=lambda kv: kv[1]))
     st = load_static_stack(Path(static_path))
     static = {k: st[k] for k in STATIC_BANDS}
     texture = {k: st[k] for k in TEXTURE_BANDS}
@@ -173,7 +177,7 @@ def run(out_dir: Path, today: dt.date, bounds=NOW_BOUNDS, model_path=MODEL_PATH,
     obs = obs_series(Path(out_dir), today, lats, lons)
     if rain_fc is None:
         fc_da, gfs_issued = fetch.fetch_gfs_daily(tuple(bounds), today,
-                                                  ndays=max(HORIZONS.values()))
+                                                  ndays=max(horizons.values()))
         rain_fc = np.stack([regrid_da(fc_da.isel(time=i), lats, lons)
                             for i in range(fc_da.sizes["time"])])
     out = tm.predict(today, static=static, soil=soil, texture=texture,
@@ -196,14 +200,20 @@ def run(out_dir: Path, today: dt.date, bounds=NOW_BOUNDS, model_path=MODEL_PATH,
     if land is not None:
         out = {k: np.where(land, v, np.nan).astype(np.float32) for k, v in out.items()}
     files, bnds = {}, {}
-    for h in HORIZONS:
+    for h in horizons:
         p = out.get(f"p_trigger_{h}")
         if p is None:
             continue
         files[f"cog/p_trigger_{h}.tif"] = render.cog_bytes(p, transform)
         files[f"png/p_trigger_{h}.png"], bnds[h] = prob_png_3857(p, transform)
-    layers = frame_layers(today, gfs_issued or "", files, bnds, tm.meta)
+    layers = frame_layers(today, gfs_issued or "", files, bnds, tm.meta, horizons)
     out_dir = Path(out_dir)
+    # frames of horizons the current model no longer serves must not linger
+    # in the published snapshot (v1 48h/14d after the v2 swap)
+    for sub, ext in (("cog", "tif"), ("png", "png")):
+        for old in (out_dir / sub).glob(f"p_trigger_*.{ext}"):
+            if f"{sub}/{old.name}" not in files:
+                old.unlink()
     for rel, blob in files.items():
         (out_dir / rel).parent.mkdir(parents=True, exist_ok=True)
         (out_dir / rel).write_bytes(blob)
