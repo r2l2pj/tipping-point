@@ -1,29 +1,18 @@
-# tipping-point-data
+# Tipping Point
 
-Data & analysis pipeline for **Tipping Point** — NASA Space Apps Challenge 2026,
-"Dancing with the SARs". **Rain warns. Radar sees through.** IMERG rain and
-SMAP soil wetness feed a daily Tipping Point Index (TPI) that shows where
-flood/landslide risk is rising; NISAR radar passes map where the ground newly
-flooded (flood candidates). Landslide scars come from NASA optical data and
-stay candidates.
+**Rain warns. Radar sees through.** NASA Space Apps Challenge 2026 — challenge #5 "Dancing with the SARs".
 
-Produces the artifacts in `data/` consumed by
-[`r2l2pj/tipping-point-app`](https://github.com/r2l2pj/tipping-point-app).
-The contract between this repo and the app is
-[`data/SCHEMA.md`](data/SCHEMA.md) — read it first; the app never computes and
-never globs. Which calendar days a frame labelled X actually covers (the
-observed series ends at X−1; forecast and Now frames end at X) is in
-[`docs/conventions-dates.md`](docs/conventions-dates.md).
+**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **License:** Apache-2.0 · **Team:** [TEAM NAME]
 
-**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **App:** [r2l2pj/tipping-point-app](https://github.com/r2l2pj/tipping-point-app) · **License:** Apache-2.0 · **Team:** [TEAM NAME] — NASA Space Apps 2026, challenge #5 "Dancing with the SARs"
+This repository holds the whole project: the data and analysis pipeline at the repo root and the web app in [`app/`](app/) (its own README: [`app/README.md`](app/README.md)). The former `r2l2pj/tipping-point-app` repository was merged in with its history and is frozen. The contract between the pipeline and the app is [`data/SCHEMA.md`](data/SCHEMA.md) — read it first; the app never computes and never globs. Which calendar days a frame labelled X covers is in [`docs/conventions-dates.md`](docs/conventions-dates.md).
 
 ## What it is
 
-This repo turns NASA data into the files the Tipping Point app shows: when, where and who in floods and landslides. Main case: the **Uruguay River at Uruguaiana** (Rio Grande do Sul, Brazil). In October 2026 the Uruguay River at Uruguaiana stayed above its 8.50 m flood stage on Oct 5–21 (ANA gauge). Replayed with the data as it was available, our index, fed by NASA satellite rain, turned the Uruguaiana region Critical on Sep 30, five days before flood stage, and NOAA's GFS forecast from Sep 27 already pointed there, 8 days ahead (near-real-time rain; it holds when scaled to the final product; 3 small false alarms on Sep 20–22). It found the right days, not yet the right streets; NISAR passes every 12 days then saw the water through cloud, and about 98,000 people live on the low floodplain. Supporting cases: Washington State, December 2025 (NISAR flood candidates under 92.9% cloud) and Rio Grande do Sul, May 2024 (a replay with each NOAA GFS forecast as it was issued). The live "Now" job refreshes Southern Brazil every 3 hours.
+Tipping Point turns NASA data into when, where and who in floods and landslides. Main case: the **Uruguay River at Uruguaiana** (Rio Grande do Sul, Brazil). In October 2026 the Uruguay River at Uruguaiana stayed above its 8.50 m flood stage on Oct 5–21 (ANA gauge). Replayed with the data as it was available, our index, fed by NASA satellite rain, turned the Uruguaiana region Critical on Sep 30, five days before flood stage, and NOAA's GFS forecast from Sep 27 already pointed there, 8 days ahead (near-real-time rain; it holds when scaled to the final product; 3 small false alarms on Sep 20–22). It found the right days, not yet the right streets; NISAR passes every 12 days then saw the water through cloud, and about 98,000 people live on the low floodplain. Supporting cases: Washington State, December 2025 (NISAR flood candidates under 92.9% cloud) and Rio Grande do Sul, May 2024 (a replay with each NOAA GFS forecast as it was issued). The live "Now" job refreshes Southern Brazil every 3 hours.
 
 | Uruguaiana, Oct 2026 — NISAR | Washington, Dec 2025 — NISAR | Live public alerts (experimental) |
 |---|---|---|
-| ![Uruguaiana](https://raw.githubusercontent.com/r2l2pj/tipping-point-app/main/docs/img/1-uy-nisar.png) | ![Washington](https://raw.githubusercontent.com/r2l2pj/tipping-point-app/main/docs/img/2-wa-nisar-swipe.png) | ![Alerts](https://raw.githubusercontent.com/r2l2pj/tipping-point-app/main/docs/img/3-alerts.png) |
+| ![Uruguaiana](app/docs/img/1-uy-nisar.png) | ![Washington](app/docs/img/2-wa-nisar-swipe.png) | ![Alerts](app/docs/img/3-alerts.png) |
 
 ## How it works (short)
 
@@ -47,31 +36,54 @@ More: [Declared limitations](#declared-limitations), `data/metrics.json`, `docs/
 
 ## Data products and where they are published
 
-`data/` (contract: [`data/SCHEMA.md`](data/SCHEMA.md)) holds per-case COG / PNG / GeoJSON / JSON plus `data/now/` and the root `data/manifest.json` (written last). The live workflow pushes `data/` to the orphan branch **`fallback`**, which the app reads from `https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`; tabular data is also packed into `tipping_point.sqlite`.
+`data/` (contract: [`data/SCHEMA.md`](data/SCHEMA.md)) holds per-case COG / PNG / GeoJSON / JSON plus `data/now/` and the root `data/manifest.json` (written last). The live workflow force-pushes `data/` to the orphan branch **`fallback`** every ~3 h; the app reads it from `https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`, then from a Neon Object Storage mirror (being retired), then from its bundled `app/public/data` copy. `data/tipping_point.sqlite` (tabular mirror: one row per Now run plus every app-facing JSON) is rebuilt and published on `fallback` by `now.yml`. Large static rasters are attached to the GitHub Release `static-v1`.
 
 ## Credits and attributions
 
 NASA data: NISAR, GPM IMERG, SMAP, NASADEM, NASA OPERA DSWx and DIST-ALERT, HLS, VIIRS Black Marble, SWOT, GPW v4.11 (SEDAC), Global Landslide Catalog / COOLR. Forecast rain: NOAA GFS. Required attributions: NASA OPERA DSWx-S1 contains modified Copernicus Sentinel-1 data (ESA); Copernicus Emergency Management Service EMSR720 © European Union (independent validation maps); Washington Geological Survey landslide inventory; UFRGS/Cemaden landslide inventory; IBGE boundaries; ANA (Brazil) river-gauge telemetry; JRC Global Surface Water; MERIT Hydro (validation only).
 
 
-## Quickstart
+## Repo map
+
+| Path | What it holds |
+|---|---|
+| `app/` | The web app: Next.js 16 (App Router) + bun + MapLibre — `src/` (Command Center UI; data reader `src/lib/data.ts`), `public/data/` (bundled last-resort copy of the artifacts), `docs/`, `submission/` (Space Apps texts) |
+| `pipeline/` | `tp/` processing package, `scripts/` thin CLIs numbered in run order, `fetch/` downloaders, `tests/` |
+| `live/` | "Modo agora" live pipeline — `run_now.py`, `jobs.py` (scheduled job orchestrator), fetch/render/publish/alerts |
+| `gee/` | Earth Engine scripts — JS (Code Editor) plus Python ports (`python -m gee.tpi --case …`); asset namespace in `gee/README.md` |
+| `ml/` | Experimental XGBoost trigger/susceptibility model + `lead_time.py` |
+| `tools/` | `publish_case.py` (per-case app bundle), `build_manifest.py` (root manifest, always last), `build_sqlite.py`, `ingest_assets.py`, `now_tpi.py` |
+| `data/` | Published artifacts (COG/GeoJSON/JSON per case + `now/`); contract `data/SCHEMA.md`; `data/raw/` is gitignored |
+| `events/` | One JSON per event: AOI, dates, NISAR frames |
+| `static/`, `intermediate/` | Local fallback arrays for `run_now.py --local`; pipeline intermediates |
+| `docs/` | Runbooks (`DEPLOY-VPS.md`, `EARTHDATA_TOKEN.md`), `replay-v2.md`, `science-review/` |
+| `.github/workflows/` | `now.yml` (live job every ~3 h), `now-watchdog.yml`, `nisar.yml`, `validation.yml`, `reference.yml`, `app-ci.yml`, `app-keepalive.yml` |
+| repo root | `pyproject.toml` / `uv.lock` / `Makefile` / `config.yaml` (pipeline toolchain); `Dockerfile` + `.dockerignore` (builds `app/`; the build context is the repo root) |
+
+## Quick start
+
+Pipeline (repo root; Python via [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-uv sync                    # creates .venv (Python 3.12 via the Makefile)
-uv run pytest pipeline/tests gee/tests live/tests ml/tests   # 1046 tests, no creds needed
-make test                  # the same tests + ruff (ruff currently reports lint findings)
+uv sync                                                    # creates .venv
+uv run pytest pipeline/tests gee/tests live/tests ml/tests # 1024 passed, no credentials needed
 make all CASE=rs_2024      # replay chain for one case (rs_2024 | wa_2025)
 make now                   # live "modo agora" chain (live/jobs.py now)
 ```
 
-Every Python step runs through `uv run`. Steps that need credentials print
-`SKIP <step>: missing <var>` and the chain still exits 0 — a bare
-`env -i make all CASE=rs_2024` exercises the whole wiring with no secrets.
+`make test` runs the same tests plus the ruff linter, which currently reports lint findings. Steps that need credentials print `SKIP <step>: missing <var>` and the chain still exits 0 — a bare `env -i make all CASE=rs_2024` exercises the whole wiring with no secrets. Replay chain order (`make all`): GEE TPI series → HAND → impact → NISAR fetch → terrain → flood mask → polygonize → OPERA+HLS validation → perfect-forecast layers → landslide hit-rate → HLS scar → lead time → case publish → root manifest (always last — `data/SCHEMA.md` explains why).
 
-Replay chain order (`make all`): GEE TPI series → HAND → impact → NISAR fetch
-→ terrain → flood mask → polygonize → OPERA+HLS validation → perfect-forecast
-layers → landslide hit-rate → HLS scar → lead time → case publish → root
-manifest (always last — `data/SCHEMA.md` explains why).
+Web app (`app/`, [bun](https://bun.sh)):
+
+```bash
+cd app
+bun install --frozen-lockfile
+bun test                   # 785 pass, 0 fail
+bun run build              # prebuild syncs the repo-root data/ into app/public/data
+bun run start              # production server on :3000 (bun run dev for development)
+```
+
+Container (repo root): `docker build -t tipping-point-app .` (or `podman build`), then run it as in [`docs/DEPLOY-VPS.md`](docs/DEPLOY-VPS.md); `/api/health` answers 200.
 
 ## Credentials
 
@@ -88,19 +100,6 @@ Cloud Storage bucket (ruling L10): `tools/export_fallback.py` renders
 fallback files locally into `data/`, and the live workflow pushes `data/`
 to the orphan branch `fallback`, which the app reads via
 `DATA_BASE_URL=https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`.
-
-## Layout
-
-| Dir | Contents |
-| --- | --- |
-| `pipeline/` | `tp/` package (processing logic), `scripts/` thin CLIs numbered in run order, `fetch/` downloaders, `tests/` |
-| `gee/` | Earth Engine scripts — JS (Code Editor) plus Python ports (`python -m gee.tpi --case …`). See `gee/README.md` for the asset namespace |
-| `live/` | "Modo agora" live pipeline — `run_now.py`, `jobs.py` (scheduled job orchestrator), fetch/render/publish/alerts |
-| `ml/` | XGBoost susceptibility model + `lead_time.py` (warning lead vs an anchor report) |
-| `tools/` | `publish_case.py` (per-case app bundle), `build_manifest.py` (root manifest, always last), `ingest_assets.py`, `now_tpi.py`, `build_simular.py` |
-| `data/` | Published artifacts (COG/GeoJSON/JSON per case + `now/`). `data/raw/` is gitignored. Contract: `data/SCHEMA.md` |
-| `events/` | One JSON per event: AOI, dates, NISAR frames |
-| `static/` | Local fallback arrays for `run_now.py --local` |
 
 ## Domains and the rain climatology
 
@@ -352,6 +351,10 @@ features only and is **not** a TPI index input.
   an IMERG *Final* climatology (`live/build_clim.py`), so Now R is likely
   inflated (Early was 1.34× Final in the RS 2024 test); a Final-consistent
   or Early-based climatology is the fix after submission.
+
+## License and team
+
+Apache-2.0 (see `LICENSE`). Team [TEAM NAME], Local Event Florianópolis — NASA Space Apps Challenge 2026, challenge #5 "Dancing with the SARs".
 
 ## Use of AI
 
