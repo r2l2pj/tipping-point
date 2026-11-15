@@ -9,6 +9,8 @@ import {
 } from "maplibre-gl";
 import { setRadarLook, useCompareMode, useRadarLook, useWaterUrl } from "./useWaterRed";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
+import { FOOTPRINT_LEGEND, footprintFromAlpha } from "./model/footprint";
+import { drawFootprint, footprintOf } from "./useFootprint";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { boundsToImageCoordinates } from "@/lib/tpi";
 import { cameraPatch, clipPathFor, dragStep, pctFromClientX, SWIPE_MAX_PCT, SWIPE_MIN_PCT } from "@/lib/swipe";
@@ -105,6 +107,13 @@ export default function CompareOverlay({
             changeBlocked: changeBlocked || (!pair.before.url || !pair.after.url ? "Both NISAR passes must be published" : undefined),
             onChange: (v) => { if (v === "change") setMode("change"); else { setMode("side"); setRadarLook(v); } },
           } : undefined} />
+      )}
+      {sidesCtl && anyRadar && !changeOn && (
+        <span className="pointer-events-none absolute z-30 flex items-center gap-1 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-semibold text-cc-ink shadow"
+          style={{ left: "calc(var(--cc-il, 0px) + 14px)", bottom: `calc(var(--cc-ib, 0px) + ${look === "water" ? 128 : 96}px)`, maxWidth: "calc(100% - 28px)" }} data-footprint-legend>
+          <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm border-2" style={{ borderColor: "#ff1f1f", boxShadow: "0 0 0 1px #141414" }} />
+          {FOOTPRINT_LEGEND}
+        </span>
       )}
       {sidesCtl && anyRadar && !changeOn && look === "water" && (
         <span className="pointer-events-none absolute z-30 flex items-center gap-1 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-semibold text-cc-ink shadow"
@@ -323,6 +332,10 @@ function CompareMaps({
         const coords = frameCoordinates(side);
         if (!coords) { console.warn("compare: frame without bounds, not drawn", side.label); continue; }
         try { src.updateImage({ url: side.url, coordinates: coords }); } catch { /* keep the old image */ }
+        const mm = m;
+        if (mm && (side.pol || side.sensor) && side.bounds && side.bounds.length === 4) {
+          void footprintOf(side.url, side.bounds as [number, number, number, number]).then((poly) => drawFootprint(mm, "swipe-footprint", poly));
+        }
       }
     }
   }, [pair, pair.before.url, pair.after.url]);
@@ -410,6 +423,11 @@ function CompareMaps({
         console.warn("compare: frame without bounds, not drawn", side.label);
       }
       if (map.getSource("swipe-image")) map.addLayer({ id: "swipe-image", type: "raster", source: "swipe-image" });
+      // Lucas: the red outline of the NISAR swath on a radar side.
+      if ((side.pol || side.sensor) && side.url && side.bounds && side.bounds.length === 4) {
+        const bb = side.bounds as [number, number, number, number];
+        void footprintOf(side.url, bb).then((poly) => drawFootprint(map, "swipe-footprint", poly));
+      }
       // NASA OPERA surface water (DSWx) polygons as a side of their own.
       if (side.geojson) {
         map.addSource("swipe-geo", { type: "geojson", data: side.geojson });
@@ -532,7 +550,7 @@ function CompareMaps({
 // NISAR flood candidates toggle on top.
 function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void }) {
   const el = useRef<HTMLDivElement>(null);
-  const [img, setImg] = useState<{ url: string; bounds: ChangeBBox; stats: string } | { error: string }>();
+  const [img, setImg] = useState<{ url: string; bounds: ChangeBBox; stats: string; footprint?: GeoJSON.Polygon } | { error: string }>();
   const [showFlood, setShowFlood] = useState(true);
   const mapRef = useRef<MapLibreMap | null>(null);
 
@@ -566,7 +584,9 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void 
       c.getContext("2d")!.putImageData(new ImageData(out, after.width, after.height), 0, 0);
       let opaque = 0;
       for (let k = 3; k < out.length; k += 4) if (out[k]) opaque++;
-      if (alive) setImg({ url: c.toDataURL("image/png"), bounds: ab as ChangeBBox, stats: `${after.width}x${after.height} opaque ${opaque}` });
+      // Lucas: the red outline of where BOTH passes imaged (the composite's alpha).
+      const footprint = footprintFromAlpha(out, after.width, after.height, ab as ChangeBBox);
+      if (alive) setImg({ url: c.toDataURL("image/png"), bounds: ab as ChangeBBox, stats: `${after.width}x${after.height} opaque ${opaque}`, footprint });
     }).catch(() => { if (alive) setImg({ error: "Could not read the two radar images for the change view" }); });
     return () => { alive = false; };
   }, [pair.before.url, pair.after.url, pair.before.bounds, pair.after.bounds]);
@@ -578,6 +598,7 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void 
     map.on("load", () => {
       map.addSource("change-image", { type: "image", url: img.url, coordinates: boundsToImageCoordinates(img.bounds) });
       map.addLayer({ id: "change-image", type: "raster", source: "change-image", paint: { "raster-opacity": 0.95 } });
+      drawFootprint(map, "change-footprint", img.footprint);
       if (pair.flood) {
         map.addSource("change-flood", { type: "geojson", data: pair.flood.url });
         map.addLayer({ id: "change-flood-fill", type: "fill", source: "change-flood", paint: { "fill-color": FLOODED_FILL, "fill-opacity": FLOODED_OPACITY } });
@@ -620,6 +641,10 @@ function ChangeMap({ pair, onClose }: { pair: ComparePair; onClose?: () => void 
           <span className="inline-block h-3 w-3 rounded-sm" style={{ background: "#d0262a" }} />Red: radar got darker = likely new water
           <span className="inline-block h-3 w-3 rounded-sm" style={{ background: "#30d0d0" }} />Cyan: got brighter
           <span className="inline-block h-3 w-3 rounded-sm" style={{ background: "#8a8a8a" }} />Grey: no change
+        </span>
+        <span className="flex items-center gap-1" data-footprint-legend>
+          <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm border-2" style={{ borderColor: "#ff1f1f", boxShadow: "0 0 0 1px #141414" }} />
+          {FOOTPRINT_LEGEND}
         </span>
         <span className="sr-only">{CHANGE_LEGEND}</span>
         {pair.flood && (

@@ -29,6 +29,8 @@ import { WATER_RED_LEGEND } from "./model/waterRamp";
 import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
 import { useFloodNisar } from "./useFloodNisar";
 import { useRadarPassRequest } from "./useRadarPick";
+import { drawFootprint, useFootprint } from "./useFootprint";
+import { FOOTPRINT_LEGEND } from "./model/footprint";
 import type { ComparePair } from "./model/radar";
 import { assetUrl } from "@/lib/layers";
 import { caseDirOf } from "./model/lazy";
@@ -173,6 +175,13 @@ export default function MapStage({
   // missing side (zoomed out, or a pass that does not fill the window).
   const swathNote = rFrame && viewBox
     ? swathEdgeNote(rFrame.pass, rFrame.bounds, bundle.bbox as LonLatBox | undefined, viewBox) : undefined;
+  // Lucas: a red outline around the NISAR swath (where the radar looked).
+  const radarFootprint = useFootprint(radarOn ? rFrame?.url : undefined, rFrame?.bounds);
+  useEffect(() => {
+    if (!map) return;
+    const run = () => drawFootprint(map, "tp-radar-footprint", radarOn ? radarFootprint : undefined, "tp-flood-fill");
+    if (map.isStyleLoaded()) run(); else map.once("load", run);
+  }, [map, radarOn, radarFootprint]);
   // Lucas: 'Water in red' (default) recolours the frame — darker = redder.
   const radarLook = useRadarLook();
   const radarUrl = useWaterUrl(rFrame?.url, rFrame?.stretch, radarLook === "water");
@@ -474,6 +483,10 @@ export default function MapStage({
                 className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${radarLook === k ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>{label}</button>
             ))}
           </div>
+          <span className="flex items-center gap-1 text-[11px] font-medium text-cc-muted" data-footprint-legend>
+            <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm border-2" style={{ borderColor: "#ff1f1f", boxShadow: "0 0 0 1px #141414" }} />
+            {FOOTPRINT_LEGEND}
+          </span>
           {radarLook === "water" ? (
             <span className="flex items-center gap-1 text-[11px] font-medium text-cc-muted" data-water-legend>
               <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm" style={{ background: "linear-gradient(90deg,#9a9a9a,#ff1f1f)" }} />
