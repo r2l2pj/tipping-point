@@ -162,6 +162,38 @@ def terrain_checks(slope: np.ndarray, t_slide: np.ndarray) -> dict:
     }
 
 
+HAND_90M = LOCAL_STATIC / "south_brazil" / "terrain" / "hand_90m.tif"
+
+
+def hand_block_mean(path: Path, bounds: tuple[float, ...] = NOW_BOUNDS,
+                    res_deg: float = 0.01) -> np.ndarray | None:
+    """3 arc-sec HAND proxy (z - focalMin(z, 1500 m), NASADEM) -> mean per
+    0.01 deg dst cell. The 90 m grid nests exactly (12 x 12 px per cell),
+    so this is a chunked block mean, no warping. None if the file does not
+    match the NOW grid."""
+    import rasterio
+    from rasterio.windows import Window
+
+    w, s, e, n = bounds
+    with rasterio.open(path) as ds:
+        k = res_deg / ds.res[0]
+        if (abs(k - round(k)) > 1e-6 or abs(ds.bounds.left - w) > 1e-6
+                or abs(ds.bounds.top - n) > 1e-6):
+            return None
+        k = int(round(k))
+        H, W = ds.height // k, ds.width // k
+        out = np.full((H, W), np.nan)
+        for r0 in range(0, H, 50):
+            r1 = min(H, r0 + 50)
+            blk = ds.read(1, window=Window(0, r0 * k, W * k, (r1 - r0) * k),
+                          masked=True).astype(np.float64).filled(np.nan)
+            with np.errstate(invalid="ignore"), __import__("warnings").catch_warnings():
+                __import__("warnings").simplefilter("ignore", RuntimeWarning)
+                out[r0:r1] = np.nanmean(
+                    blk.reshape(r1 - r0, k, W, k), axis=(1, 3))
+    return out
+
+
 def _terrain() -> tuple[np.ndarray, np.ndarray, dict] | None:
     """T_slide/T_flood DERIVED from the static-v1 slope_deg + hand_m COGs
     (same formulas as live/tpi.py). Precomputed t_*.tif files are never
@@ -173,9 +205,17 @@ def _terrain() -> tuple[np.ndarray, np.ndarray, dict] | None:
     if slope is None or hand is None:
         return None
     slope, hand = slope[0], hand[0]
+    hand_source = "static-v1 hand_m.tif (0.01 deg)"
+    if HAND_90M.exists():          # fetched + cached by now.yml (R2 uses it too)
+        h90 = hand_block_mean(HAND_90M)
+        if h90 is not None and h90.shape == hand.shape:
+            hand = np.where(np.isfinite(h90), h90, hand)
+            hand_source = "static-v1 hand_90m.tif, 12x12 block mean"
     t_slide = terrain_slide(slope)
     t_flood = terrain_flood(hand, slope)
-    return t_slide, t_flood, terrain_checks(slope, t_slide)
+    checks = terrain_checks(slope, t_slide)
+    checks["hand_source"] = hand_source
+    return t_slide, t_flood, checks
 
 
 CLIM_REFERENCE = Path(__file__).with_name("clim_reference.json")

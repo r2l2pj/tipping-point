@@ -255,3 +255,28 @@ def test_clim_reference_is_independent_and_has_3_points():
     assert len(ref["points"]) >= 3 and ref["doy"] == 320
     lats = sorted(p["lat"] for p in ref["points"].values())
     assert lats[-1] - lats[0] > 5               # spread N-S: catches row scrambles
+
+
+def test_hand_block_mean_nests_12x12(tmp_path):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+    from live.static_fetch import hand_block_mean
+    res = 0.01 / 12
+    arr = np.arange(24 * 36, dtype="float32").reshape(24, 36)
+    arr[0, 0] = np.nan
+    p = tmp_path / "h.tif"
+    with rasterio.open(p, "w", driver="GTiff", width=36, height=24, count=1, dtype="float32",
+                       crs="EPSG:4326", nodata=np.nan,
+                       transform=from_origin(-58.0, -22.5, res, res)) as ds:
+        ds.write(arr, 1)
+    out = hand_block_mean(p, bounds=(-58.0, -22.52, -57.97, -22.5))
+    assert out.shape == (2, 3)
+    want = np.nanmean(arr[12:24, 12:24])
+    assert np.isclose(out[1, 1], want)
+    assert np.isfinite(out[0, 0])                 # NaN pixels ignored
+    off = tmp_path / "off.tif"                    # misaligned grid -> None
+    with rasterio.open(off, "w", driver="GTiff", width=36, height=24, count=1, dtype="float32",
+                       crs="EPSG:4326", transform=from_origin(-57.9, -22.5, res, res)) as ds:
+        ds.write(arr, 1)
+    assert hand_block_mean(off) is None
