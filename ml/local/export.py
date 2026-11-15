@@ -517,7 +517,18 @@ def ml_card_v2(met: dict) -> dict:
                              "~5x lower than TEST (~0.62): base rates differ and TEST events are large, "
                              "well-defined storms. An independent overfit audit is checking whether "
                              "TEST is easier by design; read TEST next to VAL."),
-        "headline_status": "held: independent overfit audit pending",
+        "headline_status": ("audited: no leakage; scores overstate everyday skill (extreme-storm "
+                            "test set); similar to a simple rain-threshold rule"),
+        "audit": {
+            "source": ".crew/research/overfit-audit.md (independent overfit audit, 2026-11-15; L40)",
+            "verdict": "no leakage or overfitting found; TEST = curated mega-storms, so TEST scores "
+                       "overstate operational skill; ML is about as good as a rain/P99 threshold rule",
+            "per_event_roc_median": 0.93,
+            "pooled_pr_auc": 0.62, "pooled_pr_auc_ci90_event_bootstrap": [0.40, 0.79],
+            "val_pr_auc": 0.13, "val_base_rate": 0.04,
+            "alarm_days_per_site_year": "about 4-5",
+            "share_catalogued_slides_hit": "2-10 %",
+        },
     })
     card["split"]["3a"] = ("v2 (L32): TRAIN/VAL = GLC landslides in ~50 km blocks, S+SE Brazil, "
                            "no RS 2024 points; TEST = held-out Brazilian event slides vs random land")
