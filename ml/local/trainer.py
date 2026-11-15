@@ -84,14 +84,23 @@ def train_3a(*, balanced: bool = False) -> dict:
     entries["rule_slope"] = _calibrated({"kind": "rule", "model": None, "cols": ["slope"]},
                                         SC.slope_rule(va.slope), va.label.to_numpy())
     joblib.dump({"task": "3a", "entries": entries, "groups": groups}, _bundle_path("3a"))
-    xgb = entries["xgb_all"]
+    save_t_ml_model(entries, len(tr), len(va))
+    return {k: v["val"] for k, v in entries.items()}
+
+
+def save_t_ml_model(entries: dict, n_train: int, n_val: int) -> str:
+    """Serving T_ML = the XGB ablation with the best VAL PR-AUC (never TEST)."""
+    xgbs = {k: e for k, e in entries.items() if e["kind"] == "xgb"}
+    name = max(xgbs, key=lambda k: (xgbs[k]["val"].get("pr_auc") or -1))
+    xgb = xgbs[name]
     M.save_xgb(xgb["model"], S.MODEL_DIR / "t_ml_xgb.json", {
-        "task": "3a susceptibility T_ML", "features": cols_all,
+        "task": "3a susceptibility T_ML", "model": name, "selected_by": "best VAL PR-AUC",
+        "features": xgb["cols"],
         "calibrator": xgb["cal"].to_dict(), "threshold_val_f1": xgb["thr"],
-        "n_train": len(tr), "n_val": len(va),
+        "n_train": n_train, "n_val": n_val,
         "neg_ratio": S.NEG_RATIO_3A, "seed": S.SEED,
     })
-    return {k: v["val"] for k, v in entries.items()}
+    return name
 
 
 def _score(entry: dict, df: pd.DataFrame) -> np.ndarray:

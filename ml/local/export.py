@@ -43,13 +43,22 @@ def _windows(bbox, step_deg: float = 1.0):
         y = y0
 
 
-def export_t_ml(*, bbox=S.REGION_SERVE, model: str = "xgb_all", write_90m: bool = False,
+def best_val_model(entries: dict) -> str:
+    """3a model for the T_ML layer: highest VAL PR-AUC (never chosen on TEST)."""
+    cands = {k: (e.get("val") or {}).get("pr_auc") for k, e in entries.items() if e.get("kind") != "rule"}
+    cands = {k: v for k, v in cands.items() if v is not None}
+    return max(cands, key=cands.get) if cands else "xgb_all"
+
+
+def export_t_ml(*, bbox=S.REGION_SERVE, model: str | None = None, write_90m: bool = False,
                 out: Path | None = None) -> Path:
     from . import sources_dynamic as D
     from . import sources_static as ST
 
     b = joblib.load(S.path("models", "bundle_3a.joblib"))
+    model = model or best_val_model(b["entries"])
     e = b["entries"][model]
+    log.info("t_ml model: %s (best VAL PR-AUC)", model)
     res = S.RES_STATIC_DEG
     w, s, ee, n = bbox
     W1 = round((ee - w) / S.RES_EXPORT_1KM_DEG)
@@ -87,7 +96,8 @@ def export_t_ml(*, bbox=S.REGION_SERVE, model: str = "xgb_all", write_90m: bool 
         log.info("t_ml window %.0f,%.0f done", x0, y0)
     tr_km = from_origin(w, n, S.RES_EXPORT_1KM_DEG, S.RES_EXPORT_1KM_DEG)
     _write_cog(out, km, tr_km, desc="t_ml", nodata=np.nan)
-    write_t_ml_png(km, tr_km, bbox)
+    write_t_ml_png(km, tr_km, bbox, model=model,
+                   val_pr_auc=(e.get("val") or {}).get("pr_auc"))
     if tmp90 is not None:
         tmp90.close()
         with rasterio.open(out.with_name("t_ml_90m.tmp.tif")) as src:
@@ -101,7 +111,8 @@ def export_t_ml(*, bbox=S.REGION_SERVE, model: str = "xgb_all", write_90m: bool 
 T_ML_BREAKS = (0.2, 0.4, 0.6)   # same class breaks + palette as TPI (Baixo..Crítico)
 
 
-def write_t_ml_png(km: np.ndarray, transform, bbox) -> Path:
+def write_t_ml_png(km: np.ndarray, transform, bbox, model: str = "xgb_all",
+                   val_pr_auc: float | None = None) -> Path:
     """data/ml/t_ml.png (EPSG:3857 RGBA, TPI palette) + data/ml/t_ml.json (bounds, legend)."""
     from live.config import LABELS, PALETTE_HEX
     from live.render import layer_png_3857
@@ -116,6 +127,7 @@ def write_t_ml_png(km: np.ndarray, transform, bbox) -> Path:
         "layer": "t_ml", "png": "ml/t_ml.png", "cog": "cog/t_ml.tif",
         "png_crs": "EPSG:3857", "bounds_lonlat": bounds, "cog_crs": "EPSG:4326",
         "cog_res_deg": S.RES_EXPORT_1KM_DEG, "domain_bbox": list(bbox),
+        "model": model, "model_selected_by": "best VAL PR-AUC", "val_pr_auc": val_pr_auc,
         "value": "calibrated landslide susceptibility 0-1 (3a T_ML, XGBoost; 90 m model "
                  "block-averaged to 0.01°). Relative, not an absolute frequency: trained "
                  "case-control 1:3.",
@@ -167,10 +179,13 @@ def export_metrics(case: str = "rs_2024") -> dict:
         "rf_auc": auc("rf_all"), "xgb_auc": auc("xgb_all"), "rule_auc": auc("rule_slope"),
         "feature_importance": fi,
         "landslide_ml": {
-            "split": "TEST only (50 km blocks for 3a; held-out events for 3b, RS 2024 unseen)",
-            "t_ml": {k: (v or {}).get("test") for k, v in am.items()},
-            "trigger_daily": {k: (v or {}).get("test") for k, v in (bb.get("daily") or {}).items()},
-            "trigger_horizons": bb.get("horizons"),
+            "split": "TEST only (50 km blocks for 3a; held-out events for 3b: RS 2024 + WA 2025, never seen)",
+            "detail": "ml/ml_card.json (every model / horizon / forecast source / event)",
+            "t_ml": {k: _slim((v or {}).get("test")) for k, v in am.items()},
+            "trigger_gfs_headline": {
+                h: {k: _slim(((d.get("gfs") or {}).get(k) or {}).get("test"))
+                    for k in ("xgb_all", "rf_all", "rule_tpi")}
+                for h, d in (bb.get("horizons") or {}).items() if isinstance(d, dict)},
         },
     }
     reasons = {k: "3a model not evaluated yet (run `python -m ml.local evaluate`)"
@@ -180,6 +195,9 @@ def export_metrics(case: str = "rs_2024") -> dict:
         "ml_rain": "GPM IMERG V07 (NASA POWER IMERG_PRECTOT points; GES DISC OPeNDAP grids)",
         "ml_soil": "SMAP L4 SPL4SMGP 008 + SPL4SMLM 008", "ml_terrain": "NASADEM_HGT 001",
         "ml_landcover": "MCD12Q1 061", "ml_ndvi": "VNP13C2 002"}, path=DATA_OUT / "metrics.json")
+    # merge_metrics escapes non-ASCII; restore the file's own format so only ML keys diff
+    mp = DATA_OUT / "metrics.json"
+    mp.write_text(json.dumps(json.loads(mp.read_text()), indent=2, ensure_ascii=False) + "\n")
     mldir = DATA_OUT / "ml"
     mldir.mkdir(parents=True, exist_ok=True)
     if b3a and a.get("importance"):
@@ -245,3 +263,79 @@ def ml_card(met: dict) -> dict:
                                     for r, m in (v.get("by_region") or {}).items()}}
                 for name, v in blk.items()}
     return card
+
+
+SERVE_BANDS = (S.TERRAIN + S.LANDCOVER + S.SOIL_TEXTURE + ["p99_daily", "p99_3day"])
+
+
+def p99_power_lattice(bbox, step: float = 0.5):
+    """(p99_daily(lat, lon), p99_3day(lat, lon)) interpolators from POWER on a lattice."""
+    from scipy.interpolate import RegularGridInterpolator
+
+    from . import sources_dynamic as D
+
+    w, s, e, n = bbox
+    lats = np.arange(s + step / 2, n, step)
+    lons = np.arange(w + step / 2, e, step)
+    LA, LO = np.meshgrid(lats, lons, indexing="ij")
+    D.fetch_power_points(LO.ravel(), LA.ravel())
+    pr = D.PowerRain.load()
+    grids = [f(LO.ravel(), LA.ravel()).reshape(LA.shape) for f in (pr.p99_daily, pr.p99_3day)]
+    out = []
+    for g in grids:
+        f = RegularGridInterpolator((lats, lons), g, bounds_error=False, fill_value=None)
+
+        def at(lat, lon, f=f):
+            pts = np.column_stack([np.clip(np.ravel(lat), lats[0], lats[-1]),
+                                   np.clip(np.ravel(lon), lons[0], lons[-1])])
+            return f(pts).reshape(np.shape(lat)).astype(np.float32)
+        out.append(at)
+    return out[0], out[1]
+
+
+def export_serving_static(out: Path | None = None, bbox=S.REGION_SERVE,
+                          res: float = S.RES_EXPORT_1KM_DEG) -> Path:
+    """ml_static_now.tif — every non-dynamic input of serve.TriggerModel on the Now grid.
+
+    Bands (descriptions = names): TERRAIN (avg from 90 m), landcover (nearest),
+    ndvi, clay/sand/porosity (SPL4SMLM, nearest), p99_daily/p99_3day — the SAME
+    definition and source as training (``PowerRain``: NASA POWER IMERG_PRECTOT full
+    daily series, 99th pct), sampled on a 0.5° lattice and bilinearly interpolated
+    (p99 is a smooth climatology; a 0.1° IMERG cube over 2001-2023 = ~8.4k
+    OPeNDAP calls, ~7 h). EPSG:4326, float32, NaN.
+    lead-live builds the static/texture/p99 inputs of ``predict`` from these bands.
+    """
+    from . import sources_dynamic as D
+    from . import sources_static as ST
+
+    p99_daily_at, p99_3day_at = p99_power_lattice(bbox)
+    w, s, e, n = bbox
+    W, H = round((e - w) / res), round((n - s) / res)
+    arr = np.full((len(SERVE_BANDS), H, W), np.nan, dtype=np.float32)
+    step = 100  # 1° windows
+    for r0 in range(0, H, step):
+        for c0 in range(0, W, step):
+            h, wd = min(step, H - r0), min(step, W - c0)
+            tr = from_origin(w + c0 * res, n - r0 * res, res, res)
+            st = ST.static_on_grid(tr, (h, wd), bands=S.TERRAIN + S.LANDCOVER)
+            cl = D.climate_on_grid(tr, (h, wd))
+            lon = w + (c0 + np.arange(wd) + 0.5) * res
+            lat = n - (r0 + np.arange(h) + 0.5) * res
+            LON, LAT = np.meshgrid(lon, lat)
+            p99 = {"p99_daily": p99_daily_at(LAT, LON), "p99_3day": p99_3day_at(LAT, LON)}
+            for i, b in enumerate(SERVE_BANDS):
+                src = st.get(b) if b in st else cl.get(b) if b in cl else p99.get(b)
+                if src is not None:
+                    arr[i, r0:r0 + h, c0:c0 + wd] = src
+    out = out or S.DATA_DIR / "serve" / "ml_static_now.tif"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    prof = {"driver": "COG", "width": W, "height": H, "count": len(SERVE_BANDS),
+            "dtype": "float32", "crs": "EPSG:4326", "transform": from_origin(w, n, res, res),
+            "nodata": np.nan, "compress": "deflate"}
+    with rasterio.open(out, "w", **prof) as dst:
+        dst.write(arr)
+        for i, b in enumerate(SERVE_BANDS, start=1):
+            dst.set_band_description(i, b)
+    fin = {b: float(np.isfinite(arr[i]).mean()) for i, b in enumerate(SERVE_BANDS)}
+    log.info("ml_static_now: %s %dx%d finite %s", out, W, H, fin)
+    return out

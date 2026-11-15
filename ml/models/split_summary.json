@@ -1,0 +1,158 @@
+{
+  "3a": {
+    "buffer": {
+      "n_rows": 3107,
+      "n_events": 7,
+      "n_pos": 1197,
+      "n_neg": 1910,
+      "date_min": "2009-09-08",
+      "date_max": "2024-05-01",
+      "bbox": [
+        -57.994,
+        -33.926,
+        -39.045,
+        -14.007
+      ],
+      "regions": {
+        "south_southeast_brazil": 1197
+      }
+    },
+    "test": {
+      "n_rows": 2039,
+      "n_events": 4,
+      "n_pos": 45,
+      "n_neg": 1994,
+      "date_min": "2011-07-07",
+      "date_max": "2024-05-01",
+      "bbox": [
+        -57.999,
+        -33.956,
+        -39.034,
+        -14.007
+      ],
+      "regions": {
+        "south_southeast_brazil": 45
+      }
+    },
+    "train": {
+      "n_rows": 5679,
+      "n_events": 9,
+      "n_pos": 1770,
+      "n_neg": 3909,
+      "date_min": "2010-12-30",
+      "date_max": "2024-05-01",
+      "bbox": [
+        -58.0,
+        -33.997,
+        -39.063,
+        -14.002
+      ],
+      "regions": {
+        "south_southeast_brazil": 1770
+      }
+    },
+    "val": {
+      "n_rows": 1851,
+      "n_events": 22,
+      "n_pos": 157,
+      "n_neg": 1694,
+      "date_min": "2009-12-31",
+      "date_max": "2024-05-01",
+      "bbox": [
+        -57.989,
+        -33.42,
+        -39.0,
+        -14.007
+      ],
+      "regions": {
+        "south_southeast_brazil": 157
+      }
+    }
+  },
+  "3b": {
+    "buffer": {
+      "n_rows": 2571,
+      "n_events": 288,
+      "n_pos": 411,
+      "n_neg": 2160,
+      "date_min": "2015-04-03",
+      "date_max": "2026-10-31",
+      "bbox": [
+        -159.477,
+        -45.88,
+        176.045,
+        57.11
+      ],
+      "regions": {
+        "north_america": 198,
+        "asia": 157,
+        "europe_africa": 21,
+        "other": 14,
+        "south_southeast_brazil": 13,
+        "south_america": 8
+      }
+    },
+    "test": {
+      "n_rows": 18944,
+      "n_events": 2,
+      "n_pos": 3008,
+      "n_neg": 15936,
+      "date_min": "2015-09-27",
+      "date_max": "2025-12-14",
+      "bbox": [
+        -121.927,
+        -29.892,
+        -50.255,
+        48.651
+      ],
+      "regions": {
+        "south_southeast_brazil": 3000,
+        "north_america": 8
+      }
+    },
+    "train": {
+      "n_rows": 8623,
+      "n_events": 893,
+      "n_pos": 1235,
+      "n_neg": 7388,
+      "date_min": "2015-04-02",
+      "date_max": "2026-10-31",
+      "bbox": [
+        -179.981,
+        -45.828,
+        179.991,
+        64.793
+      ],
+      "regions": {
+        "north_america": 516,
+        "asia": 455,
+        "europe_africa": 159,
+        "other": 57,
+        "south_america": 43,
+        "south_southeast_brazil": 5
+      }
+    },
+    "val": {
+      "n_rows": 4793,
+      "n_events": 417,
+      "n_pos": 702,
+      "n_neg": 4091,
+      "date_min": "2015-04-01",
+      "date_max": "2026-10-31",
+      "bbox": [
+        -171.464,
+        -45.907,
+        176.046,
+        61.016
+      ],
+      "regions": {
+        "north_america": 341,
+        "asia": 259,
+        "europe_africa": 61,
+        "south_america": 21,
+        "other": 18,
+        "south_southeast_brazil": 2
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "model": "xgb_all (3a T_ML)",
+  "rows": [
+    {
+      "feature": "relief",
+      "group": "terrain",
+      "gain_share": 0.514736135012051,
+      "group_gain_share": 0.7337217304460815,
+      "group_permutation_pr_auc_drop": 0.36028177162581915
+    },
+    {
+      "feature": "slope",
+      "group": "terrain",
+      "gain_share": 0.1889142286835462,
+      "group_gain_share": 0.7337217304460815,
+      "group_permutation_pr_auc_drop": 0.36028177162581915
+    },
+    {
+      "feature": "sand",
+      "group": "soil_texture",
+      "gain_share": 0.1015901294114314,
+      "group_gain_share": 0.11698075064967792,
+      "group_permutation_pr_auc_drop": 0.2690543432367477
+    },
+    {
+      "feature": "rain_mean",
+      "group": "climate",
+      "gain_share": 0.08573637965814515,
+      "group_gain_share": 0.0907857069182038,
+      "group_permutation_pr_auc_drop": 0.021133331091838913
+    },
+    {
+      "feature": "ndvi",
+      "group": "landcover",
+      "gain_share": 0.057757398693667625,
+      "group_gain_share": 0.05851181198603682,
+      "group_permutation_pr_auc_drop": 0.054276187770724946
+    },
+    {
+      "feature": "elevation",
+      "group": "terrain",
+      "gain_share": 0.025564543820664445,
+      "group_gain_share": 0.7337217304460815,
+      "group_permutation_pr_auc_drop": 0.36028177162581915
+    },
+    {
+      "feature": "porosity",
+      "group": "soil_texture",
+      "gain_share": 0.007927299940253183,
+      "group_gain_share": 0.11698075064967792,
+      "group_permutation_pr_auc_drop": 0.2690543432367477
+    },
+    {
+      "feature": "clay",
+      "group": "soil_texture",
+      "gain_share": 0.007463321297993333,
+      "group_gain_share": 0.11698075064967792,
+      "group_permutation_pr_auc_drop": 0.2690543432367477
+    },
+    {
+      "feature": "soil_mean",
+      "group": "climate",
+      "gain_share": 0.005049327260058655,
+      "group_gain_share": 0.0907857069182038,
+      "group_permutation_pr_auc_drop": 0.021133331091838913
+    },
+    {
+      "feature": "curvature",
+      "group": "terrain",
+      "gain_share": 0.004064711136926417,
+      "group_gain_share": 0.7337217304460815,
+      "group_permutation_pr_auc_drop": 0.36028177162581915
+    },
+    {
+      "feature": "landcover",
+      "group": "landcover",
+      "gain_share": 0.0007544132923691879,
+      "group_gain_share": 0.05851181198603682,
+      "group_permutation_pr_auc_drop": 0.054276187770724946
+    },
+    {
+      "feature": "aspect_sin",
+      "group": "terrain",
+      "gain_share": 0.0004149671643390107,
+      "group_gain_share": 0.7337217304460815,
+      "group_permutation_pr_auc_drop": 0.36028177162581915
+    },
+    {
+      "feature": "aspect_cos",
+      "group": "terrain",
+      "gain_share": 2.7144628554452176e-05,
+      "group_gain_share": 0.7337217304460815,
+      "group_permutation_pr_auc_drop": 0.36028177162581915
+    }
+  ],
+  "rf_permutation": {
+    "terrain": 0.3180005843461156,
+    "landcover": -0.07583795993852605,
+    "climate": 0.04574394886297467,
+    "soil_texture": 0.30236359669164
+  }
+}

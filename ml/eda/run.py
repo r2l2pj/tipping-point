@@ -224,6 +224,9 @@ def rate_curves(t: pd.DataFrame, plt) -> dict:
         sb = pd.qcut(d[soil], 4, duplicates="drop")
         piv = d.groupby([rb, sb], observed=True)["label"].mean().unstack()
         cnt = d.groupby([rb, sb], observed=True)["label"].size().unstack()
+        for f in (piv, cnt):   # Interval bin labels -> str (JSON keys)
+            f.index = f.index.astype(str)
+            f.columns = f.columns.astype(str)
         out["rain_x_soil"] = {"rate": piv.round(4).astype(object).where(piv.notna(), None).to_dict(),
                               "n": cnt.astype(object).where(cnt.notna(), None).to_dict()}
         out["rain_x_soil"] = json.loads(json.dumps(out["rain_x_soil"], default=str))
