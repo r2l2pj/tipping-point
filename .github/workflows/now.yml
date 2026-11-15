@@ -245,6 +245,22 @@ jobs:
           uv run python -m live.now_manifest
           uv run python tools/build_manifest.py
 
+      # Now history (2026-11-15): the last 8 runs (24 h) as playable snapshots
+      # data/now/history/<run>/ {manifest.json, png/, summary.json} + index.json.
+      # fallback is one orphan snapshot per run, so restore the earlier runs
+      # from it first, then add this run and roll. Best-effort: never blocks
+      # the publish. Rolled-out runs are not on main, so the drop guard allows it.
+      - name: Now history (last 8 runs, best-effort)
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if git fetch -q --depth=1 origin fallback; then
+            git archive FETCH_HEAD data/now/history | tar -x \
+              || echo "::notice::no history on fallback yet - starts here"
+          fi
+          uv run python -m live.now_history --now-dir data/now
+          uv run python tools/build_manifest.py
+
       # queryable mirror of the published JSON (after every producer and
       # manifest, before publish); exits 1 if > 50 MB
       - name: Build sqlite mirror

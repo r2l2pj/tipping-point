@@ -53,3 +53,4 @@ data/static/south_brazil/clim/clim_imerg_0p1.tif
 
 # L35 upstream-basin rain cubes + IMERG per-day cache (large, re-downloadable)
 intermediate/
+data/now/history/
