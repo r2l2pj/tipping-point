@@ -229,13 +229,16 @@ def render_now(root: str | Path, *, ee_client=None, fetch=None, fetch_png=None,
                    "data_dates": node.get("data_dates", {}),
                    "critical_km2": {"slide": km2(slide), "flood": km2(flood), "any": km2(slide.Or(flood))},
                    "classes_km2": {label: km2(worst.eq(i)) for i, label in enumerate(labels)},
-                   "people_critical": exposed, "people_exposed": exposed,
-                   "people_flooded": flooded,
-                   "_null_reasons": {key: "GPW has no population coverage in the selected zone"
-                                     for key, value in {"people_critical": exposed,
-                                                        "people_exposed": exposed,
-                                                        "people_flooded": flooded}.items()
-                                     if value is None}}
+                   # people audit B3: a GEE reduceRegion at scale=1000 over the
+                   # 30" count is ~30 % low — never publish it; people come only
+                   # from the native-grid response step (tp.response_summary)
+                   "people_critical": None, "people_exposed": None, "people_flooded": None,
+                   "_unpublished_estimates": {"people_critical": exposed, "people_flooded": flooded,
+                                              "note": "GEE scale=1000 sum, ~30 % low; diagnostic only"},
+                   "_null_reasons": {k: ("people are published only from the native-grid "
+                                         "response step (GPW 30\" exact cell fractions)")
+                                     for k in ("people_critical", "people_exposed",
+                                               "people_flooded")}}
         summary_path.write_text(json.dumps(summary))
     critical_path = root / "now/geojson/critical_areas.geojson"
     if not critical_path.is_file():

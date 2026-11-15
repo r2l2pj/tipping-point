@@ -491,9 +491,15 @@ def run(args) -> dict:
         "soil_fill_note": ("L31: S at pixels whose nearest SMAP L4 cell is a "
                            "gap is taken from the nearest valid SMAP cell "
                            "within 9 km (one SMAP cell); farther stays nodata"),
-        "people_exposed": people_alert,       # Alto or Crítico, today or D+1
-        "people_alert": people_alert,
-        "people_critical": people_critical,   # A8: Crítico only, today or D+1
+        # people audit B3: the static pop on the TPI grid is a 0.01 deg GEE
+        # export of the 30" count (~30 % low) — never published; the R3
+        # response step (native-grid exact cell fractions) fills people_*
+        "people_exposed": None,
+        "people_alert": None,
+        "people_critical": None,
+        "_unpublished_people_estimates": {"people_alert": people_alert,
+                                          "people_critical": people_critical,
+                                          "note": "0.01 deg GEE pop, ~30 % low; diagnostic only"},
         "forecast_source": "noaa-gfs",        # v4 metrics key (D+1..D+3)
         "imerg_source": imerg_source,         # honest stand-in labeling
         "classes_km2": classes_km2,
