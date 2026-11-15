@@ -90,14 +90,27 @@ the RS 24 h hit rate by at most −2 points (36.45 → 34.25 %). Re-run it on v2
   - Flooded urban and forest do *not* brighten by 3 dB. Double bounce cancels the specular
     darkening, so these pixels stay near their bright baseline.
   - Closing the gap needs HV, texture or land-cover-aware detection, not the bright layer.
-- **GUNW coherence change (W-coh).** *See §2.1. Added at 14:45 if it landed; otherwise listed as
-  open.*
+- **GUNW coherence change (W-coh)** — see §2.1.
 - **SME2 soil moisture (W-sme2).** Cut at 12:50 to free memory for the Uruguay stack. Not done.
   It stays the cheapest NISAR-in-the-index next step (`.crew/research/nisar-core-options.md`).
 
-### 2.1 Coherence loss (W-coh)
+### 2.1 Coherence loss (W-coh, `nisar_coherence.json`, metrics `wa.nisar_coh_*`)
 
-*Pending at the time of writing.*
+- **Data.** NISAR L2 GUNW Beta, track 172 D frames 064/065. The reference pair is Nov 22 → Dec 4,
+  the event pair Dec 4 → Dec 16. Coherence is reprojected to the 60 m grid (EPSG:32610).
+- **Rule.** Coherence-loss candidates need coh_ref ≥ 0.4 and Δcoh ≥ 0.3 (config
+  `coherence_ref_min` / `coherence_drop`), with water and high-elevation snow excluded.
+- **Result.** 1,877 km² of loss (309.6 km² on slopes ≥ 15°), in 4,362 candidate polygons.
+- **Overlap with the NISAR flood candidates: 0 %.** The flood pixels are water-masked. Overlap with
+  OPERA new water is 8 km².
+- **Landslides.** 10 of 15 WGS points lie within 100 m of a loss polygon, but a random placement
+  scores 60.9 %. At 500 m it is 15/15 against a 100 % baseline. **No landslide-specific skill:** this
+  is broad winter storm decorrelation (rain, snow, forest) of L-band over 12 days.
+- **Use.** Published as `nisar_extra` layers (`nisar_coherence_loss`, `nisar_coherence_event`)
+  labelled Beta and candidates. Do not use it as landslide evidence.
+- **Bugs fixed during the work.** A WarpedVRT 4326→32610 path returned 97 % false water, and a
+  nearest-reproject denormal leaked through. Both are fixed and reported in
+  `.herdr/implement-nisar-coh.md`.
 
 ---
 
@@ -220,7 +233,7 @@ it lands the app shows "No frames published yet".
 2. Replay people for the GFS layers is fixed, but `scar_people` still uses centroid density.
 3. The `_compact_geojson` MultiPoint path should be audited. The catalogs are fine: one MultiPoint
    holding 16,027 / 15 points.
-4. NISAR coherence (if W-coh missed 14:45) and SME2.
+4. NISAR SME2 into S (cut today), and coherence with a snow/forest-aware threshold.
 5. TWI/HAND downscaling of S, tested against EMS and NISAR, kept only if it beats bilinear.
 6. 082 D / 010 D paddy-versus-river separation with MapBiomas.
 7. The Uruguay TPI replay with IMERG Final once it is released (about 3.5 months of latency).
