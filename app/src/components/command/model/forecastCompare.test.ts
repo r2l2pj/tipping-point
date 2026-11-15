@@ -160,9 +160,11 @@ describe("forecast compare state", () => {
     expect(forecastCompare(rs(), DAYS[s.dayIndex], s.hazard, s.issueLead).pair?.lead).toBe(1);
   });
 
-  test("compare=radar is untouched; forecast opens and closes like it", () => {
+  test("compare=radar maps onto the generic compare (nisar sides); forecast opens and closes like it", () => {
     const r = initialState(cases, "rs_2024", undefined, { compare: "radar" });
-    expect(r.compareOpen).toBe("radar");
+    expect(r.compareOpen).toBe("forecast");
+    expect(r.compareSides?.L.layer).toBe("nisar");
+    expect(r.compareSides?.R.layer).toBe("nisar");
     const s = reduce(initialState(cases), { type: "openCompare", kind: "forecast" }, cases);
     expect(s.compareOpen).toBe("forecast");
     expect(s.playing).toBe(false);
@@ -178,6 +180,26 @@ describe("forecast compare state", () => {
     const moved = reduce(s, { type: "seek", index: 3 }, cases);
     expect(moved.compareOpen).toBe("forecast");
     expect(moved.dayIndex).toBe(3);
+  });
+
+  // Lucas (step 2): ?compare=1&L=<layer>:<date>[:..]&R=… — the named sides.
+  test("?compare=1 seeds the named sides; a bad spec falls back to the defaults", () => {
+    const s = initialState(cases, "rs_2024", "2024-05-03", { compare: "1", l: "flood:2024-05-03:2", r: "flood:2024-05-03" });
+    expect(s.compareOpen).toBe("forecast");
+    expect(s.compareSides?.L).toEqual({ layer: "flood", date: "2024-05-03", lead: 2 });
+    expect(s.compareSides?.R).toEqual({ layer: "flood", date: "2024-05-03", lead: 0 });
+    const sat = initialState(cases, "rs_2024", undefined, { compare: "1", l: "satellite:2024-05-01", r: "nisar:2024-05-03:HV" });
+    expect(sat.compareSides?.L.layer).toBe("satellite");
+    expect(sat.compareSides?.R).toMatchObject({ layer: "nisar", date: "2024-05-03", pol: "HV" });
+    const bad = initialState(cases, "rs_2024", "2024-05-03", { compare: "1", l: "bogus:2024-05-03", r: "flood:2024-05-03" });
+    expect(bad.compareOpen).toBe("forecast");
+    expect(bad.compareSides?.L.layer).not.toBe("bogus"); // defaults instead
+  });
+
+  test("?compare=forecast&lead=k&day=D seeds forecast-vs-observed sides", () => {
+    const s = initialState(cases, "rs_2024", "2024-05-03", { compare: "forecast", lead: "2" });
+    expect(s.compareSides?.L).toEqual({ layer: "flood", date: "2024-05-03", lead: 2 });
+    expect(s.compareSides?.R).toEqual({ layer: "flood", date: "2024-05-03", lead: 0 });
   });
 });
 

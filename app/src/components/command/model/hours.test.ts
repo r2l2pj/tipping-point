@@ -20,10 +20,14 @@ test("hour chips only where 6-hourly frames exist; hours of the selected day", (
   expect(hourLabel(hourFrameFor(b, "flood", "2026-09-30", "06")!)).toBe("Sep 30, 03:00 BRT");
 });
 
-test("setCompareDates moves the swipe dates (Radar card chips)", async () => {
+test("setCompareDates moves the swipe dates (Radar card chips → generic compare sides)", async () => {
   const { reduce, initialState } = await import("../state");
-  const s = reduce(initialState([b]), { type: "setCompareDates", before: "2026-09-18", after: "2026-11-05" }, [b]);
-  expect(s.compareInit).toMatchObject({ before: "2026-09-18", after: "2026-11-05" });
+  const open = reduce(initialState([b]), { type: "openCompare", kind: "forecast" }, [b]);
+  const s = reduce(open, { type: "setCompareDates", before: "2026-09-18", after: "2026-11-05" }, [b]);
+  expect(s.compareSides).toMatchObject({
+    L: { layer: "nisar", date: "2026-09-18" },
+    R: { layer: "nisar", date: "2026-11-05" },
+  });
 });
 
 test("6-hourly frames never stand in for a day's frame or create steps", async () => {

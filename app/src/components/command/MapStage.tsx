@@ -15,7 +15,8 @@ import MapTools from "./MapTools";
 import { pinAreas, type PriorityArea } from "./model/areas";
 import { BASEMAP_LABEL, BASEMAP_ORDER } from "./model/basemap";
 import { STATUS_WORD, type DataStatus } from "./model/dataStatus";
-import { hasGfsFrames, swipeLeadsFor } from "./model/forecastCompare";
+import { hasGfsFrames } from "./model/forecastCompare";
+import { isRiskLayer } from "./model/sideCompare";
 import { fmtDate } from "./model/format";
 import { layerStateFor, overlaysFor } from "./model/layerRegistry";
 import type { ComparePair } from "./model/radar";
@@ -65,11 +66,9 @@ export default function MapStage({
   featuredCase,
   cityPin,
   cityOutline,
-  compareDefaults,
   hourFrame,
   hour,
   sidesCtl,
-  compareNisarDefaults,
 }: {
   bundle: CcBundle;
   steps: Step[];
@@ -87,14 +86,10 @@ export default function MapStage({
   // L52 replay city pick: the municipality polygon, drawn as an accent
   // outline over the frame; removed when the card closes.
   cityOutline?: GeoJSON.Feature | null;
-  // The radar pair's own pass dates: where the swipe date chips start.
-  compareDefaults?: { before?: string; after?: string };
   // Lucas: a 6-hourly TPI frame picked with the timeline hour chips.
   hourFrame?: ManifestLayer;
   hour?: string | null;
   sidesCtl?: React.ComponentProps<typeof CompareOverlay>["sidesCtl"];
-  // NISAR swipe defaults around the selected day (stack dates).
-  compareNisarDefaults?: { before?: string; after?: string };
 }) {
   const [map, setMap] = useState<MapInstance | null>(null);
   const [bearing, setBearing] = useState(0);
@@ -114,7 +109,6 @@ export default function MapStage({
     [bundle, step?.date, state.hazard, state.issueLead, hour]
   );
   // L52 forecast-vs-observed swipe: leads with a full pair for the day.
-  const swipeLeads = useMemo(() => swipeLeadsFor(bundle, step?.date, state.hazard), [bundle, step?.date, state.hazard]);
   const gfsAny = useMemo(() => hasGfsFrames(bundle), [bundle]);
   const options = useMemo(
     () => ({
@@ -456,9 +450,9 @@ export default function MapStage({
         </div>
       )}
 
-      {/* L52: the TPI class colours stay readable while the forecast swipe
-          is open (both sides paint TPI frames). */}
-      {comparePair?.kind === "forecast" && (
+      {/* L52: the TPI class colours stay readable while the swipe paints a
+          TPI frame on either side. */}
+      {comparePair?.kind === "forecast" && (!sidesCtl || [sidesCtl.sides.L, sidesCtl.sides.R].some((s) => isRiskLayer(s.layer))) && (
         // Wide screens: the Layers column already shows this legend.
         <div className="absolute z-30 flex items-end gap-2 min-[900px]:hidden" style={{ right: R(14), bottom: B(12) }}>
           <Legend bundle={bundle} layers={["tpi"]} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact
@@ -472,9 +466,6 @@ export default function MapStage({
 
       {comparePair && (
         <CompareOverlay key={`${bundle.id}-${comparePair.kind}-${comparePair.before.url}-${comparePair.after.url}`} pair={comparePair}
-          init={{ ...state.compareInit,
-            before: state.compareInit?.before ?? compareNisarDefaults?.before ?? compareDefaults?.before,
-            after: state.compareInit?.after ?? compareNisarDefaults?.after ?? compareDefaults?.after }}
           sidesCtl={comparePair.kind === "forecast" ? sidesCtl : undefined}
           controlsRef={compare} onClose={() => dispatch({ type: "closeCompare" })} />
       )}

@@ -261,7 +261,7 @@ describe("case change", () => {
     const open = run(start, { type: "selectCase", id: "wa_2025" }, { type: "selectArea", rank: 3 },
       { type: "toggleCallout" }, { type: "openCompare", kind: "radar" }, { type: "toggleDetails" },
       { type: "toggleTable" }, { type: "toggleList" }, { type: "toggleLayersOpen" });
-    expect(open).toMatchObject({ selectedArea: 3, calloutExpanded: true, compareOpen: "radar", detailsOpen: true });
+    expect(open).toMatchObject({ selectedArea: 3, calloutExpanded: true, compareOpen: "forecast", detailsOpen: true });
     const s = run(open, { type: "selectCase", id: "rs_2024" });
     expect(s).toMatchObject({
       selectedArea: null, calloutExpanded: false, compareOpen: null, detailsOpen: false,
@@ -431,7 +431,10 @@ describe("area selection and comparison", () => {
 
   test("opening the comparison keeps the layers; closing restores the map", () => {
     const s = run(start, { type: "toggleLayer", id: "flood" }, { type: "openCompare", kind: "radar" });
-    expect(s).toMatchObject({ compareOpen: "radar", layers: ["tpi", "flood"] });
+    // 'radar' opens the generic compare on the NISAR preset — this case has
+    // no NISAR pair, so it falls back to the risk layer.
+    expect(s).toMatchObject({ compareOpen: "forecast", layers: ["tpi", "flood"] });
+    expect(s.compareSides?.L.layer).toBe("slide");
     expect(run(s, { type: "closeCompare" })).toMatchObject({ compareOpen: null, layers: ["tpi", "flood"] });
     expect(run(s, { type: "selectArea", rank: 1 }, { type: "escape" })).toMatchObject({ compareOpen: null, selectedArea: 1 });
   });

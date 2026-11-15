@@ -63,11 +63,14 @@ describe("Uruguay River flood as the main case (rs_uruguai_2026)", () => {
 });
 
 describe("recording deep links (?lead, ?compare, ?before, ?after, ?pol)", () => {
-  test("compare=radar opens the swipe with the requested dates/polarization; lead needs the TPI", async () => {
+  test("compare=radar opens the generic compare on NISAR sides with the requested dates/polarization; lead needs the TPI", async () => {
     const { initialState } = await import("./state");
     const s = initialState([bundle({ id: "wa_2025" })], "wa_2025", undefined, { compare: "radar", before: "2026-09-18", after: "2026-11-05", pol: "HV" });
-    expect(s.compareOpen).toBe("radar");
-    expect(s.compareInit).toEqual({ before: "2026-09-18", after: "2026-11-05", pol: "HV" });
+    expect(s.compareOpen).toBe("forecast");
+    expect(s.compareSides).toEqual({
+      L: { layer: "nisar", date: "2026-09-18", pol: "HV" },
+      R: { layer: "nisar", date: "2026-11-05", pol: "HV" },
+    });
     expect(initialState([bundle({ id: "wa_2025" })], "wa_2025").compareOpen).toBeNull();
     expect(initialState([bundle({ id: "wa_2025" })], "wa_2025", undefined, { lead: "9" }).issueLead).toBe(0);
   });
