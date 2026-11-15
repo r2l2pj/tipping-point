@@ -12,7 +12,7 @@ Stages (see ``ml.local.__main__``)::
 negatives 3:1 random land points > 5 km from any known landslide (seed 42).
 
 3b rows (target-day rows for the daily trigger model): dated rain-triggered GLC
-points worldwide (<= 5 km) since SMAP start + RS 2024 sample (peak-rain day)
+points worldwide (<= 5 km) since SMAP start + RS 2024 sample (fixed 2024-05-01)
 + WA 2025 dated reports (both TEST-only). Negatives:
 (a) the same point on NEG_DATES_3B no-event dates shared by its event (PLAN 3b),
 (b) one random land point 5-50 km away on the positive's day ("where" signal).
@@ -46,8 +46,7 @@ def tables_dir():
 
 # ------------------------------------------------------------------------ labels
 def build_labels(*, smoke: bool = False, force: bool = False) -> pd.DataFrame:
-    """GLC/COOLR (global) + RS 2024 + WA 2025 -> inventory.csv with event ids and RS peak days."""
-    from . import sources_dynamic as D
+    """GLC/COOLR (global) + RS 2024 + WA 2025 -> inventory.csv (RS fixed at RS2024_DATE)."""
 
     glc = L.fetch_glc(S.REGION_TRIGGER, force=force)  # global GLC/COOLR (~15k features)
     rs = L.dedupe_grid(L.load_rs2024())
@@ -59,10 +58,9 @@ def build_labels(*, smoke: bool = False, force: bool = False) -> pd.DataFrame:
     if smoke:
         rs = rs[L.in_bbox(rs["lon"], rs["lat"], S.SMOKE_BBOX)]
         rs = rs.sample(n=min(len(rs), 60), random_state=S.SEED)
-    # RS peak-rain day from IMERG at the point (NASA POWER, one call per 0.1° pixel).
-    D.fetch_power_points(rs["lon"].to_numpy(), rs["lat"].to_numpy())
-    rain = D.PowerRain.load()
-    rs = L.assign_peak_day(rs, rain.daily)
+    # Fixed event date, independent of rain (no circular peak-rain dating).
+    rs["date"] = pd.Timestamp(S.RS2024_DATE)
+    rs["date_precision"] = "event-window"
     inv = L.finalize(pd.concat([glc, rs, wa], ignore_index=True))
     path = S.path("labels", "inventory.csv")
     inv.to_csv(path, index=False)
@@ -214,19 +212,28 @@ def horizon_rows(rows: pd.DataFrame, horizons=S.HORIZONS,
                  lookback: int = LOOKBACK_DAYS) -> pd.DataFrame:
     """One shared set of issue-day rows for VAL + TEST, labels per horizon.
 
-    Positive point with event day L -> issue days D = L - j, j = 0..lookback;
-    ``label_<h>`` = 1 when the event falls inside [D, D+H-1] (j < H). Its
+    Positive point with event window [L0, L1] (``S.LABEL_WINDOWS``, else the
+    point's own day L0 = L1 = L) -> issue days D = L1 - j, j = 0..lookback;
+    ``label_<h>`` = 1 when [D, D+H-1] overlaps [L0, L1]. Its
     same-point negative dates N -> issue day D = N, every label 0 (event-free by
     the 30-day gap). Same rows for every horizon, so the base rate grows with
     the window exactly as it does operationally.
     """
     keep = rows[rows["split"].isin(["val", "test"])]
-    pos = keep[keep.label == 1]
+    pos = keep[keep.label == 1].copy()
+    d = pd.to_datetime(pos["date"])
+    w0 = d.copy()
+    w1 = d.copy()
+    for ev, (a, b) in S.LABEL_WINDOWS.items():
+        m = (pos["event_id"] == ev).to_numpy()
+        w0[m] = pd.Timestamp(a)
+        w1[m] = pd.Timestamp(b)
+    pos["win_start"], pos["win_end"] = w0.dt.normalize(), w1.dt.normalize()
     out = []
     for j in range(lookback + 1):
         g = pos.copy()
-        g["issue_date"] = g["date"] - pd.Timedelta(days=j)
-        g["lead_days"] = j
+        g["issue_date"] = g["win_end"] - pd.Timedelta(days=j)
+        g["lead_days"] = (g["win_start"] - g["issue_date"]).dt.days.clip(lower=0)
         out.append(g)
     neg = keep[(keep.label == 0) & (keep.neg_type == "same_point_other_date")].copy()
     neg["issue_date"] = neg["date"]
@@ -234,9 +241,12 @@ def horizon_rows(rows: pd.DataFrame, horizons=S.HORIZONS,
     out.append(neg)
     hz = pd.concat(out, ignore_index=True)
     hz["issue_date"] = pd.to_datetime(hz["issue_date"]).dt.normalize()
+    pos_row = hz["lead_days"] >= 0
+    end = hz["issue_date"]
     for h, H in horizons.items():
-        hz[f"label_{h}"] = ((hz["lead_days"] >= 0) & (hz["lead_days"] < H)).astype(int)
-    return hz
+        overlap = (end <= hz["win_end"]) & (end + pd.Timedelta(days=H - 1) >= hz["win_start"])
+        hz[f"label_{h}"] = (pos_row & overlap.fillna(False)).astype(int)
+    return hz.drop(columns=["win_start", "win_end"])
 
 
 def load_rows(name: str) -> pd.DataFrame:

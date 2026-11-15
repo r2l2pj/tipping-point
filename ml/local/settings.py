@@ -77,6 +77,12 @@ GLC_RAIN_TRIGGERS = ("rain", "downpour", "continuous_rain", "monsoon",
 RS2024_CATALOG = REPO_ROOT / "data" / "rs_2024" / "geojson" / "landslide_catalog.geojson"
 RS2024_EVENT_ID = "rs_2024"
 RS2024_WINDOW = (dt.date(2024, 4, 27), dt.date(2024, 5, 13))  # inventory window
+# RS points are undated. Dating each one by its own peak-rain day would take the label
+# from a model input (circular — conductor 2026-11-15). Instead: one fixed date for every
+# RS point, independent of rain, and horizon labels score "landslide within the main
+# triggering window" (Apr 29 - May 2, 2024).
+RS2024_DATE = dt.date(2024, 5, 1)
+RS2024_TRIGGER_WINDOW = (dt.date(2024, 4, 29), dt.date(2024, 5, 2))
 RS2024_MAX_POINTS = 3000   # cap so one storm does not drown every other event
 # WA 2025: Washington Geological Survey "December 2025 Atmospheric River Landslides"
 # reports (FeatureServer layer 0). Only event_date + geometry are read — the layer also
@@ -87,6 +93,8 @@ WA2025_EVENT_ID = "wa_2025"
 WA2025_WINDOW = (dt.date(2025, 12, 1), dt.date(2025, 12, 31))
 # Event-day windows excluded from same-point negative dates, per held-out event.
 EVENT_WINDOWS = {RS2024_EVENT_ID: RS2024_WINDOW, WA2025_EVENT_ID: WA2025_WINDOW}
+# Horizon-label windows for events dated by window, not per point (else [date, date]).
+LABEL_WINDOWS = {RS2024_EVENT_ID: RS2024_TRIGGER_WINDOW}
 EVENT_LINK_DAYS = 3        # GLC points within 3 days ...
 EVENT_LINK_KM = 100.0      # ... and 100 km are one event
 

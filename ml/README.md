@@ -103,8 +103,12 @@ Tests: `uv run pytest ml/tests` (offline; HTTP mocked, synthetic arrays).
 
 ## Honesty rules
 
-- RS 2024 points are undated per point: each gets the peak-24 h-rain day inside
-  the inventory window (`date_precision = "event-window"`).
+- RS 2024 points are undated per point. They are NOT dated from rain (that
+  would take the label from a model input): every RS point gets the fixed date
+  2024-05-01 for the daily table, and horizon labels score "landslide within the
+  main triggering window Apr 29 - May 2, 2024" (`RS2024_TRIGGER_WINDOW`).
+- GLC/COOLR 3b positives are 95 % from 2015-2018 (systematic ingestion stopped
+  ~2019); TEST is 2024-25 — a temporal-transfer test, reported as such.
 - GLC/COOLR is a *reported* catalog (news-based; location accuracy varies) —
   only ≤ 5 km points are used, and its spatial bias toward roads/towns carries
   into 3b. WA 2025 reports are "assumed to be from the storms" (WGS).

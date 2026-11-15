@@ -912,3 +912,21 @@ def test_by_neg_type_splits_negatives():
     assert set(out) == {"same_point_other_date", "elsewhere_same_day"}
     assert out["same_point_other_date"]["fp"] == 1 and out["elsewhere_same_day"]["fp"] == 0
     assert out["elsewhere_same_day"]["n"] == 4
+
+
+def test_horizon_rows_rs_window_labels():
+    rows = pd.DataFrame({"lon": [-51.0, -51.0], "lat": [-29.0, -29.0],
+                         "date": pd.to_datetime(["2024-05-01", "2024-03-01"]),
+                         "label": [1, 0], "split": ["test", "test"],
+                         "event_id": ["rs_2024", "rs_2024"],
+                         "neg_type": ["", "same_point_other_date"]})
+    hz = T.horizon_rows(rows, horizons={"24h": 1, "48h": 2}, lookback=5)
+    pos = hz[hz.label == 1].set_index(hz[hz.label == 1].issue_date.dt.strftime("%m-%d"))
+    # issue days May 2 .. Apr 27 (window end - j), window Apr 29 - May 2
+    assert list(pos.index) == ["05-02", "05-01", "04-30", "04-29", "04-28", "04-27"]
+    assert pos.label_24h.tolist() == [1, 1, 1, 1, 0, 0]
+    assert pos.label_48h.tolist() == [1, 1, 1, 1, 1, 0]
+    assert pos.lead_days.tolist() == [0, 0, 0, 0, 1, 2]
+    neg = hz[hz.label == 0]
+    assert neg.label_24h.tolist() == [0] and neg.label_48h.tolist() == [0]
+    assert "win_start" not in hz.columns

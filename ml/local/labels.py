@@ -7,8 +7,9 @@ Sources
     SMAP start, worldwide (LHASA-v2 style training area).
   * RS 2024 inventory (UFRGS/Cemaden, CC-BY-4.0) — 16,027 points from the
     committed ``data/rs_2024/geojson/landslide_catalog.geojson``. Undated per
-    point: each gets the day of peak 24 h rain inside the inventory window
-    (``assign_peak_day``), ``date_precision = "event-window"``.
+    point: every point gets the fixed date ``RS2024_DATE`` (2024-05-01), and
+    horizon labels use the triggering window Apr 29 - May 2 — never a date picked
+    from rain (circular). ``assign_peak_day`` is kept for diagnostics only.
 
 Output columns (``inventory.csv`` under ``DATA_DIR/labels``)::
 
@@ -194,7 +195,8 @@ def fetch_wa2025(*, force: bool = False, get: Callable = requests.get) -> pd.Dat
 
 
 def assign_peak_day(df: pd.DataFrame, daily_rain: Callable, window=S.RS2024_WINDOW) -> pd.DataFrame:
-    """Date each undated point with its peak-24 h rain day inside ``window``.
+    """DIAGNOSTICS ONLY — never for labels (dates from a model input are circular).
+    Date each undated point with its peak-24 h rain day inside ``window``.
 
     ``daily_rain(lon, lat, dates) -> mm`` (``ImergDaily.daily`` or
     ``PowerRain.daily``). Ties -> earliest day. Points with no rain data keep NaT.
