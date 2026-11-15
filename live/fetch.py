@@ -152,9 +152,23 @@ def fetch_imerg_gee_standin(bounds, days: int = 7):
     return daily, pid
 
 
-def fetch_smap_l4_vars(bounds, variables: tuple[str, ...], days_back: int = 10):
-    """Latest SPL4SMGP granule: several Geophysical_Data variables on the
-    same EASE-2 points -> (lats2d, lons2d, {var: values2d}, product_id)."""
+def _pick_smap_granule(results, time_tag: str | None):
+    """Latest granule, or the latest whose id carries `time_tag` (e.g.
+    'T103000': lead-ml trained on the 10:30Z granule of each day only)."""
+    if time_tag:
+        tagged = [g for g in results
+                  if time_tag in str(g["meta"].get("native-id", ""))]
+        if not tagged:
+            raise RuntimeError(f"no SPL4SMGP granule with {time_tag}")
+        results = tagged
+    return sorted(results, key=lambda g: str(g["meta"].get("native-id", "")))[-1]
+
+
+def fetch_smap_l4_vars(bounds, variables: tuple[str, ...], days_back: int = 10,
+                       time_tag: str | None = None):
+    """Latest SPL4SMGP granule (optionally the latest with `time_tag` in its
+    id): several Geophysical_Data variables on the same EASE-2 points ->
+    (lats2d, lons2d, {var: values2d}, product_id)."""
     import earthaccess
     import xarray as xr
 
@@ -166,7 +180,7 @@ def fetch_smap_l4_vars(bounds, variables: tuple[str, ...], days_back: int = 10):
         bounding_box=tuple(bounds))
     if not results:
         raise RuntimeError(f"no SPL4SMGP granules in the last {days_back} days")
-    latest = results[-1]
+    latest = _pick_smap_granule(results, time_tag)
     f = earthaccess.open([latest])[0]
     ds = xr.open_dataset(f, group="Geophysical_Data", engine="h5netcdf",
                          phony_dims="sort")

@@ -9,7 +9,8 @@ Inputs on the NOW 0.01 deg grid (L28b alignment, issue day D = today UTC):
   static   ml_static_now.tif — named bands: elevation, slope, aspect_sin,
            aspect_cos, curvature, relief, landcover, ndvi, clay, sand,
            porosity, p99_daily, p99_3day (built once from lead-ml's sources)
-  soil     latest SPL4SMGP sm_surface / sm_rootzone / sm_profile_wetness, held
+  soil     latest T10:30Z SPL4SMGP sm_surface / sm_rootzone /
+           sm_profile_wetness (as in training), held
   rain_obs IMERG Early daily D-7..D-1 (data/now/cog/imerg_early, written by
            run_now each run)
   rain_fc  NOAA GFS 00Z run of D, daily D..D+13
@@ -41,6 +42,7 @@ STATIC_BANDS = ("elevation", "slope", "aspect_sin", "aspect_cos", "curvature",
                 "relief", "landcover", "ndvi")
 TEXTURE_BANDS = ("clay", "sand", "porosity")
 SOIL_VARS = ("sm_surface", "sm_rootzone", "sm_profile_wetness")
+SMAP_TIME_TAG = "T103000"   # lead-ml trained on the 10:30Z granule only
 HORIZONS = {"24h": 1, "48h": 2, "72h": 3, "7d": 7, "14d": 14}
 LOW_SKILL = {"7d", "14d"}                 # L27: long-range forecast label
 # probability bins -> RGBA (transparent below 2 %)
@@ -149,7 +151,8 @@ def run(out_dir: Path, today: dt.date, bounds=NOW_BOUNDS, model_path=MODEL_PATH,
     static = {k: st[k] for k in STATIC_BANDS}
     texture = {k: st[k] for k in TEXTURE_BANDS}
     if soil is None:
-        sla, slo, vals, _ = fetch.fetch_smap_l4_vars(tuple(bounds), SOIL_VARS)
+        sla, slo, vals, _ = fetch.fetch_smap_l4_vars(tuple(bounds), SOIL_VARS,
+                                                     time_tag=SMAP_TIME_TAG)
         soil = {}
         for v in SOIL_VARS:
             g = regrid_points(sla, slo, vals[v], lats, lons)

@@ -92,3 +92,14 @@ def test_p_trigger_main_is_noop_when_off(tmp_path, monkeypatch, capsys):
     assert p_trigger.main(["--out-dir", str(tmp_path)]) == 0
     assert "OFF" in capsys.readouterr().out
     assert not any(tmp_path.iterdir())
+
+
+def test_smap_granule_pick_prefers_1030z():
+    from live.fetch import _pick_smap_granule
+    g = lambda i: {"meta": {"native-id": f"SMAP_L4_SM_gph_{i}_Vv8013_001"}}
+    res = [g("20261113T103000"), g("20261114T103000"), g("20261114T223000")]
+    assert _pick_smap_granule(res, "T103000")["meta"]["native-id"].startswith(
+        "SMAP_L4_SM_gph_20261114T103000")
+    assert "T223000" in _pick_smap_granule(res, None)["meta"]["native-id"]
+    with pytest.raises(RuntimeError):
+        _pick_smap_granule([g("20261114T223000")], "T103000")
