@@ -245,13 +245,31 @@ def slots(rec: dict) -> dict:
             "uy_outside_fp": k["nisar_agreement_outside_floodplain_pct"], "uy_water_km2": k["nisar_agreement_water_km2"]}
 
 
+def _load_wa_obs(cog: Path):
+    """WA: observed TPI = bands named YYYYMMDD of wa_2025_tpi_flood_20251210.tif, T =
+    wa_2025_t_flood_20251210.tif; permanent water = NaN in the served TPI."""
+    import rasterio
+    obs = {}
+    with rasterio.open(cog / "wa_2025_tpi_flood_20251210.tif") as s:
+        for i, d in enumerate(s.descriptions):
+            if d and re.fullmatch(r"\d{8}", d):
+                obs[d] = s.read(i + 1).astype(np.float64)
+        tr, shape = s.transform, s.shape
+    with rasterio.open(cog / "wa_2025_t_flood_20251210.tif") as s:
+        t = s.read(1).astype(np.float64)
+    perm = ~np.isfinite(next(iter(obs.values())))
+    return obs, t, tr, shape, perm
+
+
 def load_case(case: str, root: Path):
-    """(frames, grid, obs tpi by ymd, gfs bands by issue ymd) for a 0.01 deg replay case."""
+    """(frames, grid, obs tpi by ymd, gfs bands by issue ymd) for a replay case."""
     import rasterio
     ix = json.loads((root / case / "png" / "_index.json").read_text())
     frames = nw.hh_frames(ix["layers"])
     cog = root / case / "cog"
     obs, t, tr, shape, perm = {}, None, None, None, None
+    if case == "wa_2025":
+        obs, t, tr, shape, perm = _load_wa_obs(cog)
     for f in sorted(cog.glob(f"{case}_tpi_flood_obs_*.tif")):
         if not re.fullmatch(rf"{case}_tpi_flood_obs_\d{{8}}", f.stem):   # skip the _6h family
             continue

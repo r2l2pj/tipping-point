@@ -109,3 +109,36 @@ def test_gfs_window_best_run_inside_window(tmp_path):
     assert b["issued"] == "2026-10-03" and b["valid"] == "2026-10-05" and b["issued_days_before"] == 9
     k = npa.flat_keys(r)
     assert k["nisar_agreement_gfswin_critical_hit_pct"] == 50.0
+
+
+def test_load_case_wa_reads_dated_bands_t_and_gfs(tmp_path):
+    import json
+
+    import rasterio
+    cog = tmp_path / "wa_2025" / "cog"
+    cog.mkdir(parents=True)
+    (tmp_path / "wa_2025" / "png").mkdir()
+    (tmp_path / "wa_2025" / "png" / "_index.json").write_text(json.dumps({"layers": [_frame(tmp_path, [2])]}))
+    tr = from_origin(-122.6, 48.5, 0.001, 0.001)
+    prof = {"driver": "GTiff", "height": 4, "width": 5, "dtype": "float32", "crs": "EPSG:4326",
+            "transform": tr, "nodata": np.nan}
+    tpi = np.full((4, 5), 0.5, np.float32)
+    tpi[0, 0] = np.nan                                   # permanent water
+    with rasterio.open(cog / "wa_2025_tpi_flood_20251210.tif", "w", count=2, **prof) as d:
+        d.write(tpi, 1)
+        d.write(tpi * 0 + 0.9, 2)
+        d.set_band_description(1, "20251215")
+        d.set_band_description(2, "20251216")
+    with rasterio.open(cog / "wa_2025_t_flood_20251210.tif", "w", count=1, **prof) as d:
+        d.write(np.full((4, 5), 0.3, np.float32), 1)
+    with rasterio.open(cog / "wa_2025_tpi_gfs_20251215.tif", "w", count=2, **prof) as d:
+        d.write(tpi, 1)
+        d.write(tpi, 2)
+        d.set_band_description(1, "d1_slide")
+        d.set_band_description(2, "d1_flood")
+    frames, grid, obs, gfs = npa.load_case("wa_2025", tmp_path)
+    assert sorted(obs) == ["20251215", "20251216"] and obs["20251216"][1, 1] == np.float32(0.9)
+    assert grid["shape"] == (4, 5) and grid["t"][0, 0] == np.float32(0.3)
+    assert grid["perm_water"].sum() == 1 and grid["perm_water"][0, 0]
+    assert list(gfs) == ["20251215"] and list(gfs["20251215"]) == ["d1_flood"]
+    assert len(frames) == 1 and grid["km2"].shape == (4, 5)
