@@ -135,9 +135,24 @@ the RS 24 h hit rate by at most −2 points (36.45 → 34.25 %). Re-run it on v2
 
 **What is published.**
 
-- **v0.** The teammate's 010 D Sep 30 → Oct 12 pair: 7 curated polygons, geometries repaired, 1.817
-  km² geodesic and 28 people (native GPW), all in a 44 km² Uruguaiana check box. Labelled NISAR
-  (GCOV provisional) candidates, with the caveat that some may be rice irrigation.
+- **Teammate map (v0, credited).** A teammate's render of the NISAR GCOV (provisional) 010 D
+  Sep 30 → Oct 12 pair: 7 curated "new open water" polygons. We repaired the geometries (two were
+  self-intersecting) and re-measured them: 1.817 km² geodesic (stated 1.76 km²), 28 people (native
+  GPW), all in a 44 km² Uruguaiana check box.
+  - Published as layers `radar_pre` / `radar_post` with `source: 'teammate'` and sensor 'NISAR (GCOV
+    provisional)'. The polygons are `flood_confirmed` / `flood_candidates` (v0 keys `flooded_km2`,
+    `people_flooded`), with the caveat that some may be rice irrigation.
+  - We could not reproduce them with our guarded pipeline (next bullets).
+- **Our NISAR 010 D stack** (Sep 18, Sep 30, Oct 12, Oct 24, Nov 5; HH and HV; `nisar_frame`
+  layers; swipe `nisar_pre` Sep 30 → `nisar_post` Oct 12; HH/HV change maps;
+  `products.nisar_timeseries`).
+  - **0 gated flood candidates:** on every pair the per-scene threshold sat at the −15 dB clamp, so
+    the guard rejects it (`nisar_flooded_km2` = null + reason; empty `flood_nisar_<date>`).
+  - The ungated > 3 dB HH darkening (Oct 24 → Nov 5) splits into **1.76 km² inside the river
+    corridor** (HAND ≤ 5 m floodplain) and **15.7 km² in fields**, flagged "possible rice
+    irrigation". The field share is never counted as flood or in people
+    (`radar_darkening_corridor_km2`, `radar_darkening_fields_km2`).
+  - The pass nearest the crest is **Oct 12** (crest Oct 16).
 - **082 D HH/HV frames** (Sep 23, Oct 5, Oct 17, Oct 29) as `nisar_frame` context.
   - The R2 guard **rejected all three 082 D pairs**: the per-scene threshold landed on the −15 dB
     clamp.
@@ -145,11 +160,9 @@ the RS 24 h hit rate by at most −2 points (36.45 → 34.25 %). Re-run it on v2
     irrigation.
   - October is rice planting in western RS, so this is the paddy-flooding signature. **No flood
     candidates are published from it.**
-- **010 D stack** (Sep 18 → Nov 5, HH+HV) and gated corridor-only candidates: from the uruguai-nisar
-  worker. A flood layer counts only change in the Uruguay/Ibicuí floodplain (HAND ≤ 5 m), with rice
-  and agricultural land excluded. Field darkening goes to a separate "possible rice irrigation" note
-  and never into people counts. *Status at 15:00: see the README of the case node / metrics
-  `nisar_flooded_km2*`, `radar_darkening_*`.*
+- **Reading.** NISAR shows the season's surface-water changes. In this case and month, a fixed
+  dark-water threshold cannot separate the river flood from irrigated rice. The honest product is
+  the frames plus a corridor-restricted change, not a flood map.
 
 **R2 guard, final form** (`tp.response_nisar`). A pair is rejected when:
 
