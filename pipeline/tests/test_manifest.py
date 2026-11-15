@@ -15,7 +15,7 @@ NODE_KEYS = {"event_id", "mode", "bounds", "forecast_source", "data_basis", "lay
 LAYER_KEYS = {"id", "date", "png", "cog", "legend", "bounds", "forecast",
               "issued", "forecast_source", "kind", "upper_bound"}
 PRODUCT_NAMES = {"municipal_boundaries", "landslide_catalog", "places",
-                 "swot_reference",
+                 "swot_reference", "swot_series",
                  "priority_zones", "permanent_water", "flood_confirmed",
                  "landslide_candidates"}
 
@@ -226,3 +226,14 @@ def test_dry_run_prints_valid_json_and_writes_nothing(tmp_path):
     out = json.loads(result.stdout)
     assert set(out["cases"]) == {"rs_2024", "wa_2025", "now"}
     assert not (root / "manifest.json").exists()
+
+
+def test_swot_series_product(tmp_path):
+    root = _data_root(tmp_path, "wa_2025")
+    node = manifest.build_case_node("wa-2025-12", root)
+    assert node["products"]["swot_series"] is None
+    assert node["_null_reasons"]["swot_series"]
+    (root / "wa_2025" / "series" / "swot.json").write_text("{}")
+    node = manifest.build_case_node("wa-2025-12", root)
+    assert node["products"]["swot_series"] == "wa_2025/series/swot.json"
+    assert "swot_series" not in node["_null_reasons"]
