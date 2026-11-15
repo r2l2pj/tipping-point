@@ -1057,6 +1057,11 @@ def fetch_power_points(lon, lat, workers: int = 2) -> Path:
                 daily = json.loads(p.read_text()).get("daily", {})
             except ValueError:
                 daily = {}
+            # POWER IMERG lags ~4-7 days, so "last >= today-3" is never true and every
+            # cached cell re-requested an increment each run (1.5 s each). A file written
+            # in the last 24 h is fresh enough for training/evaluation.
+            if daily and time.time() - p.stat().st_mtime < 86400:
+                return "fresh"
             if daily:
                 last = max(daily)
                 if dt.date.fromisoformat(f"{last[:4]}-{last[4:6]}-"

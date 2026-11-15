@@ -221,7 +221,17 @@ def export_metrics(case: str = "rs_2024") -> dict:
         "ml_landcover": "MCD12Q1 061", "ml_ndvi": "VNP13C2 002"}, path=DATA_OUT / "metrics.json")
     # merge_metrics escapes non-ASCII; restore the file's own format so only ML keys diff
     mp = DATA_OUT / "metrics.json"
-    mp.write_text(json.dumps(json.loads(mp.read_text()), indent=2, ensure_ascii=False) + "\n")
+    mj = json.loads(mp.read_text())
+    wa = (mj.get("cases") or {}).get("wa_2025")
+    if isinstance(wa, dict):   # G9 (lead-analysis): replace the stale "no local WA table" reason
+        why = ("WA 2025 is a 3b TRIGGER TEST event only (8 dated WGS reports); its scores are "
+               "in landslide_ml / ml_card trigger.by_event.wa_2025. 3a T_ML AUCs are regional "
+               "(S+SE Brazil), so there is no WA rf_auc / rule_auc / feature importance.")
+        nr = wa.setdefault("_null_reasons", {})
+        for k in ("rf_auc", "rule_auc", "feature_importance"):
+            if wa.get(k) is None:
+                nr[k] = why
+    mp.write_text(json.dumps(mj, indent=2, ensure_ascii=False) + "\n")
     mldir = DATA_OUT / "ml"
     mldir.mkdir(parents=True, exist_ok=True)
     if b3a and a.get("importance_served"):

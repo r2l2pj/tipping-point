@@ -91,3 +91,47 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+# --------------------------------------------------------------------------- v2
+V2_MODELS = ("xgb_rain_soil", "direct_rain", "xgb_all", "rf_all", "rule_tpi")
+V2_COLS = ("n", "n_pos", "precision", "recall", "f1", "accuracy", "pr_auc", "roc_auc", "pr_auc_raw")
+
+
+def _row(name: str, m: dict | None) -> str:
+    if not m:
+        return f"| {name} | " + " | ".join("—" for _ in V2_COLS) + " |"
+    return f"| {name} | " + " | ".join(_f(m.get(c)) for c in V2_COLS) + " |"
+
+
+def render_v2(met: dict) -> str:
+    """Pooled TEST per horizon (GFS + perfect), then per-event PR-AUC / ROC grids."""
+    b = met.get("3b", {})
+    L = []
+    rows_info = b.get("horizon_rows") or {}
+    for h, d in (b.get("horizons") or {}).items():
+        for src in ("gfs", "perfect"):
+            blk = (d or {}).get(src) or {}
+            tag = "NOAA GFS 00Z (operational; rows with a GFS run only)" if src == "gfs" \
+                else "perfect forecast = observed IMERG (upper bound; all events)"
+            ri = (rows_info.get(h) or {}).get(src) or {}
+            L += ["", f"#### {h} — pooled TEST, {tag}",
+                  f"rows {ri.get('n', '—')} (dropped without a GFS run: {ri.get('n_dropped_no_gfs_run', 0)})", "",
+                  "| model | " + " | ".join(V2_COLS) + " |", "|" + "---|" * (len(V2_COLS) + 1)]
+            L += [_row(m, (blk.get(m) or {}).get("test")) for m in V2_MODELS]
+    for metric in ("pr_auc", "roc_auc"):
+        for src in ("gfs", "perfect"):
+            for h, d in (b.get("horizons") or {}).items():
+                blk = (d or {}).get(src) or {}
+                evs = sorted({e for m in V2_MODELS for e in ((blk.get(m) or {}).get("by_event") or {})})
+                if not evs:
+                    continue
+                L += ["", f"#### {h} — {metric} per TEST event ({src})", "",
+                      "| model | " + " | ".join(evs) + " |", "|" + "---|" * (len(evs) + 1)]
+                for m in V2_MODELS:
+                    be = (blk.get(m) or {}).get("by_event") or {}
+                    L.append(f"| {m} | " + " | ".join(
+                        _f((be.get(e) or {}).get(metric)) for e in evs) + " |")
+                npos = {e: ((blk.get("xgb_all") or {}).get("by_event") or {}).get(e, {}).get("n_pos") for e in evs}
+                L.append("| n_pos | " + " | ".join(str(npos[e]) for e in evs) + " |")
+    return "\n".join(L) + "\n"
