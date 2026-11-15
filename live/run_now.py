@@ -481,8 +481,12 @@ def run(args) -> dict:
 
     prev_path = args.out_dir / "prev_classes.npz"
     prev = None
+    active_state: dict = {}
     if prev_path.exists():
         with np.load(prev_path) as z:
+            if "active_state" in z.files:
+                import json as _json
+                active_state = _json.loads(str(z["active_state"]))
             # per-hazard keys since L27; older snapshots only have "worst"
             prev = {h: z[h] if h in z.files else z["worst"]
                     for h in ("landslide", "flood") if h in z.files or "worst" in z.files}
@@ -503,12 +507,15 @@ def run(args) -> dict:
     checks["municipalities"] = n_muni
     checks["passed"] = checks["passed"] and n_muni > 0
     alerts_paused = not checks["passed"]
-    payload = alerts.emit_hazard_alerts(
-        prev, {"landslide": (slides[0], slides[1]),
-               "flood": (floods[0], floods[1])},
-        dt.datetime.now(dt.UTC), transform)
+    now_utc = dt.datetime.now(dt.UTC)
+    now_iso = now_utc.isoformat().replace("+00:00", "Z")
+    layers_hz = {"landslide": (slides[0], slides[1]),
+                 "flood": (floods[0], floods[1])}
+    payload = alerts.emit_hazard_alerts(prev, layers_hz, now_utc, transform)
+    active, _ = alerts.active_alerts(layers_hz, now_utc, transform, None)
     where = now_geojson.municipality_lookup(gj_dir)
-    for c in payload["candidates"]:
+
+    def _enrich(c):
         c.update(where(*c["centroid"]) or {"municipality": None, "uf": None})
         c["kind"] = "tpi"
         day = today if c.get("when") == "today" else today + dt.timedelta(days=1)
@@ -518,9 +525,18 @@ def run(args) -> dict:
         if fb["forecast_days"]:
             c["basis_note"] = (f"based on forecast rain (NOAA GFS, issued "
                                f"{fb['basis_label'].split('issued ')[-1].rstrip(')')})")
+
+    for c in payload["candidates"] + active:
+        _enrich(c)
+    new_active_state = alerts.keyed_active(active, active_state, now_iso)
+    # notifications = what the sending rules (upgrade, quiet hours) let out
+    # this run; active = every current Alto/Crítico area for the public page
+    payload["notifications"] = payload["candidates"]
+    payload["active"] = sorted(active, key=lambda a: (-a["class"], -a["area_km2"]))
+    payload["candidates_note"] = "deprecated alias of notifications"
     payload["paused"] = alerts_paused
     if alerts_paused:
-        payload["candidates"] = []
+        payload["candidates"] = payload["notifications"] = payload["active"] = []
         payload["paused_reason"] = "run checks failed: " + ", ".join(
             k for k, v in checks.items() if v is False)
     files["alerts.json"] = payload
@@ -531,7 +547,8 @@ def run(args) -> dict:
             worst=np.maximum(np.maximum(slides[0], floods[0]),
                              np.maximum(slides[1], floods[1])),
             landslide=np.maximum(slides[0], slides[1]),
-            flood=np.maximum(floods[0], floods[1]))
+            flood=np.maximum(floods[0], floods[1]),
+            active_state=np.array(__import__("json").dumps(new_active_state)))
 
     # ---- write everything, manifest LAST ------------------------------------
     updated_at = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")

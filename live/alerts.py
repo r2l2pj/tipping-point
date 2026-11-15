@@ -125,6 +125,42 @@ def emit_hazard_alerts(prev: dict | None,
     return _payload(now_utc, quiet, cands)
 
 
+def active_alerts(layers: dict[str, tuple[np.ndarray, np.ndarray]],
+                  now_utc: dt.datetime, transform, state: dict | None,
+                  cluster_px: int = ALERT_CLUSTER_PX) -> tuple[list[dict], dict]:
+    """PUBLIC list: every current Alto/Crítico area (today or D+1),
+    regardless of upgrades, rate limits or quiet hours — those rules govern
+    SENDING (notifications), not what the page shows.
+
+    state: {key: first_issued_at} from the previous run; an area keeps its
+    first_issued_at while it stays active (key = hazard|uf|municipality|n,
+    n = rank among that municipality's areas). Returns (active, new_state);
+    callers add municipality before keys are made (see keyed_active)."""
+    now_iso = now_utc.isoformat().replace("+00:00", "Z")
+    act = emit_hazard_alerts(None, layers, now_utc, transform,
+                             cluster_px)["candidates"]
+    for a in act:
+        a.pop("hold", None)           # holding is a notification concern
+        a["last_confirmed_at"] = now_iso
+    return act, dict(state or {})
+
+
+def keyed_active(active: list[dict], state: dict, now_iso: str) -> dict:
+    """Assign first_issued_at from `state` (or now) and return the new state
+    holding only the areas still active."""
+    seen: dict[str, int] = {}
+    new_state = {}
+    for a in sorted(active, key=lambda a: (-a["class"], -a["pixels"])):
+        base = f"{a.get('hazard')}|{a.get('uf')}|{a.get('municipality')}"
+        n = seen.get(base, 0)
+        seen[base] = n + 1
+        key = f"{base}|{n}"
+        a["first_issued_at"] = state.get(key, now_iso)
+        a["id"] = key
+        new_state[key] = a["first_issued_at"]
+    return new_state
+
+
 # --------------------------------------------------------------------------
 # L8 GEE path — alert regions read from the exported data/now bundle.
 # The grid-based diff above stays for the --local fallback.

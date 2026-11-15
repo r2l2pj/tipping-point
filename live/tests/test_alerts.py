@@ -115,6 +115,39 @@ def test_municipality_lookup(tmp_path):
     assert municipality_lookup(tmp_path / "nope")(-51.5, -29.5) is None
 
 
+def test_persisting_critico_stays_active_without_notification():
+    """Conductor 2026-11-15: a Crítico area that persists must stay in the
+    public 'active' list (first_issued_at kept) even though no new
+    notification is sent for it."""
+    from live.alerts import active_alerts, emit_hazard_alerts, keyed_active
+    flood = _classes()
+    flood[3:6, 3:6] = 3
+    layers = {"flood": (flood, _classes())}
+    t1 = NOON
+    t2 = NOON + _dt.timedelta(hours=3)
+    # run 1: upgrade -> notification + active
+    n1 = emit_hazard_alerts(None, layers, t1, TR)["candidates"]
+    a1, _ = active_alerts(layers, t1, TR, None)
+    for a in a1:
+        a.update({"municipality": "Florianópolis", "uf": "SC"})
+    s1 = keyed_active(a1, {}, "2026-11-14T12:00:00Z")
+    assert len(n1) == 1 and len(a1) == 1
+    # run 2: same classes -> no notification, still active, first_issued kept
+    n2 = emit_hazard_alerts({"flood": flood}, layers, t2, TR)["candidates"]
+    a2, _ = active_alerts(layers, t2, TR, None)
+    for a in a2:
+        a.update({"municipality": "Florianópolis", "uf": "SC"})
+    s2 = keyed_active(a2, s1, "2026-11-14T15:00:00Z")
+    assert n2 == []
+    assert len(a2) == 1 and a2[0]["class"] == 3 and a2[0]["hazard"] == "flood"
+    assert a2[0]["first_issued_at"] == "2026-11-14T12:00:00Z"
+    assert a2[0]["last_confirmed_at"] == "2026-11-14T15:00:00Z"
+    assert "hold" not in a2[0]
+    # run 3: area gone -> not active, dropped from state
+    a3, _ = active_alerts({"flood": (_classes(), _classes())}, t2, TR, None)
+    assert a3 == [] and keyed_active(a3, s2, "x") == {}
+
+
 # --------------------------------------------------------------------------
 # L12b Neon subscriber store — exercised against a real fake HTTPS server
 # (stdlib http.server + self-signed cert on an ephemeral port), never with
