@@ -132,6 +132,10 @@ def run(fetch: bool = False, anchor: str = "event_day") -> dict:
                        "shortest horizon whose window reaches the event day D; RS 2024 D = "
                        "2024-05-01 (fixed), WA 2025 D = reported date"),
         "anchor": anchor,
+        "availability_note": ("k = 0 is the 00Z run of day D: GFS 00Z is available ~3.5-4 h after "
+                              "00Z, i.e. at or after an onset at local midnight in Brazil, so it is "
+                              "NOT 'before the damage'. Claims of 'before the onset' use k >= 1 "
+                              "(run issued >= 24 h before D), matching lead-analysis warned% (L37)."),
         "anchor_days": {ev: str(d) for ev, d in ({**S.EVENT_DAYS, **S.EVENT_ONSETS}
                                                   if anchor == "onset" else S.EVENT_DAYS).items()},
         "horizon_for_lead": {str(k): horizon_for_lead(k) for k in LEADS},
