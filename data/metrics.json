@@ -779,7 +779,72 @@
         "NASADEM": "NASA/NASADEM_HGT/001",
         "MERIT_Hydro": "MERIT/Hydro/v1_0_1"
       },
-      "flood_warned_denominator_label": "27.9 km² of NISAR flood pixels on the ~12 m flood raster (the denominator); the canonical flooded_km2 27.99 km² is the polygon set within the swath"
+      "flood_warned_denominator_label": "27.9 km² of NISAR flood pixels on the ~12 m flood raster (the denominator); the canonical flooded_km2 27.99 km² is the polygon set within the swath",
+      "flood_warned_smap_latency": {
+        "definition": "onset-anchored warned% of the issued-GFS frames re-scored with soil wetness S from the band dated I-k (I = issue day) instead of I-1: TPI_k = TPI * (S_{I-k}/S_{I-1})^(1/3), R and T unchanged. Live SMAP L4 is 2-5 days old at issue time, so k = 3..5 is the as-available range; k = 1 is the published replay (no latency).",
+        "rows": [
+          {
+            "s_band": "I-1",
+            "s_age_days_at_issue": 1,
+            "anchor_basis": "onset",
+            "skipped_issues": [],
+            "gfs_24h_pct": 0.0,
+            "gfs_48h_pct": 0.0,
+            "gfs_72h_pct": 0.14,
+            "gfs_24h_critical_pct": 0.0,
+            "gfs_48h_critical_pct": 0.0,
+            "gfs_72h_critical_pct": 0.0
+          },
+          {
+            "s_band": "I-3",
+            "s_age_days_at_issue": 3,
+            "anchor_basis": "onset",
+            "skipped_issues": [
+              "2025-12-01",
+              "2025-12-02"
+            ],
+            "gfs_24h_pct": 0.0,
+            "gfs_48h_pct": 0.0,
+            "gfs_72h_pct": 0.14,
+            "gfs_24h_critical_pct": 0.0,
+            "gfs_48h_critical_pct": 0.0,
+            "gfs_72h_critical_pct": 0.0
+          },
+          {
+            "s_band": "I-4",
+            "s_age_days_at_issue": 4,
+            "anchor_basis": "onset",
+            "skipped_issues": [
+              "2025-12-01",
+              "2025-12-02",
+              "2025-12-03"
+            ],
+            "gfs_24h_pct": 0.0,
+            "gfs_48h_pct": 0.0,
+            "gfs_72h_pct": 0.14,
+            "gfs_24h_critical_pct": 0.0,
+            "gfs_48h_critical_pct": 0.0,
+            "gfs_72h_critical_pct": 0.0
+          },
+          {
+            "s_band": "I-5",
+            "s_age_days_at_issue": 5,
+            "anchor_basis": "onset",
+            "skipped_issues": [
+              "2025-12-01",
+              "2025-12-02",
+              "2025-12-03",
+              "2025-12-04"
+            ],
+            "gfs_24h_pct": 0.0,
+            "gfs_48h_pct": 0.0,
+            "gfs_72h_pct": 0.14,
+            "gfs_24h_critical_pct": 0.0,
+            "gfs_48h_critical_pct": 0.0,
+            "gfs_72h_critical_pct": 0.0
+          }
+        ]
+      }
     },
     "rs_2024": {
       "event": "rs-2024-05",
@@ -2142,7 +2207,72 @@
           "low_merit_pct": 31.738832650237352
         }
       },
-      "hand_best_radius_m": 1000
+      "hand_best_radius_m": 1000,
+      "slide_warned_smap_latency": {
+        "definition": "onset-anchored warned% of the issued-GFS frames re-scored with soil wetness S from the band dated I-k (I = issue day) instead of I-1: TPI_k = TPI * (S_{I-k}/S_{I-1})^(1/3), R and T unchanged. Live SMAP L4 is 2-5 days old at issue time, so k = 3..5 is the as-available range; k = 1 is the published replay (no latency).",
+        "rows": [
+          {
+            "s_band": "I-1",
+            "s_age_days_at_issue": 1,
+            "anchor_basis": "onset",
+            "skipped_issues": [],
+            "gfs_24h_pct": 36.45,
+            "gfs_48h_pct": 0.0,
+            "gfs_72h_pct": 0.0,
+            "gfs_24h_critical_pct": 1.87,
+            "gfs_48h_critical_pct": 0.0,
+            "gfs_72h_critical_pct": 0.0
+          },
+          {
+            "s_band": "I-3",
+            "s_age_days_at_issue": 3,
+            "anchor_basis": "onset",
+            "skipped_issues": [
+              "2024-04-23",
+              "2024-04-24"
+            ],
+            "gfs_24h_pct": 35.41,
+            "gfs_48h_pct": 0.0,
+            "gfs_72h_pct": 0.0,
+            "gfs_24h_critical_pct": 1.44,
+            "gfs_48h_critical_pct": 0.0,
+            "gfs_72h_critical_pct": 0.0
+          },
+          {
+            "s_band": "I-4",
+            "s_age_days_at_issue": 4,
+            "anchor_basis": "onset",
+            "skipped_issues": [
+              "2024-04-23",
+              "2024-04-24",
+              "2024-04-25"
+            ],
+            "gfs_24h_pct": 35.35,
+            "gfs_48h_pct": 0.0,
+            "gfs_72h_pct": 0.0,
+            "gfs_24h_critical_pct": 1.4,
+            "gfs_48h_critical_pct": 0.0,
+            "gfs_72h_critical_pct": 0.0
+          },
+          {
+            "s_band": "I-5",
+            "s_age_days_at_issue": 5,
+            "anchor_basis": "onset",
+            "skipped_issues": [
+              "2024-04-23",
+              "2024-04-24",
+              "2024-04-25",
+              "2024-04-26"
+            ],
+            "gfs_24h_pct": 34.25,
+            "gfs_48h_pct": 0.0,
+            "gfs_72h_pct": null,
+            "gfs_24h_critical_pct": 1.19,
+            "gfs_48h_critical_pct": 0.0,
+            "gfs_72h_critical_pct": null
+          }
+        ]
+      }
     }
   }
 }
