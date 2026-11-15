@@ -317,3 +317,199 @@ def report_region(lon, lat) -> np.ndarray:
     for name, bbox in reversed(list(S.REPORT_REGIONS.items())):
         out[in_bbox(lon, lat, bbox)] = name
     return out
+
+
+# ------------------------------------------------------------ extra TEST events
+# Generic loaders for the held-out TEST events of ``test_events.yaml`` (events.py).
+# Only geometry + the configured date field are read; polygons -> representative
+# point (inside the polygon, unlike a centroid).
+def _resolve_source(ev, *, get: Callable = requests.get):
+    """Local path (repo-relative ok) or URL downloaded once to DATA_DIR/events/<id>/."""
+    from pathlib import Path
+    from urllib.parse import urlparse
+
+    src = ev.source
+    if not src:
+        raise ValueError(f"{ev.event_id}: no inventory source in test_events.yaml yet")
+    if src.startswith(("http://", "https://")):
+        name = Path(urlparse(src).path).name or "inventory"
+        dest = S.path("events", ev.event_id, name)
+        if not dest.exists():
+            resp = get(src, timeout=300)
+            resp.raise_for_status()
+            dest.write_bytes(resp.content)
+            log.info("%s: downloaded %s (%d bytes)", ev.event_id, src, len(resp.content))
+        return dest
+    p = Path(src).expanduser()
+    return p if p.is_absolute() else S.REPO_ROOT / p
+
+
+def _parse_dates(vals, fmt: str | None) -> pd.Series:
+    s = pd.Series(vals, dtype=object)
+    if fmt:
+        out = pd.to_datetime(s, format=fmt, errors="coerce")
+    else:
+        num = pd.to_numeric(s, errors="coerce")
+        if num.notna().all() and len(num) and num.abs().min() > 1e11:   # epoch ms (ArcGIS)
+            out = pd.to_datetime(num, unit="ms", utc=True)
+        else:
+            out = pd.to_datetime(s, errors="coerce", utc=True)
+    if getattr(out.dt, "tz", None) is not None:
+        out = out.dt.tz_convert("UTC").dt.tz_localize(None)
+    return out.dt.normalize()
+
+
+def _geom_points(geoms) -> np.ndarray:
+    from shapely.geometry import shape
+
+    out = []
+    for g in geoms:
+        if g is None:
+            out.append((np.nan, np.nan))
+            continue
+        geom = shape(g) if isinstance(g, dict) else g
+        if geom.is_empty:
+            out.append((np.nan, np.nan))
+        elif geom.geom_type == "Point":
+            out.append((geom.x, geom.y))
+        else:  # MultiPoint/Polygon/MultiPolygon/Line -> one point inside it
+            p = geom.representative_point()
+            out.append((p.x, p.y))
+    return np.asarray(out, dtype=float).reshape(-1, 2)
+
+
+def _read_geojson(path, ev) -> tuple[np.ndarray, list]:
+    gj = json.loads(path.read_text())
+    feats = gj.get("features") or []
+    pts, dates = [], []
+    for f in feats:
+        g = f.get("geometry")
+        if g and g.get("type") == "MultiPoint" and ev.dating == "fixed":
+            pts.extend(tuple(c[:2]) for c in g["coordinates"])   # explode (RS-style)
+            dates.extend([None] * len(g["coordinates"]))
+            continue
+        pts.append(tuple(_geom_points([g])[0]))
+        dates.append((f.get("properties") or {}).get(ev.date_field) if ev.date_field else None)
+    return np.asarray(pts, dtype=float).reshape(-1, 2), dates
+
+
+def _read_vector(path, ev) -> tuple[np.ndarray, list]:
+    import geopandas as gpd
+
+    target = f"zip://{path}" if str(path).endswith(".zip") else path
+    cols = [ev.date_field] if ev.date_field else []
+    gdf = gpd.read_file(target, layer=ev.layer, columns=cols)
+    if gdf.crs is not None and gdf.crs.to_epsg() != 4326:
+        gdf = gdf.to_crs(4326)
+    pts = _geom_points(list(gdf.geometry))
+    dates = list(gdf[ev.date_field]) if ev.date_field else [None] * len(gdf)
+    return pts, dates
+
+
+def _read_csv(path, ev) -> tuple[np.ndarray, list]:
+    cols = [ev.lon_field, ev.lat_field] + ([ev.date_field] if ev.date_field else [])
+    df = pd.read_csv(path, usecols=cols)
+    pts = df[[ev.lon_field, ev.lat_field]].to_numpy(dtype=float)
+    dates = list(df[ev.date_field]) if ev.date_field else [None] * len(df)
+    return pts, dates
+
+
+def _read_arcgis(ev, *, get: Callable = requests.get, page: int = 2000) -> tuple[np.ndarray, list]:
+    """FeatureServer query: ONLY the date field + geometry (layers may hold contacts)."""
+    cache = S.path("events", ev.event_id, "arcgis.geojson")
+    if cache.exists():
+        feats = json.loads(cache.read_text())["features"]
+    else:
+        feats, offset = [], 0
+        while True:
+            resp = get(ev.source, params={
+                "where": ev.where, "outFields": ev.date_field or "", "returnGeometry": "true",
+                "outSR": "4326", "f": "geojson", "resultOffset": offset,
+                "resultRecordCount": page}, timeout=120)
+            resp.raise_for_status()
+            payload = resp.json()
+            if "error" in payload:
+                raise RuntimeError(f"{ev.event_id} ArcGIS query failed: {payload['error']}")
+            got = payload.get("features") or []
+            feats += [{"type": "Feature", "geometry": f.get("geometry"),
+                       "properties": ({ev.date_field: (f.get("properties") or {}).get(ev.date_field)}
+                                      if ev.date_field else {})} for f in got]
+            more = payload.get("exceededTransferLimit") or (
+                payload.get("properties") or {}).get("exceededTransferLimit")
+            if not got or not more:
+                break
+            offset += len(got)
+        cache.write_text(json.dumps({"type": "FeatureCollection", "features": feats}))
+    pts = _geom_points([f.get("geometry") for f in feats])
+    dates = [(f.get("properties") or {}).get(ev.date_field) if ev.date_field else None
+             for f in feats]
+    return pts, dates
+
+
+def load_event_inventory(ev, *, get: Callable = requests.get, seed: int = S.SEED) -> pd.DataFrame:
+    """One TEST event (events.TestEvent) -> inventory rows (COLUMNS), deduped to
+    90 m and capped at ``ev.max_points``. dating=fixed: every point gets ``ev.date``;
+    per_point: each point keeps its own date, kept only inside the inventory window."""
+    if ev.format == "arcgis":
+        pts, raw_dates = _read_arcgis(ev, get=get)
+    else:
+        path = _resolve_source(ev, get=get)
+        reader = {"geojson": _read_geojson, "vector": _read_vector, "csv": _read_csv}[ev.format]
+        pts, raw_dates = reader(path, ev)
+    n_raw = len(pts)
+    if ev.dating == "per_point":
+        dates = _parse_dates(raw_dates, ev.date_format)
+        lo, hi = (pd.Timestamp(d) for d in ev.inventory_window)
+        precision = "day"
+    else:
+        dates = pd.Series([pd.Timestamp(ev.date)] * n_raw, dtype="datetime64[ns]")
+        lo = hi = None
+        precision = "event-window"
+    ok = np.isfinite(pts).all(axis=1) & dates.notna().to_numpy()
+    ok &= (np.abs(pts[:, 0]) <= 180) & (np.abs(pts[:, 1]) <= 90)
+    if lo is not None:
+        ok &= ((dates >= lo) & (dates <= hi)).to_numpy()
+    pts, dates = pts[ok], dates[ok].reset_index(drop=True)
+    df = pd.DataFrame({
+        "point_id": [f"{ev.event_id}_{i}" for i in range(len(pts))],
+        "lon": pts[:, 0], "lat": pts[:, 1], "source": "event", "event_id": ev.event_id,
+        "date": dates.astype("datetime64[s]"), "date_precision": precision, "acc_km": 0.0,
+        "trigger": "rain", "title": ev.name,
+    }, columns=COLUMNS)
+    df = dedupe_grid(df)
+    if len(df) > ev.max_points:
+        df = df.sample(n=ev.max_points, random_state=seed).reset_index(drop=True)
+    log.info("%s: %d raw features -> %d valid -> %d points (dedupe 90 m, cap %d)",
+             ev.event_id, n_raw, int(ok.sum()), len(df), ev.max_points)
+    return df
+
+
+def leak_mask(glc: pd.DataFrame, test_pts: pd.DataFrame, windows: dict, *,
+              days: int = S.LEAK_DAYS, km: float = S.LEAK_KM) -> tuple[np.ndarray, pd.DataFrame]:
+    """GLC rows that may BE a TEST event: dated within ``days`` of the event's
+    window and within ``km`` of any of its points. Returns (mask over ``glc``,
+    report rows: event_id, glc point_id, date, km)."""
+    mask = np.zeros(len(glc), bool)
+    rep = []
+    gd = pd.to_datetime(glc["date"]).to_numpy().astype("datetime64[D]")
+    for ev, pts in test_pts.groupby("event_id"):
+        if ev in windows:
+            a, b = (np.datetime64(pd.Timestamp(x).date()) for x in windows[ev])
+        else:
+            d = pd.to_datetime(pts["date"]).dropna().to_numpy().astype("datetime64[D]")
+            if not len(d):
+                continue
+            a, b = d.min(), d.max()
+        near_t = (gd >= a - np.timedelta64(days, "D")) & (gd <= b + np.timedelta64(days, "D"))
+        if not near_t.any():
+            continue
+        idx = np.flatnonzero(near_t)
+        dist = min_dist_km(glc["lon"].to_numpy()[idx], glc["lat"].to_numpy()[idx],
+                           pts["lon"].to_numpy(), pts["lat"].to_numpy())
+        hit = idx[dist <= km]
+        mask[hit] = True
+        for i, dk in zip(hit, dist[dist <= km], strict=True):
+            rep.append({"test_event": ev, "glc_point_id": glc["point_id"].iloc[i],
+                        "glc_event_id": glc["event_id"].iloc[i],
+                        "date": str(gd[i]), "km": round(float(dk), 1)})
+    return mask, pd.DataFrame(rep, columns=["test_event", "glc_point_id", "glc_event_id", "date", "km"])

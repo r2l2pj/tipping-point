@@ -1,0 +1,31 @@
+# Held-out 3b TEST events (lead-ml, conductor 2026-11-15). Schema + rules: ml/local/events.py.
+# Research: .crew/research/validation-events.md (t186-t189).
+# `enabled: false` until the final event set is chosen; try one with ML_TEST_EVENTS=<id>.
+# date = event day D from official reports / the inventory release — NEVER from rain.
+# Pre-2021-03-23 events have no GFS archive: perfect-forecast (observed IMERG) only.
+events:
+  - event_id: helene_2024
+    name: "Hurricane Helene, southern Appalachia (USGS LASER preliminary inventory)"
+    country: US
+    date: 2024-09-27            # peak rain + most failures in western NC (release: Sep 25-27)
+    trigger_window: [2024-09-25, 2024-09-27]
+    dating: fixed               # points carry no per-point date
+    format: arcgis
+    source: "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/USGS_Hurricane_Helene_Landslide_Inventory/FeatureServer/0/query"
+    citation: "USGS LASER, Preliminary landslide inventory, Hurricane Helene Sep 2024, doi:10.5066/P14CHGKS (FeatureServer owned by USGS)"
+    license: "CC0 / US public domain"
+    notes: "Headscarps mostly within tens of m; some points at impact locations; coverage incomplete."
+    enabled: false
+
+  - event_id: maria_2017
+    name: "Hurricane Maria, Puerto Rico (USGS slope-failure locations)"
+    country: PR
+    date: 2017-09-20            # landfall + peak rain
+    trigger_window: [2017-09-20, 2017-09-21]
+    dating: fixed
+    format: arcgis
+    source: "https://services5.arcgis.com/TQ9qkk0dURXSP7LQ/arcgis/rest/services/DERRUMBES_HURACAN_MARIA/FeatureServer/0/query"
+    citation: "Bessette-Kirton et al. 2019, Map data of slope failures after Hurricane Maria, USGS doi:10.5066/P9BVMD74 (ScienceBase blocks scripted download; UPRM-hosted copy, 71,431 points = USGS count)"
+    license: "CC0 / US public domain"
+    notes: "Headscarps within ~3 m; some failures may pre/post-date Maria. Likely in GLC -> leak filter. No GFS (2017)."
+    enabled: false

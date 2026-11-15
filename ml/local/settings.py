@@ -95,6 +95,36 @@ WA2025_WINDOW = (dt.date(2025, 12, 1), dt.date(2025, 12, 31))
 EVENT_WINDOWS = {RS2024_EVENT_ID: RS2024_WINDOW, WA2025_EVENT_ID: WA2025_WINDOW}
 # Horizon-label windows for events dated by window, not per point (else [date, date]).
 LABEL_WINDOWS = {RS2024_EVENT_ID: RS2024_TRIGGER_WINDOW}
+# Fixed event day D per window-dated event (by-lead scoring); else each point's date.
+EVENT_DAYS = {RS2024_EVENT_ID: RS2024_DATE}
+
+# More held-out TEST events (ml/local/test_events.yaml, conductor 2026-11-15): enabled
+# ones join TRIGGER_TEST_EVENTS / EVENT_WINDOWS / LABEL_WINDOWS / EVENT_DAYS here, so
+# every stage sees them. ML_TEST_EVENTS=<id,id|none> overrides `enabled:` in the file.
+# Enabling an event changes the 3b split -> re-run sample .. evaluate (and retrain).
+from .events import load_registry as _load_registry, select as _select  # noqa: E402
+
+TEST_EVENTS_FILE = Path(os.environ.get("ML_TEST_EVENTS_FILE",
+                                       Path(__file__).with_name("test_events.yaml")))
+TEST_EVENT_REGISTRY = _load_registry(TEST_EVENTS_FILE)
+EXTRA_TEST_EVENTS = _select(TEST_EVENT_REGISTRY, os.environ.get("ML_TEST_EVENTS"))
+TRIGGER_TEST_EVENTS = TRIGGER_TEST_EVENTS + tuple(e.event_id for e in EXTRA_TEST_EVENTS)
+for _e in EXTRA_TEST_EVENTS:
+    EVENT_WINDOWS[_e.event_id] = _e.inventory_window
+    if _e.dating == "fixed":
+        LABEL_WINDOWS[_e.event_id] = _e.trigger_window
+        EVENT_DAYS[_e.event_id] = _e.date
+# Leakage guard: GLC/COOLR points within LEAK_DAYS of a TEST event's inventory window
+# and LEAK_KM of any of its points are removed from 3b TRAIN/VAL and 3a positives.
+LEAK_DAYS = 3
+LEAK_KM = 100.0
+# NOAA GFS archive on AWS starts here; earlier TEST events get perfect-forecast only.
+GFS_ARCHIVE_START = dt.date(2021, 3, 23)
+# 3a T_ML positives (L32, conductor 2026-11-15): GLC only. RS 2024 points were 3a
+# positives split by 50 km blocks, so 59 % of RS 3b TEST positives were T_ML TRAIN
+# points (P_trigger x T_ML on RS leaked). RS stays a 3b TEST event; T_ML never sees it.
+T_ML_POSITIVE_SOURCES = ("glc",)
+
 EVENT_LINK_DAYS = 3        # GLC points within 3 days ...
 EVENT_LINK_KM = 100.0      # ... and 100 km are one event
 

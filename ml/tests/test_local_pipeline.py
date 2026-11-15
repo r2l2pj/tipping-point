@@ -959,3 +959,95 @@ def test_by_lead_horizon_mapping():
     import pytest
     with pytest.raises(ValueError):
         horizon_for_lead(14)
+
+
+# ---------------------------------------------------------------- TEST events
+def _ev(**kw):
+    from ml.local.events import TestEvent
+    d = {"event_id": "x_2024", "name": "X", "date": "2024-05-01",
+         "trigger_window": ["2024-04-30", "2024-05-02"], "format": "geojson", "source": "x.geojson"}
+    d.update(kw)
+    return TestEvent.from_dict(d)
+
+
+def test_test_event_validation():
+    import pytest
+    ev = _ev()
+    assert ev.inventory_window == (dt.date(2024, 4, 23), dt.date(2024, 5, 9))
+    with pytest.raises(ValueError):
+        _ev(date="2024-06-01")                       # D outside trigger window
+    with pytest.raises(ValueError):
+        _ev(dating="per_point")                      # per_point needs date_field
+    with pytest.raises(ValueError):
+        _ev(format="kmz")
+
+
+def test_registry_file_parses_and_select(monkeypatch):
+    from ml.local import settings as S
+    from ml.local.events import select
+    reg = S.TEST_EVENT_REGISTRY
+    assert {"helene_2024", "maria_2017"} <= set(reg)
+    assert select(reg, "none") == []
+    assert [e.event_id for e in select(reg, "maria_2017")] == ["maria_2017"]
+    import pytest
+    with pytest.raises(KeyError):
+        select(reg, "nope")
+
+
+def test_load_event_inventory_geojson_polygons_and_dates(tmp_path, monkeypatch):
+    import json
+    from ml.local import labels as L
+    from ml.local import settings as S
+    monkeypatch.setattr(S, "DATA_DIR", tmp_path)
+    poly = {"type": "Polygon", "coordinates": [[[-50, -29], [-49.99, -29], [-49.99, -28.99],
+                                                [-50, -28.99], [-50, -29]]]}
+    feats = [
+        {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-51.0, -29.5]},
+         "properties": {"d": "2024-05-01", "who": "secret@example.com"}},
+        {"type": "Feature", "geometry": poly, "properties": {"d": "2024-05-02"}},
+        {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-51.1, -29.6]},
+         "properties": {"d": "2023-01-01"}},          # outside inventory window -> dropped
+    ]
+    p = tmp_path / "inv.geojson"
+    p.write_text(json.dumps({"type": "FeatureCollection", "features": feats}))
+    df = L.load_event_inventory(_ev(source=str(p), dating="per_point", date_field="d"))
+    assert len(df) == 2 and set(df.source) == {"event"} and set(df.event_id) == {"x_2024"}
+    assert -50 < df.lon.iloc[1] < -49.99                # polygon -> point inside it
+    assert "who" not in df.columns and list(df.columns) == L.COLUMNS
+    fixed = L.load_event_inventory(_ev(source=str(p)))
+    assert len(fixed) == 3 and (fixed.date == pd.Timestamp("2024-05-01")).all()
+
+
+def test_load_event_inventory_arcgis_requests_only_date_field(tmp_path, monkeypatch):
+    from ml.local import labels as L
+    from ml.local import settings as S
+    monkeypatch.setattr(S, "DATA_DIR", tmp_path)
+    seen = []
+
+    class R:
+        def __init__(self, j): self.j = j
+        def raise_for_status(self): pass
+        def json(self): return self.j
+
+    def get(url, params=None, timeout=None):
+        seen.append(params)
+        off = params["resultOffset"]
+        feats = [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [-80 - off - i, 35]},
+                  "properties": {}} for i in range(2)]
+        return R({"features": feats, "properties": {"exceededTransferLimit": off == 0}})
+
+    df = L.load_event_inventory(_ev(format="arcgis", source="https://x/query"), get=get)
+    assert len(df) == 4 and len(seen) == 2
+    assert all(p["outFields"] == "" for p in seen)
+
+
+def test_leak_mask_days_and_km():
+    from ml.local import labels as L
+    glc = pd.DataFrame({"point_id": ["a", "b", "c", "d"], "event_id": ["e1", "e2", "e3", "e4"],
+                        "lon": [-51.0, -51.0, -40.0, -51.0], "lat": [-29.5, -29.5, -10.0, -29.5],
+                        "date": pd.to_datetime(["2024-05-03", "2024-05-10", "2024-05-01", "2023-05-01"])})
+    test = pd.DataFrame({"event_id": ["x"], "lon": [-51.2], "lat": [-29.4],
+                         "date": [pd.Timestamp("2024-05-01")]})
+    m, rep = L.leak_mask(glc, test, {"x": (dt.date(2024, 4, 30), dt.date(2024, 5, 2))}, days=3, km=100)
+    assert m.tolist() == [True, False, False, False]   # b too late, c too far, d other year
+    assert rep.glc_point_id.tolist() == ["a"]

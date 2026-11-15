@@ -1,0 +1,90 @@
+# NASA COOLR *event* inventories (Landslides/COOLR_Events_Points, manual mapping from imagery).
+# Separate layer from COOLR_Reports_Points (the GLC training pull), so unseen by 3b;
+# the leak filter still removes any GLC report within +-3 d / 100 km. All post-2021: GFS ok.
+# Only event_date + geometry are requested.
+events:
+  - event_id: saosebastiao_2023
+    name: "São Sebastião / north coast of São Paulo, Feb 2023 (NASA COOLR manual inventory)"
+    country: BR
+    date: 2023-02-19
+    trigger_window: [2023-02-18, 2023-02-19]   # rain over the night of Feb 18-19 (local)
+    dating: fixed
+    format: arcgis
+    source: "https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/COOLR_Events_Points/FeatureServer/0/query"
+    where: "event_title = 'Manual inventory of landslides in Brazil, 2023-02-19'"
+    citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
+    license: "NASA open data"
+    enabled: false
+  - event_id: petropolis_2022
+    name: "Petrópolis RJ, 15 Feb 2022 (NASA COOLR manual inventory)"
+    country: BR
+    date: 2022-02-15
+    trigger_window: [2022-02-15, 2022-02-15]
+    dating: fixed
+    format: arcgis
+    source: "https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/COOLR_Events_Points/FeatureServer/0/query"
+    where: "event_title = 'Manual inventory of landslides in Brazil, 2022-02-15'"
+    citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
+    license: "NASA open data"
+    enabled: false
+  - event_id: angra_2022
+    name: "Angra dos Reis / Paraty RJ, 1-2 Apr 2022 (NASA COOLR manual inventory)"
+    country: BR
+    date: 2022-04-02
+    trigger_window: [2022-04-01, 2022-04-02]
+    dating: fixed
+    format: arcgis
+    source: "https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/COOLR_Events_Points/FeatureServer/0/query"
+    where: "event_title = 'Manual inventory of landslides in Brazil, 2022-04-02'"
+    citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
+    license: "NASA open data"
+    enabled: false
+  - event_id: recife_2022
+    name: "Greater Recife PE, 28 May 2022 (NASA COOLR manual inventory)"
+    country: BR
+    date: 2022-05-28
+    trigger_window: [2022-05-27, 2022-05-28]
+    dating: fixed
+    format: arcgis
+    source: "https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/COOLR_Events_Points/FeatureServer/0/query"
+    where: "event_title = 'Manual inventory of landslides in Brazil, 2022-05-28'"
+    citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
+    license: "NASA open data"
+    enabled: false
+  - event_id: himachal_2023
+    name: "Himachal Pradesh, India, Jul 2023 monsoon (NASA COOLR manual inventory)"
+    country: IN
+    date: 2023-07-09
+    trigger_window: [2023-07-08, 2023-07-10]
+    dating: fixed
+    format: arcgis
+    source: "https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/COOLR_Events_Points/FeatureServer/0/query"
+    where: "event_title = 'Manual inventory of landslides in India, 2023-07-09'"
+    citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
+    license: "NASA open data"
+    enabled: false
+  - event_id: rwanda_2023
+    name: "Western/Northern Rwanda, 2-3 May 2023 (NASA COOLR manual inventory)"
+    country: RW
+    date: 2023-05-02
+    trigger_window: [2023-05-02, 2023-05-03]
+    dating: fixed
+    format: arcgis
+    source: "https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/COOLR_Events_Points/FeatureServer/0/query"
+    where: "event_title = 'Manual inventory of landslides in Rwanda, 2023-05-02'"
+    citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
+    license: "NASA open data"
+    enabled: false
+  - event_id: fiona_2022
+    name: "Puerto Rico, Hurricane Fiona, Sep 2022 (NASA COOLR manual inventory)"
+    country: PR
+    date: 2022-09-19
+    trigger_window: [2022-09-18, 2022-09-19]
+    dating: fixed
+    format: arcgis
+    source: "https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/COOLR_Events_Points/FeatureServer/0/query"
+    where: "event_title = 'Manual inventory of landslides in Puerto Rico, 2022-09-19'"
+    citation: "NASA COOLR event inventory (doi:10.6084/m9.figshare.26972467)"
+    license: "NASA open data"
+    max_points: 3000
+    enabled: false

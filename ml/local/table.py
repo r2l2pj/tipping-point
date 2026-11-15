@@ -61,13 +61,28 @@ def build_labels(*, smoke: bool = False, force: bool = False) -> pd.DataFrame:
     # Fixed event date, independent of rain (no circular peak-rain dating).
     rs["date"] = pd.Timestamp(S.RS2024_DATE)
     rs["date_precision"] = "event-window"
-    inv = L.finalize(pd.concat([glc, rs, wa], ignore_index=True))
+    # Extra held-out TEST events (test_events.yaml). An enabled event that fails to
+    # load stops the stage: silently shrinking TEST would change the claim.
+    extra = [L.load_event_inventory(ev) for ev in S.EXTRA_TEST_EVENTS]
+    inv = L.finalize(pd.concat([glc, rs, wa, *extra], ignore_index=True))
     path = S.path("labels", "inventory.csv")
     inv.to_csv(path, index=False)
-    log.info("inventory: %d points (%d GLC, %d RS 2024, %d WA 2025) -> %s",
+    log.info("inventory: %d points (%d GLC, %d RS 2024, %d WA 2025, %d extra TEST %s) -> %s",
              len(inv), (inv.source == "glc").sum(), (inv.source == "rs2024").sum(),
-             (inv.source == "wa2025").sum(), path)
+             (inv.source == "wa2025").sum(), (inv.source == "event").sum(),
+             inv.loc[inv.source == "event", "event_id"].value_counts().to_dict(), path)
     return inv
+
+
+def drop_test_leaks(glc: pd.DataFrame, inv: pd.DataFrame, tag: str) -> pd.DataFrame:
+    """Remove GLC points that may be a held-out TEST event (S.LEAK_DAYS / S.LEAK_KM);
+    the removed rows are written to ml/models/test_event_leaks_<tag>.csv."""
+    test_pts = inv[inv.event_id.isin(S.TRIGGER_TEST_EVENTS)]
+    mask, rep = L.leak_mask(glc, test_pts, S.EVENT_WINDOWS)
+    SP.save_table(rep, S.MODEL_DIR / f"test_event_leaks_{tag}.csv")
+    log.info("%s: %d GLC points removed as possible TEST-event leaks %s", tag, int(mask.sum()),
+             rep.test_event.value_counts().to_dict() if len(rep) else {})
+    return glc[~mask]
 
 
 def load_inventory() -> pd.DataFrame:
@@ -87,10 +102,15 @@ def sample_3a(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> 
     rng = np.random.default_rng(seed)
     glc = inv[(inv.source == "glc") & inv.acc_km.le(S.GLC_MAX_ACC_KM)
               & L.in_bbox(inv.lon, inv.lat, region)]
-    rs = inv[(inv.source == "rs2024") & L.in_bbox(inv.lon, inv.lat, region)]
-    cap = 60 if smoke else S.RS2024_MAX_POINTS
-    rs = rs.sample(n=min(len(rs), cap), random_state=seed)
-    pos = pd.concat([glc, rs], ignore_index=True).assign(label=1, neg_type="")
+    glc = drop_test_leaks(glc, inv, "3a")
+    parts = [glc]
+    # off since L32 (RS is a 3b TEST event); smoke keeps a few RS points only to have
+    # any 3a positives in its 1° box (plumbing test, never reported)
+    if "rs2024" in S.T_ML_POSITIVE_SOURCES or smoke:
+        rs = inv[(inv.source == "rs2024") & L.in_bbox(inv.lon, inv.lat, region)]
+        cap = 60 if smoke else S.RS2024_MAX_POINTS
+        parts.append(rs.sample(n=min(len(rs), cap), random_state=seed))
+    pos = pd.concat(parts, ignore_index=True).assign(label=1, neg_type="")
 
     known_lon, known_lat = inv["lon"].to_numpy(), inv["lat"].to_numpy()
     want = S.NEG_RATIO_3A * len(pos)
@@ -141,15 +161,18 @@ def sample_3b(inv: pd.DataFrame, *, smoke: bool = False, seed: int = S.SEED) -> 
               & inv.trigger.isin(S.GLC_RAIN_TRIGGERS) & inv.date.ge(since)]
     if S.REGION_TRIGGER is not None:
         glc = glc[L.in_bbox(glc.lon, glc.lat, S.REGION_TRIGGER)]
+    glc = drop_test_leaks(glc, inv, "3b")
     rs = inv[(inv.source == "rs2024") & inv.date.notna()]
     wa = inv[(inv.source == "wa2025") & inv.date.notna()]
+    extra = inv[(inv.source == "event") & inv.event_id.isin(S.TRIGGER_TEST_EVENTS)
+                & inv.date.notna()]
     if smoke:
         # tiny but real: 16 random GLC points worldwide + a few RS points + all WA
         glc = glc.sample(n=min(len(glc), S.SMOKE_GLC_N), random_state=seed)
         rs = rs.sample(n=min(len(rs), 30), random_state=seed)
     else:
         rs = rs.sample(n=min(len(rs), S.RS2024_MAX_POINTS), random_state=seed)
-    pos = pd.concat([glc, rs, wa], ignore_index=True).assign(label=1, neg_type="")
+    pos = pd.concat([glc, rs, wa, extra], ignore_index=True).assign(label=1, neg_type="")
     pos["date"] = pd.to_datetime(pos["date"]).dt.normalize()
 
     events = SP.split_events_3b(pos, seed=seed)

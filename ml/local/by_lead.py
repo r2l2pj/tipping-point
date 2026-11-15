@@ -41,7 +41,28 @@ from .trainer import _load_table, _rain
 log = logging.getLogger(__name__)
 LEADS = range(14)
 MODELS_GFS = ("xgb_all", "xgb_rain_soil", "rf_all", "rule_tpi")
-SCOPES = {"rs_2024": "south_southeast_brazil", "wa_2025": "north_america"}
+CLEAN_3A_KM = 5.0  # T_ML-clean: >= 5 km from every 3a TRAIN/VAL positive
+
+
+def clean_3a_mask(lon, lat, km: float = CLEAN_3A_KM) -> np.ndarray:
+    """True where T_ML never saw a training/VAL positive within ``km`` (3a used RS
+    2024 points as positives: 59 % of RS 3b TEST positives are 3a TRAIN points)."""
+    from . import labels as L
+    r3a = pd.read_csv(S.DATA_DIR / "tables" / "rows_3a.csv")
+    ref = r3a[(r3a.label == 1) & r3a.split.isin(["train", "val", "buffer"])]
+    return L.min_dist_km(np.asarray(lon), np.asarray(lat), ref.lon.to_numpy(), ref.lat.to_numpy()) >= km
+
+
+def scopes(rows: pd.DataFrame) -> dict[str, np.ndarray]:
+    """Per TEST event, plus the T_ML-clean subset of each (positives only filtered;
+    negatives are kept whole — elsewhere negatives are all >= 5 km already)."""
+    out = {}
+    pos = (rows.neg_set == "positive").to_numpy()
+    for ev in sorted(rows.loc[pos, "event_id"].dropna().unique()):
+        m = (rows.event_id == ev).to_numpy()
+        out[ev] = m
+        out[f"{ev}_clean3a"] = m & (~pos | rows.clean_3a.to_numpy())
+    return out
 
 
 def horizon_for_lead(k: int) -> str:
@@ -53,8 +74,10 @@ def horizon_for_lead(k: int) -> str:
 
 
 def event_day(df: pd.DataFrame) -> pd.Series:
+    """D per row: the event's fixed day (S.EVENT_DAYS, e.g. RS 2024) else the row's date."""
     d = pd.to_datetime(df["date"]).dt.normalize()
-    d[(df["event_id"] == S.RS2024_EVENT_ID).to_numpy()] = pd.Timestamp(S.RS2024_DATE)
+    for ev, day in S.EVENT_DAYS.items():
+        d[(df["event_id"] == ev).to_numpy()] = pd.Timestamp(day)
     return d
 
 
@@ -75,6 +98,7 @@ def lead_rows() -> pd.DataFrame:
     el["neg_set"] = "elsewhere"
     rows = pd.concat([pos, neg, el], ignore_index=True, sort=False)
     rows["y"] = (rows.neg_set == "positive").astype(int)
+    rows["clean_3a"] = clean_3a_mask(rows.lon, rows.lat)
     return rows
 
 
@@ -127,13 +151,20 @@ def run(fetch: bool = False) -> dict:
         scores[h] = {"idx": np.flatnonzero(m.to_numpy()), **sc}
         log.info("by_lead %s scored (%d rows)", h, len(sub))
 
-    for scope, region in SCOPES.items():
+    sc_masks = scopes(rows)
+    out["clean_3a_note"] = ("<scope>_clean3a keeps only positives >= 5 km from every 3a "
+                            "TRAIN/VAL/buffer positive: the only scope where served_product "
+                            "(x T_ML) is leak-free")
+    out["n_pos_clean3a"] = {ev: int(((rows.neg_set == "positive") & rows.clean_3a
+                                     & (rows.event_id == ev) & (rows.k == 0)).sum())
+                            for ev in rows.loc[rows.neg_set == "positive", "event_id"].unique()}
+    for scope, smask in sc_masks.items():
         blk = {}
         for k in LEADS:
             h = horizon_for_lead(k)
             s = scores[h]
             sub = rows.iloc[s["idx"]]
-            in_scope = (sub.region == region).to_numpy()
+            in_scope = smask[s["idx"]]
             is_k = (sub.k == k).to_numpy() | (sub.neg_set == "same_point").to_numpy()
             ns = sub.neg_set.to_numpy()
             y = sub.y.to_numpy()
@@ -230,6 +261,13 @@ def main(argv=None) -> int:
     print(recall_line(res, "xgb_all_perfect"))
     print()
     print(compact_md(res, "wa_2025"))
+    print()
+    print("T_ML-clean RS positives:", res["n_pos_clean3a"])
+    print(compact_md(res, "rs_2024_clean3a"))
+    for negs in ("elsewhere", "same_point"):
+        print()
+        print(f"rs_2024_clean3a / {negs}")
+        print(compact_md(res, "rs_2024_clean3a", negs))
     return 0
 
 
