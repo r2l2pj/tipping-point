@@ -1,0 +1,9 @@
+# /etc/cron.d/tipping-point-sqlite
+# Keep /app/.data/tipping_point.sqlite (volume tipping-point-data) current
+# from the published 3-hourly snapshot. See docs/DEPLOY-VPS.md.
+# The data job starts at :17 every 3 h (UTC) and takes up to 45 min; a run
+# every 30 min picks the new snapshot up soon after it is published. An
+# unchanged snapshot is a no-op. root: the volume directory is root-only.
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+7,37 * * * * root /usr/local/sbin/tipping-point-sqlite-refresh 2>&1 | logger -t tipping-point-sqlite
