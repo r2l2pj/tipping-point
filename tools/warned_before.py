@@ -96,7 +96,7 @@ def _nanmax(arrays: list[np.ndarray]) -> np.ndarray:
 
 
 def evaluate(cog: Path, case: str, hazard: str, series: Path, idx: np.ndarray, w: np.ndarray,
-             anchor: dt.datetime) -> dict:
+             anchor: dt.datetime, cog_suffix: str = "") -> dict:
     anchor_day = anchor.date()
 
     def hours_before(day: dt.date) -> float:
@@ -111,7 +111,7 @@ def evaluate(cog: Path, case: str, hazard: str, series: Path, idx: np.ndarray, w
                 if win else None)
 
     def gfs_frames(issue: dt.date):
-        p = cog / f"{case}_tpi_gfs_{issue:%Y%m%d}.tif"
+        p = cog / f"{case}_tpi_gfs_{issue:%Y%m%d}{cog_suffix}.tif"
         if not p.exists():
             return [], []
         names, arrays = [], []
@@ -205,20 +205,23 @@ def by_lead(r: dict, anchor: dt.datetime) -> dict:
     return out
 
 
-def anchored(cog, case, hazard, series, idx, w, a: dict) -> dict:
-    r = evaluate(cog, case, hazard, series, idx, w, a["utc"])
+def anchored(cog, case, hazard, series, idx, w, a: dict, cog_suffix: str = "") -> dict:
+    r = evaluate(cog, case, hazard, series, idx, w, a["utc"], cog_suffix)
     return {"anchor_basis": a["basis"], "anchor_short": a["short"], "anchor_utc": a["utc"].isoformat(),
             "anchor_local": a["local"],
             "anchor_label": a["label"], "anchor_source": a["source"], **r, "by_lead": by_lead(r, a["utc"])}
 
 
-def onset_lead_time(cog: Path, case: str, anchor: dt.datetime) -> dict:
+def onset_lead_time(cog: Path, case: str, anchor: dt.datetime, cog_suffix: str = "") -> dict:
     """forecast_lead_time (L22/L28b definition) re-anchored on the onset: an issue day I
     (00Z run, I < anchor) 'warned' if any of its frames depicting a date <= the onset
     day has an AOI max (slide or flood) > 0.6; lead_h = anchor - I 00Z."""
     rows = []
-    for p in sorted(cog.glob(f"{case}_tpi_gfs_*.tif")):
-        issue = _day(p.stem.rsplit("_", 1)[1])
+    for p in sorted(cog.glob(f"{case}_tpi_gfs_*{cog_suffix}.tif")):
+        tail = p.stem.removesuffix(cog_suffix).rsplit("_", 1)[1]
+        if not (len(tail) == 8 and tail.isdigit()):
+            continue
+        issue = _day(tail)
         t0 = dt.datetime.combine(issue, dt.time(0), tzinfo=dt.UTC)
         if t0 >= anchor:
             continue
@@ -263,11 +266,11 @@ def _sens(r: dict) -> dict:
     return {k: r[k] for k in keep}
 
 
-def run(data_root: Path) -> dict:
+def run(data_root: Path, cog_suffix: str = "") -> dict:
     out = {}
     # wa_2025 flood (area)
     wa = data_root / "wa_2025"
-    series = wa / "cog" / "wa_2025_tpi_flood_20251210.tif"
+    series = wa / "cog" / f"wa_2025_tpi_flood_20251210{cog_suffix}.tif"
     with rasterio.open(series) as g:
         idx, w = flood_pixels(wa / "cog" / "wa_2025_flood_nisar_20251210.tif", g)
     on, *sens = ANCHORS["wa_2025"]
@@ -281,8 +284,8 @@ def run(data_root: Path) -> dict:
                                       "raster (the denominator); the canonical flooded_km2 "
                                       f"{canonical:.2f} km² is the polygon set within the swath"),
         "canonical_flooded_km2": round(canonical, 2),
-        **anchored(wa / "cog", "wa_2025", "flood", series, idx, w, on),
-        "sensitivity": [_sens(anchored(wa / "cog", "wa_2025", "flood", series, idx, w, a)) for a in sens],
+        **anchored(wa / "cog", "wa_2025", "flood", series, idx, w, on, cog_suffix),
+        "sensitivity": [_sens(anchored(wa / "cog", "wa_2025", "flood", series, idx, w, a, cog_suffix)) for a in sens],
         "explanation": ("TPI_flood is pixel-local: at the flooded pixels T_flood is high (HAND, mean "
                         "~0.96) but local 3-day rain stayed below the pixel's P90 (R = 0) and SMAP "
                         "wetness low until the 2025-12-10 frame. The river flooding was driven by rain "
@@ -291,7 +294,7 @@ def run(data_root: Path) -> dict:
     }
     # rs_2024 landslides (points)
     rs = data_root / "rs_2024"
-    series = rs / "cog" / "rs_2024_tpi_slide_20240502.tif"
+    series = rs / "cog" / f"rs_2024_tpi_slide_20240502{cog_suffix}.tif"
     with rasterio.open(series) as g:
         idx, w = inventory_points(rs / "geojson" / "landslide_catalog.geojson", g)
     on, *sens = ANCHORS["rs_2024"]
@@ -301,16 +304,15 @@ def run(data_root: Path) -> dict:
                       + "; the inventory has no per-slide times (imagery-mapped), so every point is "
                         "scored against the event onset",
         "n_points": len(w),
-        **anchored(rs / "cog", "rs_2024", "slide", series, idx, w, on),
-        "sensitivity": [_sens(anchored(rs / "cog", "rs_2024", "slide", series, idx, w, a)) for a in sens],
+        **anchored(rs / "cog", "rs_2024", "slide", series, idx, w, on, cog_suffix),
+        "sensitivity": [_sens(anchored(rs / "cog", "rs_2024", "slide", series, idx, w, a, cog_suffix)) for a in sens],
     }
     out["rs_2024_flood"] = None
     return out
 
 
-def merge(data_root: Path, res: dict) -> None:
-    path = data_root / "metrics.json"
-    m = json.loads(path.read_text())
+def apply(res: dict, data_root: Path, m: dict, cog_suffix: str = "") -> None:
+    """Merge `res` into an in-memory metrics dict (no file IO)."""
     for case, key in (("wa_2025", "flood_warned"), ("rs_2024", "slide_warned")):
         blob = m["cases"][case]
         r = res[case]
@@ -346,11 +348,11 @@ def merge(data_root: Path, res: dict) -> None:
     for case in ("wa_2025", "rs_2024"):
         on, *sens = ANCHORS[case]
         cog = data_root / case / "cog"
-        lt = onset_lead_time(cog, case, on["utc"])
+        lt = onset_lead_time(cog, case, on["utc"], cog_suffix)
         lt.update(anchor_basis="onset", anchor_short=on["short"], anchor_local=on["local"], anchor_label=on["label"],
                   anchor_source=on["source"], sensitivity=[
                       {"anchor_basis": a["basis"], "anchor_short": a["short"], "anchor_local": a["local"],
-                       **{k: v for k, v in onset_lead_time(cog, case, a["utc"]).items()
+                       **{k: v for k, v in onset_lead_time(cog, case, a["utc"], cog_suffix).items()
                           if k not in ("issue_days", "definition")}} for a in sens])
         m["cases"][case]["forecast_lead_time_onset"] = lt
     rsb = m["cases"]["rs_2024"]
@@ -360,6 +362,12 @@ def merge(data_root: Path, res: dict) -> None:
         "no flood reference map for RS 2024: event predates NISAR, OPERA DSWx-HLS was 100 % cloud, "
         "OPERA DSWx-S1 has no granules for 2024-05-01..20 (CMR) and the S1 RTC route is pending the "
         "ASF OPERA RTC-S1 EULA")
+
+
+def merge(data_root: Path, res: dict) -> None:
+    path = data_root / "metrics.json"
+    m = json.loads(path.read_text())
+    apply(res, data_root, m)
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(m, indent=2, ensure_ascii=False) + "\n")
     os.replace(tmp, path)
@@ -368,9 +376,14 @@ def merge(data_root: Path, res: dict) -> None:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--data-root", type=Path, default=REPO / "data")
+    ap.add_argument("--cog-suffix", default="",
+                    help="COG filename suffix before .tif (e.g. _v2 for the replay v2 frames)")
     ap.add_argument("--write", action="store_true", help="merge into metrics.json")
     args = ap.parse_args(argv)
-    res = run(args.data_root)
+    if args.write and args.cog_suffix:
+        raise SystemExit("--write merges under the v1 keys only; re-scored "
+                         "(_v2) results are merged via tools/replay_v2_score.py")
+    res = run(args.data_root, args.cog_suffix)
     for case in ("wa_2025", "rs_2024"):
         r = res[case]
         print(case, r["hazard"], "observed", r["observed"], "\n  gfs", r["forecast_gfs"],

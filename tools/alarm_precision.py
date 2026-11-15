@@ -74,11 +74,14 @@ FLAT_REFERENCE = "catalog"
 
 
 # ---------------------------------------------------------------- geometry
-def iter_issue_files(cog_dir: Path, case: str) -> list[tuple[dt.date, Path]]:
-    """(issue date, path) for every <case>_tpi_gfs_<YYYYMMDD>.tif, sorted."""
+def iter_issue_files(cog_dir: Path, case: str, cog_suffix: str = "") -> list[tuple[dt.date, Path]]:
+    """(issue date, path) for every <case>_tpi_gfs_<YYYYMMDD><cog_suffix>.tif, sorted."""
     out = []
-    for p in sorted(cog_dir.glob(f"{case}_tpi_gfs_*.tif")):
-        out.append((wb._day(p.stem.rsplit("_", 1)[1]), p))
+    for p in sorted(cog_dir.glob(f"{case}_tpi_gfs_*{cog_suffix}.tif")):
+        tail = p.stem.removesuffix(cog_suffix).rsplit("_", 1)[1]
+        if not (len(tail) == 8 and tail.isdigit()):
+            continue
+        out.append((wb._day(tail), p))
     return out
 
 
@@ -217,8 +220,8 @@ def summarize(units: list[dict], n_munis: int, n_slide_munis: int,
     }
 
 
-def run_case(data_root: Path, case: str) -> dict:
-    issues = iter_issue_files(data_root / case / "cog", case)
+def run_case(data_root: Path, case: str, cog_suffix: str = "") -> dict:
+    issues = iter_issue_files(data_root / case / "cog", case, cog_suffix)
     if not issues:
         raise SystemExit(f"{case}: no tpi_gfs COGs")
     names, geoms = _muni_features(case, data_root)
@@ -395,9 +398,13 @@ def markdown_table(res: dict) -> str:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--data-root", type=Path, default=REPO / "data")
+    ap.add_argument("--cog-suffix", default="")
     ap.add_argument("--write", action="store_true", help="merge into metrics.json")
     args = ap.parse_args(argv)
-    res = {case: run_case(args.data_root, case) for case in ("rs_2024", "wa_2025")}
+    if args.write and args.cog_suffix:
+        raise SystemExit("--write merges under the v1 keys only; re-scored "
+                         "(_v2) results are merged via tools/replay_v2_score.py")
+    res = {case: run_case(args.data_root, case, args.cog_suffix) for case in ("rs_2024", "wa_2025")}
     print(markdown_table(res))
     if args.write:
         merge(args.data_root, res)

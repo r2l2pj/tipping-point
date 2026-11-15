@@ -35,11 +35,12 @@ import warned_before as wb
 CUTS = {"alto_plus": 0.4, "critico": 0.6}
 
 
-def run_frames(cog: Path, case: str, hazard: str, anchor: dt.datetime):
+def run_frames(cog: Path, case: str, hazard: str, anchor: dt.datetime,
+               cog_suffix: str = ""):
     """(issue, max-over-frames TPI array, frame names, transform) for the run
     issued on the UTC date of anchor - 24 h (frames depicting <= anchor day)."""
     issue = (anchor - dt.timedelta(hours=24)).date()
-    p = cog / f"{case}_tpi_gfs_{issue:%Y%m%d}.tif"
+    p = cog / f"{case}_tpi_gfs_{issue:%Y%m%d}{cog_suffix}.tif"
     with rasterio.open(p) as src:
         arrs, names = [], []
         for b, name in enumerate(src.descriptions, start=1):
@@ -81,15 +82,16 @@ def lift(hit, share):
     return round(hit / share, 2)
 
 
-def run(data_root: Path) -> dict:
-    m = json.loads((data_root / "metrics.json").read_text())["cases"]
+def run(data_root: Path, cog_suffix: str = "", cases: dict | None = None) -> dict:
+    m = cases if cases is not None else json.loads(
+        (data_root / "metrics.json").read_text())["cases"]
     rs, wa = m["rs_2024"], m["wa_2025"]
     on_rs = wb.ANCHORS["rs_2024"][0]["utc"]
     on_wa = wb.ANCHORS["wa_2025"][0]["utc"]
     out = {}
 
     # RS slide: whole case domain + EMS AOIs
-    issue, tpi, names, tr, crs = run_frames(data_root / "rs_2024" / "cog", "rs_2024", "slide", on_rs)
+    issue, tpi, names, tr, crs = run_frames(data_root / "rs_2024" / "cog", "rs_2024", "slide", on_rs, cog_suffix)
     km2 = cell_km2(tr, tpi.shape)
     whole = area_shares(tpi, km2, np.ones(tpi.shape, bool))
     ems = area_shares(tpi, km2, ems_domain(data_root, tr, tpi.shape, crs))
@@ -108,7 +110,7 @@ def run(data_root: Path) -> dict:
         v.update(issue=issue.isoformat(), frames=names, hazard="slide")
 
     # RS flood vs EMS flood (EMS AOIs)
-    issue_f, tpi_f, names_f, tr_f, crs_f = run_frames(data_root / "rs_2024" / "cog", "rs_2024", "flood", on_rs)
+    issue_f, tpi_f, names_f, tr_f, crs_f = run_frames(data_root / "rs_2024" / "cog", "rs_2024", "flood", on_rs, cog_suffix)
     km2f = cell_km2(tr_f, tpi_f.shape)
     g = rs["flood_ems"]["flagged_before_onset"]["gfs_issued"][issue_f.isoformat()]
     out["rs_ems_flood"] = {
@@ -118,7 +120,7 @@ def run(data_root: Path) -> dict:
         "issue": issue_f.isoformat(), "frames": names_f, "hazard": "flood"}
 
     # WA flood (NISAR-mapped candidates), whole case grid
-    issue_w, tpi_w, names_w, tr_w, _ = run_frames(data_root / "wa_2025" / "cog", "wa_2025", "flood", on_wa)
+    issue_w, tpi_w, names_w, tr_w, _ = run_frames(data_root / "wa_2025" / "cog", "wa_2025", "flood", on_wa, cog_suffix)
     out["wa_nisar_flood"] = {
         "hit": {"alto_plus": wa["flood_warned_gfs_24h_pct"], "critico": wa["flood_warned_gfs_24h_critical_pct"]},
         "domain": "wa_2025 case grid (finite TPI_flood)",
@@ -173,9 +175,13 @@ def merge(data_root: Path, res: dict) -> None:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--data-root", type=Path, default=REPO / "data")
+    ap.add_argument("--cog-suffix", default="")
     ap.add_argument("--write", action="store_true")
     args = ap.parse_args(argv)
-    res = run(args.data_root)
+    if args.write and args.cog_suffix:
+        raise SystemExit("--write merges under the v1 keys only; re-scored "
+                         "(_v2) results are merged via tools/replay_v2_score.py")
+    res = run(args.data_root, args.cog_suffix)
     for k, v in res.items():
         print(k, v["issue"], "hit", v["hit"], "share", {c: v["area"][f"{c}_share_pct"] for c in CUTS},
               "lift", v["lift"], "domain_km2", v["area"]["domain_km2"])
