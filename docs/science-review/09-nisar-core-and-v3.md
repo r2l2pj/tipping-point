@@ -130,8 +130,9 @@ the RS 24 h hit rate by at most −2 points (36.45 → 34.25 %). Re-run it on v2
   Dates up to Oct 21 are in `NISAR_L2_GCOV_PROVISIONAL_V1`; from Oct 24 they are in `_V1`.
 - Other tracks: 082 D (Sep 23 / Oct 5 / 17 / 29), 060 A, 132 A.
 - The swath covers Uruguaiana but not Itaqui (track 010 D).
-- **Correction:** our first search used only `_V1` and wrongly called the teammate's Sep 30 → Oct 12
-  pair "likely Sentinel-1". It is NISAR provisional GCOV, and it is relabelled.
+- **Sensor check:** the teammate's Sep 30 → Oct 12 pair is NISAR (the provisional GCOV collection,
+  `NISAR_L2_GCOV_PROVISIONAL_V1`). Our first search covered only `_V1`, which starts Oct 24, so for
+  about an hour the sensor was labelled "unconfirmed". It is now labelled NISAR (GCOV provisional).
 
 **What is published.**
 
