@@ -18,9 +18,17 @@
     "wkt": "POLYGON((-122.6 47.0, -121.5 47.0, -121.5 48.5, -122.6 48.5, -122.6 47.0))"
   },
   "gee": {
-    "aoi_bbox": [-122.6, 47.0, -121.5, 48.5],
+    "aoi_bbox": [
+      -122.6,
+      47.0,
+      -121.5,
+      48.5
+    ],
     "reference_date": "2025-12-10",
-    "window": { "start": "2025-11-30", "end": "2025-12-20" },
+    "window": {
+      "start": "2025-11-30",
+      "end": "2025-12-20"
+    },
     "window_before_days": 10,
     "window_after_days": 10,
     "note": "JS can't read files — the gee/0*.js pasted bboxes/dates must mirror these values by hand. window = reference_date -/+ window_*_days (config.yaml cases.wa_2025)."
@@ -105,5 +113,56 @@
   "hazards": [
     "flood",
     "landslide"
-  ]
+  ],
+  "timeline_marks": [
+    {
+      "date": "2025-11-22",
+      "label": "NISAR pass (track 172 D)",
+      "kind": "nisar"
+    },
+    {
+      "date": "2025-12-03",
+      "label": "Forecast index Critical on landslide-prone cells (NOAA GFS run of Dec 3) — not where it later flooded",
+      "kind": "signal"
+    },
+    {
+      "date": "2025-12-04",
+      "label": "NISAR pass (track 172 D)",
+      "kind": "nisar"
+    },
+    {
+      "date": "2025-12-05",
+      "label": "NWS Seattle Flood Watch issued (16:10 PST), incl. landslide risk",
+      "kind": "event"
+    },
+    {
+      "date": "2025-12-08",
+      "label": "Heavy rain begins; Skagit County EOC fully activated (21:00 PST)",
+      "kind": "event",
+      "landing": true
+    },
+    {
+      "date": "2025-12-09",
+      "label": "Landslides, road closures and evacuations (Dec 9-10, Snohomish/King)",
+      "kind": "event"
+    },
+    {
+      "date": "2025-12-11",
+      "label": "River records on the Skagit and Snohomish (Dec 11-12)",
+      "kind": "event"
+    },
+    {
+      "date": "2025-12-16",
+      "label": "NISAR pass (track 172 D)",
+      "kind": "nisar"
+    }
+  ],
+  "timeline_marks_sources": {
+    "onset_eoc": "WA EMD SEOC sitrep 25-4783 (2025-12-10) https://content.govdelivery.com/attachments/WAMILITARY/2025/12/11/file_attachments/3490229/SEOC_Sitrep-25-4783_12102025.pdf",
+    "flood_watch": "NWS Seattle FFASEW, VTEC O.NEW.KSEW.FA.A.0012 (events/wa-2025-12.json official_warning)",
+    "slides_evacuations": "Snohomish County release (Dec 9) + WA EMD sitrep 12/10 (North Bend slide closure); damage_anchor.alternates",
+    "river_records": ".crew/research/event-onsets.md (WA row: river records Dec 11-12)",
+    "nisar": "NISAR GCOV/GUNW track 172 D frame 064 passes Nov 22, Dec 4, Dec 16 (nisar.gunw_note)",
+    "forecast_signal": "data/metrics.json cases.wa_2025.forecast_lead_time_onset.earliest_critical_issue = 2025-12-03 (Critical anywhere in the AOI; lead-analysis: driven by slide-critical cells, flood_warned_* = 0 %)"
+  }
 }
