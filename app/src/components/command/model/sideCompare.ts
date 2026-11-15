@@ -133,22 +133,28 @@ function mlDays(bundle: CcBundle): { date: string; label: string }[] {
 // NISAR pass days for a side: the dates of its track (Now offers every
 // track, replays stay on the main track as before); without a nisar_frame
 // stack the pair's own dates.
-export function nisarSideDays(bundle: CcBundle, track?: string): { date: string; label: string }[] {
+// Lucas: EVERY NISAR pass on each side, any order, any track — one list
+// "Sep 23, 2026 · 082D · 4005" (value date|track). Only identical picks are
+// blocked; a different track gets a non-blocking note (sidesCompare).
+export function nisarSideDays(bundle: CcBundle, _track?: string): { date: string; label: string; value?: string; track?: string }[] {
+  void _track;
   const tracks = nisarTracks(bundle);
-  const offer = bundle.mode === "live" ? tracks : tracks.slice(0, 1);
-  const t = (track ? offer.find((x) => x.track === track) : undefined) ?? offer[0];
-  const dates = t ? t.dates : nisarPairDays(bundle);
-  return dates.map((d) => {
-    const f = t?.frames[d];
+  if (!tracks.length) return nisarPairDays(bundle).map((d) => ({ date: d, label: fmtDate(d) }));
+  const out: { date: string; label: string; value: string; track?: string }[] = [];
+  for (const t of tracks) for (const d of t.dates) {
+    const f = t.frames[d];
     const mode = (f?.HH?.mode ?? f?.HV?.mode)?.split("_")[0];
-    return { date: d, label: `${fmtDayShort(d)}${mode ? ` · ${mode}` : ""}` };
-  });
+    out.push({ date: d, track: t.track || undefined, value: `${d}|${t.track}`,
+      label: `${fmtDate(d)}${t.track ? ` · ${t.track}` : ""}${mode ? ` · ${mode}` : ""}` });
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date) || (a.track ?? "").localeCompare(b.track ?? ""));
 }
 
-// Tracks the case offers: all of them in Now, the main track only for
-// replays (context passes of other tracks are never compared).
-const offeredTracks = (bundle: CcBundle) =>
-  (bundle.mode === "live" ? nisarTracks(bundle) : nisarTracks(bundle).slice(0, 1));
+// Tracks the case offers: all of them (Lucas: any pass on either side).
+const offeredTracks = (bundle: CcBundle) => nisarTracks(bundle);
+// The default pair stays on the main track (most passes: 010D Uruguaiana).
+export const mainTrackDays = (bundle: CcBundle): string[] =>
+  nisarTracks(bundle)[0]?.dates ?? nisarPairDays(bundle);
 
 const nisarDaysAll = (bundle: CcBundle): string[] => {
   const t = offeredTracks(bundle);
@@ -285,7 +291,13 @@ export function normSide(bundle: CcBundle, steps: readonly Step[], hazard: Hazar
   const date = days.includes(day) ? day : (nearestDay(days, day) ?? day);
   const out: Side = { ...s, date };
   if (isRiskLayer(s.layer)) out.lead = (s.lead ?? 0) as IssueLead;
-  if (s.layer === "nisar") out.pol = s.pol === "HV" ? "HV" : "HH";
+  if (s.layer === "nisar") {
+    out.pol = s.pol === "HV" ? "HV" : "HH";
+    // A pass is date + track: keep the side's track when it flew that day,
+    // else the track that did.
+    const passes = nisarSideDays(bundle).filter((d) => d.date === date);
+    if (passes.length && !passes.some((d) => (d.track ?? "") === (s.track ?? ""))) out.track = passes[0].track;
+  }
   if (s.layer === "ml") out.horizon = s.horizon ?? probHorizonsAvailable(bundle.manifest?.layers)[0] ?? "24h";
   return out;
 }
@@ -325,7 +337,7 @@ export function defaultSides(
       : { layer: want, date: nearestDay(days, shiftDay(R.date, -3)) ?? days.find((d) => d !== R.date) ?? R.date, lead: 0 };
     out = { L, R };
   } else if (want === "nisar") {
-    const days = nisarDaysAll(bundle);
+    const days = mainTrackDays(bundle);
     const def = nisarDefaults(days, day);
     const pol = opts.pol ?? "HH";
     const track = offeredTracks(bundle)[0]?.track || undefined;
@@ -394,7 +406,7 @@ export function presetSides(
     }
     case "nisar-pair": {
       const track = offeredTracks(bundle)[0]?.track || undefined;
-      const days = nisarSideDays(bundle, track).map((d) => d.date);
+      const days = mainTrackDays(bundle);
       if (days.length < 2) return undefined;
       const def = nisarDefaults(days, day);
       if (!def.before || !def.after || def.before === def.after) return undefined;
@@ -503,11 +515,11 @@ function nisarFrameFor(
     (l) => l.date?.slice(0, 10) === day && !!l.png
   );
   const ids = want === "HV"
-    ? ["nisar_hv_pre", "nisar_hv_post"]
-    : ["nisar_pre", "nisar_post", "radar_pre", "radar_post"];
+    ? ["nisar_hv_pre", "nisar_hv_post", "nisar_hv_ref"]
+    : ["nisar_pre", "nisar_post", "nisar_ref", "radar_pre", "radar_post"];
   const alt = want === "HV"
-    ? ["nisar_pre", "nisar_post", "radar_pre", "radar_post"]
-    : ["nisar_hv_pre", "nisar_hv_post"];
+    ? ["nisar_pre", "nisar_post", "nisar_ref", "radar_pre", "radar_post"]
+    : ["nisar_hv_pre", "nisar_hv_post", "nisar_hv_ref"];
   const layer = ids.map((id) => cand.find((l) => l.id === id)).find(Boolean)
     ?? alt.map((id) => cand.find((l) => l.id === id)).find(Boolean);
   if (!layer) return { pol: want, name: "NISAR" };
@@ -597,7 +609,7 @@ function sideResolved(
 export function sidesCompare(
   bundle: CcBundle,
   sides: Sides | undefined
-): CompareOption & { warning?: string; missing?: { L?: string; R?: string } } {
+): CompareOption & { warning?: string; note?: string; missing?: { L?: string; R?: string } } {
   const kind = "forecast" as const;
   if (!sides) return { kind, reason: "Pick a day on the timeline" };
   const l = sideResolved(bundle, sides.L);
@@ -614,6 +626,9 @@ export function sidesCompare(
   return {
     kind,
     warning: sameSide(sides.L, sides.R) ? "Pick a different date" : undefined,
+    // Lucas: different tracks are allowed — say what it means, never block.
+    note: sides.L.layer === "nisar" && sides.R.layer === "nisar" && (sides.L.track ?? "") !== (sides.R.track ?? "")
+      ? "Different tracks — viewing angle differs, brightness not directly comparable" : undefined,
     missing,
     pair: {
       kind,

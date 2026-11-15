@@ -435,7 +435,8 @@ export function CommandCenterView({
           sidesCtl={sidesInfo ? {
             sides: sidesInfo.sides, layers: sidesInfo.layers, days: sidesInfo.days,
             presets: sidesInfo.presets,
-            warning: sidesInfo.result.warning, missing: sidesInfo.result.missing,
+            warning: sidesInfo.result.warning, note: sidesInfo.result.note, missing: sidesInfo.result.missing,
+            nisarOnly: !!state.compareNisarOnly,
             onSide: (side, patch) => dispatch({ type: "setCompareSide", side, ...patch }),
             onPreset: (id) => dispatch({ type: "applyComparePreset", id }),
           } : undefined}

@@ -115,7 +115,7 @@ export default function RadarCard({
         <button type="button" onClick={onCompare} aria-pressed={compareOpen} disabled={!radar.compare.pair} className={secondary}>
           Before / after
         </button>
-        {!radar.compare.pair && radar.compare.reason && (
+        {!radar.compare.pair && radar.compare.reason && !radar.headline.startsWith(radar.compare.reason) && (
           <span className="text-xs italic text-cc-faint">Before / after: {radar.compare.reason}</span>
         )}
         {swipeDates && <SwipeDatePicker {...swipeDates} />}
