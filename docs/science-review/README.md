@@ -5,7 +5,7 @@ Written 2026-11-15 (NASA Space Apps 2026, challenge "Dancing with the SARs") so 
 | Section | Contents | Status |
 |---|---|---|
 | [01 — Product & architecture](01-product-architecture.md) | purpose (response first, prediction second), modes, data flow, datasets and roles, regions, honesty rules, decision history | done |
-| 02 — TPI method | formula, R/S/T factors for landslide and flood, climatology, HAND proxy, class bands, forecast alignment, GFS handling, bugs fixed, limitations | in progress |
+| [02 — TPI method](02-tpi-method.md) | formula, R/S/T factors for landslide and flood, climatology, HAND proxy, class bands, forecast alignment, GFS handling, bugs fixed, limitations | done |
 | [03 — Observations & response](03-observations-response.md) | NISAR flood candidates, OPERA DSWx-S1, DIST-ALERT scars, validation vs OPERA, impact (GPW, night lights, priority zones), alerts, SWOT, rain gauges | done |
 | 04 — Machine learning | labels, negatives, splits, models, served model, v2 results, early-warning evaluation, overfitting audit | in progress |
 | [05 — Validation & public claims](05-validation-claims.md) | replay cases, event onsets, "warned before", every public claim mapped to data, withdrawn claims | done |
