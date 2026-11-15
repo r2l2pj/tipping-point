@@ -68,24 +68,20 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | Optical **100%** cloud, **20** HLS scenes | `cloud_pct` (100.0), `hls_scenes` (20) | P |
 | HAND ≤ **15 m** vs floods ~**16 m** above the river; ROC **0.61 / 0.85**, WA **0.93 → 0.83** | `docs/t-flood-fix-eval.md` (not in metrics.json) | R, A |
 
-## Pending (L61, NISAR agreement — fill ~21:00, then grep for `[TBD` = 0)
+## NISAR in the index (L61 / L63, filled 2026-11-15; WA pending)
 
-| Slot | Meaning | Key (to confirm) | Used in |
-|---|---|---|---|
-| `[TBD uy_high]` | % of NISAR water pixels (Uruguaiana pass) at High+ in the index without NISAR, best day ≤ 12 d before the pass | `[TBD key]` | R A P S K |
-| `[TBD uy_crit]` | same, Critical | `[TBD key]` | R A P |
-| `[TBD uy_area]` | % of the land flagged High+ on that same day (chance) | `[TBD key]` | R A P |
-| `[TBD uy_lift]` | uy_high ÷ uy_area | `[TBD key]` | R A P S K |
-| `[TBD uy_pass]` | the NISAR pass scored (date) | `[TBD key]` | R A S |
-| `[TBD uy_k]` | days before the pass of the index's best day (≤ 12; headline definition, t5w) | `[TBD key]` | R A P S K |
-| `[TBD uy_passday]` | same score on the pass day (published, ~0 for river floods) | `[TBD key]` | R A P |
-| `[TBD uy_gfs]` | same score, NOAA GFS issued 1–3 d before (published) | `[TBD key]` | R A P |
-| `[TBD uy_m1]` | uy lift ÷ terrain-only lift (M1 ratio) | `[TBD key]` | R A |
-| `[TBD uy_outside_fp]` | % of NISAR water off the low floodplain (HAND > 5 m) — rice caveat | `nisar_outside_floodplain_pct` (per layer) | R A P S |
-| `[TBD wa_high]` / `[TBD wa_lift]` | Washington, same | `[TBD key]` | R A P S K |
-| Now (live, Nov 15 run 43773444922): 227.31 km² NISAR water on land, pass Nov 5 (010D; Nov 3–5 used), age 10 d; index hit 0% (High+ and Critical), lift undefined | `data/now/nisar_agreement.json` (fallback) `water_km2`, `pass_dates`, `pass_age_days`, `observed.alto_plus.hit_pct` / `observed.critico.hit_pct`; `summary.nisar_water` | P |
-| Now: 88.8% of that water outside HAND ≤ 5 m | `[TBD now_fp_key]` (lead-analysis; `outside_floodplain_pct` is null in the file) | P |
-| block | `nisar_agreement` in metrics.json (lead-analysis, ~21:00); sub-keys filled by hand per row | — | R A |
+| Number | Key | Used in |
+|---|---|---|
+| Uruguaiana pass Oct 12, 2026, 010D; 612 km² single-pass water | `cases.rs_uruguai_2026.nisar_agreement_pass_date`, `_pass_track`, `_water_km2` 612.27 | R A P |
+| 9% of it Critical 10 days earlier (Oct 2), on 4% of the land: 2.2×, 1.7× terrain alone | `cases.rs_uruguai_2026.nisar_agreement_win_critical_{hit_pct 8.95, best_day, days_before 10, area_pct 4.067, lift 2.2, m1 1.743}` | R A P S K |
+| High-or-above at chance: 17% on 18% of the land, same day (Oct 2) | `cases.rs_uruguai_2026.nisar_agreement.window_12d.per_day["2026-10-02"].alto_plus` (t1bs: 17.4 / 17.8, lift 0.98) | R A P |
+| 0% on the pass day; 0% in NOAA GFS runs 1–3 d before | `cases.rs_uruguai_2026.nisar_agreement_obs_critical_hit_pct`, `_obs_hit_pct`, `_fc{1,2,3}d_hit_pct` = 0.0 | R A P S K |
+| 15% of the NISAR water off HAND ≤ 5 m | `cases.rs_uruguai_2026.nisar_agreement_outside_floodplain_pct` 14.8 | R A P S |
+| GFS window (published, not quoted): Critical run Oct 5 → Oct 8, 49.6%, lift 1.18 | `cases.rs_uruguai_2026.nisar_agreement_gfswin_critical_*` | — |
+| Now: 227 km² NISAR water on land, Nov 5 pass (010D), 10 d old; index flags 0% | `data/now/summary.json` `nisar_water.{water_km2 227.3, pass_date, pass_track, age_days}`; `data/now/nisar_agreement.json` `observed.*.hit_pct` 0.0 | P |
+| Now: 88.8% of it off HAND ≤ 5 m | `data/now/summary.json` `nisar_water.outside_floodplain_pct` (NOT nisar_agreement.json, whose field is null) | P |
+| Rule: only floodplain (HAND ≤ 5 m) NISAR water raises the flood index (main 777aa88) | `summary.nisar_water.rule`, `.raised_km2`; per layer `nisar_raised_km2` | R A P |
+| Washington | `[TBD wa_key]` (lead-nisar-wa) | R A P |
 
 ### L61 'What we learned about NISAR' (verified by lead-analysis)
 
