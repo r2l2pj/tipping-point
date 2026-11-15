@@ -900,3 +900,15 @@ def test_store_roundtrip(data_dir, tmp_path):
     assert len(v) == 3 and v.rain_24h.tolist() == [50.0, 1.0, 90.0]
     h = store.read_task("3b_horizon", path)
     assert h.label_48h.tolist() == [1] and h.lead_days.tolist() == [1]
+
+
+def test_by_neg_type_splits_negatives():
+    from ml.local.trainer import by_neg_type
+    df = pd.DataFrame({"label": [1, 1, 0, 0, 0, 0],
+                       "neg_type": ["", "", "same_point_other_date", "same_point_other_date",
+                                    "elsewhere_same_day", "elsewhere_same_day"]})
+    p = np.array([0.9, 0.8, 0.1, 0.85, 0.2, 0.3])
+    out = by_neg_type(df, p, 0.5)
+    assert set(out) == {"same_point_other_date", "elsewhere_same_day"}
+    assert out["same_point_other_date"]["fp"] == 1 and out["elsewhere_same_day"]["fp"] == 0
+    assert out["elsewhere_same_day"]["n"] == 4

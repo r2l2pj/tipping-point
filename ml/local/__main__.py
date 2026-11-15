@@ -79,7 +79,7 @@ def stage_fetch_points(a):
                     if d >= np.datetime64("2021-03-01")]
             if days:
                 log.info("GFS %s: %d issue days, bbox %s", job["event_id"], len(days), job["bbox"])
-                D.fetch_gfs(days, bbox=job["bbox"])
+                D.fetch_gfs(days, bbox=job["bbox"], workers=8)
 
 
 def stage_table(a):

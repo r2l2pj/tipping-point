@@ -222,6 +222,18 @@ def train_3b(*, balanced: bool = False) -> dict:
             "horizon_val": {h: {k: v["val"] for k, v in d.items()} for h, d in hz_cal.items()}}
 
 
+def by_neg_type(df: pd.DataFrame, p: np.ndarray, thr: float) -> dict:
+    """All positives vs one negative type at a time: 'when' skill
+    (same_point_other_date) vs 'where' skill (elsewhere_same_day)."""
+    y = df.label.to_numpy()
+    nt = df.neg_type.fillna("").astype(str).to_numpy()
+    out = {}
+    for t in sorted(set(nt[y == 0])):
+        m = (y == 1) | (nt == t)
+        out[t] = SC.metrics(y[m], np.asarray(p)[m], thr)
+    return out
+
+
 def evaluate_3b(*, gfs: bool = True) -> dict:
     b = joblib.load(_bundle_path("3b"))
     tab = _load_table("table_3b")
@@ -229,7 +241,8 @@ def evaluate_3b(*, gfs: bool = True) -> dict:
     res: dict = {"split_rows": tab.split.value_counts().to_dict(), "daily": {}, "horizons": {}}
     for name, e in b["daily"].items():
         p = e["cal"](M.predict(e["model"], te, e["cols"]))
-        res["daily"][name] = {"test": SC.metrics(te.label, p, e["thr"]), "val": e["val"]}
+        res["daily"][name] = {"test": SC.metrics(te.label, p, e["thr"]), "val": e["val"],
+                              "test_by_neg_type": by_neg_type(te, p, e["thr"])}
     res["importance"] = group_importance(b["entries"]["xgb_all"], te, b["groups"])
     rain = _rain()
     hz = _load_table("horizon_3b_features")

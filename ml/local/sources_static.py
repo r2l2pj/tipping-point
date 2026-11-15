@@ -307,7 +307,7 @@ def _extract_hgt(zip_path: Path) -> Path | None:
 
 
 def fetch_nasadem(bbox: tuple[float, ...] = settings.REGION_TRAIN,
-                  workers: int = 4) -> list[Path]:
+                  workers: int = 4, keep_zips: bool = False) -> list[Path]:
     """NASADEM_HGT.001 tiles covering ``bbox`` -> extracted .hgt paths.
 
     CMR short_name=NASADEM_HGT -> lp-prod-protected zip -> DATA_DIR/nasadem/.
@@ -319,14 +319,21 @@ def fetch_nasadem(bbox: tuple[float, ...] = settings.REGION_TRAIN,
     if not zips:
         raise RuntimeError(f"no NASADEM granules for bbox {bbox}")
     zdir = settings.path("nasadem", "zip")
-    with ThreadPoolExecutor(max_workers=workers) as ex:
-        paths = list(ex.map(
-            lambda u: _download(u, zdir / u.rsplit("/", 1)[-1]), zips))
-    out = []
-    for z in paths:
+
+    def one(u: str) -> Path | None:
+        # zip name NASADEM_HGT_<id>.zip -> <id>.hgt; skip cells already extracted
+        cid = u.rsplit("/", 1)[-1].removeprefix("NASADEM_HGT_").removesuffix(".zip")
+        h = _hgt_dir() / f"{cid}.hgt"
+        if h.exists() and h.stat().st_size > 0:
+            return h
+        z = _download(u, zdir / u.rsplit("/", 1)[-1])
         h = _extract_hgt(z)
-        if h is not None:
-            out.append(h)
+        if h is not None and not keep_zips:
+            z.unlink(missing_ok=True)   # zip ~= hgt size; keep only the .hgt
+        return h
+
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        out = [h for h in ex.map(one, zips) if h is not None]
     return sorted(out)
 
 
@@ -464,6 +471,10 @@ def build_terrain(bbox: tuple[float, ...] = settings.REGION_TRAIN,
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
     for lon, lat in _cells_in_bbox(bbox):
+        dest = out_dir / f"st90_{_cell_id(lon, lat)}.tif"
+        if dest.exists() and dest.stat().st_size > 0:
+            written.append(dest)          # resumable: tile already built
+            continue
         src_bounds = (lon - HALO_PX * res, lat - HALO_PX * res,
                       lon + 1 + HALO_PX * res, lat + 1 + HALO_PX * res)
         srcs = []
@@ -498,7 +509,6 @@ def build_terrain(bbox: tuple[float, ...] = settings.REGION_TRAIN,
         bands = _terrain_bands(elev, tr)
         interior = slice(HALO_PX, elev.shape[0] - HALO_PX)
         tr_out = _tile_transform(lon, lat, res)
-        dest = out_dir / f"st90_{_cell_id(lon, lat)}.tif"
         profile = {"driver": "GTiff", "height": n_out, "width": n_out,
                    "count": len(settings.TERRAIN), "dtype": "float32",
                    "crs": "EPSG:4326", "transform": tr_out, "nodata": np.nan,

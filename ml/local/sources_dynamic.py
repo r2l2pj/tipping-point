@@ -1283,9 +1283,10 @@ def fetch_gfs(issue_dates, bbox: tuple[float, ...] = settings.REGION_TRAIN,
             continue
         cycle0 = dt.datetime.combine(cday, dt.time(chh))
         meta["cycle"] = f"{cday}T{chh:02d}Z"
+        # L28b: _gfs_day_label = the UTC day a trailing 6-h bucket covers
         want = [fh for fh in range(6, 385, 6)
-                if 1 <= (lf._gfs_day_label(cycle0 + dt.timedelta(hours=fh))
-                         - issue).days <= lead_days]
+                if 0 <= (lf._gfs_day_label(cycle0 + dt.timedelta(hours=fh))
+                         - issue).days < lead_days]
 
         def work(fh: int, cday: dt.date = cday, chh: int = chh):
             got = lf._gfs_apcp_grid(cday, chh, fh)
@@ -1320,7 +1321,7 @@ def gfs_daily(lon, lat, issue_dates, lead_days: int,
     """(n, lead_days) daily forecast rain (mm).
 
     Column k covers the UTC window (issue+k 00Z, issue+k+1 00Z] — live's
-    ``_gfs_day_label`` D+k+1 — from the picked run (issue-day 00Z when
+    ``_gfs_day_label`` D+k (L28b) — from the picked run (issue-day 00Z when
     archived). NaN where the run or any bucket is unavailable.
     """
     from live import fetch as lf
@@ -1346,7 +1347,7 @@ def gfs_daily(lon, lat, issue_dates, lead_days: int,
             continue
         idir = _gfs_issue_dir(bbox, issue)
         for k in range(lead_days):
-            label = issue + dt.timedelta(days=k + 1)
+            label = issue + dt.timedelta(days=k)   # L28b: label = covered day
             fhs = [fh for fh in sorted(meta["fh"])
                    if lf._gfs_day_label(cycle0 + dt.timedelta(hours=fh))
                    == label]

@@ -15,7 +15,7 @@ Inputs, all on the same (H, W) grid:
   texture  {clay, sand, porosity} — SPL4SMLM
   rain_obs (7, H, W)  observed IMERG mm/day for days D-7 .. D-1
   rain_fc  (>=14, H, W) GFS mm/day for UTC days D .. D+13 (00Z run of D;
-           ``live.fetch`` day-label D+k+1 == our day D+k)
+           ``live.fetch._gfs_day_label`` D+k == our day D+k, L28b)
   p99_daily, p99_3day  IMERG climatology (``sources_dynamic.RainClim``)
 """
 from __future__ import annotations

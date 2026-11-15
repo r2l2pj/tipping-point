@@ -31,6 +31,7 @@ dev = [
     "ruff>=0.8",
     "pytest>=8",
     "ipykernel>=6.29",
+    "matplotlib>=3.11.2",
 ]
 
 [build-system]
