@@ -396,6 +396,11 @@ def test_power_points(data_dir, monkeypatch):
     assert list(df.columns) == settings.RAIN
     assert df["rain_72h"][0] == pytest.approx(6.0)
     # resumable top-up: stale cache refetches only the tail and merges
+    # (files written < 24 h ago count as fresh -> backdate the cached cells)
+    import os
+    import time
+    for f in (data_dir / "power").rglob("*.json"):
+        os.utime(f, (time.time() - 2 * 86400,) * 2)
     sd.fetch_power_points([-51.0], [-29.3])
     assert len(calls) == 3
     assert calls[-1]["start"] == "20240505"
