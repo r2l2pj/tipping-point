@@ -50,6 +50,7 @@ import {
 } from "./command/model/overlays";
 import { basemapPlan, BM_PREFIX, type Basemap } from "./command/model/basemap";
 import { floodShownOn } from "./command/model/steps";
+import { EMS_FILL, FLOODED_FILL, FLOODED_HALO, FLOODED_OPACITY, FLOODED_OUTLINE } from "./command/model/radar";
 import {
   bboxPolygon,
   boundsToImageCoordinates,
@@ -112,6 +113,7 @@ const LYR = {
   river: "tp-river-line",
   floodFill: "tp-flood-fill",
   floodLine: "tp-flood-line",
+  floodHalo: "tp-flood-halo",
   floodDot: "tp-flood-dot",
   scarsFill: "tp-scars-fill",
   scarsLine: "tp-scars-line",
@@ -333,17 +335,22 @@ export function useMapLayers(
         layout: {},
         filter: ["==", ["geometry-type"], "LineString"] },
       { id: LYR.floodFill, type: "fill", source: SRC.flood,
-        // Observed flooded area: its own colour (cyan 50% + white outline).
-        paint: { "fill-color": "#00d5ff", "fill-opacity": 0.5 },
+        // Lucas: the NISAR flooded area is bright red (55%) with a white
+        // 1.5 px outline over a dark halo — above the TPI, never confused
+        // with its darker 'Critical' red.
+        paint: { "fill-color": FLOODED_FILL, "fill-opacity": FLOODED_OPACITY },
+        layout: { visibility: "none" } },
+      { id: LYR.floodHalo, type: "line", source: SRC.flood,
+        paint: { "line-color": FLOODED_HALO, "line-width": 3.5, "line-opacity": 0.55 },
         layout: { visibility: "none" } },
       { id: LYR.floodLine, type: "line", source: SRC.flood,
-        paint: { "line-color": "#ffffff", "line-width": 1.2 },
+        paint: { "line-color": FLOODED_OUTLINE, "line-width": 1.5 },
         layout: { visibility: "none" } },
       // Flood polygons of ~1 km² are sub-pixel at the regional zoom: a dot
       // per polygon keeps them findable until the shapes themselves show.
       { id: LYR.floodDot, type: "circle", source: SRC.floodPts, maxzoom: 10,
-        paint: { "circle-radius": 5, "circle-color": "#00d5ff",
-          "circle-stroke-color": "#ffffff", "circle-stroke-width": 1.5 },
+        paint: { "circle-radius": 5, "circle-color": FLOODED_FILL,
+          "circle-stroke-color": FLOODED_OUTLINE, "circle-stroke-width": 1.5 },
         layout: { visibility: "none" } },
       { id: LYR.scarsFill, type: "fill", source: SRC.scars,
         paint: { "fill-color": "#7B3294", "fill-opacity": 0.8 },
@@ -381,7 +388,7 @@ export function useMapLayers(
         layout: {} },
       // Copernicus EMS EMSR720 flood polygons (RS, Taquari valley): outline.
       { id: LYR.emsFill, type: "fill", source: SRC.ems,
-        paint: { "fill-color": "#00d5ff", "fill-opacity": 0.5 }, layout: {} },
+        paint: { "fill-color": EMS_FILL, "fill-opacity": 0.5 }, layout: {} },
       { id: LYR.ems, type: "line", source: SRC.ems,
         paint: { "line-color": "#ffffff", "line-width": 1.2 }, layout: {} },
       // L50: upstream basin outline with the observed IMERG rain.
@@ -848,6 +855,7 @@ export function useMapLayers(
     // the nisar toggle); with a tab the overlayPlan decides.
     vis(LYR.floodFill, wantFlood);
     vis(LYR.floodLine, wantFlood);
+    vis(LYR.floodHalo, wantFlood);
     vis(LYR.floodDot, wantFlood);
     vis(LYR.scarsFill, wantScars);
     vis(LYR.scarsLine, wantScars);

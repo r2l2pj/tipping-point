@@ -3,7 +3,7 @@
 import { OPERA } from "@/lib/layers";
 import { cutsFor, TPI_CLASSES } from "@/lib/tpi";
 import type { LayerId } from "./layerRegistry";
-import { CANDIDATES_LABEL, floodLabels, FLOODED_FILL } from "./radar";
+import { CANDIDATES_LABEL, EMS_FILL, floodLabels, FLOODED_FILL } from "./radar";
 import type { CcBundle } from "./types";
 
 export interface ClassRow {
@@ -91,7 +91,7 @@ export function layerLegendRows(bundle: CcBundle, on: readonly LayerId[], probHo
   if (on.includes("flood")) rows.push({ id: "flood", label: floodLabels(bundle).layer, swatch: FLOODED_FILL });
   if (on.includes("candidates")) rows.push({ id: "candidates", label: CANDIDATES_LABEL, swatch: "#7b3294" });
   if (on.includes("catalog")) rows.push({ id: "catalog", label: "Landslide catalog point", swatch: "#ffffff", round: true });
-  if (on.includes("ems")) rows.push({ id: "ems", label: "Independent flood map (EU emergency service)", swatch: FLOODED_FILL });
+  if (on.includes("ems")) rows.push({ id: "ems", label: "Independent flood map (EU emergency service)", swatch: EMS_FILL });
   if (on.includes("opera")) {
     rows.push(
       { id: "opera-both", label: "New flood in both NISAR and OPERA", swatch: OPERA.both },

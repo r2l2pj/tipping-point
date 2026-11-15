@@ -321,8 +321,15 @@ export const RESPONSE_LAYER_LABEL = "Flooded area (NISAR radar, candidates)";
 // Jhonatan (team science): observed water has its own colour — saturated
 // cyan fill + white outline above the radar/TPI images; "Flood risk" stays
 // the TPI (prediction) only.
-export const FLOODED_FILL = "#00d5ff";
+// Lucas: the NISAR flooded area is RED — brighter than the TPI 'Critical'
+// red and always drawn above the TPI, with a crisp white outline over a dark
+// halo so it reads on Dark, Streets and Satellite.
+export const FLOODED_FILL = "#ff1f1f";
+export const FLOODED_OPACITY = 0.55;
 export const FLOODED_OUTLINE = "#ffffff";
+export const FLOODED_HALO = "#141414";
+// The independent EU emergency flood map keeps its own colour.
+export const EMS_FILL = "#00d5ff";
 export const RESPONSE_NOTE =
   "Radar flood candidates from two NISAR passes — not yet checked on the ground.";
 

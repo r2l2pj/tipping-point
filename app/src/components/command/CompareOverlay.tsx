@@ -11,7 +11,7 @@ import { boundsToImageCoordinates } from "@/lib/tpi";
 import { cameraPatch, clipPathFor, dragStep, pctFromClientX, SWIPE_MAX_PCT, SWIPE_MIN_PCT } from "@/lib/swipe";
 import { horizonLabel, type ProbHorizon } from "@/lib/layers";
 import { fmtDayShort } from "./model/format";
-import { FLOODED_FILL, FLOODED_OUTLINE, type ComparePair } from "./model/radar";
+import { FLOODED_FILL, FLOODED_HALO, FLOODED_OPACITY, FLOODED_OUTLINE, type ComparePair } from "./model/radar";
 import { ISSUE_LEADS, type IssueLead } from "./model/steps";
 import {
   COMPARE_LAYER_LABEL,
@@ -250,9 +250,11 @@ function CompareMaps({
       if (pair.flood) {
         map.addSource("swipe-flood", { type: "geojson", data: pair.flood.url });
         map.addLayer({ id: "swipe-flood-fill", type: "fill", source: "swipe-flood",
-          paint: { "fill-color": FLOODED_FILL, "fill-opacity": 0.35 } });
+          paint: { "fill-color": FLOODED_FILL, "fill-opacity": FLOODED_OPACITY } });
+        map.addLayer({ id: "swipe-flood-halo", type: "line", source: "swipe-flood",
+          paint: { "line-color": FLOODED_HALO, "line-width": 3.5, "line-opacity": 0.55 } });
         map.addLayer({ id: "swipe-flood-line", type: "line", source: "swipe-flood",
-          paint: { "line-color": FLOODED_OUTLINE, "line-width": 1.2 } });
+          paint: { "line-color": FLOODED_OUTLINE, "line-width": 1.5 } });
       }
       // Only the first map to load fits; its moves sync the other one.
       if (!fitted) {
