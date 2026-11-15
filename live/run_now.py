@@ -248,17 +248,21 @@ def run(args) -> dict:
     files["summary.json"] = summary
 
     prev_path = args.out_dir / "prev_classes.npz"
-    prev_worst = None
+    prev = None
     if prev_path.exists():
-        prev = np.load(prev_path)
-        prev_worst = prev["worst"]
-    worst_today = np.maximum(slides[0], floods[0])
-    worst_d1 = np.maximum(slides[1], floods[1])
-    worst = np.maximum(worst_today, worst_d1)
-    files["alerts.json"] = alerts.emit_alerts(
-        prev_worst, worst_today, worst_d1,
+        with np.load(prev_path) as z:
+            # per-hazard keys since L27; older snapshots only have "worst"
+            prev = {h: z[h] if h in z.files else z["worst"]
+                    for h in ("landslide", "flood") if h in z.files or "worst" in z.files}
+    files["alerts.json"] = alerts.emit_hazard_alerts(
+        prev, {"landslide": (slides[0], slides[1]),
+               "flood": (floods[0], floods[1])},
         dt.datetime.now(dt.UTC), transform)
-    files["prev_classes.npz"] = render.npz_bytes(worst=worst)
+    files["prev_classes.npz"] = render.npz_bytes(
+        worst=np.maximum(np.maximum(slides[0], floods[0]),
+                         np.maximum(slides[1], floods[1])),
+        landslide=np.maximum(slides[0], slides[1]),
+        flood=np.maximum(floods[0], floods[1]))
 
     # ---- write everything, manifest LAST ------------------------------------
     updated_at = dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z")

@@ -23,48 +23,106 @@ from scipy.ndimage import label
 from .config import ALERT_MIN_CLASS, ASSET_ROOT, LABELS, NOW_BOUNDS, NOW_DIR, QUIET_HOURS
 
 
-def _regions(arr: np.ndarray, transform) -> list[dict]:
-    lab, n = label(arr)
+def _clusters(upgraded: np.ndarray, worst: np.ndarray, cls_today: np.ndarray,
+              transform, cluster_px: int) -> list[dict]:
+    """Connected regions of `upgraded`; with cluster_px > 0, pixels within
+    that many cells of each other merge into one region (a scatter of
+    single-pixel upgrades becomes one candidate, not hundreds)."""
+    from scipy.ndimage import binary_dilation
+
+    grow = (binary_dilation(upgraded, structure=np.ones((3, 3), bool),
+                            iterations=cluster_px)
+            if cluster_px > 0 else upgraded)
+    lab, n = label(grow, structure=np.ones((3, 3), bool))
+    lab = np.where(upgraded, lab, 0)
+    res = abs(transform.a)
     out = []
     for i in range(1, n + 1):
         rows, cols = np.where(lab == i)
-        r, c = rows.mean(), cols.mean()
-        lon, lat = transform * (c + 0.5, r + 0.5)
-        out.append({"pixels": int(rows.size), "centroid": [round(float(lon), 4), round(float(lat), 4)]})
+        if rows.size == 0:
+            continue
+        lon, lat = transform * (cols.mean() + 0.5, rows.mean() + 0.5)
+        w, n_ = transform * (cols.min(), rows.min())
+        e, s_ = transform * (cols.max() + 1, rows.max() + 1)
+        cls = int(worst[rows, cols].max())
+        km = 111.195 * res
+        out.append({
+            "class": cls,
+            "pixels": int(rows.size),
+            "critical_pixels": int((worst[rows, cols] == 3).sum()),
+            "area_km2": round(float(rows.size * km * km
+                                    * np.cos(np.deg2rad(lat))), 2),
+            "when": ("today" if (cls_today[rows, cols] >= ALERT_MIN_CLASS).any()
+                     else "d1"),
+            "centroid": [round(float(lon), 4), round(float(lat), 4)],
+            "bbox": [round(float(v), 4) for v in (w, s_, e, n_)],
+        })
     return out
 
 
-def emit_alerts(prev_cls: np.ndarray | None, cls_today: np.ndarray, cls_d1: np.ndarray,
-                now_utc: dt.datetime, transform) -> dict:
-    """Compare today's and D+1 worst class per pixel against the previous run.
-
-    prev_cls: worst class array from the previous run (None -> everything that
-    is Alto/Crítico now counts as an upgrade).
-    """
+def _candidates(prev_cls, cls_today, cls_d1, transform, quiet: bool,
+                hazard: str | None, cluster_px: int) -> list[dict]:
     worst = np.maximum(cls_today, cls_d1).astype(np.int16)
-    prev = np.zeros_like(worst) if prev_cls is None else np.asarray(prev_cls, dtype=np.int16)
+    prev = (np.zeros_like(worst) if prev_cls is None
+            else np.asarray(prev_cls, dtype=np.int16))
     upgraded = (worst >= ALERT_MIN_CLASS) & (worst > prev)
-    quiet = now_utc.astimezone(ZoneInfo("America/Sao_Paulo")).hour in QUIET_HOURS
+    out = []
+    for region in _clusters(upgraded, worst, np.asarray(cls_today),
+                            transform, cluster_px):
+        cls = region["class"]
+        cand = {"class": cls, "label": LABELS[cls]}
+        if hazard is not None:
+            cand["hazard"] = hazard
+        cand.update({k: v for k, v in region.items() if k != "class"})
+        cand["hold"] = bool(quiet and cls < 3)
+        out.append(cand)
+    return out
 
-    candidates = []
-    for cls in (3, 2):
-        m = upgraded & (worst == cls)
-        if not m.any():
-            continue
-        for region in _regions(m, transform):
-            candidates.append({
-                "class": int(cls),
-                "label": LABELS[cls],
-                "centroid": region["centroid"],
-                "pixels": region["pixels"],
-                "hold": bool(quiet and cls < 3),
-            })
+
+def _payload(now_utc: dt.datetime, quiet: bool, candidates: list[dict]) -> dict:
+    candidates.sort(key=lambda c: (-c["class"], -c["pixels"]))
     return {
         "generated_at": now_utc.isoformat().replace("+00:00", "Z"),
         "quiet_hours": quiet,
         "rule": "upgrade to Alto/Crítico today or D+1; quiet 23h-6h unless Crítico",
         "candidates": candidates,
     }
+
+
+def _quiet(now_utc: dt.datetime) -> bool:
+    return now_utc.astimezone(ZoneInfo("America/Sao_Paulo")).hour in QUIET_HOURS
+
+
+def emit_alerts(prev_cls: np.ndarray | None, cls_today: np.ndarray, cls_d1: np.ndarray,
+                now_utc: dt.datetime, transform, cluster_px: int = 0) -> dict:
+    """Compare today's and D+1 worst class per pixel against the previous run.
+
+    prev_cls: worst class array from the previous run (None -> everything that
+    is Alto/Crítico now counts as an upgrade). One candidate per connected
+    upgraded region, class = the region's worst class.
+    """
+    quiet = _quiet(now_utc)
+    return _payload(now_utc, quiet, _candidates(
+        prev_cls, cls_today, cls_d1, transform, quiet, None, cluster_px))
+
+
+ALERT_CLUSTER_PX = 3   # ~3 km on the 0.01 deg grid
+
+
+def emit_hazard_alerts(prev: dict | None,
+                       layers: dict[str, tuple[np.ndarray, np.ndarray]],
+                       now_utc: dt.datetime, transform,
+                       cluster_px: int = ALERT_CLUSTER_PX) -> dict:
+    """Per-hazard candidates: layers = {"landslide": (today, d1),
+    "flood": (today, d1)}; prev = {hazard: previous worst class array}
+    (None or a missing hazard -> everything counts as an upgrade). Each
+    candidate carries `hazard`; nearby upgraded pixels are clustered."""
+    quiet = _quiet(now_utc)
+    cands = []
+    for hazard, (today, d1) in layers.items():
+        cands += _candidates((prev or {}).get(hazard), today, d1, transform,
+                             quiet, hazard, cluster_px)
+    return _payload(now_utc, quiet, cands)
 
 
 # --------------------------------------------------------------------------

@@ -85,6 +85,15 @@ jobs:
           key: dswx-state-${{ github.run_id }}
           restore-keys: dswx-state-
 
+      # alerts fire only on class UPGRADES vs the previous run, so the
+      # previous run's classes must survive the fresh checkout
+      - name: Restore previous alert classes
+        uses: actions/cache/restore@v4
+        with:
+          path: data/now/prev_classes.npz
+          key: prev-classes-${{ github.run_id }}
+          restore-keys: prev-classes-
+
       # L20: local TPI path — run_now --local fetches IMERG Early / SMAP L4 /
       # GEOS-FP, computes TPI in numpy against per-doy climatology + terrain
       # pulled from the GEE assets, writes data/now directly. No EE raster
@@ -97,6 +106,13 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NOW_LOCAL: "1"
         run: uv run python live/jobs.py now
+
+      - name: Save alert classes
+        uses: actions/cache/save@v4
+        with:
+          path: data/now/prev_classes.npz
+          key: prev-classes-${{ github.run_id }}
+        continue-on-error: true
 
       # L27 response side (lead-analysis scripts), in order after the TPI
       # job. Additive: a failure here never blocks the TPI publish; the

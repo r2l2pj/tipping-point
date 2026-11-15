@@ -51,6 +51,36 @@ def test_quiet_hours_hold_alto_but_not_critico():
     assert by_class[3]["hold"] is False
 
 
+def test_hazard_alerts_tag_and_cluster():
+    from live.alerts import emit_hazard_alerts
+    flood = _classes()
+    flood[0, 0] = flood[0, 2] = flood[2, 1] = 2      # scatter within 3 px
+    flood[9, 9] = 3                                   # far away
+    slide_d1 = _classes()
+    slide_d1[5, 5] = 2
+    out = emit_hazard_alerts(
+        None, {"landslide": (_classes(), slide_d1), "flood": (flood, _classes())},
+        NOON, TR, cluster_px=3)
+    cands = out["candidates"]
+    assert sorted(c["hazard"] for c in cands) == ["flood", "flood", "landslide"]
+    assert cands[0]["class"] == 3 and cands[0]["hazard"] == "flood"  # Crítico first
+    scatter = [c for c in cands if c["hazard"] == "flood" and c["class"] == 2]
+    assert len(scatter) == 1 and scatter[0]["pixels"] == 3
+    slide = [c for c in cands if c["hazard"] == "landslide"][0]
+    assert slide["when"] == "d1" and slide["area_km2"] > 0
+    w, s, e, n = slide["bbox"]
+    assert w < slide["centroid"][0] < e and s < slide["centroid"][1] < n
+
+
+def test_hazard_alerts_prev_per_hazard_suppresses_repeats():
+    from live.alerts import emit_hazard_alerts
+    flood = _classes()
+    flood[3:6, 3:6] = 2
+    out = emit_hazard_alerts({"flood": flood}, {"flood": (flood, _classes())},
+                             NOON, TR)
+    assert out["candidates"] == []
+
+
 # --------------------------------------------------------------------------
 # L12b Neon subscriber store — exercised against a real fake HTTPS server
 # (stdlib http.server + self-signed cert on an ephemeral port), never with
