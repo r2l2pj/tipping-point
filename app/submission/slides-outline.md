@@ -7,7 +7,7 @@
 ## Slide 1 — Title
 - **Tipping Point** — *Rain warns. Radar sees through.*
 - NASA Space Apps 2026 · Challenge: Dancing with the SARs
-- One line: NISAR feeds the index: every pass updates the flood map through cloud and scores the forecast
+- One line: NISAR feeds the index: every pass updates the flood map through cloud and scores the index
 - Team `[TEAM NAME]` · members `[names]` · Local Event `Florianópolis (Founder Haus, Jurerê)` (the guide requires the team name, the member names and the challenge on the slides)
 - *Visual:* our wordmark + tagline over a dark map (no NASA logos or insignia anywhere in the deck: guide rule); the header's "TIPPING POINT | Rain warns. Radar sees through." wordmark
 
@@ -18,24 +18,24 @@
 - *Visual:* the Uruguaiana NISAR before/after swipe (Sep 30 → Oct 12) — `.crew/gallery/v6b/1-uy-nisar.png`
 
 ## Slide 3 — NISAR: what it sees through cloud (opens the technical part)
-- *Visual:* "The river's dance" NISAR strip, Uruguaiana (lead-ml, red = new water): `[TBD river_dance]`
+- *Visual:* "The river's dance" NISAR strip, Uruguaiana (lead-ml, red = new water): `.crew/deck/img/dance_slide.png`
 - **The river's dance:** Across 9 NISAR passes (Sep 18 → Nov 5, 2026), the area of new water the radar saw (red) tracks the Uruguay River gauge at Uruguaiana: r = 0.92 (fixed −15 dB, two tracks mixed, provisional products, 9 passes)
 - Calm floodwater turns dark to radar; radar sees through cloud (C-band, our OPERA reference, does too); NISAR's L-band also reaches water under vegetation and passes every 12 days
-- **NISAR feeds the index:** every NISAR pass updates the flood map through cloud (water it sees turns Critical, as a candidate) and scores the forecast
+- **NISAR feeds the index:** every NISAR pass updates the flood map through cloud (water it sees turns Critical, as a candidate) and scores the index
 - The index (NASA rain, soil, terrain + NOAA GFS) tells where and when to look between passes
 - **What we learned:** flooded towns and forests stay bright (double bounce), so a darkening rule misses where people live (Washington: 45% of misses in towns or forest vs 5% of hits); BETA/provisional scenes fell to the fixed −15 dB threshold (every Uruguaiana pair we ran was rejected); 12-day revisit and swath edges limit operations; NISAR soil moisture (SME2) stayed flat while SMAP rose, so it is not used
 
 ## Slide 4 — Prevent the disaster, not the flood: when · where · who (Uruguaiana, Oct 2026)
 - **When:** our index, fed by NASA satellite rain (GPM IMERG), turned the Uruguaiana region Critical on Sep 30, five days before flood stage (Oct 5; 13,129 km², 6,121 on the low floodplain); NOAA's forecast from Sep 27 already pointed there, 8 days ahead. Near-real-time rain; holds when scaled to the final product (3,541 km² on the floodplain)
 - **Honest:** 15 Critical days Sep 15 → Oct 31; 3 small ones (Sep 20–22) had no flood stage within 10 days. The Critical area was only 1.34× concentrated on the floodplain: right days, not yet the right streets
-- **Where (radar):** NISAR feeds the index: water it sees through cloud turns the flood map Critical (candidate), and each pass scores the forecast: [TBD uy_high]% of the water NISAR saw on [TBD uy_pass] was already High or Critical in the NOAA GFS forecast issued [TBD uy_lead] before ([TBD uy_lift]× chance); 54% of the NISAR flood candidates (a teammate's polygons, 1.8 km²) lie on the floodplain, which is 28% of the land in this case area (1.92×); our stricter automatic check has not reproduced them yet
+- **Where (radar):** NISAR feeds the index: water it sees through cloud turns the flood map Critical (candidate), and each pass scores the index: [TBD uy_high]% of the water NISAR saw on [TBD uy_pass] was already High or Critical in the index [TBD uy_k] days before the pass ([TBD uy_lift]× chance); 54% of the NISAR flood candidates (a teammate's polygons, 1.8 km²) lie on the floodplain, which is 28% of the land in this case area (1.92×); our stricter automatic check has not reproduced them yet
 - **Who:** about 98,000 people live on the low floodplain (GPW v4.11)
 - How: the Tipping Point Index of NASA rain, soil (SMAP) and terrain (NASADEM), with NOAA GFS for the next days, tells where and when to look; builds on NASA's LHASA (doi:10.3389/feart.2021.640043; LHASA-F doi:10.3389/feart.2022.878996); an experimental XGBoost model sits beside it
 
 ## Slide 5 — Did it work?
 - **NISAR, Washington Dec 2025:** "Clouds hid 93% of the area from optical satellites; NISAR radar mapped 28 km² of flood candidates through them" — home to about 950 people. C-band radar (NASA OPERA surface water, our reference) sees open flood through cloud too; NISAR's L-band also reaches water under vegetation
 - **Radar physics checked:** candidates stable Nov 10 → Dec 4 (−9.7 dB), then −6.5 dB by Dec 16; double-bounce hypothesis supported — 45% of the missed flood is in towns or forest (vs 5% of what we caught), recall 25% open land vs 3% towns, 1% forest
-- **NISAR scores the forecast:** of the water each pass saw, the index had Uruguaiana [TBD uy_high]% ([TBD uy_lift]×) and Washington [TBD wa_high]% ([TBD wa_lift]×) at High or Critical in the NOAA GFS forecast issued [TBD uy_lead] before the pass. Washington: the GFS run issued Dec 3, 2025 showed Critical landslide risk for Dec 6. Rio Grande do Sul: scored consistently, 5.8% of the 16,027 landslides were already High or Critical in the forecast issued 27 h before the first deaths, while it flagged only 2.1% of the area (2.7× better than chance, though terrain alone does better: slide 6); runs issued 51 and 75 h before: 0%; Washington's flooded places were not flagged ahead (upstream rain)
+- **NISAR scores the index:** of the water each pass saw, the index had Uruguaiana [TBD uy_high]% ([TBD uy_lift]×) and Washington [TBD wa_high]% ([TBD wa_lift]×) at High or Critical up to 12 days before the pass (best day; about 0% on the pass day itself: the rain comes before the river). Washington: the GFS run issued Dec 3, 2025 showed Critical landslide risk for Dec 6. Rio Grande do Sul: scored consistently, 5.8% of the 16,027 landslides were already High or Critical in the forecast issued 27 h before the first deaths, while it flagged only 2.1% of the area (2.7× better than chance, though terrain alone does better: slide 6); runs issued 51 and 75 h before: 0%; Washington's flooded places were not flagged ahead (upstream rain)
 - **Official warnings came first** in both replays; the index adds where and who. RS flood index vs independent EU emergency maps during the flood: F1 0.33 (Taquari valley)
 - *Visual:* NISAR before/after swipe still + a 4-row metrics table
 

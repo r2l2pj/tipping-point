@@ -72,12 +72,14 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 
 | Slot | Meaning | Key (to confirm) | Used in |
 |---|---|---|---|
-| `[TBD uy_high]` | % of NISAR water pixels (Uruguaiana pass) at High+ in the index before the pass | `[TBD key]` | R A P S K |
+| `[TBD uy_high]` | % of NISAR water pixels (Uruguaiana pass) at High+ in the index without NISAR, best day ≤ 12 d before the pass | `[TBD key]` | R A P S K |
 | `[TBD uy_crit]` | same, Critical | `[TBD key]` | R A P |
-| `[TBD uy_area]` | % of the land the pre-pass index flagged High+ (chance) | `[TBD key]` | R A P |
+| `[TBD uy_area]` | % of the land flagged High+ on that same day (chance) | `[TBD key]` | R A P |
 | `[TBD uy_lift]` | uy_high ÷ uy_area | `[TBD key]` | R A P S K |
 | `[TBD uy_pass]` | the NISAR pass scored (date) | `[TBD key]` | R A S |
-| `[TBD uy_lead]` | forecast lead used for the headline (e.g. "1 day") | `[TBD key]` | R A P S K |
+| `[TBD uy_k]` | days before the pass of the index's best day (≤ 12; headline definition, t5w) | `[TBD key]` | R A P S K |
+| `[TBD uy_passday]` | same score on the pass day (published, ~0 for river floods) | `[TBD key]` | R A P |
+| `[TBD uy_gfs]` | same score, NOAA GFS issued 1–3 d before (published) | `[TBD key]` | R A P |
 | `[TBD uy_m1]` | uy lift ÷ terrain-only lift (M1 ratio) | `[TBD key]` | R A |
 | `[TBD uy_outside_fp]` | % of NISAR water off the low floodplain (HAND > 5 m) — rice caveat | `nisar_outside_floodplain_pct` (per layer) | R A P S |
 | `[TBD wa_high]` / `[TBD wa_lift]` | Washington, same | `[TBD key]` | R A P S K |
@@ -94,7 +96,8 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | 202 of 212 km² field darkening, Oct 5 (082D) | `cases.rs_uruguai_2026.nisar_082d` |
 | 1.76 / 15.7 km² ungated darkening, Oct 24→Nov 5 | `cases.rs_uruguai_2026.radar_darkening_corridor_km2` 1.762, `radar_darkening_fields_km2` 15.732, `radar_darkening_pair` (NOT the png note's 5.62/11.88, older definition) |
 | 45% vs 5%, 8.6× (8.562) | `data/wa_2025/nisar_hypothesis.json` result_paragraph |
-| River's dance: 9 passes Sep 18→Nov 5, r = 0.92 vs Uruguaiana gauge (−15 dB, 010D+082D) | `[TBD dance_key]` (lead-ml) |
+| River's dance: 9 passes Sep 18→Nov 5, r = 0.92 vs Uruguaiana gauge (−15 dB, 010D+082D) | `data/rs_uruguai_2026/series/river_dance.json` `pearson_stage_newwater` 0.918, `n` 9, `pearson_by_track` 010D 0.911 (5) / 082D 0.954 (4), `pearson_stage_newwater_floodplain_only` 0.966; gauge = ANA 77150000 daily median stage on the pass date |
+| River's dance: 46–52% of new water off HAND ≤ 5 m on flood passes, 61–85% on low passes | `river_dance.json` `passes[].new_water_outside_floodplain_pct` |
 | SME2 0.23→0.25→0.23 vs SMAP 0.24→0.32→0.41; 68–75% recommended | notes of `nisar_sme2_<date>_010D` in `data/rs_uruguai_2026/png/_index.json` |
 
 ## Other numbers (sources outside metrics.json)
