@@ -25,11 +25,11 @@ NISAR_WEIGHT = 0.8
 MAX_AGE_DAYS = 12
 HIGH, CRIT = 0.4, 0.6
 LABEL = "Flood risk with NISAR-observed water (candidate)"
-NOTE = ("Flood index (TPI) raised to Critical where the latest NISAR radar pass up to 12 days "
-        "before the map day saw open water (HH < −18 dB, outside permanent water): "
-        "max(TPI, 0.8 × water). Candidate water — never confirmed; no pass ≠ no risk. "
-        "A single-date dark-radar mask also lights flooded rice paddies / irrigation: see "
-        "outside_floodplain_pct (NISAR water outside the HAND ≤ 5 m floodplain).")
+NOTE = ("Flood index (TPI) raised to Critical only where the latest NISAR radar pass up to 12 days "
+        "before the map day saw open water (HH < −18 dB, outside permanent water) ON THE RIVER "
+        "FLOODPLAIN (HAND ≤ 5 m): max(TPI, 0.8 × water on floodplain). NISAR water off the floodplain "
+        "(mostly flooded rice paddies / reservoirs) is shown in the NISAR-water overlay but does not "
+        "raise risk. Candidate water — never confirmed; no pass ≠ no risk.")
 
 
 def gray_to_db(gray: np.ndarray, db_min: float, db_max: float) -> np.ndarray:
@@ -105,9 +105,15 @@ def water_mask(frames: list[dict], day: dt.date, png_root: Path, shape, transfor
     return water, observed, used
 
 
-def combine(tpi: np.ndarray, water: np.ndarray) -> np.ndarray:
+def combine(tpi: np.ndarray, water: np.ndarray, floodplain: np.ndarray | None = None) -> np.ndarray:
+    """max(TPI, 0.8) where NISAR water lies on the floodplain (HAND <= 5 m); water off
+    the floodplain (rice paddies, reservoirs) never raises risk. No floodplain mask ->
+    no raise (conservative)."""
     t = np.asarray(tpi, np.float32)
-    return np.where(water, np.fmax(t, NISAR_WEIGHT), t).astype(np.float32)
+    if floodplain is None:
+        return t.copy()
+    raise_ = water & floodplain
+    return np.where(raise_, np.fmax(t, NISAR_WEIGHT), t).astype(np.float32)
 
 
 def agreement(tpi: np.ndarray, water: np.ndarray, km2: np.ndarray | None = None,
@@ -124,6 +130,7 @@ def agreement(tpi: np.ndarray, water: np.ndarray, km2: np.ndarray | None = None,
     if floodplain is not None:
         out["outside_floodplain_pct"] = (round(100 * float(a[w & ~floodplain].sum()) / wa, 1)
                                          if wa else None)
+        out["raised_km2"] = round(float(a[w & floodplain].sum()), 3) if km2 is not None else None
     for name, cut in (("high_plus", HIGH), ("critical", CRIT)):
         flag = dom & (tpi > cut)
         hit = float(a[w & flag].sum()) / wa if wa else None

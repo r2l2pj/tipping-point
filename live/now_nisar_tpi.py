@@ -90,7 +90,7 @@ def run(now_dir: Path, gsw: Path | None = None, hand: Path | None = None) -> dic
         water, observed, used = nw.water_mask(frames, day, now_dir, shape, tr, perm_water=pw)
         if not used:
             continue
-        comb = nw.combine(tpi, water)
+        comb = nw.combine(tpi, water, fp)
         valid = np.isfinite(comb)
         png, b = _class_png_3857(classify(np.where(valid, comb, np.nan)), valid, tr, "EPSG:4326")
         (now_dir / "png").mkdir(exist_ok=True)
@@ -101,7 +101,8 @@ def run(now_dir: Path, gsw: Path | None = None, hand: Path | None = None) -> dic
                "cog": None, "bounds": b, "legend": ["Baixo", "Moderado", "Alto", "Crítico"],
                "forecast": k > 0, "label": nw.LABEL, "note": nw.NOTE,
                "nisar_passes": [{"date": u["date"], "track": u.get("track"), "id": u["id"]} for u in used],
-               "nisar_water_km2": ag["water_km2"], "nisar_outside_floodplain_pct": ag.get("outside_floodplain_pct")}
+               "nisar_water_km2": ag["water_km2"], "nisar_outside_floodplain_pct": ag.get("outside_floodplain_pct"),
+               "nisar_raised_km2": ag.get("raised_km2")}
         if k == 0:
             cog = now_dir / "cog" / "tpi_flood_nisar_today.tif"
             cog.parent.mkdir(exist_ok=True)
@@ -132,6 +133,8 @@ def run(now_dir: Path, gsw: Path | None = None, hand: Path | None = None) -> dic
                                 pass_dates=np.array([u["date"] for u in used]), map_day=day.strftime("%Y%m%d"))
             summary = {"pass_date": last["date"], "pass_track": last.get("track"), "age_days": age,
                        "water_km2": ag["water_km2"], "outside_floodplain_pct": ag.get("outside_floodplain_pct"),
+                       "raised_km2": ag.get("raised_km2"),
+                       "rule": "risk raised to Critical only for NISAR water on the HAND ≤ 5 m floodplain",
                        "tpi_today": {"high_plus": ag["high_plus"], "critical": ag["critical"]},
                        "definition": "NISAR water = HH < −18 dB on Brazilian land outside permanent water, latest "
                                      "pass ≤ 12 d before today; hit = share of that water the TPI flags (today's map)"}

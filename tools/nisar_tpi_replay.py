@@ -81,7 +81,7 @@ def run(case: str) -> dict:
             fp = floodplain(case, tpi.shape, tr)
         water, observed, used = nw.water_mask(frames, day, root, tpi.shape, tr,
                                               perm_water=~np.isfinite(tpi))
-        comb = nw.combine(tpi, water)
+        comb = nw.combine(tpi, water, fp)
         lat = tr.f + (np.arange(tpi.shape[0]) + 0.5) * tr.e
         km2 = (abs(tr.a) * 111.32 * np.cos(np.deg2rad(lat)))[:, None] * abs(tr.e) * 110.574 \
             * np.ones((1, tpi.shape[1]))
@@ -104,6 +104,7 @@ def run(case: str) -> dict:
         passes = [{"date": u["date"], "track": u.get("track"), "id": u["id"]} for u in used]
         last = max(used, key=lambda u: u["date"])
         common = {"nisar_passes": passes, "nisar_water_km2": ag["water_km2"],
+                  "nisar_raised_km2": ag.get("raised_km2"),
                   "nisar_outside_floodplain_pct": ag.get("outside_floodplain_pct")}
         new.append({"id": "tpi_flood_nisar", "date": day.isoformat(), "kind": "observed",
                     "forecast": False, "png": f"{case}/png/tpi_flood_nisar_{ymd}.png",

@@ -54,10 +54,12 @@ def test_water_mask_combine_and_agreement(tmp_path: Path):
     assert not water[0, 0]                                              # permanent water excluded
     tpi = np.full(shape, 0.2, np.float32)
     tpi[:, :5] = 0.7
-    comb = nw.combine(tpi, water)
-    assert np.isclose(comb[5, 7], 0.8) and np.isclose(comb[5, 2], 0.8) and np.isclose(comb[5, 15], 0.2)
     fp = np.zeros(shape, bool)
     fp[:, :5] = True
+    comb = nw.combine(tpi, water, fp)
+    # raised only on the floodplain: col 7 is water OFF the floodplain -> stays 0.2
+    assert np.isclose(comb[5, 2], 0.8) and np.isclose(comb[5, 7], 0.2) and np.isclose(comb[5, 15], 0.2)
+    assert np.array_equal(nw.combine(tpi, water), tpi)       # no floodplain mask -> no raise
     ag = nw.agreement(tpi, water, np.ones(shape), fp)
     assert ag["critical"]["hit_pct"] == round(100 * (water[:, :5].sum()) / water.sum(), 1)
     assert ag["critical"]["area_share_pct"] == 25.0
