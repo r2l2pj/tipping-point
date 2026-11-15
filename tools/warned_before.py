@@ -271,10 +271,15 @@ def run(data_root: Path) -> dict:
     with rasterio.open(series) as g:
         idx, w = flood_pixels(wa / "cog" / "wa_2025_flood_nisar_20251210.tif", g)
     on, *sens = ANCHORS["wa_2025"]
+    canonical = float(json.loads((data_root / "metrics.json").read_text())["cases"]["wa_2025"]["flooded_km2"])
     out["wa_2025"] = {
         "hazard": "flood", "unit": "% of confirmed flood area",
         "definition": "share of the NISAR-confirmed new-flood AREA (GCOV, post 2025-12-16) with " + COMMON_DEF,
         "confirmed_flood_km2": round(float(w.sum()), 3),
+        "confirmed_flood_km2_label": (f"{float(w.sum()):.1f} km² of NISAR flood pixels on the ~12 m flood "
+                                      "raster (the denominator); the canonical flooded_km2 "
+                                      f"{canonical:.2f} km² is the polygon set within the swath"),
+        "canonical_flooded_km2": round(canonical, 2),
         **anchored(wa / "cog", "wa_2025", "flood", series, idx, w, on),
         "sensitivity": [_sens(anchored(wa / "cog", "wa_2025", "flood", series, idx, w, a)) for a in sens],
         "explanation": ("TPI_flood is pixel-local: at the flooded pixels T_flood is high (HAND, mean "
@@ -318,6 +323,8 @@ def merge(data_root: Path, res: dict) -> None:
         blob[f"{key}_anchor_basis"] = r["anchor_basis"]
         blob[f"{key}_anchor_utc"] = r["anchor_utc"]
         blob[f"{key}_anchor_source"] = r["anchor_source"]
+        if "confirmed_flood_km2_label" in r:
+            blob[f"{key}_denominator_label"] = r["confirmed_flood_km2_label"]
         # per-lead flat keys: the 00Z run issued >= 24/48/72 h before the onset
         for h in LEADS_H:
             L = r["by_lead"][str(h)]

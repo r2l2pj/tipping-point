@@ -198,6 +198,8 @@
         "unit": "% of confirmed flood area",
         "definition": "share of the NISAR-confirmed new-flood AREA (GCOV, post 2025-12-16) with TPI Alto or higher (> 0.4; Crítico > 0.6, the app class cuts) in the frames available 24-48 h before the anchor (max over window frames; observed = series bands dated anchor-2d..anchor-1d, latency ignored; forecast_gfs = L22 issued GFS 00Z runs 24-48 h before the anchor, frames depicting dates <= the anchor day); each damage location takes the ~90 m TPI cell that contains it",
         "confirmed_flood_km2": 27.921,
+        "confirmed_flood_km2_label": "27.9 km² of NISAR flood pixels on the ~12 m flood raster (the denominator); the canonical flooded_km2 27.99 km² is the polygon set within the swath",
+        "canonical_flooded_km2": 27.99,
         "anchor_basis": "onset",
         "anchor_short": "heavy rain began",
         "anchor_utc": "2025-12-08T08:00:00+00:00",
@@ -776,7 +778,8 @@
       "collections": {
         "NASADEM": "NASA/NASADEM_HGT/001",
         "MERIT_Hydro": "MERIT/Hydro/v1_0_1"
-      }
+      },
+      "flood_warned_denominator_label": "27.9 km² of NISAR flood pixels on the ~12 m flood raster (the denominator); the canonical flooded_km2 27.99 km² is the polygon set within the swath"
     },
     "rs_2024": {
       "event": "rs-2024-05",
