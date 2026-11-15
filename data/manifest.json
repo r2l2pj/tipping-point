@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T17:15:05Z",
+  "updated_at": "2026-11-15T18:03:22Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7122,7 +7122,7 @@
         -29.05
       ],
       "forecast_source": null,
-      "data_basis": "v0: NISAR flood candidates from a teammate pair (GCOV provisional 010D, 2026-09-30 -> 10-12); our own NISAR GCOV stack and the TPI replay are in progress",
+      "data_basis": "NISAR GCOV (provisional + V1): our track 010 D stack Sep 18 → Nov 5 2026 (HH/HV frames + change maps; 0 gated flood candidates — the per-scene threshold sat at the −15 dB clamp on every pair) and track 082 D context frames; a teammate's NISAR Sep 30 → Oct 12 map (7 candidate polygons, 1.82 km²); upstream-basin rain forecast proof (IMERG Early + NOAA GFS, retrospective test). Local rain index (TPI) not replayed: local rain never reached its P99.",
       "layers": [
         {
           "id": "hand_low",
@@ -7473,7 +7473,7 @@
           "polarization": "HH"
         },
         {
-          "id": "nisar_hh_change",
+          "id": "nisar_hh_change_20261012",
           "date": "2026-10-12",
           "png": "rs_uruguai_2026/png/nisar_hh_change_20261012.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_change_20261012_60m.tif",
@@ -7496,10 +7496,11 @@
           ],
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
+          "label": "NISAR HH change (Sep 30 → 10-12)",
           "polarization": "HH"
         },
         {
-          "id": "nisar_hh_change",
+          "id": "nisar_hh_change_20261105",
           "date": "2026-11-05",
           "png": "rs_uruguai_2026/png/nisar_hh_change_20261105.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_change_20261105_60m.tif",
@@ -7522,6 +7523,7 @@
           ],
           "sensor": "NISAR",
           "source": "NISAR GCOV (ASF)",
+          "label": "NISAR HH change (Oct 24 → Nov 5)",
           "polarization": "HH"
         },
         {
@@ -7771,7 +7773,7 @@
           "polarization": "HV"
         },
         {
-          "id": "nisar_hv_change",
+          "id": "nisar_hv_change_20261012",
           "date": "2026-10-12",
           "png": "rs_uruguai_2026/png/nisar_hv_change_20261012.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_change_20261012_60m.tif",
@@ -7794,10 +7796,11 @@
           ],
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
+          "label": "NISAR HV change (Sep 30 → 10-12)",
           "polarization": "HV"
         },
         {
-          "id": "nisar_hv_change",
+          "id": "nisar_hv_change_20261105",
           "date": "2026-11-05",
           "png": "rs_uruguai_2026/png/nisar_hv_change_20261105.png",
           "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_change_20261105_60m.tif",
@@ -7820,6 +7823,7 @@
           ],
           "sensor": "NISAR",
           "source": "NISAR GCOV (ASF)",
+          "label": "NISAR HV change (Oct 24 → Nov 5)",
           "polarization": "HV"
         },
         {
@@ -7961,9 +7965,9 @@
       "data_dates": {},
       "products": {
         "upstream_basin": "rs_uruguai_2026/geojson/upstream_basin.geojson",
-        "municipal_boundaries": null,
+        "municipal_boundaries": "rs_uruguai_2026/geojson/municipal_boundaries.geojson",
         "landslide_catalog": null,
-        "places": null,
+        "places": "rs_uruguai_2026/geojson/places.geojson",
         "priority_zones": null,
         "permanent_water": null,
         "flood_confirmed": "rs_uruguai_2026/geojson/flood_confirmed.geojson",
@@ -7985,9 +7989,7 @@
         "s_series": "rs_uruguai_2026_s_series COG not yet produced",
         "t_slide": "rs_uruguai_2026_t_slide COG not yet produced",
         "t_flood": "rs_uruguai_2026_t_flood COG not yet produced",
-        "municipal_boundaries": "not yet produced",
         "landslide_catalog": "not yet produced",
-        "places": "not yet produced",
         "priority_zones": "not yet produced",
         "permanent_water": "not yet produced",
         "landslide_candidates": "no landslide candidate product yet",

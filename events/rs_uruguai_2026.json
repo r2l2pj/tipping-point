@@ -52,7 +52,7 @@
     }
   ],
   "status": "v0 — flood candidates from a teammate pair, to be reproduced; candidates, never confirmed",
-  "data_basis": "v0: NISAR flood candidates from a teammate pair (GCOV provisional 010D, 2026-09-30 -> 10-12); our own NISAR GCOV stack and the TPI replay are in progress",
+  "data_basis": "NISAR GCOV (provisional + V1): our track 010 D stack Sep 18 → Nov 5 2026 (HH/HV frames + change maps; 0 gated flood candidates — the per-scene threshold sat at the −15 dB clamp on every pair) and track 082 D context frames; a teammate's NISAR Sep 30 → Oct 12 map (7 candidate polygons, 1.82 km²); upstream-basin rain forecast proof (IMERG Early + NOAA GFS, retrospective test). Local rain index (TPI) not replayed: local rain never reached its P99.",
   "forecast_source": null,
   "forecast_proof": {
     "question": "Would the upstream-rain signal have warned Uruguaiana before the Oct 2026 Uruguay River flood?",
