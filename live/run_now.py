@@ -35,6 +35,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from live import alerts, fetch, publish, render, tpi
+from live.now_manifest import OPTIONAL_PRODUCTS, prune_products
 from live.config import (
     FORECAST_DAYS,
     IMERG_LOOKBACK_DAYS,
@@ -102,6 +103,7 @@ def build_manifest(bounds, updated_at, data_dates, layers, nisar_passes) -> dict
         "layers": layers,
         "products": {
             "critical_areas": "geojson/critical_areas.geojson",
+            **OPTIONAL_PRODUCTS,
             "summary": "summary.json",
             "alerts": "alerts.json",
         },
@@ -206,6 +208,18 @@ def run(args) -> dict:
             feats += render.critical_features(cls, transform, kind, days[k].isoformat())
     files["geojson/critical_areas.geojson"] = render.feature_collection(feats)
 
+    # reference layers for the Command Center Now map (cached on disk;
+    # priority zones come from R3, run after this job — see now_manifest)
+    gj_dir = args.out_dir / "geojson"
+    from live import now_geojson
+    for ensure in (now_geojson.ensure_municipal_boundaries,
+                   now_geojson.ensure_permanent_water):
+        try:
+            ensure(gj_dir, tuple(args.bounds))
+        except Exception as exc:  # reference layers are additive
+            print(f"[now] {ensure.__name__} failed: {exc!r}",
+                  file=sys.stderr)
+
     area_km2 = pixel_area_km2(lats)
     valid_s0 = np.isfinite(slide_tpi[0])
     valid_f0 = np.isfinite(flood_tpi[0])
@@ -253,6 +267,11 @@ def run(args) -> dict:
         {"imerg": imerg_date, "smap": smap_date, "gfs_issued": gfs_issued,
          "clim_doy_used": static.get("clim_doy_used")},
         layers, nisar)
+    # never advertise a 404: drop optional products not on disk; files/
+    # entries are written just below, so they count as present
+    present = {k: v for k, v in manifest["products"].items() if v in files}
+    prune_products(manifest, args.out_dir)
+    manifest["products"] = {**manifest["products"], **present}
     written = publish.write_outputs(args.out_dir, files, manifest)
     assert written[-1].name == "manifest.json"
     return manifest

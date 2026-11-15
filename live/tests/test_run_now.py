@@ -47,6 +47,8 @@ def _write_static(static_dir):
         pop=np.full((h, w), 1000.0),
     )
 
+from live import now_geojson  # noqa: E402
+
 
 @pytest.fixture
 def fake_now(tmp_path, monkeypatch):
@@ -76,6 +78,12 @@ def fake_now(tmp_path, monkeypatch):
         live.fetch, "fetch_gfs_daily",
         lambda bounds, issued=None: (
             _fake_da(fc_times, 50.0), "2026-11-14T00:00:00Z"))
+
+    # hermetic: reference layers (IBGE fetch, MCD12Q1 read) are no-ops here
+    monkeypatch.setattr(now_geojson, "ensure_municipal_boundaries",
+                        lambda gj_dir, bounds: None)
+    monkeypatch.setattr(now_geojson, "ensure_permanent_water",
+                        lambda gj_dir, bounds: None)
 
     # No regrid patch needed: run() builds a nearest-source coverage mask, so
     # the NaN hole in the fake SMAP grid becomes real nodata on the dst grid.

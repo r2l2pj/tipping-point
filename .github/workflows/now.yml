@@ -7,7 +7,9 @@ name: modo-agora
 
 on:
   schedule:
-    - cron: "0 */3 * * *"
+    # :17 past, not :00: GitHub drops top-of-hour schedules under load
+    # (the 03:00Z run on 2026-11-15 never fired). 00:17, 03:17 ... UTC.
+    - cron: "17 */3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -54,6 +56,35 @@ jobs:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
         run: uv run python -c "from live.fetch import check_earthdata_token; check_earthdata_token()"
 
+      # Static model inputs for the response steps (R1-R3): served from the
+      # static-v1 Release, cached so CI downloads them at most once.
+      - name: Cache static response inputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/now/static/gpw/gpw_popcount_2020_30sec.tif
+            data/now/static/mcd12q1/lc_type1_2025.tif
+            data/static/south_brazil/terrain/hand_m.tif
+          key: static-v1-response-1
+
+      - name: Fetch static response inputs (cache miss only)
+        run: |
+          set -euo pipefail
+          rel="https://github.com/r2l2pj/tipping-point-data/releases/download/static-v1"
+          get() { [ -s "$2" ] || { mkdir -p "$(dirname "$2")"; curl -fsSL --retry 3 -o "$2" "$rel/$1"; }; }
+          get gpw_popcount_2020_30sec.tif data/now/static/gpw/gpw_popcount_2020_30sec.tif
+          get lc_type1_2025.tif data/now/static/mcd12q1/lc_type1_2025.tif
+          get hand_m.tif data/static/south_brazil/terrain/hand_m.tif
+
+      # R1 rolling state ("changed since last pass"): restore the newest
+      # snapshot, save a new one after R1 (cache entries are immutable).
+      - name: Restore R1 DSWx state
+        uses: actions/cache/restore@v4
+        with:
+          path: data/now/response/dswx_state.npz
+          key: dswx-state-${{ github.run_id }}
+          restore-keys: dswx-state-
+
       # L20: local TPI path — run_now --local fetches IMERG Early / SMAP L4 /
       # GEOS-FP, computes TPI in numpy against per-doy climatology + terrain
       # pulled from the GEE assets, writes data/now directly. No EE raster
@@ -66,6 +97,49 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NOW_LOCAL: "1"
         run: uv run python live/jobs.py now
+
+      # L27 response side (lead-analysis scripts), in order after the TPI
+      # job. Additive: a failure here never blocks the TPI publish; the
+      # finalize step only declares products whose files exist.
+      - name: R1 flood candidates (OPERA DSWx-S1)
+        continue-on-error: true
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+          PYTHONPATH: pipeline
+        run: |
+          if [ -f pipeline/scripts/13_response_dswx.py ]; then
+            uv run python pipeline/scripts/13_response_dswx.py
+          else echo "::notice::R1 script not on this branch yet"; fi
+
+      - name: Save R1 DSWx state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/now/response/dswx_state.npz
+          key: dswx-state-${{ github.run_id }}
+        continue-on-error: true
+
+      - name: R2 radar flood candidates (NISAR GCOV)
+        continue-on-error: true
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+          PYTHONPATH: pipeline
+        run: |
+          if [ -f pipeline/scripts/14_response_nisar.py ]; then
+            uv run python pipeline/scripts/14_response_nisar.py
+          else echo "::notice::R2 script not on this branch yet"; fi
+
+      - name: R3 response summary + priority zones
+        continue-on-error: true
+        env:
+          PYTHONPATH: pipeline
+        run: |
+          if [ -f pipeline/scripts/15_response_summary.py ]; then
+            uv run python pipeline/scripts/15_response_summary.py
+          else echo "::notice::R3 script not on this branch yet"; fi
+
+      - name: Finalize now manifest (merge response node, drop absent products)
+        run: uv run python -m live.now_manifest
 
       # L26: GitHub 'fallback' branch is the primary data host (one
       # force-pushed orphan snapshot per run, app-facing files only,
