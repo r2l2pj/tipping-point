@@ -148,6 +148,7 @@ const DYNAMIC_IMG: [string, string][] = [
   [LYR.smap, SRC.smap],
   [LYR.nisar, SRC.nisar],
   [LYR.nisarWater, SRC.nisarWater],
+  [LYR.prob, SRC.prob],
   [LYR.opera, SRC.opera],
   [LYR.nl, SRC.nl],
   [LYR.tml, SRC.tml],
