@@ -151,5 +151,99 @@
       "tool": "tools/uruguai_forecast_proof.py",
       "doc": ".crew/research/uruguai-forecast-proof.md"
     }
+  },
+  "gee": {
+    "aoi_bbox": [
+      -57.25,
+      -29.85,
+      -56.45,
+      -29.05
+    ],
+    "reference_date": "2026-11-05",
+    "window": {
+      "start": "2026-09-20",
+      "end": "2026-11-15"
+    },
+    "note": "JS can't read files — pasted bboxes/dates must mirror these values by hand (config.yaml cases.rs_uruguai_2026)."
+  },
+  "hazards": [
+    "flood"
+  ],
+  "teammate_radar_pair": {
+    "pre": "2026-09-30",
+    "post": "2026-10-12",
+    "sensor": "NISAR (GCOV provisional, 010D f103, cycles 032->033 — confirmed CMR NISAR_L2_GCOV_PROVISIONAL_V1; earlier 'unconfirmed' retracted)",
+    "polygons": 7
+  },
+  "nisar_stack": {
+    "maturity": "PROVISIONAL + production",
+    "note": "our NISAR GCOV 010D f103 stack: Sep 18 -> Nov 5 same-geometry (swath west of ~-56.85: Uruguaiana yes, Itaqui no); next 010D ~2026-11-17",
+    "frames": [
+      {
+        "product": "GCOV",
+        "track": "010D",
+        "frame": "103",
+        "pre": "2026-09-30",
+        "post": "2026-10-12",
+        "scenes": [
+          {
+            "date": "2026-09-18",
+            "role": "pre (first pass of the stack)",
+            "granule_id": "NISAR_L2_PR_GCOV_031_010_D_103_2005_DHDH_A_20260918T215847_20260918T215922_P05023_F_F_J_001"
+          },
+          {
+            "date": "2026-09-30",
+            "role": "baseline (below flood stage)",
+            "granule_id": "NISAR_L2_PR_GCOV_032_010_D_103_2005_DHDH_A_20260930T215847_20260930T215922_P05023_N_F_J_001"
+          },
+          {
+            "date": "2026-10-12",
+            "role": "mid-October crest (crest ~Oct 14, 9.93 m)",
+            "granule_id": "NISAR_L2_PR_GCOV_033_010_D_103_2005_DHDH_A_20261012T215847_20261012T215922_P05023_N_F_J_001"
+          },
+          {
+            "date": "2026-10-24",
+            "role": "between crests",
+            "granule_id": "NISAR_L2_PR_GCOV_034_010_D_103_2005_DHDH_A_20261024T215847_20261024T215922_P05036_N_F_J_001"
+          },
+          {
+            "date": "2026-11-05",
+            "role": "second rise (between Oct-29 flood stage and Nov-13 crest)",
+            "granule_id": "NISAR_L2_PR_GCOV_035_010_D_103_2005_DHDH_A_20261105T215848_20261105T215922_P05036_N_F_J_001"
+          }
+        ],
+        "context_scenes": [
+          {
+            "date": "2026-10-28",
+            "role": "context — track 060A frame 163 (ascending; covers Itaqui)",
+            "granule_id": "NISAR_L2_PR_GCOV_034_060_A_163_2005_DHDH_A_20261028T094723_20261028T094757_P05036_N_F_J_001"
+          },
+          {
+            "date": "2026-10-29",
+            "role": "context — track 082D frame 103 (descending; flood-stage day, covers Itaqui)",
+            "granule_id": "NISAR_L2_PR_GCOV_034_082_D_103_2005_DHDH_A_20261029T215028_20261029T215103_P05036_N_F_J_001"
+          },
+          {
+            "date": "2026-11-02",
+            "role": "context — track 132A frame 163 (ascending; covers Itaqui)",
+            "granule_id": "NISAR_L2_PR_GCOV_034_132_A_163_2005_DHDH_A_20261102T093903_20261102T093938_P05036_N_F_J_001"
+          }
+        ],
+        "collections": {
+          "PROVISIONAL_V1": "NISAR_L2_GCOV_PROVISIONAL_V1 (cycles <=033)",
+          "PROVISIONAL/production": "NISAR_L2_GCOV_V1 (cycles 034+)"
+        },
+        "note": "Descending same-geometry stack over the Uruguay River corridor at Uruguaiana; gated pairs = Sep 30 baseline vs Oct 12 / Oct 24 / Nov 5."
+      }
+    ],
+    "passes": [
+      "2026-09-18",
+      "2026-09-30",
+      "2026-10-12",
+      "2026-10-24",
+      "2026-11-05"
+    ],
+    "collections": "NISAR_L2_GCOV_PROVISIONAL_V1 (to cycle 033: Sep 18, Sep 30, Oct 12) + NISAR_L2_GCOV_V1 (034+: Oct 24, Nov 5); context passes 060A Oct 28, 082D Oct 29, 132A Nov 2",
+    "access": "HDF5 chunk range reads over HTTPS via tp.response_nisar.open_gcov/block_average (no full-granule download)"
   }
 }

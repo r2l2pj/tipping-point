@@ -35,6 +35,7 @@ SOURCE = "NOAA GFS via AWS noaa-gfs-bdp-pds (GRIB2 APCP, GDAL)"
 WINDOWS = {
     "rs_2024": (dt.date(2024, 4, 22), dt.date(2024, 5, 7)),
     "wa_2025": (dt.date(2025, 11, 30), dt.date(2025, 12, 20)),
+    "rs_uruguai_2026": (dt.date(2026, 9, 20), dt.date(2026, 11, 15)),
 }
 
 

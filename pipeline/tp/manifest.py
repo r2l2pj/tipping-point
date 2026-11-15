@@ -245,6 +245,8 @@ def _products(event_id: str, case_id: str, case_dir: Path) -> tuple[dict, dict]:
         f"{case_id}/nisar_polarization.json" if pol.exists() else None)
     if not pol.exists():
         reasons["nisar_polarization"] = "no dual-pol NISAR analysis yet"
+    for gj in sorted((case_dir / "geojson").glob("flood_nisar_*.geojson")):
+        products[gj.stem] = f"{case_id}/geojson/{gj.name}"
     return products, reasons
 
 

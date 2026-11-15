@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T16:32:38Z",
+  "updated_at": "2026-11-15T16:42:28Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7210,6 +7210,49 @@
           "product": "IMERG Early"
         },
         {
+          "id": "nisar_darkening",
+          "date": "2026-11-05",
+          "png": "rs_uruguai_2026/png/nisar_darkening_20261105.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_darkening_nisar_20261105.tif",
+          "legend": [
+            "corridor darkening (>3 dB, <=3 km of channel)",
+            "field darkening (>3 dB, possible irrigation (rice))"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_extra",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
+          "label": "radar darkening (not a flood map)",
+          "note": "ungated >3 dB HH darkening Oct 24 -> Nov 5 (per-scene Otsu never fired — no flood candidates); corridor 5.62 km² geodesic vs fields 11.88 km²"
+        },
+        {
+          "id": "nisar_hh_20260918",
+          "date": "2026-09-18",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260918.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20260918_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
+        },
+        {
           "id": "nisar_hh_20260923",
           "date": "2026-09-23",
           "png": "rs_uruguai_2026/png/nisar_hh_20260923_082D.png",
@@ -7230,6 +7273,28 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "polarization": "HH"
+        },
+        {
+          "id": "nisar_hh_20260930",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260930.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20260930_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
           "polarization": "HH"
         },
         {
@@ -7256,6 +7321,28 @@
           "polarization": "HH"
         },
         {
+          "id": "nisar_hh_20261012",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_hh_20261012.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261012_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
+        },
+        {
           "id": "nisar_hh_20261017",
           "date": "2026-10-17",
           "png": "rs_uruguai_2026/png/nisar_hh_20261017_082D.png",
@@ -7276,6 +7363,50 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "polarization": "HH"
+        },
+        {
+          "id": "nisar_hh_20261024",
+          "date": "2026-10-24",
+          "png": "rs_uruguai_2026/png/nisar_hh_20261024.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261024_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
+        },
+        {
+          "id": "nisar_hh_20261028",
+          "date": "2026-10-28",
+          "png": "rs_uruguai_2026/png/nisar_hh_20261028.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261028_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
           "polarization": "HH"
         },
         {
@@ -7302,6 +7433,124 @@
           "polarization": "HH"
         },
         {
+          "id": "nisar_hh_20261102",
+          "date": "2026-11-02",
+          "png": "rs_uruguai_2026/png/nisar_hh_20261102.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261102_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
+        },
+        {
+          "id": "nisar_hh_20261105",
+          "date": "2026-11-05",
+          "png": "rs_uruguai_2026/png/nisar_hh_20261105.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261105_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
+        },
+        {
+          "id": "nisar_hh_change",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_hh_change_20261012.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_change_20261012_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_change",
+          "db_range": [
+            -6.373963832855225,
+            1.9751627445220947
+          ],
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
+        },
+        {
+          "id": "nisar_hh_change",
+          "date": "2026-11-05",
+          "png": "rs_uruguai_2026/png/nisar_hh_change_20261105.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_change_20261105_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_change",
+          "db_range": [
+            -3.1564242839813232,
+            5.872978687286377
+          ],
+          "sensor": "NISAR",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
+        },
+        {
+          "id": "nisar_hv_20260918",
+          "date": "2026-09-18",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260918.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20260918_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
           "id": "nisar_hv_20260923",
           "date": "2026-09-23",
           "png": "rs_uruguai_2026/png/nisar_hv_20260923_082D.png",
@@ -7322,6 +7571,28 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_20260930",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260930.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20260930_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
           "polarization": "HV"
         },
         {
@@ -7348,6 +7619,28 @@
           "polarization": "HV"
         },
         {
+          "id": "nisar_hv_20261012",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_hv_20261012.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261012_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
           "id": "nisar_hv_20261017",
           "date": "2026-10-17",
           "png": "rs_uruguai_2026/png/nisar_hv_20261017_082D.png",
@@ -7368,6 +7661,50 @@
           "sensor": "NISAR (GCOV provisional)",
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_20261024",
+          "date": "2026-10-24",
+          "png": "rs_uruguai_2026/png/nisar_hv_20261024.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261024_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_20261028",
+          "date": "2026-10-28",
+          "png": "rs_uruguai_2026/png/nisar_hv_20261028.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261028_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
           "polarization": "HV"
         },
         {
@@ -7392,6 +7729,190 @@
           "source": "NISAR GCOV (ASF)",
           "note": "track 082 D frame 103; context track (082 D) — HH/HV backscatter only; its pairs sat at the -15 dB clamp, so no flood candidates are published from it",
           "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_20261102",
+          "date": "2026-11-02",
+          "png": "rs_uruguai_2026/png/nisar_hv_20261102.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261102_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_20261105",
+          "date": "2026-11-05",
+          "png": "rs_uruguai_2026/png/nisar_hv_20261105.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261105_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_frame",
+          "sensor": "NISAR (GCOV)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_change",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_hv_change_20261012.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_change_20261012_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_change",
+          "db_range": [
+            -4.266946792602539,
+            2.3921396732330322
+          ],
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_change",
+          "date": "2026-11-05",
+          "png": "rs_uruguai_2026/png/nisar_hv_change_20261105.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_change_20261105_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "nisar_change",
+          "db_range": [
+            -3.0646121501922607,
+            3.6813154220581055
+          ],
+          "sensor": "NISAR",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_post",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_hv_20261012.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20261012_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "observed",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_hv_pre",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/nisar_hv_20260930.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hv_20260930_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "observed",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HV"
+        },
+        {
+          "id": "nisar_post",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_hh_20261012.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20261012_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "observed",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
+        },
+        {
+          "id": "nisar_pre",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/nisar_hh_20260930.png",
+          "cog": "rs_uruguai_2026/cog/rs_uruguai_2026_nisar_hh_20260930_60m.tif",
+          "legend": [
+            "Baixo",
+            "Moderado",
+            "Alto",
+            "Crítico"
+          ],
+          "bounds": [
+            -57.252403,
+            -29.851198,
+            -56.445749,
+            -29.048826
+          ],
+          "kind": "observed",
+          "sensor": "NISAR (GCOV provisional)",
+          "source": "NISAR GCOV (ASF)",
+          "polarization": "HH"
         },
         {
           "id": "radar_post",
@@ -7453,9 +7974,12 @@
         "landslide_candidates": null,
         "swot_reference": null,
         "swot_series": null,
-        "nisar_timeseries": null,
+        "nisar_timeseries": "rs_uruguai_2026/nisar_timeseries.json",
         "flood_candidates": "rs_uruguai_2026/geojson/flood_confirmed.geojson",
-        "nisar_polarization": null
+        "nisar_polarization": null,
+        "flood_nisar_20261012": "rs_uruguai_2026/geojson/flood_nisar_20261012.geojson",
+        "flood_nisar_20261024": "rs_uruguai_2026/geojson/flood_nisar_20261024.geojson",
+        "flood_nisar_20261105": "rs_uruguai_2026/geojson/flood_nisar_20261105.geojson"
       },
       "_deprecated": {
         "products.flood_confirmed": "alias of products.flood_candidates (NISAR polygons are candidates); removed next cycle"
@@ -7473,7 +7997,6 @@
         "landslide_candidates": "no landslide candidate product yet",
         "swot_reference": "no SWOT pass in the case window",
         "swot_series": "no SWOT reach series for this case",
-        "nisar_timeseries": "no NISAR 3-date time series yet",
         "nisar_polarization": "no dual-pol NISAR analysis yet"
       }
     },

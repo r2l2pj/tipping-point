@@ -14025,17 +14025,76 @@
       "event": "rs_uruguai_2026",
       "flooded_km2": 1.817,
       "flood_source": "nisar",
-      "flood_source_note": "v0: 7 curated 'new open water' polygons from a teammate NISAR pair (GCOV provisional, track 010 D frame 103), 2026-09-30 -> 2026-10-12 (Uruguaiana check box); geodesic area; geometries repaired. Candidates, never confirmed; some may be rice-paddy irrigation. Our own NISAR GCOV stack (010D: Sep 18, Sep 30, Oct 12, Oct 24, Nov 5) is in progress.",
+      "flood_source_note": "v0: 7 curated 'new open water' polygons from a teammate NISAR pair (GCOV provisional, track 010 D frame 103), 2026-09-30 -> 2026-10-12 (Uruguaiana check box); geodesic area; geometries repaired. Candidates, never confirmed; some may be rice-paddy irrigation. Our own NISAR GCOV stack (010D: Sep 18, Sep 30, Oct 12, Oct 24, Nov 5) is in progress. Our own 010 D stack (Sep 18, Sep 30, Oct 12, Oct 24, Nov 5; GCOV provisional + V1): every pair was rejected by the R2 guard (per-scene threshold at the -15 dB clamp), so no gated NISAR candidates are published; HH/HV frames, change maps and the ungated darkening map are published instead.",
+      "radar_darkening_corridor_km2": 1.762,
+      "radar_darkening_fields_km2": 15.732,
+      "radar_darkening_pair": "2026-10-24 -> 2026-11-05",
+      "nisar_flooded_km2": null,
+      "nisar_people_flooded": null,
       "flooded_km2_scope": "7 curated polygons in a 44 km² check box at Uruguaiana (not the whole corridor)",
       "new_water_km2": 3.893,
       "people_flooded": 28,
-      "people_flooded_method": "GPW v4.11 2020 population count (UNADJUSTED), native 30\" grid, exact cell fractions (tp.response_summary.people_geom)",
-      "version": "v0",
+      "people_flooded_method": "GPW v4.11 2020 population count (UNADJUSTED), native 30\" grid, exact cell fractions (tp.response_summary.people_geom); people per polygon are also on change_darkening.geojson features",
+      "change_map": {
+        "corridor_darkening_km2_geodesic": 5.621,
+        "field_darkening_km2": 11.876,
+        "note": ">3 dB darkening Oct 24 -> Nov 5 HH, MMU 3 ha, outside GSW permanent water, 2 km edge-excluded; corridor = <=3 km of a >=0.5 km2 GSW>=50% channel component. Ungated — not a flood product; out-of-corridor consistent with rice-paddy irrigation.",
+        "geojson": "rs_uruguai_2026/geojson/change_darkening.geojson"
+      },
+      "nisar_pairs": [
+        {
+          "pre": "2026-10-24",
+          "post": "2026-11-05",
+          "track": 10,
+          "frame": 103,
+          "direction": "descending",
+          "mode": "2005_DHDH_A",
+          "granules": {
+            "pre": "NISAR_L2_PR_GCOV_034_010_D_103_2005_DHDH_A_20261024T215847_20261024T215922_P05036_N_F_J_001",
+            "post": "NISAR_L2_PR_GCOV_035_010_D_103_2005_DHDH_A_20261105T215848_20261105T215922_P05036_N_F_J_001"
+          },
+          "threshold_db": -15.0,
+          "threshold_method": "fallback",
+          "rejected": "per-scene Otsu did not fire (fallback -15 dB): pair unusable for flood candidates",
+          "valid_km2": 2807.59
+        }
+      ],
+      "nisar_dates": [
+        "2026-10-24",
+        "2026-10-28",
+        "2026-10-29",
+        "2026-11-02",
+        "2026-11-05"
+      ],
+      "nisar_context_frames": {
+        "2026-10-28": "track 060A f163 (ascending)",
+        "2026-10-29": "track 082D f103 (descending; flood-stage day)",
+        "2026-11-02": "track 132A f163 (ascending)"
+      },
+      "swath_note": "010D f103 swath covers the corridor west of ~-56.85 only: Uruguaiana yes, Itaqui no",
+      "version": "v3",
       "_null_reasons": {
         "critical_km2": "TPI replay for this case not yet computed (v1 in progress)",
         "flood_warned_pct": "TPI replay not yet computed",
+        "nisar_flooded_km2_20261024": "water threshold at the -15 dB clamp (R2 rule: not a per-scene calibration) — no published candidates",
+        "nisar_flooded_km2_20261105": "water threshold at the -15 dB clamp (R2 rule: not a per-scene calibration) — no published candidates",
+        "nisar_flooded_km2": "water threshold at the -15 dB clamp (R2 rule: not a per-scene calibration) — no published candidates",
+        "nisar_people_flooded": "water threshold at the -15 dB clamp (R2 rule: not a per-scene calibration) — no published candidates",
+        "nisar_flooded_km2_20261012": "water threshold at the -15 dB clamp (R2 rule: not a per-scene calibration) — no published candidates",
+        "nisar_people_flooded_20261012": "water threshold at the -15 dB clamp (R2 rule: not a per-scene calibration) — no published candidates",
+        "nisar_people_flooded_20261024": "water threshold at the -15 dB clamp (R2 rule: not a per-scene calibration) — no published candidates",
+        "nisar_people_flooded_20261105": "water threshold at the -15 dB clamp (R2 rule: not a per-scene calibration) — no published candidates",
         "nisar_082d_candidates": "pairs Sep 23 -> Oct 5 / 17 / 29: per-scene threshold at the -15 dB clamp -> rejected by the R2 guard; field darkening 202 of 212 km2 (Oct 5) = rice-paddy irrigation signature, not river flood"
       },
+      "nisar_flooded_km2_20261012": null,
+      "nisar_people_flooded_20261012": null,
+      "nisar_flood_geojson_20261012": "rs_uruguai_2026/geojson/flood_nisar_20261012.geojson",
+      "nisar_flooded_km2_20261024": null,
+      "nisar_people_flooded_20261024": null,
+      "nisar_flooded_km2_20261105": null,
+      "nisar_people_flooded_20261105": null,
+      "nisar_headline_pair": "2026-09-30 -> 2026-10-12",
+      "nisar_reproduction": "clamped-threshold mask Sep 30 -> Oct 12 covers 99.3% of the teammate zip's 1.817 km2 (IoU 0.014); zip polygons read -9.4 dB HH Oct 12 vs Sep 30 — mask reproduced but NOT publishable (threshold at clamp per R2 rule)",
       "nisar_pair": {
         "pre": "2026-09-30",
         "post": "2026-10-12",
