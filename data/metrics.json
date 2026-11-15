@@ -7219,6 +7219,28 @@
       "alarm_lead_h_median": 3.0,
       "alarm_baseline_pct": 24.93,
       "alarm_lift": 1.35
+    },
+    "rs_uruguai_2026": {
+      "event": "rs_uruguai_2026",
+      "flooded_km2": 1.817,
+      "flood_source": "nisar",
+      "flood_source_note": "v0: 7 curated 'new open water' polygons from a teammate NISAR-style pair (track 010 frame 103, 2026-09-30 -> 2026-10-12, Uruguaiana); geodesic area; geometries repaired; to be reproduced from NISAR GCOV. Candidates, never confirmed; some may be rice-paddy irrigation (Sep-Oct sowing).",
+      "flooded_km2_scope": "7 curated polygons in a 44 km² check box at Uruguaiana (not the whole corridor)",
+      "new_water_km2": 3.893,
+      "people_flooded": 28,
+      "people_flooded_method": "GPW v4.11 2020 population count (UNADJUSTED), native 30\" grid, exact cell fractions (tp.response_summary.people_geom)",
+      "nisar_pair": {
+        "pre": "2026-09-30",
+        "post": "2026-10-12",
+        "track": 10,
+        "frame": 103,
+        "direction": "descending"
+      },
+      "version": "v0",
+      "_null_reasons": {
+        "critical_km2": "TPI replay for this case not yet computed (v1 in progress)",
+        "flood_warned_pct": "TPI replay not yet computed"
+      }
     }
   }
 }

@@ -285,7 +285,8 @@ def test_all_kind_all_cases(data_dir, fake_ingest):
         _write_fc(data_dir, case, "landslide_catalog.geojson", [_point({})])
 
     results = ref.run(["--kind", "all", "--all"])
-    assert [(r["case"], r["asset"]) for r in results] == [
+    got = [(r["case"], r["asset"]) for r in results if r["case"] in ("rs_2024", "wa_2025")]
+    assert got == [
         ("rs_2024", "municipal_boundaries"),
         ("rs_2024", "landslide_catalog"),
         ("wa_2025", "municipal_boundaries"),

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T15:05:59Z",
+  "updated_at": "2026-11-15T15:45:08Z",
   "cases": {
     "rs_2024": {
       "event_id": "rs-2024-05",
@@ -7060,6 +7060,93 @@
         "products.flood_confirmed": "alias of products.flood_candidates (NISAR polygons are candidates); removed next cycle"
       },
       "_null_reasons": {}
+    },
+    "rs_uruguai_2026": {
+      "event_id": "rs_uruguai_2026",
+      "mode": "replay",
+      "bounds": [
+        -57.25,
+        -29.85,
+        -56.45,
+        -29.05
+      ],
+      "forecast_source": null,
+      "data_basis": "v0: radar flood candidates only (teammate NISAR-style GCOV pair 2026-09-30 -> 10-12, track 010 frame 103); our NISAR GCOV series and the TPI replay (IMERG Early/Late + NOAA GFS) are in progress",
+      "layers": [
+        {
+          "id": "nisar_post",
+          "date": "2026-10-12",
+          "png": "rs_uruguai_2026/png/nisar_post_20261012.png",
+          "cog": null,
+          "legend": [
+            "dark = smooth water",
+            "green = vegetation",
+            "bright = urban"
+          ],
+          "bounds": [
+            -57.079983,
+            -29.757373,
+            -57.008572,
+            -29.700131
+          ],
+          "forecast": false,
+          "kind": "observed"
+        },
+        {
+          "id": "nisar_pre",
+          "date": "2026-09-30",
+          "png": "rs_uruguai_2026/png/nisar_pre_20260930.png",
+          "cog": null,
+          "legend": [
+            "dark = smooth water",
+            "green = vegetation",
+            "bright = urban"
+          ],
+          "bounds": [
+            -57.079983,
+            -29.757373,
+            -57.008572,
+            -29.700131
+          ],
+          "forecast": false,
+          "kind": "observed"
+        }
+      ],
+      "metrics": "metrics.json#rs_uruguai_2026",
+      "data_dates": {},
+      "products": {
+        "municipal_boundaries": null,
+        "landslide_catalog": null,
+        "places": null,
+        "priority_zones": null,
+        "permanent_water": null,
+        "flood_confirmed": "rs_uruguai_2026/geojson/flood_confirmed.geojson",
+        "landslide_candidates": null,
+        "swot_reference": null,
+        "swot_series": null,
+        "nisar_timeseries": null,
+        "flood_candidates": "rs_uruguai_2026/geojson/flood_confirmed.geojson",
+        "nisar_polarization": null
+      },
+      "_deprecated": {
+        "products.flood_confirmed": "alias of products.flood_candidates (NISAR polygons are candidates); removed next cycle"
+      },
+      "_null_reasons": {
+        "r_series": "rs_uruguai_2026_r_series COG not yet produced",
+        "s_series": "rs_uruguai_2026_s_series COG not yet produced",
+        "t_slide": "rs_uruguai_2026_t_slide COG not yet produced",
+        "t_flood": "rs_uruguai_2026_t_flood COG not yet produced",
+        "municipal_boundaries": "not yet produced",
+        "landslide_catalog": "not yet produced",
+        "places": "not yet produced",
+        "priority_zones": "not yet produced",
+        "permanent_water": "not yet produced",
+        "landslide_candidates": "no landslide candidate product yet",
+        "swot_reference": "no SWOT pass in the case window",
+        "swot_series": "no SWOT reach series for this case",
+        "nisar_timeseries": "no NISAR 3-date time series yet",
+        "nisar_polarization": "no dual-pol NISAR analysis yet"
+      }
     },
     "now": {
       "schema": "tipping-point/now@2",

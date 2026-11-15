@@ -1,0 +1,49 @@
+{
+  "id": "rs_uruguai_2026",
+  "name": "Uruguay River flood, Uruguaiana-Itaqui (RS), Sep-Nov 2026",
+  "country": "BR",
+  "start_date": "2026-10-08",
+  "reference_date": "2026-10-12",
+  "window": {
+    "start": "2026-09-20",
+    "end": "2026-11-15"
+  },
+  "aoi": {
+    "bbox": [
+      -57.25,
+      -29.85,
+      -56.45,
+      -29.05
+    ]
+  },
+  "nisar": {
+    "frames": [
+      {
+        "track": 10,
+        "direction": "descending",
+        "frame": 103
+      }
+    ],
+    "note": "v0: teammate NISAR-style GCOV pair track 010 frame 103, 2026-09-30 -> 2026-10-12 (7 'new open water' polygons, Uruguaiana); being reproduced from NISAR GCOV (HH+HV, all 12-day passes)"
+  },
+  "impacts": [
+    {
+      "date": "2026-10-08",
+      "what": "Itaqui: 29 people displaced by the Uruguay River",
+      "source": "agorars.com"
+    },
+    {
+      "date": "2026-10-29",
+      "what": "Uruguaiana: Uruguay River above flood stage",
+      "source": "press / Defesa Civil RS"
+    },
+    {
+      "date": "2026-11-12",
+      "what": "Uruguaiana: red alert, river 8.50 m (Nov 12-13)",
+      "source": "Defesa Civil RS"
+    }
+  ],
+  "status": "v0 — flood candidates from a teammate pair, to be reproduced; candidates, never confirmed",
+  "data_basis": "v0: radar flood candidates only (teammate NISAR-style GCOV pair 2026-09-30 -> 10-12, track 010 frame 103); our NISAR GCOV series and the TPI replay (IMERG Early/Late + NOAA GFS) are in progress",
+  "forecast_source": null
+}

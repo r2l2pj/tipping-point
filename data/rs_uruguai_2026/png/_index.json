@@ -1,0 +1,44 @@
+{
+  "layers": [
+    {
+      "id": "nisar_pre",
+      "date": "2026-09-30",
+      "png": "rs_uruguai_2026/png/nisar_pre_20260930.png",
+      "cog": null,
+      "bounds": [
+        -57.079983,
+        -29.757373,
+        -57.008572,
+        -29.700131
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "dark = smooth water",
+        "green = vegetation",
+        "bright = urban"
+      ],
+      "note": "v0 teammate render (EPSG:3857 false-colour), to be replaced by our NISAR GCOV frames"
+    },
+    {
+      "id": "nisar_post",
+      "date": "2026-10-12",
+      "png": "rs_uruguai_2026/png/nisar_post_20261012.png",
+      "cog": null,
+      "bounds": [
+        -57.079983,
+        -29.757373,
+        -57.008572,
+        -29.700131
+      ],
+      "forecast": false,
+      "kind": "observed",
+      "legend": [
+        "dark = smooth water",
+        "green = vegetation",
+        "bright = urban"
+      ],
+      "note": "v0 teammate render (EPSG:3857 false-colour), to be replaced by our NISAR GCOV frames"
+    }
+  ]
+}
