@@ -1012,3 +1012,5 @@ lands, it should be read against:
 3. T_ML v2 (GLC-only after the L32 fix, 73 TRAIN positives) loses to the 15–30° slope rule: PR-AUC 0.747 vs 0.829.
 4. New, verified: the live layer is still the v1 model × v1 RS-trained T_ML (static-v1 sha pins); and Petrópolis was scored with 100 % NaN GFS rain, an overlapping-box bug in `gfs_reader`.
 5. Of the "~5×" VAL-vs-TEST gap, base rates explain about half (lift 3.3× vs 4.6× at 24 h). A real ROC gap remains (0.755 vs 0.941 with observed rain). The overfit audit had not reported when this was written.
+
+> **Audit verdict (added 11:00 BRT):** see [07-overfit-audit.md](07-overfit-audit.md) — no leakage; TEST overstates operational skill; the model performs about like an untrained "72 h forecast rain / local P99" rule.
