@@ -28,6 +28,8 @@ OPTIONAL_PRODUCTS = {
     "flood_nisar": "response/flood_nisar.geojson",
     "nisar_meta": "response/nisar_meta.json",
     "response_summary": "response/summary.json",
+    "landslide_candidates": "response/landslide_dist.geojson",
+    "dist_meta": "response/dist_meta.json",
 }
 FRAGMENT = "response/manifest_node.json"
 MERGE_KEYS = ("data_dates", "products", "_null_reasons")
@@ -43,21 +45,26 @@ def prune_products(manifest: dict, out_dir: Path) -> dict:
     return manifest
 
 
-OBSERVED_SOURCES = ("response/flood_dswx.geojson",
-                    "response/flood_nisar.geojson")
+# path -> (hazard, label): satellite OBSERVATIONS, never TPI alerts
+OBSERVED_SOURCES = {
+    "response/flood_dswx.geojson": ("flood", "observed flood candidate"),
+    "response/flood_nisar.geojson": ("flood", "observed flood candidate"),
+    "response/landslide_dist.geojson": ("landslide",
+                                        "observed landslide scar candidate"),
+}
 
 
 def observed_floods(out_dir: Path) -> list[dict]:
-    """R1/R2 polygons grouped per (source, municipality): OBSERVATIONS of
-    flood candidates (satellite water), never TPI alerts — no class, no
-    emergency wording. Sorted by people then area."""
+    """R1/R2/R4 polygons grouped per (source, municipality): OBSERVATIONS
+    (satellite water / vegetation-loss scars), never TPI alerts — no class,
+    no emergency wording. Sorted by people then area."""
     from shapely.geometry import shape
 
     from live.now_geojson import municipality_lookup
 
     where = municipality_lookup(out_dir / "geojson")
     groups: dict[tuple, dict] = {}
-    for rel in OBSERVED_SOURCES:
+    for rel, (hazard, label) in OBSERVED_SOURCES.items():
         p = out_dir / rel
         if not p.is_file():
             continue
@@ -67,12 +74,16 @@ def observed_floods(out_dir: Path) -> list[dict]:
                 pt = shape(f["geometry"]).representative_point()
             except (KeyError, ValueError, TypeError):
                 continue
-            muni = where(pt.x, pt.y) or {"municipality": None, "uf": None}
-            key = (pr.get("source"), muni["municipality"], muni["uf"])
+            muni = ({"municipality": pr["municipality"], "uf": pr.get("uf")}
+                    if pr.get("municipality") else
+                    where(pt.x, pt.y) or {"municipality": None, "uf": None})
+            source = pr.get("source") or (
+                "opera-dist-alert-hls" if hazard == "landslide" else None)
+            key = (source, hazard, muni["municipality"], muni["uf"])
             g = groups.setdefault(key, {
-                "kind": "observed", "hazard": "flood",
-                "label": "observed flood candidate", "status": "candidate",
-                "source": pr.get("source"), **muni,
+                "kind": "observed", "hazard": hazard,
+                "label": label, "status": "candidate",
+                "source": source, **muni,
                 "acquired": None, "area_km2": 0.0, "people": None,
                 "polygons": 0, "centroid": [round(pt.x, 4), round(pt.y, 4)],
                 "_best": -1.0})
@@ -81,7 +92,7 @@ def observed_floods(out_dir: Path) -> list[dict]:
             g["polygons"] += 1
             if pr.get("people") is not None:
                 g["people"] = (g["people"] or 0) + float(pr["people"])
-            acq = pr.get("acquired")
+            acq = pr.get("acquired") or pr.get("date")
             if acq and (g["acquired"] is None or acq > g["acquired"]):
                 g["acquired"] = acq
             if area > g["_best"]:   # label the group at its largest polygon
@@ -103,8 +114,9 @@ def add_observed_to_alerts(out_dir: Path) -> None:
         return
     alerts = json.loads(apath.read_text())
     alerts["observed"] = observed_floods(out_dir)
-    alerts["observed_note"] = ("satellite flood-water candidates (OPERA "
-                               "DSWx-S1, NISAR GCOV) - observations, not "
+    alerts["observed_note"] = ("satellite candidates - flood water (OPERA "
+                               "DSWx-S1, NISAR GCOV) and landslide scars "
+                               "(OPERA DIST-ALERT-HLS): observations, not "
                                "TPI alerts")
     tmp = apath.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(alerts, ensure_ascii=False, indent=2))
