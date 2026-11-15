@@ -1,5 +1,7 @@
 # Submission copy — review sheet for Lucas
 
+> **HISTORICAL LOG (superseded).** Numbers and open choices below are as they stood when written. Current public numbers and their `metrics.json` keys: `NUMBERS.md`. Tagline decided (L42): "Rain warns. Radar sees through."
+
 > **DRAFT — pending approval.**
 
 Morning summary for Lucas: `submission/MORNING.md`. One page: every public-facing sentence in the pack, where it appears, and which placeholders still need real values. All sentences below are **awaiting Lucas** (copy review 2026-11-15 morning, per L18).
@@ -37,7 +39,7 @@ May 1 is likely after the RS landslides started (~Apr 29–30). lead-analysis re
 | Sentence | Where | Open placeholders | Status |
 | --- | --- | --- | --- |
 | "Tipping Point turns NASA rainfall and soil moisture data into a near real-time landslide and flood warning, then uses NISAR radar to confirm where the ground actually moved or flooded, so civil defense teams know where to act first." | summary.md: Theme sentence (verbatim from docs/PLAN.md) | none | awaiting Lucas |
-| "Rain warns. Radar confirms." | summary.md: tagline; demo-script.md: close VO + on-screen; slides-outline.md: slide 1 | none | awaiting Lucas |
+| (old tagline, retired) | summary.md: tagline; demo-script.md: close VO + on-screen; slides-outline.md: slide 1 | none | decided L42: "Rain warns. Radar sees through." |
 | "Three NASA missions, three layers, one tipping point." | summary.md: one-liner; slides-outline.md: slide 1 | none | awaiting Lucas |
 | "In May 2024, Rio Grande do Sul suffered the worst floods in state history — 446 of 497 municipalities hit, hundreds of thousands displaced." | summary.md: Summary ¶ | none (documented facts) | awaiting Lucas — **SUPERSEDED by L36 (see top)** |
 | "Using the forecast available at the time, Tipping Point flagged the area [X] hours before the damage." | summary.md: Summary ¶; demo-script.md: beat 2 on-screen caption + production notes; slides-outline.md: slide 5 headline | none — [X] withdrawn (L35) | **ON HOLD (L35, re-score ~12:00)** — wording **decided by Lucas 2026-11-15** — wording and [X] h (WA median; RS has only 1 flagged forecast day, so it cannot carry a median); demo beat 2 footage is the WA replay so the picture matches — **SUPERSEDED by L36 (see top)** |

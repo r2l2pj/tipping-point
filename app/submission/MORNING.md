@@ -1,5 +1,7 @@
 # Morning review — Lucas, 2026-11-15
 
+> **HISTORICAL LOG (superseded).** Numbers and open choices below are as they stood when written. Current public numbers and their `metrics.json` keys: `NUMBERS.md`. Tagline decided (L42): "Rain warns. Radar sees through."
+
 One page. Full detail, sources and history: `submission/REVIEW.md`. Every number in the pack comes from published `metrics.json` (tipping-point-data); no placeholders are left. DRAFT banners stay on until you approve.
 
 ## Compliance gate (L42/L44) — **Submit by 16:00 BRT** (L44 hard deadline)
@@ -29,7 +31,7 @@ Paste every field from `submission/FORM.md`, tick "Terms and Conditions" and "Co
    - **Decided by conductor (delegated), L38:** response is the spine. Headline = "Clouds hid 93% of the area from optical satellites; NISAR radar mapped 28 km² of flood candidates through them." The RS forecast result ("Using only the forecast available at the time, 36% of the 16,027 mapped landslides were already in High or Critical areas 27 hours before the first deaths (Critical: 2%)." Earlier runs (issued 51 and 75 hours before) showed 0%.) appears only in the validation table, README and slide-5 footnote, with its anchor sensitivity. The old 88% / May 1 line and "…marked the area as critical before the damage" are retired everywhere.
    - `project-page.md`: the NISAR-led page text, which judges read first.
    - **Decided (L38):** new 53-word VO, NISAR first, then who is affected live, then prediction (no number). LICENSE: Apache-2.0 ships in the app repo.
-   - Tagline: keep "Radar confirms", or "Radar sees through."
+   - Tagline: decided L42 — "Rain warns. Radar sees through."
    - Calling public alerts "experimental, not official".
    - Rule-by-rule status: `COMPLIANCE.md`.
 7. Backup demo: `.crew/deck/slides.pdf` (7 slides), used only if the video slips. Optional: check the https://tippingpoint.l17s.dev host is not blocked by school or office filters.

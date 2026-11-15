@@ -14,6 +14,8 @@ Written 2026-11-15 (NASA Space Apps 2026, challenge "Dancing with the SARs") so 
 Numbers move while the team iterates; each section states the commit/run it was checked against.
 | [07 — Independent overfitting audit](07-overfit-audit.md) | verdict: no leakage/overfitting, but the TEST set (curated mega-storms) overstates operational skill; ML ≈ a simple forecast-rain/local-P99 rule; honest numbers + alarm-days per site-year | done |
 | [08 — Midday updates, 15 Nov 2026](08-updates-2026-11-15-midday.md) | RS 2024 vs Copernicus EMS EMSR720 (flood IoU 0.185; landslides 2.1× lift at slide centre; scars 3.3× random at 100 m), RS inventory prediction with lift (8.8×) + SMAP-latency/onset sensitivity, WA NISAR 3-pass series + double-bounce test (supported, with nuance), live Southern Brazil NISAR `no_usable_pair`, people audit, pre-onset early-warning ML, decisions L37–L43, work still running | done |
+| [09 — NISAR core and v3](09-nisar-core-and-v3.md) | NISAR-core notes and the v3 update |
+| [10 — External review of the indices (PT)](10-correcoes-revisao-externa.md) | external senior geospatial review, 15 Nov 2026 17:30 BRT: P0 copy fixes C1–C6 (status table at the top) and post-submission method fixes M1–M6 (terrain-only baseline for every lift, rain vs snow, R beyond P99, class cut-offs, HAND, S hard cut) |
 
 **Updates after writing (11:00 BRT):** the audit (07) is in; the Petrópolis NaN-forecast bug (06 E6) is fixed and being re-scored; the live P(trigger) map is switching to v2 (06 E5); ML v3 with a hand-curated event-level split is being prepared (decision L41).
 
