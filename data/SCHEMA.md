@@ -470,6 +470,34 @@ Not yet wired into `data/now/manifest.json` (R3 hands that node to lead-live).
   `brazil_outline_source`, `_null_reasons` (every null key explained;
   a failed baseline bootstrap nulls the km2/people keys and says so).
 
+#### R3 — response summary + priority zones (`pipeline/scripts/15_response_summary.py`)
+
+Runs after the TPI job, R1 and R2. Inputs: `response/flood_dswx.geojson`,
+`response/flood_nisar.geojson` (+ metas), `geojson/critical_areas.geojson`,
+`summary.json`, GPW count `static/gpw/gpw_popcount_2020_30sec.tif`, IBGE
+municipality boundaries (IBGE API at runtime). Every `*_km2` is a geodesic
+area of the unioned polygons (sources unioned first, never double-counted);
+people are GPW sums on one centre-sampled 0.0025° grid. Headline counts
+standard-confidence flood only; R1 "lower" (cropland) is `*_lower`.
+
+- `response/summary.json` — schema `tipping-point/response@1`:
+  `people_flooded`, `people_flooded_lower`, `people_critical`,
+  `people_exposed` (flood ∪ critical), `flooded_km2`, `flooded_km2_lower`,
+  `critical_km2`, `exposed_km2`, `overlap_km2` (DSWx ∩ NISAR),
+  `sources.{opera-dswx-s1,nisar-gcov,tpi-critical}` (features, km2, people,
+  latest_acquired, latency_h, status), `nisar` (pair granules),
+  `priority_zones`, `people_source` (label, never a local path),
+  `_null_reasons`.
+- `response/priority_zones.geojson` and the app copy
+  `geojson/priority_zones.geojson` (same features) — IBGE municipalities
+  ranked by exposed people then area: `name, code, uf, rank,
+  people_flooded, people_critical, flooded_km2, critical_km2, sources,
+  status: "candidate"` + app props `tpi, class, hazard, area_km2, people,
+  label_lon, label_lat`.
+- `response/manifest_node.json` — fragment the now job merges into
+  `now/manifest.json`; `people_exposed` / `people_critical` / `response`
+  are merged into `now/summary.json` without dropping keys.
+
 ## GEE assets
 
 The rasters also live under the GEE asset namespace
