@@ -951,7 +951,7 @@ COGs only via `getDownloadURL` when the download is under 10 MB (larger
 rasters are skipped with a logged reason). The live workflow then publishes
 `data/` to the orphan branch `fallback` of this repo (force-pushed each run
 so history does not grow), and the app reads it via
-`DATA_BASE_URL=https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`.
+`DATA_BASE_URL=https://raw.githubusercontent.com/r2l2pj/tipping-point/fallback/data/`.
 The layout on that branch is exactly the `data/` tree above, with manifests
 written last (`data/now/manifest.json` last in its group, `data/manifest.json`
 last overall).

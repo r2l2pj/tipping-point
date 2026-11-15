@@ -13,7 +13,7 @@ Checked 2026-11-15 ~09:30 BRT by lead-submission. Rules come from the official 2
 | g | SI not used to come up with the idea | ☐ Lucas | `ai-declaration.md` says the idea and method come from the team's own document. Only Lucas can confirm this is true. |
 | h | At least one NASA data resource | ✓ | 13 NASA datasets (FORM §7). |
 | i | References list every external resource (code, text, images, data) | ✓ | FORM §8 lists data, open-source code, services and basemap. Event facts (L36d) cite one official source: Gov RS "SOS Rio Grande do Sul", updated Aug 19, 2025 (478 municipalities, 185 deaths, 581,638 displaced at the peak); the unsourced figures are cut. |
-| j | Links public, no login | ✓ | 200 with no auth: `/`, `/alerts`, `/?case=rs_2024`, `/?case=wa_2025&day=-7`, `github.com/r2l2pj/tipping-point-app`. Both repos are PUBLIC. Still open: the video link, once uploaded. Test it in a private window. |
+| j | Links public, no login | ✓ | 200 with no auth: `/`, `/alerts`, `/?case=rs_2024`, `/?case=wa_2025&day=-7`, `github.com/r2l2pj/tipping-point`. Both repos are PUBLIC. Still open: the video link, once uploaded. Test it in a private window. |
 | k | Open source (the challenge asks for it) | ✓ | Both repos carry an Apache-2.0 LICENSE (tipping-point-data; tipping-point-app since lead-app 5daac30, in the freeze-1300 merge). |
 | l | All members confirmed at the same Local Event (≤ 6) | ☐ Lucas | Only the team owner can check this. |
 | m | All form fields complete, English, both boxes ticked, Submit clicked before **Sun Nov 15 23:59 local** | ☐ Lucas | `FORM.md` + `project-page.md`. Judges see only the last save. |

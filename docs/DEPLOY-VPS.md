@@ -3,7 +3,7 @@
 Production moves from Vercel to our own VPS. The app is one Next.js 16
 server (`next start`) in a Docker image. **Data does not move**: the server
 reads the published files from the `fallback` branch of
-`r2l2pj/tipping-point-data` (GitHub raw), then the pipeline's SQLite
+`r2l2pj/tipping-point` (GitHub raw), then the pipeline's SQLite
 `docs` table (`/app/.data/tipping_point.sqlite`, refreshed from the fallback
 branch every ≤ 3 h while GitHub answers — keep the `/app/.data` volume), then
 the copy bundled in the image (`public/data`). Neon is no longer read (L53). The 3-hourly data job keeps
@@ -20,9 +20,8 @@ VPS, build on another machine and `docker save | ssh vps docker load`.
 ```bash
 # L53 monorepo: the app is in app/ of the data repo; the Dockerfile and
 # .dockerignore sit at the repo ROOT, so build from the root as before.
-# (Until the GitHub rename the repo is r2l2pj/tipping-point-data; after it,
-# r2l2pj/tipping-point — the old name redirects.)
-git clone --single-branch --filter=blob:none https://github.com/r2l2pj/tipping-point-data.git tipping-point && cd tipping-point   # blobless: skips the 7 GB COG history
+# (The repo was renamed from r2l2pj/tipping-point; the old URL redirects.)
+git clone --single-branch --filter=blob:none https://github.com/r2l2pj/tipping-point.git tipping-point && cd tipping-point   # blobless: skips the 7 GB COG history
 git checkout main
 docker build -t tipping-point-app \
   .
@@ -80,7 +79,7 @@ they are **build** arguments, not runtime env.
 
 | Variable | When | Value |
 | --- | --- | --- |
-| `DATA_BASE_URL` | runtime | **Leave unset.** Unset already reads the GitHub raw `fallback` branch first (`https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`), then the SQLite docs copy in `/app/.data`, then the bundled copy. Setting it replaces GitHub as the only remote (tests pin it unreachable). `DATA_SQLITE` (optional) points at another SQLite file; `DATA_SQLITE_REFRESH=0` stops the 3-hourly download. |
+| `DATA_BASE_URL` | runtime | **Leave unset.** Unset already reads the GitHub raw `fallback` branch first (`https://raw.githubusercontent.com/r2l2pj/tipping-point/fallback/data/`), then the SQLite docs copy in `/app/.data`, then the bundled copy. Setting it replaces GitHub as the only remote (tests pin it unreachable). `DATA_SQLITE` (optional) points at another SQLite file; `DATA_SQLITE_REFRESH=0` stops the 3-hourly download. |
 | `GEE_ENABLED` | runtime | **Unset** (L25: no Earth Engine at runtime). `GEE_PROJECT`, `GCP_SA_KEY` stay unset too. |
 | `APP_URL` | runtime | The new public URL, e.g. `https://tipping-point.example.org` (no trailing slash). |
 | `PORT` | runtime | Default `3000`. Match the `-p` mapping and the proxy. |

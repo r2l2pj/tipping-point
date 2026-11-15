@@ -29,8 +29,7 @@ The video is built from `storyboard.md` + `captions.srt` (L38 response-first VO,
 https://tippingpoint.l17s.dev
 
 It is public, needs no login, and returns 200. The code links are in the description below:
-- https://github.com/r2l2pj/tipping-point-app
-- https://github.com/r2l2pj/tipping-point-data
+- https://github.com/r2l2pj/tipping-point (pipeline at the root, web app in `app/`)
 
 Both repos are public.
 

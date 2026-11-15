@@ -6,7 +6,7 @@ The current token expires on **2027-01-13 17:21 UTC**, and winners are picked on
 
 | Place | Used by | Update needed |
 | --- | --- | --- |
-| GitHub secret `EARTHDATA_TOKEN` on `r2l2pj/tipping-point-data` | now.yml (every 3 h: IMERG Early, SMAP L4, OPERA DSWx/DIST, NISAR), nisar.yml, validation.yml, reference.yml | **yes**, this one keeps the live site working |
+| GitHub secret `EARTHDATA_TOKEN` on `r2l2pj/tipping-point` | now.yml (every 3 h: IMERG Early, SMAP L4, OPERA DSWx/DIST, NISAR), nisar.yml, validation.yml, reference.yml | **yes**, this one keeps the live site working |
 | `~/code/r2l2pj/tipping-point-data/.env` (gitignored, mode 600) | local pipeline/ML runs | yes, if anyone still runs things locally |
 | Vercel (tipping-point-app) | not used: the app never calls Earthdata | no |
 | `tipping-point-app/.env.local` | not used | no |
@@ -20,11 +20,11 @@ The token belongs to the Earthdata account that accepted the GES DISC, ASF and N
 
 ```sh
 # 1. GitHub secret (paste the token at the hidden prompt)
-gh secret set EARTHDATA_TOKEN -R r2l2pj/tipping-point-data
+gh secret set EARTHDATA_TOKEN -R r2l2pj/tipping-point
 # 2. local .env (paste the token at the hidden prompt; never echoes it)
 read -rs T && sed -i "s|^EARTHDATA_TOKEN=.*|EARTHDATA_TOKEN=$T|" ~/code/r2l2pj/tipping-point-data/.env && unset T
 # 3. prove it: a now run whose first step rejects a bad token
-gh workflow run now.yml -R r2l2pj/tipping-point-data --ref main
+gh workflow run now.yml -R r2l2pj/tipping-point --ref main
 ```
 
 ## Check

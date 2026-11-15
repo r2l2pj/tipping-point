@@ -34,8 +34,8 @@ is ever committed; `.gitignore` already blocks the usual key file patterns.
 GitHub is the data store (L26). Read order, per file:
 
 1. **GitHub `fallback` branch (primary)** — orphan branch of
-   `r2l2pj/tipping-point-data`, read at
-   `https://raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`.
+   `r2l2pj/tipping-point`, read at
+   `https://raw.githubusercontent.com/r2l2pj/tipping-point/fallback/data/`.
    The 3-hourly `now.yml` job publishes it with `GITHUB_TOKEN` as one
    force-pushed commit per run (no history growth), app-facing files only,
    `manifest.json` written last. Files > 50 MB go to a GitHub Release asset.

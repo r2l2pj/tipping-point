@@ -3,7 +3,7 @@
 Fullstack app for **Tipping Point** — NASA Space Apps Challenge 2026,
 "Dancing with the SARs". Rain warns. Radar sees through.
 
-**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **Data pipeline:** [r2l2pj/tipping-point-data](https://github.com/r2l2pj/tipping-point-data) · **License:** Apache-2.0 · **Team:** [TEAM NAME] — NASA Space Apps 2026, challenge #5 "Dancing with the SARs"
+**Live demo:** [https://tippingpoint.l17s.dev](https://tippingpoint.l17s.dev) · **Repo:** [r2l2pj/tipping-point](https://github.com/r2l2pj/tipping-point) (this app is `app/`; the pipeline is at the root) · **License:** Apache-2.0 · **Team:** [TEAM NAME] — NASA Space Apps 2026, challenge #5 "Dancing with the SARs"
 
 ## What it is
 
@@ -18,7 +18,7 @@ Tipping Point helps responders know **when, where and who** in floods and landsl
 - **Radar response (NISAR, L-band):** new open water = HH backscatter drop of more than 3 dB to below a per-scene threshold, on low ground near rivers (height above drainage < 15 m), patches ≥ 3 ha. Outputs are always **flood candidates**. NASA OPERA surface water (DSWx) adds C-band water candidates; NASA OPERA land disturbance (DIST) adds landslide **scar candidates** (optical).
 - **Where to look between passes:** the Tipping Point Index TPI = (R·S·T)^(1/3) — Rain (GPM IMERG 3-day vs each pixel's own climatology), Soil (SMAP L4 root-zone wetness), Terrain (NASADEM slope; height above drainage for floods). Critical (> 0.6) only when all three agree. The next 1–3 days use the **NOAA GFS** forecast, our only non-NASA input, labelled on every frame.
 - **Who:** GPW v4.11 population count (2020) inside the flood candidates and the Critical areas; VIIRS Black Marble night-light loss.
-- **ML (experimental):** an XGBoost landslide-trigger model sits beside the index. An independent audit found it about as good as a simple forecast-rain-vs-local-extreme rule; see [07-overfit-audit](https://github.com/r2l2pj/tipping-point-data/blob/main/docs/science-review/07-overfit-audit.md).
+- **ML (experimental):** an XGBoost landslide-trigger model sits beside the index. An independent audit found it about as good as a simple forecast-rain-vs-local-extreme rule; see [07-overfit-audit](https://github.com/r2l2pj/tipping-point/blob/main/docs/science-review/07-overfit-audit.md).
 - **Live:** the Now view refreshes every 3 hours over Southern Brazil; replays use only the data and forecast available on each day (no look-ahead).
 
 ## Honest results
@@ -46,7 +46,7 @@ Full table with every n and caveat: [Validation](#validation).
 | `docs/` | `PLAN.md` (the team's plan), `app-contract.md`, deploy notes, screenshots |
 | `submission/` | Space Apps submission texts (project page, form, script) |
 
-Data products are produced by [tipping-point-data](https://github.com/r2l2pj/tipping-point-data) (`data/SCHEMA.md` is the contract) and read at runtime from its GitHub `fallback` branch (raw files), with the bundled copy as the last resort.
+Data products are produced by the pipeline at the repo root ([r2l2pj/tipping-point](https://github.com/r2l2pj/tipping-point)) (`data/SCHEMA.md` is the contract) and read at runtime from its GitHub `fallback` branch (raw files), with the bundled copy as the last resort.
 
 ## Credits and attributions
 
@@ -56,7 +56,7 @@ NASA data: GPM IMERG, SMAP L4, NASADEM, NISAR (GCOV, provisional/BETA), NASA OPE
 
 
 Next.js 16 (App Router) + MapLibre + `@google/earthengine`. Serves the artifacts
-published by [`r2l2pj/tipping-point-data`](https://github.com/r2l2pj/tipping-point-data).
+published by the pipeline at the root of this repository ([`r2l2pj/tipping-point`](https://github.com/r2l2pj/tipping-point)).
 Earth Engine is not on the runtime path — it is used only for one-off compute and
 hosted copies; live EE layers stay off by default, opt-in via `GEE_ENABLED`
 (`1`/`true`).
@@ -108,8 +108,8 @@ two explanatory diagrams were drawn as SVG by an AI assistant and are labelled
 
 Vercel (repo is public — Hobby plan can deploy public org repos). `prebuild`
 runs the data sync, so committed `public/data` is the last-resort deploy
-fallback. Read order: the `fallback` branch of `r2l2pj/tipping-point-data`
-(`raw.githubusercontent.com/r2l2pj/tipping-point-data/fallback/data/`) is the
+fallback. Read order: the `fallback` branch of `r2l2pj/tipping-point`
+(`raw.githubusercontent.com/r2l2pj/tipping-point/fallback/data/`) is the
 primary source; when GitHub misses, the server reads its cached copy of the
 SQLite `docs` table (downloaded from the same branch), then the bundled
 `public/data`. An explicit `DATA_BASE_URL` overrides the remotes — runbook in
@@ -233,7 +233,7 @@ including Rio Grande do Sul 2024 and Washington 2025. The susceptibility
 layer is being retrained without Rio Grande do Sul points to remove a
 leak found on Nov 15; scores that used the leaked layer are withdrawn. Scores are compared with a RandomForest and the TPI > 0.6 rule at
 the same base rate. An XGBoost trigger model ranks landslide-prone places well inside extreme storms (median per-event ROC 0.93 across 9 held-out disasters) but an independent audit found it performs about as well as a simple forecast-rain-vs-local-extreme rule, and in everyday use it would raise ~4–5 alarm-days per site per year. We present it as experimental.
-Audit and numbers: [tipping-point-data `docs/science-review/07-overfit-audit.md`](https://github.com/r2l2pj/tipping-point-data/blob/main/docs/science-review/07-overfit-audit.md).
+Audit and numbers: [`docs/science-review/07-overfit-audit.md`](https://github.com/r2l2pj/tipping-point/blob/main/docs/science-review/07-overfit-audit.md).
 
 **Anchor dates (L37).** "Before the damage" is measured from the documented
 start of each event (the first dated reports of landslides or flooding), not
