@@ -41,3 +41,6 @@ data/ml/*.sqlite.tmp
 
 # 90 m HAND proxy (static-v1 Release asset, 390 MB)
 data/static/south_brazil/terrain/hand_90m.tif
+
+# built by tools/build_sqlite.py on the fallback branch / CI only
+data/tipping_point.sqlite

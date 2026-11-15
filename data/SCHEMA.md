@@ -548,6 +548,28 @@ standard-confidence flood only; R1 "lower" (cropland) is `*_lower`.
   `now/manifest.json`; `people_exposed` / `people_critical` / `response`
   are merged into `now/summary.json` without dropping keys.
 
+## data/tipping_point.sqlite — queryable mirror (stdlib sqlite3)
+
+Built by `tools/build_sqlite.py` (`pipeline/tp/sqlite_store.py`) from the files
+above, after the manifests are written; rebuilt from scratch each run, < 50 MB
+(the tool fails above that). The app keeps reading JSON — this is for analysis
+and queries only. Missing inputs leave a table empty and are listed in
+`build_notes`; values are never invented.
+
+| table | columns | from |
+|---|---|---|
+| `events` | event_id, case_id, title, reference_date, west, south, east, north | `events.json` |
+| `nisar_passes` | granule, acquired, path, direction | `now/manifest.json` `nisar_passes` |
+| `metrics` | case_id, key, value, unit, updated_at, source | `metrics.json` per replay case (nested values as JSON text, bools 0/1, `_null_reasons.<key>` rows carry the reasons) + `case_id='now'` scalars from `now/summary.json` (`critical_km2.<hazard>`, `response.<key>`) |
+| `series` | case_id, date, var, value | `<case>/series/imerg_smap_daily.json`, long format (numeric vars only) |
+| `zones` | run_id, municipality, code, uf, hazard, area_km2, people, class, rank | `now/geojson/priority_zones.geojson` (run_id = now `updated_at`), `<case>/geojson/priority_zones.geojson` (run_id = case) |
+| `response_candidates` | run_id, source, hazard, area_km2, people, municipality, confidence, status, acquired, lon, lat | `now/response/flood_dswx`, `flood_nisar`, `landslide_dist` and `rs_2024/geojson/landslide_candidates` (lon/lat = representative point; all `status = candidate`) |
+| `runs` | run_id, kind (now / replay), updated_at, verified (0/1), data_dates (JSON) | `now/manifest.json`, root `manifest.json` |
+| `build_notes` | item, note | build time + missing inputs |
+
+Units come from the key suffix (`_km2` km², `_pct` %, `_h` h, `_mm` mm, `_m` m,
+`people*` persons); `unit` is null otherwise.
+
 ## GEE assets
 
 The rasters also live under the GEE asset namespace

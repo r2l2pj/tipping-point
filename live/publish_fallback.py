@@ -24,7 +24,7 @@ def git(*args: str, cwd: Path = ROOT, allowed: tuple[int, ...] = (0,)):
     return result
 
 
-APP_FACING_SUFFIXES = {".json", ".geojson", ".png", ".tif", ".tiff", ".md"}
+APP_FACING_SUFFIXES = {".json", ".geojson", ".png", ".tif", ".tiff", ".md", ".sqlite"}
 
 
 def _app_facing(path: Path, source: Path) -> bool:
