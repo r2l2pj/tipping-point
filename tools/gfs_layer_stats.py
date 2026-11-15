@@ -5,7 +5,8 @@ forecast_source == "noaa-gfs" (ids tpi_<slide|flood>_gfs_d<j>), adds:
   critical_km2     area of pixels with TPI > 0.6 (strict) in THAT frame's
                    band (d<j>_<hazard> of the entry's cog), per-row cos(lat)
   people_critical  GPWv4 count under those pixels (coverage-fraction
-                   reproject onto data/<case>/cog/<case>_pop_gpw_*.tif)
+                   reproject onto the native 30 arc-sec GPW grid,
+                   data/<case>/cog/<case>_pop_gpw_native.tif)
 Both come from tp.bundle._critical_stats called with a single hazard band,
 so the definition is the one the series rows and metrics use. A value that
 can't be computed is null with a reason in the entry's `_null_reasons`.
@@ -71,7 +72,9 @@ def layer_stats(entry: dict, data_dir: Path, pop_cog: Path | None) -> dict:
 def update_case(case: str, data_root: Path) -> int:
     idx_path = data_root / case / "png" / "_index.json"
     idx = json.loads(idx_path.read_text())
-    pops = sorted((data_root / case / "cog").glob(f"{case}_pop_gpw_*.tif"))
+    pops = sorted((data_root / case / "cog").glob(f"{case}_pop_gpw_native.tif"))
+    if not pops:  # fallback: the ~1 km GEE export (under-counts ~13%)
+        pops = sorted((data_root / case / "cog").glob(f"{case}_pop_gpw_*.tif"))
     pop_cog = pops[-1] if pops else None
     n = 0
     for entry in idx["layers"]:
