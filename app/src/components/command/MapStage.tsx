@@ -341,6 +341,25 @@ export default function MapStage({
     };
   }, [map]);
 
+  // Bounds of the map view for the locator; one update per frame while moving.
+  const [locatorBox, setLocatorBox] = useState<[number, number, number, number] | null>(null);
+  useEffect(() => {
+    if (!map) return;
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      const b = map.getBounds();
+      setLocatorBox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+    };
+    const onMove = () => { if (!frame) frame = requestAnimationFrame(read); };
+    map.on("move", onMove);
+    onMove();
+    return () => {
+      map.off("move", onMove);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [map]);
+
   const fit = (duration = 500) =>
     map?.fitBounds(
       [[bundle.bbox[0], bundle.bbox[1]], [bundle.bbox[2], bundle.bbox[3]]],
@@ -597,7 +616,7 @@ export default function MapStage({
           <div className="flex items-end gap-2">
             {/* lead-ux: ONE legend chip at every width; a tap opens the full legend. */}
             <LegendChip bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} changeCyan={state.changeCyan} />
-            <LocatorInset bbox={bundle.bbox} className="max-[899px]:hidden" />
+            <LocatorInset bbox={bundle.bbox} view={locatorBox} onRecenter={() => fit(500)} className="max-[899px]:hidden" />
           </div>
         </div>
       )}
