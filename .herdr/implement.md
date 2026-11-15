@@ -84,6 +84,10 @@ visible Nov 1.
   nisar layers/timeseries stay (app gates on meta.status).
 - Published: main dbf2402..876544e, fallback snapshot pushed
   (FALLBACK_ALLOW_DROP for the deleted flood_nisar.geojson).
+- CORRECTED (lead-analysis): the worktree snapshot dropped 31 live
+  data/now files the worktree didn't hold (summary.json, TPI layers,
+  alerts, p_trigger) — restored at fallback 78586d5. Rule learned: never
+  push fallback from a worktree; push main only, now.yml publishes.
 
 ## Caveats
 
