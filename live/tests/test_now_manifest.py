@@ -73,7 +73,20 @@ def test_observed_floods_grouped_never_tpi(tmp_path):
     assert a["candidates"] == []
     (o,) = a["observed"]
     assert o["kind"] == "observed" and o["hazard"] == "flood"
+    assert o["confidence"] == "standard"
     assert o["municipality"] == "Canoas" and o["uf"] == "RS"
     assert o["area_km2"] == 3.0 and o["people"] == 3 and o["polygons"] == 2
     assert o["acquired"] == "2026-11-14T09:00:00Z"
     assert "class" not in o and "EMERGENCY" not in json.dumps(o).upper()
+
+
+def test_observed_split_by_confidence(tmp_path):
+    sq = lambda x0: {"type": "Polygon", "coordinates": [[[x0, -29.9], [x0 + 0.01, -29.9],
+                     [x0 + 0.01, -29.89], [x0, -29.89], [x0, -29.9]]]}
+    feats = [{"type": "Feature", "geometry": sq(-51.5 + 0.02 * i), "properties": {
+        "source": "opera-dswx-s1", "area_km2": a, "confidence": c}}
+        for i, (a, c) in enumerate([(1.0, "standard"), (2.0, "lower"), (4.0, "lower")])]
+    _write(tmp_path / "response/flood_dswx.geojson", {"type": "FeatureCollection", "features": feats})
+    obs = now_manifest.observed_floods(tmp_path)
+    by = {o["confidence"]: o["area_km2"] for o in obs}
+    assert by == {"standard": 1.0, "lower": 6.0}

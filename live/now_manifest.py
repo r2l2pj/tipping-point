@@ -79,11 +79,12 @@ def observed_floods(out_dir: Path) -> list[dict]:
                     where(pt.x, pt.y) or {"municipality": None, "uf": None})
             source = pr.get("source") or (
                 "opera-dist-alert-hls" if hazard == "landslide" else None)
-            key = (source, hazard, muni["municipality"], muni["uf"])
+            conf = pr.get("confidence") or "standard"
+            key = (source, hazard, conf, muni["municipality"], muni["uf"])
             g = groups.setdefault(key, {
                 "kind": "observed", "hazard": hazard,
                 "label": label, "status": "candidate",
-                "source": source, **muni,
+                "source": source, "confidence": conf, **muni,
                 "acquired": None, "area_km2": 0.0, "people": None,
                 "polygons": 0, "centroid": [round(pt.x, 4), round(pt.y, 4)],
                 "_best": -1.0})
