@@ -8,13 +8,17 @@ import { Icon, ICON } from "./ui";
 import { fmtDate } from "./model/format";
 import { HOURS } from "./model/hours";
 
-// Width of one step. Above DENSE_FROM steps the narrow width is used, so a
-// 21-step case fits the 768 px track of a 1440 px screen without a scroll.
-const STEP_PX = 46;
-const STEP_DENSE_PX = 36;
+// Width of one step on the thin track; above DENSE_FROM steps the narrow one.
+const STEP_PX = 40;
+const STEP_DENSE_PX = 30;
 const DENSE_FROM = 16;
 
-// Transport, steps, marks and the forecast tag. Previous / next move one step.
+const MARK_BG = (c: StepMark["color"]) => (c === "red" ? "bg-[#bd0026]" : c === "blue" ? "bg-[#2166ac]" : "bg-[#b06f00]");
+
+// lead-ux (Lucas: "the focus is still not the map"): ONE thin bar over the
+// bottom of the map — play · prev / next · day picker · hour / run pickers ·
+// forecast badge · the step track (scrolls inside, keeps the selected day in
+// view). The day's timeline marks show as one line above the bar.
 export default function TimelineBar({
   steps,
   marks,
@@ -44,152 +48,140 @@ export default function TimelineBar({
   dayIndex: number;
   playing: boolean;
   forecastTag: string;
-  // The TPI frame on the map. The forecast chip names its issued run when it
-  // is a GFS frame, so the chip and the map caption never disagree; with an
-  // observed frame on the map the chip names the source only.
+  // The TPI frame on the map. The forecast badge names its issued run when it
+  // is a GFS frame, so the badge and the map caption never disagree.
   mapFrame?: ManifestLayer;
   onSeek: (i: number) => void;
   onPrev: () => void;
   onNext: () => void;
   onPlayToggle: () => void;
-  children?: React.ReactNode; // data sources
+  children?: React.ReactNode;
 }) {
   const n = steps.length;
-  // Keep the selected step in view when the steps scroll sideways.
+  // Keep the selected step in view when the steps scroll sideways (the track
+  // scrolls, never the page).
   const track = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // Scrolls the track only, never the page.
     const box = track.current;
     const el = box?.querySelector<HTMLElement>('[aria-pressed="true"]');
     if (!box || !el) return;
-    const left = el.offsetLeft - box.offsetLeft;
-    if (left < box.scrollLeft) box.scrollLeft = left;
+    const left = el.offsetLeft;
+    if (left < box.scrollLeft) box.scrollLeft = Math.max(0, left - 8);
     else if (left + el.offsetWidth > box.scrollLeft + box.clientWidth) {
-      box.scrollLeft = left + el.offsetWidth - box.clientWidth;
+      box.scrollLeft = left + el.offsetWidth - box.clientWidth + 8;
     }
   }, [dayIndex, n]);
-  const firstFc = steps.findIndex((s) => s.forecast);
   const chipText = mapFrame && isGfsFrame(mapFrame) ? forecastChip(mapFrame, undefined) : forecastTag;
-  // Accessible name of a forecast step: that step's own frame source.
   const stepTag = (s: Step) =>
     s.forecast && s.layer && isGfsFrame(s.layer) ? forecastChip(s.layer, undefined) : forecastTag;
-  // A long case (Washington has 21 steps) keeps every step and its offset in
-  // view, and prints the date of every second step. The selected step and
-  // the event day always show their date; the full date is in the title and
-  // in the accessible name of each step.
   const dense = n > DENSE_FROM;
   const eventIndex = Math.max(0, steps.findIndex((s) => s.offset === 0));
+  // Every date in the title / accessible name; on the track the selected
+  // step, the event day and every second (dense: third) step print it.
   const showDate = (i: number): boolean => {
-    if (!dense || i === dayIndex) return true;
-    if (Math.abs(i - dayIndex) === 1) return false; // room for the selected date
-    if (i === eventIndex) return true;
-    return (i - eventIndex) % 2 === 0 && Math.abs(i - eventIndex) !== 1;
+    if (i === dayIndex || i === eventIndex) return true;
+    if (Math.abs(i - dayIndex) === 1) return false;
+    return (i - eventIndex) % (dense ? 3 : 2) === 0;
   };
-  const small = "inline-flex h-[38px] w-10 items-center justify-center rounded-lg border border-cc-line-strong bg-cc-surface disabled:cursor-not-allowed disabled:opacity-50";
+  const dayMarks = marks.filter((m) => m.index === dayIndex);
+  const btn = "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cc-line-strong bg-cc-surface disabled:cursor-not-allowed disabled:opacity-40";
+  const sel = "h-8 shrink-0 rounded-lg border border-cc-line-strong bg-cc-surface px-1.5 text-[13px] font-semibold text-cc-ink";
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border border-cc-line bg-cc-surface px-4 py-2 shadow-[0_4px_18px_rgba(0,0,0,0.28)]">
-      <div className="flex items-center gap-2">
+    <div className="relative" data-timeline>
+      {/* Landing on a marked day names it (lead-analysis timeline marks). */}
+      {dayMarks.length > 0 && (
+        <p className="m-0 mb-1 flex gap-1 overflow-hidden text-xs font-semibold" data-mark-caption>
+          {dayMarks.map((m) => (
+            <span key={m.label} title={m.label} className={`truncate rounded px-1.5 py-0.5 text-white shadow ${MARK_BG(m.color)}`}>{m.label}</span>
+          ))}
+        </p>
+      )}
+      <div className="flex h-12 items-center gap-1.5 rounded-xl border border-cc-line bg-cc-surface/95 px-2 shadow-[0_4px_18px_rgba(0,0,0,0.28)]">
         <button type="button" onClick={onPlayToggle} disabled={n < 2} aria-label={playing ? "Pause" : "Play"}
-          className="inline-flex h-[46px] w-[50px] items-center justify-center rounded-[10px] bg-cc-accent text-white disabled:cursor-not-allowed disabled:opacity-50">
-          <Icon d={playing ? ICON.pause : ICON.play} size={20} fill={!playing} strokeWidth={playing ? 3 : 2.2} />
+          className="inline-flex h-8 w-9 shrink-0 items-center justify-center rounded-lg bg-cc-accent text-white disabled:cursor-not-allowed disabled:opacity-40">
+          <Icon d={playing ? ICON.pause : ICON.play} size={16} fill={!playing} strokeWidth={playing ? 3 : 2.2} />
         </button>
-        <button type="button" onClick={onPrev} disabled={n === 0 || dayIndex <= 0} aria-label="Previous step" className={small}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
-            <path d="M19 5v14l-10-7z" /><path d="M6 5v14" fill="none" strokeLinecap="round" />
-          </svg>
+        <button type="button" onClick={onPrev} disabled={n === 0 || dayIndex <= 0} aria-label="Previous step" className={btn}>
+          <Icon d="M15 6l-6 6 6 6" size={16} strokeWidth={2.4} />
         </button>
-        <button type="button" onClick={onNext} disabled={n === 0 || dayIndex >= n - 1} aria-label="Next step" className={small}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 5v14l10-7z" /><path d="M18 5v14" fill="none" strokeLinecap="round" />
-          </svg>
+        <button type="button" onClick={onNext} disabled={n === 0 || dayIndex >= n - 1} aria-label="Next step" className={btn}>
+          <Icon d="M9 6l6 6-6 6" size={16} strokeWidth={2.4} />
         </button>
         {/* Lucas: a date picker, not only the step dots. */}
         {n > 1 && (
           <select aria-label="Pick a day" value={dayIndex} onChange={(e) => onSeek(Number(e.target.value))} data-day-picker
-            className="h-[38px] rounded-lg border border-cc-line-strong bg-cc-surface px-2 text-sm font-semibold text-cc-ink">
+            className={`${sel} min-w-0 max-w-[230px] max-[639px]:max-w-[150px]`}>
             {steps.map((s) => (
               <option key={s.date} value={s.index}>{fmtDate(s.date)}{s.forecast ? " (forecast)" : ""}{forecastDates?.has(s.date) ? " · ● NOAA forecast" : ""}</option>
             ))}
           </select>
         )}
-        {runs && (
-          <div role="group" aria-label="Now run (BRT)" className="flex flex-wrap items-center gap-1" data-runs>
-            <span className="text-xs font-semibold text-cc-muted">Run</span>
-            {runs.list.map((r, i) => (
-              <button key={r.id} type="button" aria-pressed={runs.picked === r.id} onClick={() => runs.onPick(i === 0 ? null : r.id)}
-                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${runs.picked === r.id ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>
-                {i === 0 ? `Latest · ${r.label}` : r.label}
-              </button>
-            ))}
-          </div>
-        )}
         {hours && hours.available.length > 0 && (
-          <div role="group" aria-label="Hour (UTC)" className="flex items-center gap-1" data-hours>
-            <button type="button" aria-pressed={hours.hour === null} onClick={() => hours.onHour(null)}
-              className={`rounded-md px-2 py-1 text-xs font-semibold ${hours.hour === null ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>Day</button>
+          <select aria-label="Hour (UTC)" data-hours value={hours.hour ?? ""} onChange={(e) => hours.onHour(e.target.value || null)} className={sel}>
+            <option value="">Day</option>
             {HOURS.filter((h) => hours.available.includes(h)).map((h) => (
-              <button key={h} type="button" aria-pressed={hours.hour === h} onClick={() => hours.onHour(h)}
-                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${hours.hour === h ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>{h}Z</button>
+              <option key={h} value={h}>{h}Z</option>
             ))}
-          </div>
+          </select>
         )}
-      </div>
+        {runs && (
+          <select aria-label="Now run (BRT)" data-runs value={runs.picked}
+            onChange={(e) => { const i = runs.list.findIndex((r) => r.id === e.target.value); runs.onPick(i <= 0 ? null : e.target.value); }}
+            className={`${sel} max-[639px]:hidden`}>
+            {runs.list.map((r, i) => (
+              <option key={r.id} value={r.id}>{i === 0 ? `Run: latest · ${r.label}` : `Run: ${r.label}`}</option>
+            ))}
+          </select>
+        )}
+        {/* Honesty: the forecast source is named whenever the case has forecast days. */}
+        {steps.some((s) => s.forecast) && (
+          <span title={chipText} data-forecast-badge
+            className="max-w-[170px] shrink-0 truncate rounded-md bg-cc-forecast px-2 py-0.5 text-xs font-semibold text-cc-forecast-ink max-[899px]:hidden">
+            {chipText}
+          </span>
+        )}
 
-      <div ref={track} className="min-w-0 flex-[1_1_460px] overflow-x-auto">
-        {n === 0 ? (
-          <p className="py-3 text-[13px] italic text-cc-faint" data-no-steps>{emptyText}</p>
-        ) : (
-          <div className="relative flex px-2 pt-5" style={{ minWidth: Math.max(470, n * (dense ? STEP_DENSE_PX : STEP_PX)) }} role="group" aria-label="Timeline steps">
-            {firstFc >= 0 && (
-              <span className="absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-md bg-cc-forecast px-3 py-px text-xs font-semibold text-cc-forecast-ink"
-                style={{ left: `${((firstFc + (n - firstFc) / 2) / n) * 100}%` }}>
-                {chipText}
-              </span>
-            )}
-            {steps.map((s) => {
-              const on = s.index === dayIndex;
-              const event = s.offset === 0;
-              return (
-                <button
-                  key={s.date}
-                  type="button"
-                  onClick={() => onSeek(s.index)}
-                  aria-pressed={on}
-                  aria-label={`${s.top}${s.sub ? `, ${s.sub}` : ""}${s.forecast ? `, ${stepTag(s)}` : ""}`}
-                  title={`${s.date}${s.day && typeof s.day.tpi === "number" ? ` — TPI ${s.day.tpi.toFixed(2)}` : ""}`}
-                  className="relative flex min-h-[60px] min-w-0 flex-1 flex-col items-center"
-                >
-                  {/* Track: solid for observed steps, dashed for forecast. */}
-                  <span aria-hidden="true" className={`absolute left-0 right-0 top-[12px] ${s.forecast ? "border-t-[3px] border-dashed border-[#9aa7a0]" : "h-[3px] bg-cc-accent"}`} />
-                  <span aria-hidden="true" className="relative flex h-[26px] items-center">
-                    <span className={`box-border rounded-full ${on ? "h-[18px] w-[18px]" : "h-3 w-3"} ${
-                      on ? "border-[3px] border-cc-accent bg-white shadow-[0_0_0_3px_rgba(23,71,63,0.25)]"
-                      : s.forecast ? "border-2 border-dashed border-[#5f6d73] bg-white"
-                      : "border-2 border-cc-accent bg-cc-accent"}`} />
-                  </span>
-                  <span className="absolute top-[30px] flex gap-1">
-                    {marks.filter((m) => m.index === s.index).map((m) => (
-                      <span key={m.label} title={m.label} aria-label={m.label} role="img"
-                        className={`h-2 w-1.5 rounded-full ${m.color === "red" ? "bg-[#bd0026]" : m.color === "blue" ? "bg-[#2166ac]" : "bg-[#d98a00]"}`} />
-                    ))}
-                  </span>
-                  <span className={`mt-2 whitespace-nowrap leading-tight ${on ? "text-[13px] font-bold" : "text-xs font-medium"} ${showDate(s.index) ? "" : "invisible"}`}>{s.top}</span>
-                  <span className={`whitespace-nowrap text-xs leading-tight ${event ? "rounded bg-cc-ink px-1 font-semibold text-white" : "text-cc-muted"}`}>{s.sub}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        <div ref={track} className="relative min-w-0 flex-1 overflow-x-auto [scrollbar-width:none]">
+          {n === 0 ? (
+            <p className="m-0 truncate px-2 text-[13px] italic text-cc-faint" data-no-steps title={emptyText}>{emptyText}</p>
+          ) : (
+            <div className="relative flex px-1" style={{ minWidth: n * (dense ? STEP_DENSE_PX : STEP_PX) }} role="group" aria-label="Timeline steps">
+              {steps.map((s) => {
+                const on = s.index === dayIndex;
+                const event = s.offset === 0;
+                return (
+                  <button
+                    key={s.date}
+                    type="button"
+                    onClick={() => onSeek(s.index)}
+                    aria-pressed={on}
+                    aria-label={`${s.top}${s.sub ? `, ${s.sub}` : ""}${s.forecast ? `, ${stepTag(s)}` : ""}`}
+                    title={`${s.date}${s.sub ? ` (${s.sub})` : ""}${s.day && typeof s.day.tpi === "number" ? ` — TPI ${s.day.tpi.toFixed(2)}` : ""}${marks.filter((m) => m.index === s.index).map((m) => ` · ${m.label}`).join("")}`}
+                    className="relative flex h-9 min-w-0 flex-1 flex-col items-center"
+                  >
+                    {/* Track: solid for observed steps, dashed for forecast. */}
+                    <span aria-hidden="true" className={`absolute left-0 right-0 top-[9px] ${s.forecast ? "border-t-2 border-dashed border-[#9aa7a0]" : "h-[2px] bg-cc-accent"}`} />
+                    <span aria-hidden="true" className="relative flex h-5 items-center">
+                      <span className={`box-border rounded-full ${on ? "h-4 w-4 border-[3px] border-cc-accent bg-white shadow-[0_0_0_3px_rgba(23,71,63,0.25)]"
+                        : s.forecast ? "h-2.5 w-2.5 border-2 border-dashed border-[#5f6d73] bg-white"
+                        : "h-2.5 w-2.5 border-2 border-cc-accent bg-cc-accent"}`} />
+                    </span>
+                    {marks.some((m) => m.index === s.index) && (
+                      <span aria-hidden="true" className="absolute right-0.5 top-0 flex gap-px">
+                        {marks.filter((m) => m.index === s.index).map((m) => (
+                          <span key={m.label} className={`h-1.5 w-1.5 rounded-full ${MARK_BG(m.color)}`} />
+                        ))}
+                      </span>
+                    )}
+                    <span className={`whitespace-nowrap text-[10px] leading-none ${on ? "font-bold text-cc-ink" : "text-cc-muted"} ${event && !on ? "font-semibold text-cc-ink underline" : ""} ${showDate(s.index) ? "" : "invisible"}`}>{s.top}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        {children}
       </div>
-      {/* Landing on a marked day names it (lead-analysis timeline marks). */}
-      {marks.some((m) => m.index === dayIndex) && (
-        <p className="m-0 mt-1 flex flex-wrap gap-1 px-2 text-xs font-semibold" data-mark-caption>
-          {marks.filter((m) => m.index === dayIndex).map((m) => (
-            <span key={m.label} className={`rounded px-1.5 py-0.5 text-white ${m.color === "red" ? "bg-[#bd0026]" : m.color === "blue" ? "bg-[#2166ac]" : "bg-[#b06f00]"}`}>{m.label}</span>
-          ))}
-        </p>
-      )}
-      {children}
     </div>
   );
 }

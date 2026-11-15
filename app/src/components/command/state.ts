@@ -242,7 +242,9 @@ export function initialState(
     compareOpen: link.compare === "night-lights" ? "night-lights" : link.compare || link.view === "compare" ? "forecast" : null,
     compareSides: undefined,
     detailsOpen: false,
-    layersOpen: true,
+    // lead-ux (Lucas: map first): the drawer opens closed; a Radar deep link
+    // (?compare=radar) opens it on the Radar tab with the pass chips.
+    layersOpen: link.compare === "radar",
     listExpanded: false,
     chartAsTable: false,
     nisarChange: undefined,

@@ -383,7 +383,7 @@ export function CommandCenterView({
   const fnn = (bundle.metricsView as Record<string, unknown> | undefined)?.forecast_nisar_overlap_note;
   const forecastNisarNote = typeof fnn === "string" && fnn.trim() ? plainText(fnn.trim()) : undefined;
   const tabsShown: PanelTab[] = view === "public" ? ["alerts", "map"]
-    : ["overview", "map", "forecast", "radar", ...(!sparse || areas.length > 0 ? ["places" as const] : []), "sources"];
+    : ["overview", "map", "forecast", "radar", ...(!sparse || areas.length > 0 ? ["places" as const] : [])];
   // The Public Alerts view has its own first tab; a tab that does not exist
   // in the view in sight falls back to that view's first tab.
   const tabNow: PanelTab = tab === "all" ? tabsShown[0] : tabsShown.includes(tab) ? tab : tabsShown[0];
@@ -486,6 +486,15 @@ export function CommandCenterView({
             (closable; the map's layers button reopens it on the Map tab).
             Phones: a bottom sheet over the full-screen map, closed by default
             (its tab row is the peek). The Layers column is the "Map" tab. */}
+        {/* Lucas: the drawer opens closed; a slim edge tab opens it over the map. */}
+        <button type="button" data-drawer-open aria-label="Show details" title="Show details"
+          onClick={() => {
+            if (window.matchMedia("(min-width: 900px)").matches) dispatch({ type: "toggleLayersOpen" });
+            else setDrawer(true);
+          }}
+          className={`absolute right-0 top-1/2 z-30 flex -translate-y-1/2 items-center gap-1 rounded-l-xl border border-r-0 border-cc-line bg-cc-surface px-1.5 py-3 text-[13px] font-semibold text-cc-ink shadow-[0_2px_10px_rgba(0,0,0,0.3)] [writing-mode:vertical-rl] ${state.layersOpen ? "min-[900px]:hidden" : ""} ${drawer ? "max-[899px]:hidden" : ""}`}>
+          Details ›
+        </button>
         <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-end gap-2 p-2 min-[900px]:grid min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:grid-rows-[minmax(0,1fr)_auto] min-[900px]:gap-3 min-[900px]:p-3">
         {/* Phones: the open sheet is a reading view — the timeline steps aside. */}
         <div ref={timelineRef} className={`pointer-events-auto min-w-0 min-[900px]:col-start-1 min-[900px]:row-start-2 ${drawer ? "max-[899px]:hidden" : ""}`}>
@@ -508,7 +517,7 @@ export function CommandCenterView({
         </div>
 
         <div ref={panelRef} data-drawer={state.layersOpen ? "open" : "closed"} data-sheet={drawer ? "open" : "closed"}
-          className={`pointer-events-auto flex min-h-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:self-start min-[900px]:max-h-full ${state.layersOpen ? "" : "min-[900px]:hidden"}`}>
+          className={`pointer-events-auto flex min-h-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:self-start min-[900px]:max-h-full ${state.layersOpen ? "" : "min-[900px]:hidden"} ${drawer ? "" : "max-[899px]:hidden"}`}>
         <SituationPanel label={view === "public" ? "Public alerts" : "Situation overview"} sheetOpen={drawer}
           header={tab !== "all" ? (
             <PanelTabs tabs={tabsShown} tab={tabNow} onTab={(t) => { setTab(t); setDrawer(true); }}
@@ -749,16 +758,14 @@ export function CommandCenterView({
 
                 </>
               )}
-              {show("sources") && <SourceAges rows={sourceRows(bundle, nowMs).filter((r) => !sparse || !r.missing)} />}
-            </>
-          )}
-        </SituationPanel>
-        </div>
-
-        </div>
-      </main>
-
-      <footer className="flex shrink-0 max-[899px]:hidden flex-wrap items-center gap-x-3 gap-y-1 px-5 pb-2 pt-1.5 text-xs text-cc-faint">
+              {/* lead-ux: Sources folded into the end of Overview (one tab less);
+                  the old footer (data credits + Methods) lives here too. */}
+              {(show("sources") || tabNow === "overview") && (
+                <details data-sources className="border-t border-cc-rule pt-2" open={tab === "sources" || tab === "all"}>
+                  <summary className="cursor-pointer text-sm font-semibold">Sources &amp; credits</summary>
+                  <div className="mt-2 flex flex-col gap-2">
+                  <SourceAges rows={sourceRows(bundle, nowMs).filter((r) => !sparse || !r.missing)} />
+                  <div className="flex flex-col gap-1.5 border-t border-cc-rule pt-2 text-xs text-cc-faint" data-credits>
         <span className="min-w-0 grow">
           Data: NASA GPM · SMAP · NASADEM · NISAR · OPERA · Forecast rain: NOAA GFS (the only non-NASA input) · Basemap © CARTO © OpenStreetMap · Boundaries ©{" "}
           {caseDirOf(bundle) === "wa_2025" ? "US Census · Landslide points: Washington Geological Survey" : "IBGE"} · Population: GPW (NASA SEDAC) / US Census
@@ -767,7 +774,18 @@ export function CommandCenterView({
         </span>
         {/* Judges (conductor): methods links, closed by default. */}
         <MethodsDrawer />
-      </footer>
+                </div>
+                  </div>
+                </details>
+              )}
+            </>
+          )}
+        </SituationPanel>
+        </div>
+
+        </div>
+      </main>
+
     </div>
   );
 }

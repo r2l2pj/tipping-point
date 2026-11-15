@@ -265,7 +265,7 @@ describe("case change", () => {
     const s = run(open, { type: "selectCase", id: "rs_2024" });
     expect(s).toMatchObject({
       selectedArea: null, calloutExpanded: false, compareOpen: null, detailsOpen: false,
-      chartAsTable: true, listExpanded: true, layersOpen: false,
+      chartAsTable: true, listExpanded: true, layersOpen: true,
     });
   });
 
