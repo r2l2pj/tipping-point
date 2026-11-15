@@ -41,8 +41,9 @@ CUTS = {"alto_plus": nw.HIGH, "critico": nw.CRIT}
 LEADS = (1, 2, 3)
 WINDOW_DAYS = nw.MAX_AGE_DAYS
 HEADLINE = {"rs_uruguai_2026": "2026-10-12", "wa_2025": "2025-12-16"}
+HEADLINE_LABEL = "index without NISAR, up to 12 days before the pass"
 REFERENCE = "NISAR water HH < -18 dB outside permanent water (single pass)"
-DEFINITION = ("Per pass: hit_pct = share of that pass's NISAR-water cells (0.01 deg) the index without "
+DEFINITION = ("Per pass: hit_pct = share of that pass's NISAR-water cells (cells of the case TPI grid) the index without "
               "NISAR flagged High+ (> 0.4, alto_plus) / Critical (> 0.6, critico); area_pct = share of "
               "observed land cells flagged; lift = hit_pct / area_pct; ratio_vs_terrain (M1) = hit vs a "
               "same-area terrain-only map. observed = TPI_flood of the pass day; forecast.lead_Ld = NOAA "
@@ -113,13 +114,50 @@ def pass_record(frame: dict, root: Path, grid: dict, obs: dict, gfs: dict, fp) -
                             if a is not None else {"null_reason": f"no GFS run issued {issue} (d{L}_flood)"})
     rec["forecast"] = fc
     rec["window_12d"] = window(day, obs, t, water, dom)
+    rec["gfs_window_12d"] = gfs_window(day, gfs, t, water, dom)
     return rec
+
+
+def gfs_window(day: dt.date, gfs: dict, t, water, dom, days: int = WINDOW_DAYS) -> dict:
+    """Best NOAA GFS frame (index without NISAR) from runs issued D-12..D-1, valid on a day in
+    the same window (D-12..D-1): best = max skill (hit_pct - area_pct), earliest issue on ties.
+    Published, not the headline."""
+    lo, hi = day - dt.timedelta(days=days), day - dt.timedelta(days=1)
+    rows = []
+    for issue_s, bands in sorted(gfs.items()):
+        issue = dt.datetime.strptime(issue_s, "%Y%m%d").date()
+        if not lo <= issue <= hi:
+            continue
+        for name, arr in sorted(bands.items()):
+            L = int(name[1:name.index("_")])
+            valid = issue + dt.timedelta(days=L)
+            if lo <= valid <= hi:
+                rows.append((issue, L, valid, arr))
+    if not rows:
+        return {"null_reason": f"no GFS run issued and valid in the {days} d before {day}"}
+    scored = []
+    for issue, L, valid, arr in rows:
+        sc = score(arr, t, water, dom)
+        scored.append({"issued": issue.isoformat(), "lead_days": L, "valid": valid.isoformat(),
+                       "issued_days_before": (day - issue).days, "valid_days_before": (day - valid).days,
+                       **{c: dict(sc[c]) for c in CUTS}})
+    best = {}
+    for c in CUTS:
+        top = max(scored, key=lambda r: (skill(r[c]), r["issued_days_before"]))
+        best[c] = top if skill(top[c]) > 0 else {"hit_pct": 0.0, "null_reason": "no frame with hit > area"}
+    return {"frames": len(scored), "best": best,
+            "runs": [{k: v for k, v in r.items()} for r in scored]}
+
+
+def skill(x: dict) -> float:
+    """Peirce/Hanssen-Kuipers-like skill in % points: hit_pct - area_pct (area ~ false-alarm share)."""
+    return round((x.get("hit_pct") or 0.0) - (x.get("area_pct") or 0.0), 3)
 
 
 def window(day: dt.date, obs: dict, t, water, dom, days: int = WINDOW_DAYS) -> dict:
     """The index WITHOUT NISAR in the days BEFORE the pass (D-12..D-1, never the pass day or later):
     max plain TPI over the window (did it flag this water at any point beforehand?) plus each day's
-    hit, and the earliest day that reached the best Critical hit (-> 'k days before')."""
+    hit, and the best day = max skill (hit_pct - area_pct; earliest on ties) -> 'k days before'."""
     have = [day - dt.timedelta(days=k) for k in range(days, 0, -1)
             if _ymd(day - dt.timedelta(days=k)) in obs]
     if not have:
@@ -128,12 +166,11 @@ def window(day: dt.date, obs: dict, t, water, dom, days: int = WINDOW_DAYS) -> d
     per = {}
     for d in have:
         sc = score(obs[_ymd(d)], t, water, dom)
-        per[d.isoformat()] = {c: {"hit_pct": sc[c]["hit_pct"], "area_pct": sc[c]["area_pct"],
-                                  "lift": sc[c]["lift"]} for c in CUTS}
+        per[d.isoformat()] = {c: dict(sc[c]) for c in CUTS}
     best = {}
-    for c in CUTS:
-        top = max((v[c]["hit_pct"] or 0) for v in per.values())
-        first = next((d for d, v in per.items() if top > 0 and (v[c]["hit_pct"] or 0) == top), None)
+    for c in CUTS:     # best = max Peirce skill (hit - area), earliest on ties: flagging everything can't win
+        top = max(skill(v[c]) for v in per.values())
+        first = next((d for d, v in per.items() if top > 0 and skill(v[c]) == top), None)
         best[c] = {"day": first, "days_before": (day - dt.date.fromisoformat(first)).days if first else None,
                    **(per[first][c] if first else {"hit_pct": 0.0})}
     return {"days": [d.isoformat() for d in have], "max_tpi": score(mx, t, water, dom),
@@ -155,7 +192,52 @@ def flat_keys(rec: dict) -> dict:
             out[f"nisar_agreement_{tag}{sfx}_area_pct"] = v.get("area_pct")
             out[f"nisar_agreement_{tag}{sfx}_lift"] = v.get("lift")
             out[f"nisar_agreement_{tag}{sfx}_m1"] = v.get("ratio_vs_terrain")
+    w = rec.get("window_12d") or {}
+    for cls, sfx in (("alto_plus", ""), ("critico", "_critical")):
+        b = (w.get("best_day") or {}).get(cls) or {}
+        mx = (w.get("max_tpi") or {}).get(cls) or {}
+        bd = b.get("day")
+        bs = score_of(w, bd, cls)
+        out[f"nisar_agreement_win{sfx}_best_day"] = bd
+        out[f"nisar_agreement_win{sfx}_days_before"] = b.get("days_before")
+        out[f"nisar_agreement_win{sfx}_hit_pct"] = bs.get("hit_pct")
+        out[f"nisar_agreement_win{sfx}_area_pct"] = bs.get("area_pct")
+        out[f"nisar_agreement_win{sfx}_lift"] = bs.get("lift")
+        out[f"nisar_agreement_win{sfx}_m1"] = bs.get("ratio_vs_terrain")
+        out[f"nisar_agreement_winmax{sfx}_hit_pct"] = mx.get("hit_pct")
+        out[f"nisar_agreement_winmax{sfx}_lift"] = mx.get("lift")
+    g = (rec.get("gfs_window_12d") or {}).get("best") or {}
+    for cls, sfx in (("alto_plus", ""), ("critico", "_critical")):
+        b = g.get(cls) or {}
+        out[f"nisar_agreement_gfswin{sfx}_issued"] = b.get("issued")
+        out[f"nisar_agreement_gfswin{sfx}_valid"] = b.get("valid")
+        out[f"nisar_agreement_gfswin{sfx}_days_before"] = b.get("issued_days_before")
+        out[f"nisar_agreement_gfswin{sfx}_hit_pct"] = (b.get(cls) or {}).get("hit_pct", b.get("hit_pct"))
+        out[f"nisar_agreement_gfswin{sfx}_lift"] = (b.get(cls) or {}).get("lift")
     return out
+
+
+def score_of(w: dict, day: str | None, cls: str) -> dict:
+    return ((w.get("per_day") or {}).get(day) or {}).get(cls) or {} if day else {}
+
+
+def slots(rec: dict) -> dict:
+    """Submission slots (L61 handoff) for both headline options: A = best pre-pass day in the
+    12-d window, B = strict pass day."""
+    k = flat_keys(rec)
+    p = f"{rec['pass']['date']} ({rec['pass']['track']})"
+    return {"A_window": {"label": HEADLINE_LABEL, "uru_high": k["nisar_agreement_win_hit_pct"], "uru_crit": k["nisar_agreement_win_critical_hit_pct"],
+                         "uru_area": k["nisar_agreement_win_critical_area_pct"], "uru_lift": k["nisar_agreement_win_critical_lift"],
+                         "uru_lift_high": k["nisar_agreement_win_lift"], "uru_m1": k["nisar_agreement_win_critical_m1"],
+                         "uru_lead": k["nisar_agreement_win_critical_days_before"], "best_day": k["nisar_agreement_win_critical_best_day"],
+                         "uru_pass": p, "uru_outside_fp": k["nisar_agreement_outside_floodplain_pct"],
+                         "uru_area_km2": k["nisar_agreement_water_km2"]},
+            "B_pass_day": {"uru_high": k["nisar_agreement_obs_hit_pct"], "uru_crit": k["nisar_agreement_obs_critical_hit_pct"],
+                           "uru_area": k["nisar_agreement_obs_critical_area_pct"], "uru_lift": k["nisar_agreement_obs_critical_lift"],
+                           "uru_m1": k["nisar_agreement_obs_critical_m1"], "uru_pass": p,
+                           "gfs_1d_high": k["nisar_agreement_fc1d_hit_pct"], "gfs_2d_high": k["nisar_agreement_fc2d_hit_pct"],
+                           "gfs_3d_high": k["nisar_agreement_fc3d_hit_pct"],
+                           "uru_outside_fp": k["nisar_agreement_outside_floodplain_pct"]}}
 
 
 def load_case(case: str, root: Path):
@@ -205,9 +287,10 @@ def run(case: str, root: Path, metrics: Path | None, headline: str | None = None
     scored = [r for r in recs if isinstance(r.get("observed"), dict) and "alto_plus" in r["observed"]]
     head = next((r for r in scored if r["pass"]["date"] == want), None) or \
         (max(scored, key=lambda r: r["water_km2"]) if scored else None)
-    block = {"reference": REFERENCE, "definition": DEFINITION, "note": NOTE,
+    block = {**(head or {}), "reference": REFERENCE, "definition": DEFINITION, "note": NOTE,
              "headline_rule": f"pass {want} (conductor/lead-analysis)",
-             "headline": head, "passes": recs, "days": []}
+             "headline": head, "headline_basis": "window_12d.best_day (critico)",
+             "headline_label": HEADLINE_LABEL, "passes": recs, "days": []}
     if metrics is not None:
         from tp.metrics import merge_metrics
         flat = flat_keys(head) if head else {}
@@ -225,7 +308,7 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     b = run(a.case, a.data, None if a.no_metrics else a.data / "metrics.json", a.headline)
     if b.get("headline"):
-        print(json.dumps(flat_keys(b["headline"]), indent=1))
+        print("SLOTS", json.dumps(slots(b["headline"]), indent=1))
     else:
         print(b)
     return 0

@@ -80,3 +80,32 @@ def test_no_water_is_null(tmp_path):
     fr = _frame(tmp_path, water_rows=[])
     r = npa.pass_record(fr, tmp_path, _grid(), {}, {}, None)
     assert r["water_cells"] == 0 and r["null_reason"] and "observed" not in r
+
+
+def test_window_flat_keys_and_slots(tmp_path):
+    fr = _frame(tmp_path, water_rows=[0, 1])
+    flagged = np.zeros(SHAPE)
+    flagged[0, :] = 0.9
+    r = npa.pass_record(fr, tmp_path, _grid(), {"20261012": np.zeros(SHAPE), "20260930": flagged}, {}, None)
+    k = npa.flat_keys(r)
+    assert k["nisar_agreement_win_critical_best_day"] == "2026-09-30"
+    assert k["nisar_agreement_win_critical_days_before"] == 12
+    assert k["nisar_agreement_win_critical_hit_pct"] == 50.0
+    s = npa.slots(r)
+    assert s["A_window"]["uru_crit"] == 50.0 and s["A_window"]["uru_lead"] == 12
+    assert s["B_pass_day"]["uru_crit"] == 0.0 and s["A_window"]["uru_pass"] == "2026-10-12 (010D)"
+
+
+def test_gfs_window_best_run_inside_window(tmp_path):
+    fr = _frame(tmp_path, water_rows=[0, 1])
+    flagged = np.zeros(SHAPE)
+    flagged[0, :] = 0.9
+    gfs = {"20261003": {"d2_flood": flagged, "d1_flood": np.zeros(SHAPE)},   # valid Oct 5 / Oct 4
+           "20261011": {"d3_flood": flagged}}                                # valid Oct 14 > pass: excluded
+    r = npa.pass_record(fr, tmp_path, _grid(), {"20261012": np.zeros(SHAPE)}, gfs, None)
+    g = r["gfs_window_12d"]
+    assert g["frames"] == 2
+    b = g["best"]["critico"]
+    assert b["issued"] == "2026-10-03" and b["valid"] == "2026-10-05" and b["issued_days_before"] == 9
+    k = npa.flat_keys(r)
+    assert k["nisar_agreement_gfswin_critical_hit_pct"] == 50.0
