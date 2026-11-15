@@ -15,13 +15,6 @@ import { Icon, ICON } from "./ui";
 export const NOW_TITLE = "Now — Southern Brazil";
 const TOUR_KEY = "tp-start-here-dismissed"; // same key as the old card
 
-// The guided tour opens by itself only on a plain first visit: never on a
-// deep link (?case= / ?day= / ?compare= / ?view= / ?city= …) — a demo or
-// shared link must land on what it names, not under a menu (lead-app).
-export function shouldAutoOpenTour(search: string, dismissed: boolean, wide: boolean): boolean {
-  return wide && !dismissed && new URLSearchParams(search).size === 0;
-}
-
 export function caseLabel(bundle: CcBundle | undefined): string {
   if (!bundle) return "No case loaded";
   return bundle.mode === "live" ? NOW_TITLE : bundle.title;
@@ -48,23 +41,24 @@ export default function CasePicker({
   const box = useRef<HTMLDivElement>(null);
   const stops = onTour ? tourStops(cases) : [];
 
-  // First visit on a wide screen: the tour opens once (it was a card that
-  // stayed open in the panel). Phones never auto-open: it would cover the map.
+  // The tour never opens by itself ('/' lands on the Uruguaiana NISAR view,
+  // lead-app; a menu over it would hide it). Until it is used, a small
+  // "Tour" hint on the button says it is here.
+  const [tourHint, setTourHint] = useState(false);
   useEffect(() => {
     if (!onTour || !stops.length) return;
     try {
-      if (shouldAutoOpenTour(window.location.search, window.localStorage.getItem(TOUR_KEY) === "1", window.matchMedia("(min-width: 900px)").matches)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- read once after mount (no storage on the server)
-        setOpen(true);
-      }
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once after mount (no storage on the server)
+      if (window.localStorage.getItem(TOUR_KEY) !== "1") setTourHint(true);
     } catch {
-      // storage blocked: the tour stays one tap away
+      // storage blocked: no hint; the tour stays one tap away
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const close = () => {
     setOpen(false);
+    setTourHint(false);
     try { window.localStorage.setItem(TOUR_KEY, "1"); } catch { /* convenience only */ }
   };
   useEffect(() => {
@@ -97,6 +91,9 @@ export default function CasePicker({
             <span className="truncate">{freshness}</span>
           </span>
         </span>
+        {tourHint && !open && (
+          <span data-tour-hint className="shrink-0 rounded-full bg-cc-accent px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-white">Tour</span>
+        )}
         <span aria-hidden="true" className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
       {open && (
