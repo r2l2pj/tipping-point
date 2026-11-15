@@ -97,7 +97,9 @@ TPI = geometric mean of three scores in [0,1], per `config.yaml thresholds`:
 Flood mask (NISAR, ruling A2 — calibration choice): **adaptive per-scene
 Otsu threshold** on GCOV backscatter change (`water_db_max: -15` is the
 fallback/clamp only), median 3×3, `flood_db_drop: -3` dB drop, HAND < 15 m
-gate, bright-flood layer, 3-ha minimum mapping unit. Coherence landslide
+gate, bright-flood layer, 3-ha minimum mapping unit. (WA 2025 as published:
+Otsu did not fire, so the −15 dB fallback set the threshold — see Declared
+limitations.) Coherence landslide
 candidates use `coherence_drop: 0.3` / `coherence_ref_min: 0.4` with
 elevation/snow/flood exclusion gates — declared but **moot for wa_2025**
 (no GUNW pair crosses the event; candidates come from HLS optical instead).
@@ -251,7 +253,7 @@ features only and is **not** a TPI index input.
 
 - **People counts (one method, S03a).** Every people number is GPW v4.11 UN-adjusted 2020 population count on its **native 30″ grid**, each cell weighted by the fraction of its area covered by the mapped area (exact polygon ∩ cell intersection; unions de-duplicate overlaps). Now: R1 DSWx-S1 and R2 NISAR polygons, R3 summary, priority zones and the Now `summary.json` `people_*` (merged from R3) all use it (`tp.response_summary.people_geom`, `people_method`). **Exception, not yet unified:** the replay cases (`people_critical` in metrics/series/GFS layer stats, WA `people_flooded`, `scar_people`) use GPW resampled by Earth Engine to ~1 km (0.00898°), which undercounts by ~11–13 %: RS 2024-05-02 Crítico area holds 1.49 M people on that grid vs 1.68 M on the native grid (2024-04-30: 1.17 M vs 1.30 M). Treat case people as a lower bound; re-run on the native grid after submission.
 
-- Flood threshold is a per-scene Otsu calibration (A2), not a fixed −15 dB.
+- NISAR flood threshold: the method calls for a per-scene Otsu calibration (A2), but for WA 2025 Otsu never fired and the fixed −15 dB fallback was used (`wa_2025.threshold_db` = −15.0; see docs/conventions-dates.md).
 - The headline replay forecast is a real NOAA GFS run as issued. GFS
   under-forecast the RS 2024 peak by about half (3-day forecast 141 mm vs
   290 mm observed AOI mean ending 2024-05-02), so forecast frames understate
