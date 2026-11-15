@@ -930,3 +930,21 @@ def test_horizon_rows_rs_window_labels():
     neg = hz[hz.label == 0]
     assert neg.label_24h.tolist() == [0] and neg.label_48h.tolist() == [0]
     assert "win_start" not in hz.columns
+
+
+def test_trigger_model_monotone_with_crossing_calibrators(tmp_path):
+    from ml.local.serve import TriggerModel
+
+    cols = ["rain_24h", "rain_72h", "rain_7d", "rain_24h_rel", "rain_72h_rel"]
+    model, cols = _tiny_xgb(cols)
+    up = M.Calibrator(kind="isotonic", x=[0.0, 1.0], y=[0.5, 0.9]).to_dict()     # 48h: high
+    down = M.Calibrator(kind="isotonic", x=[0.0, 1.0], y=[0.0, 0.1]).to_dict()   # 72h: low
+    meta = {"features": cols, "horizons": {"24h": 1, "48h": 2, "72h": 3},
+            "horizon_calibrators": {"48h": up, "72h": down}}
+    tm = TriggerModel.load(M.save_xgb(model, tmp_path / "p.json", meta))
+    ones = np.ones((2, 2))
+    out = tm.predict(dt.date(2024, 5, 1), static={"elevation": ones}, soil={}, texture={},
+                     rain_obs=np.full((7, 2, 2), 5.0), rain_fc=np.full((3, 2, 2), 5.0),
+                     p99_daily=ones * 50, p99_3day=ones * 60)
+    assert (out["p_trigger_72h"] >= out["p_trigger_48h"]).all()      # running max applied
+    assert (out["p_trigger_48h"] >= out["p_trigger_24h"]).all()

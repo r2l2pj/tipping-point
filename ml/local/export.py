@@ -259,6 +259,26 @@ def _slim(m: dict | None) -> dict | None:
     return {k: m.get(k) for k in CARD_KEYS} if m else None
 
 
+def t_ml_ranking_note(a: dict) -> str:
+    """Plain statement: which 3a model wins on calibrated vs raw TEST PR-AUC."""
+    ms = {k: (v or {}).get("test") or {} for k, v in (a.get("models") or {}).items()}
+    def best(key):
+        c = {k: m.get(key) for k, m in ms.items() if m.get(key) is not None and k != "rule_slope"}
+        return (max(c, key=c.get), c) if c else (None, {})
+    bc, cc = best("pr_auc")
+    br, rr = best("pr_auc_raw")
+    if not bc:
+        return ""
+    s = (f"3a TEST PR-AUC, calibrated (served scores): best = {bc} {cc[bc]:.3f}"
+         + "".join(f"; {k} {v:.3f}" for k, v in sorted(cc.items(), key=lambda kv: -kv[1]) if k != bc))
+    if br:
+        s += (f". Raw (pre-calibration) scores: best = {br} {rr[br]:.3f}"
+              + "".join(f"; {k} {v:.3f}" for k, v in sorted(rr.items(), key=lambda kv: -kv[1]) if k != br))
+        s += (". Isotonic calibration (VAL-fit step function) creates ties that lower ranking metrics"
+              + ("; on raw scores a different model ranks best than on calibrated scores." if br != bc else "."))
+    return s
+
+
 def ml_card(met: dict) -> dict:
     """Small app file for 'Did we get it right?': TEST only, GFS (operational) first."""
     a, b = met.get("3a", {}), met.get("3b", {})
@@ -272,6 +292,7 @@ def ml_card(met: dict) -> dict:
             "rows": {k: (v or {}).get("split_rows") for k, v in (("3a", a), ("3b", b))},
         },
         "t_ml": {k: _slim((v or {}).get("test")) for k, v in (a.get("models") or {}).items()},
+        "t_ml_ranking_note": t_ml_ranking_note(a),
         "trigger": {},
         "low_skill_horizons": ["7d", "14d"],
         "models": {"xgb_all": "XGBoost (all features)", "rf_all": "RandomForest(200)",

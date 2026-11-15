@@ -81,6 +81,14 @@ class TriggerModel:
                     cal = self.cals.get(h)
                     p = cal(p) if cal else p
                     out[f"p_trigger_{h}"] = p.reshape(shape).astype(np.float32)
+        # per-horizon isotonic calibrators can cross by ~1e-3; a longer window can never
+        # be less likely than a shorter one -> running max over increasing H
+        prev = None
+        for h, _ in by_h:
+            k = f"p_trigger_{h}"
+            if k in out and prev is not None:
+                out[k] = np.fmax(out[k], prev)
+            prev = out.get(k, prev)
         missing = ~np.isfinite(np.asarray(static.get("elevation", np.zeros(shape)), dtype=float))
         for v in out.values():
             v[missing] = np.nan
