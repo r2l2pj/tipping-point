@@ -76,7 +76,7 @@
       "night_light_drop_pct": 43.920046430346254,
       "ntl_mean_before": 0.7456146430292379,
       "ntl_mean_after": 0.4181403456193361,
-      "people_flooded": 1150.8775801961883,
+      "people_flooded": 949,
       "flood_source": "nisar",
       "cloud_pct": 92.89292282546754,
       "iou": 0.08159565666049996,
@@ -1696,7 +1696,14 @@
       "alarm_pod_before_onset_pct": 100.0,
       "alarm_lead_h_median": 56.0,
       "alarm_baseline_pct": 10.0,
-      "alarm_lift": 1.97
+      "alarm_lift": 1.97,
+      "withdrawn": {
+        "people_flooded": {
+          "value": 1150.8775801961883,
+          "reason": "GEE GPW path (~1 km resample, whole-cell sampling) — superseded by the native 30\" exact-fraction count (people audit, 2026-11-15)"
+        }
+      },
+      "people_flooded_method": "GPW v4.11 2020 population count (UNADJUSTED) on its native 30\" grid, each cell weighted by the exact fraction covered by the union of the 122 NISAR-mapped flood-candidate polygons (geojson/flood_confirmed.geojson, 28.56 km² as polygons vs 27.99 km² canonical raster area); tp.response_summary.people_geom"
     },
     "rs_2024": {
       "event": "rs-2024-05",
