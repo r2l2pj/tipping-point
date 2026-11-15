@@ -107,16 +107,16 @@ export default function TimelineBar({
     return (i - eventIndex) % 2 === 0 && Math.abs(i - eventIndex) !== 1;
   };
   // Quiet controls: the steps and the map are the subject, not the buttons.
-  const small = "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-cc-line bg-cc-surface text-cc-muted hover:border-cc-line-strong hover:text-cc-ink disabled:cursor-not-allowed disabled:text-cc-line-strong";
+  const small = "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-cc-line bg-cc-surface text-cc-muted hover:border-cc-line-strong hover:text-cc-ink disabled:cursor-not-allowed disabled:text-cc-line-strong";
   return (
     // Only the steps sit on a card (Lucas). The controls float above it over
     // the map, so each control carries its own surface and shadow.
-    <div className="flex shrink-0 flex-col gap-1.5" data-timeline>
+    <div className="flex shrink-0 flex-col gap-1" data-timeline>
       {/* The controls take their own row above the steps (Lucas), and wrap
           on a narrow screen so the card, not the page, holds them. */}
       <div className="flex w-full min-w-0 flex-wrap items-center gap-1.5 px-1 [&_button]:shadow-[0_1px_6px_rgba(0,0,0,0.3)] [&_select]:shadow-[0_1px_6px_rgba(0,0,0,0.3)]" data-timeline-controls>
         <button type="button" onClick={onPlayToggle} disabled={n < 2} aria-label={playing ? "Pause" : "Play"}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-cc-accent-line bg-cc-accent-soft text-cc-accent hover:border-cc-accent disabled:cursor-not-allowed disabled:opacity-50">
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-cc-accent-line bg-cc-accent-soft text-cc-accent hover:border-cc-accent disabled:cursor-not-allowed disabled:opacity-50">
           <Icon d={playing ? ICON.pause : ICON.play} size={14} fill={!playing} strokeWidth={playing ? 3 : 2.2} />
         </button>
         <button type="button" onClick={onPrev} disabled={n === 0 || dayIndex <= 0} aria-label="Previous step" className={small}>
@@ -134,21 +134,21 @@ export default function TimelineBar({
           // Own arrow: the native one sits against the border with no gap.
           <span className="relative inline-flex min-w-0 max-w-full items-center">
           <select aria-label="Pick a day" value={dayIndex} onChange={(e) => onSeek(Number(e.target.value))} data-day-picker
-            className="h-8 min-w-0 max-w-full appearance-none rounded-md border border-cc-line bg-cc-surface pl-2.5 pr-8 text-[13px] font-medium text-cc-ink hover:border-cc-line-strong">
+            className="h-7 min-w-0 max-w-full appearance-none rounded-md border border-cc-line bg-cc-surface pl-2 pr-7 text-xs font-medium text-cc-ink hover:border-cc-line-strong">
             {steps.map((s) => (
               <option key={s.date} value={s.index}>{fmtDate(s.date)}{s.forecast ? " (forecast)" : ""}{forecastDates?.has(s.date) ? " · ● NOAA forecast" : ""}</option>
             ))}
           </select>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-            className="pointer-events-none absolute right-2.5 text-cc-muted"><path d="M6 9l6 6 6-6" /></svg>
+            className="pointer-events-none absolute right-2 text-cc-muted"><path d="M6 9l6 6 6-6" /></svg>
           </span>
         )}
         {runs && (
           <div role="group" aria-label="Now run (BRT)" className="flex flex-wrap items-center gap-1" data-runs>
-            <span className="rounded-md bg-cc-surface px-1.5 py-1 text-xs font-semibold text-cc-muted shadow-[0_1px_6px_rgba(0,0,0,0.3)]">Run</span>
+            <span className="inline-flex h-7 items-center rounded-md bg-cc-surface px-1.5 text-xs font-semibold text-cc-muted shadow-[0_1px_6px_rgba(0,0,0,0.3)]">Run</span>
             {runs.list.map((r, i) => (
               <button key={r.id} type="button" aria-pressed={runs.picked === r.id} onClick={() => runs.onPick(i === 0 ? null : r.id)}
-                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${runs.picked === r.id ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>
+                className={`h-7 rounded-md px-2 text-xs font-semibold tabular-nums ${runs.picked === r.id ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>
                 {i === 0 ? `Latest · ${r.label}` : r.label}
               </button>
             ))}
@@ -157,10 +157,10 @@ export default function TimelineBar({
         {hours && hours.available.length > 0 && (
           <div role="group" aria-label="Hour (UTC)" className="flex flex-wrap items-center gap-1" data-hours>
             <button type="button" aria-pressed={hours.hour === null} onClick={() => hours.onHour(null)}
-              className={`rounded-md px-2 py-1 text-xs font-semibold ${hours.hour === null ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>Day</button>
+              className={`h-7 rounded-md px-2 text-xs font-semibold ${hours.hour === null ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>Day</button>
             {HOURS.filter((h) => hours.available.includes(h)).map((h) => (
               <button key={h} type="button" aria-pressed={hours.hour === h} onClick={() => hours.onHour(h)}
-                className={`rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${hours.hour === h ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>{h}Z</button>
+                className={`h-7 rounded-md px-2 text-xs font-semibold tabular-nums ${hours.hour === h ? "border border-cc-accent-line bg-cc-accent-soft text-cc-accent" : "border border-cc-line bg-cc-surface text-cc-muted hover:text-cc-ink"}`}>{h}Z</button>
             ))}
           </div>
         )}
@@ -171,7 +171,7 @@ export default function TimelineBar({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border border-cc-line bg-cc-surface px-4 py-2 shadow-[0_4px_18px_rgba(0,0,0,0.28)]" data-timeline-card>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl border border-cc-line bg-cc-surface px-4 py-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.28)]" data-timeline-card>
       <div className="relative min-w-0 flex-[1_1_460px]">
       {/* Without a forecast chip, the band above the steps is free: the day
           labels go there at full width. Either way they take no row of their
@@ -183,7 +183,7 @@ export default function TimelineBar({
         {n === 0 ? (
           <p className="py-3 text-[13px] italic text-cc-faint" data-no-steps>{emptyText}</p>
         ) : (
-          <div className="relative flex px-2 pt-5" style={{ minWidth: Math.max(470, n * (dense ? STEP_DENSE_PX : STEP_PX)) }} role="group" aria-label="Timeline steps">
+          <div className={`relative flex px-2 ${firstFc >= 0 || marks.length > 0 ? "pt-[18px]" : "pt-1"}`} style={{ minWidth: Math.max(470, n * (dense ? STEP_DENSE_PX : STEP_PX)) }} role="group" aria-label="Timeline steps">
             {firstFc >= 0 && (
               <span className="absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-md bg-cc-forecast px-3 py-px text-xs font-semibold text-cc-forecast-ink"
                 style={{ left: `${((firstFc + (n - firstFc) / 2) / n) * 100}%` }}>
@@ -201,23 +201,23 @@ export default function TimelineBar({
                   aria-pressed={on}
                   aria-label={`${s.top}${s.sub ? `, ${s.sub}` : ""}${s.forecast ? `, ${stepTag(s)}` : ""}`}
                   title={`${s.date}${s.day && typeof s.day.tpi === "number" ? ` — TPI ${s.day.tpi.toFixed(2)}` : ""}`}
-                  className="relative flex min-h-[60px] min-w-0 flex-1 flex-col items-center"
+                  className="relative flex min-w-0 flex-1 flex-col items-center pb-0.5"
                 >
                   {/* Track: solid for observed steps, dashed for forecast. */}
-                  <span aria-hidden="true" className={`absolute left-0 right-0 top-[12px] ${s.forecast ? "border-t-[3px] border-dashed border-[#9aa7a0]" : "h-[3px] bg-cc-accent"}`} />
-                  <span aria-hidden="true" className="relative flex h-[26px] items-center">
+                  <span aria-hidden="true" className={`absolute left-0 right-0 top-[9px] ${s.forecast ? "border-t-[3px] border-dashed border-[#9aa7a0]" : "h-[3px] bg-cc-accent"}`} />
+                  <span aria-hidden="true" className="relative flex h-[21px] items-center">
                     <span className={`box-border rounded-full ${on ? "h-[18px] w-[18px]" : "h-3 w-3"} ${
                       on ? "border-[3px] border-cc-accent bg-white shadow-[0_0_0_3px_rgba(23,71,63,0.25)]"
                       : s.forecast ? "border-2 border-dashed border-[#5f6d73] bg-white"
                       : "border-2 border-cc-accent bg-cc-accent"}`} />
                   </span>
-                  <span className="absolute top-[30px] flex gap-1">
+                  <span className="absolute top-[22px] flex gap-1">
                     {marks.filter((m) => m.index === s.index).map((m) => (
                       <span key={m.label} title={m.label} aria-label={m.label} role="img"
                         className={`h-2 w-1.5 rounded-full ${m.color === "red" ? "bg-[#bd0026]" : m.color === "blue" ? "bg-[#2166ac]" : "bg-[#d98a00]"}`} />
                     ))}
                   </span>
-                  <span className={`mt-2 whitespace-nowrap leading-tight ${on ? "text-[13px] font-bold" : "text-xs font-medium"} ${showDate(s.index) ? "" : "invisible"}`}>{s.top}</span>
+                  <span className={`mt-1.5 whitespace-nowrap leading-tight ${on ? "text-[13px] font-bold" : "text-xs font-medium"} ${showDate(s.index) ? "" : "invisible"}`}>{s.top}</span>
                   <span className={`whitespace-nowrap text-xs leading-tight ${event ? "rounded bg-cc-ink px-1 font-semibold text-white" : "text-cc-muted"}`}>{s.sub}</span>
                 </button>
               );
