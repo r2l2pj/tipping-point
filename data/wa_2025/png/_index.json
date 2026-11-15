@@ -2969,7 +2969,7 @@
         }
       ],
       "attribution": "NISAR (NASA/ISRO), ASF DAAC — Beta product",
-      "note": "12-day L-band coherence loss Dec 4-16 vs Nov 22-Dec 4 (GUNW wrappedInterferogram HH, 20 m -> 60 m). Candidates, never confirmed: winter decorrelation also comes from rain, snow and forest change. Water and elevation >= 600 m excluded."
+      "note": "NISAR GUNW coherence, Beta; Dec 4 -> Dec 16 2025 vs Nov 22 -> Dec 4 reference. Broad storm decorrelation, not landslide-specific (10/15 landslides within 100 m vs a 60.9 % random baseline); candidates only."
     },
     {
       "id": "nisar_coherence_event",
@@ -2992,7 +2992,7 @@
         }
       ],
       "attribution": "NISAR (NASA/ISRO), ASF DAAC — Beta product",
-      "note": "GUNW HH coherenceMagnitude of the event-crossing pair 2025-12-04 -> 2025-12-16, grayscale. Beta product."
+      "note": "NISAR GUNW coherence, Beta; Dec 4 -> Dec 16 2025 vs Nov 22 -> Dec 4 reference. Broad storm decorrelation, not landslide-specific (10/15 landslides within 100 m vs a 60.9 % random baseline); candidates only."
     }
   ]
 }
