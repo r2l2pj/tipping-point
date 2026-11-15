@@ -262,6 +262,25 @@ export default function MapStage({
     };
   }, [map]);
 
+  // Bounds of the map view for the locator; one update per frame while moving.
+  const [viewBox, setViewBox] = useState<[number, number, number, number] | null>(null);
+  useEffect(() => {
+    if (!map) return;
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      const b = map.getBounds();
+      setViewBox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+    };
+    const onMove = () => { if (!frame) frame = requestAnimationFrame(read); };
+    map.on("move", onMove);
+    onMove();
+    return () => {
+      map.off("move", onMove);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [map]);
+
   const fit = (duration = 500) =>
     map?.fitBounds(
       [[bundle.bbox[0], bundle.bbox[1]], [bundle.bbox[2], bundle.bbox[3]]],
@@ -509,7 +528,7 @@ export default function MapStage({
               <summary className="cursor-pointer list-none px-2.5 py-1.5 text-xs font-semibold">Legend</summary>
               <Legend bundle={bundle} layers={state.layers} hazard={state.hazard} stepDate={step?.date} probHorizon={state.probHorizon} compact changeCyan={state.changeCyan} className="max-h-[50vh] overflow-y-auto px-2.5 pb-2" />
             </details>
-            <LocatorInset bbox={bundle.bbox} className="max-[899px]:hidden" />
+            <LocatorInset bbox={bundle.bbox} view={viewBox} onRecenter={() => fit(500)} className="max-[899px]:hidden" />
           </div>
         </div>
       )}
