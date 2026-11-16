@@ -27,6 +27,8 @@ ExecStart=/usr/local/lib/tipping-point-pipeline/pipeline-run.sh --if-stale 12600
 TimeoutStartSec=2900
 SyslogIdentifier=tipping-point-now-backup
 Nice=10
+# A host-wide memory shortage picks this job before the app or any other service.
+OOMScoreAdjust=500
 IOSchedulingClass=best-effort
 IOSchedulingPriority=7
 CPUWeight=50

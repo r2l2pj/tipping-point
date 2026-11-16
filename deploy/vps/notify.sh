@@ -5,6 +5,7 @@
 # GitHub Actions".
 #
 #   notify.sh tipping-point-<name>.service
+#   notify.sh tipping-point-notice-test.service     a test notice (see below)
 #
 # It always writes one line to the journal (the failed unit is the primary
 # signal: `systemctl is-failed <unit>`, `journalctl -u <unit>`). When NOTIFY_WEBHOOK_URL
@@ -14,6 +15,11 @@
 # there is no mail, chat or other channel here. The same unit is announced at
 # most once per NOTIFY_MIN_INTERVAL_S (default 3600) so a repeating failure
 # does not flood the receiver.
+#
+# The test notice (the runbook starts tipping-point-notify@tipping-point-notice-test.service.service
+# once, to prove the webhook) says plainly that no unit failed. It is sent every time, it
+# reads and writes no throttle stamp, and so it never delays a real notice. A failed
+# POST makes the unit fail, so the operator sees it.
 #
 # SAFETY: this host also runs unrelated services of another company ("FE
 # services"), currently stopped. This script reads the status of units named
@@ -26,6 +32,7 @@ umask 077
 
 PIPELINE_STATE_DIR=${PIPELINE_STATE_DIR:-/var/lib/tipping-point-pipeline}
 NOTIFY_MIN_INTERVAL_S=${NOTIFY_MIN_INTERVAL_S:-3600}
+NOTIFY_TEST_UNIT=tipping-point-notice-test.service
 
 nt_log() { echo "notify: $*" >&2; }
 
@@ -48,6 +55,14 @@ nt_text() {
   if [[ -n "$result" ]]; then line="$line)"; fi
   line="$line. See: journalctl -u $unit"
   printf '%s' "$line" | tr -c '[:print:]' ' ' | cut -c 1-300
+}
+
+# nt_test_text: one line, ASCII, for the test notice.
+nt_test_text() {
+  local host
+  host=$(hostname 2>/dev/null || echo vps)
+  printf '%s' "tipping-point VPS: TEST notice from $host at $(date -u +%Y-%m-%dT%H:%MZ). No unit failed; this only proves the webhook." |
+    tr -c '[:print:]' ' ' | cut -c 1-300
 }
 
 # nt_throttled UNIT: true when this unit was announced less than the interval ago.
@@ -94,6 +109,17 @@ nt_main() {
     exit 2
   fi
   local text
+  if [[ "$unit" == "$NOTIFY_TEST_UNIT" ]]; then
+    text=$(nt_test_text)
+    echo "TEST: $text"
+    if [[ -z "${NOTIFY_WEBHOOK_URL:-}" ]]; then
+      nt_log "NOTIFY_WEBHOOK_URL is not set: nothing was sent"
+      return 0
+    fi
+    nt_post "$text" || return 1
+    nt_log "test notice sent; no throttle stamp was written or read"
+    return 0
+  fi
   text=$(nt_text "$unit")
   echo "FAILED: $text"
   if [[ -z "${NOTIFY_WEBHOOK_URL:-}" ]]; then return 0; fi

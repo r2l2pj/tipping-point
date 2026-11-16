@@ -11,6 +11,16 @@
 #   pipeline-run.sh --if-stale N <job>    backup run: do nothing when the job
 #                                         succeeded less than N seconds ago or
 #                                         another pipeline job is running
+#   pipeline-run.sh --by-hand ACTION      what tipping-point-by-hand@ACTION.service
+#                                         runs, so an operator's check or restore
+#                                         gets the unit's environment file and
+#                                         limits: preflight-<job>, dry-run-<job>
+#                                         (live/jobs.py <job> --dry-run) or
+#                                         restore-<40 hex> (see run_restore_fallback)
+#
+# A job may run PIPELINE_TIMEOUT_S seconds (default: the workflow's limit, 45 min
+# for now and 60 min for the others). Set it, and TimeoutStartSec of the unit, for
+# the first cold run (runbook). The unit's own limit is the outer one.
 #
 # Publishing is OFF unless PIPELINE_PUBLISH=1 (/etc/tipping-point/pipeline.env).
 # Off means: the whole job runs, the snapshot is built and checked against the
@@ -49,7 +59,11 @@ PIPELINE_PUBLISH=${PIPELINE_PUBLISH:-0}
 PIPELINE_PUSH_AUTH=${PIPELINE_PUSH_AUTH:-token}
 # Seconds to wait for the lock another pipeline job holds (0: do not wait).
 PIPELINE_LOCK_WAIT_S=${PIPELINE_LOCK_WAIT_S:-3300}
-PIPELINE_MIN_FREE_MB=${PIPELINE_MIN_FREE_MB:-3072}
+# Free space needed under the state directory and the checkout. The first run needs the
+# full tree, the Python environment and the uv cache; 10 GB leaves room.
+PIPELINE_MIN_FREE_MB=${PIPELINE_MIN_FREE_MB:-10240}
+# Empty: the workflow's limit (run_job_timeout_s). Else whole seconds, 60 to 86400.
+PIPELINE_TIMEOUT_S=${PIPELINE_TIMEOUT_S:-}
 
 CURRENT_STEP=""
 PL_PUSH_TOKEN=""
@@ -59,9 +73,12 @@ dswx_saved=0
 run_done=0
 sa_file=""
 run_job_name=""
+by_mode=""
+by_arg=""
 
 run_usage() {
   echo "usage: pipeline-run.sh [--preflight] [--if-stale SECONDS] now|nisar|validation|reference" >&2
+  echo "       pipeline-run.sh --by-hand preflight-<job>|dry-run-<job>|restore-<40 hex commit>" >&2
 }
 
 # Workflow timeout-minutes: now 45, the others 60.
@@ -71,6 +88,23 @@ run_job_timeout_s() {
     nisar | validation | reference) echo 3600 ;;
     *) return 1 ;;
   esac
+}
+
+# run_check_timeout_setting: PIPELINE_TIMEOUT_S is empty or a whole number of
+# seconds from 60 to 86400. A value that is not is refused, never guessed.
+run_check_timeout_setting() {
+  if [[ -z "$PIPELINE_TIMEOUT_S" ]]; then return 0; fi
+  if [[ "$PIPELINE_TIMEOUT_S" =~ ^[1-9][0-9]{1,4}$ ]] && (( PIPELINE_TIMEOUT_S >= 60 && PIPELINE_TIMEOUT_S <= 86400 )); then
+    return 0
+  fi
+  pl_die "PIPELINE_TIMEOUT_S must be a whole number of seconds from 60 to 86400 (or empty), not '$PIPELINE_TIMEOUT_S'"
+}
+
+# run_job_limit_s JOB: the run limit in seconds, the setting or the workflow's.
+run_job_limit_s() {
+  local default
+  default=$(run_job_timeout_s "$1") || return 1
+  echo "${PIPELINE_TIMEOUT_S:-$default}"
 }
 
 run_check_not_root() {
@@ -88,11 +122,6 @@ run_check_tools() { # [1: the push credential is used in this run]
   if [[ "$(uv --version 2>/dev/null || true)" != *" $PIPELINE_UV_VERSION"* ]]; then
     pl_log "WARNING: uv is '$(uv --version 2>/dev/null || true)', the workflows pin $PIPELINE_UV_VERSION"
   fi
-}
-
-# The pipeline's own uv comes first on PATH, for this process and its children only.
-run_uv_path() {
-  if [[ -x "$PIPELINE_UV_DIR/uv" ]]; then PATH="$PIPELINE_UV_DIR:$PATH"; export PATH; fi
 }
 
 # Paths, directories and the environment of every command the job starts.
@@ -177,13 +206,9 @@ run_push_fail() {
   return 1
 }
 
-# run_check_push: can this credential push to refs/heads/fallback? Proved without
-# writing: git push --dry-run --force of the current fallback commit to the same
-# ref, which sends nothing. It shows that origin is reachable and that the
-# credential is accepted for a push. It cannot show a branch rule that rejects the
-# real push; only a real publish does.
-run_check_push() {
-  local repo=$PIPELINE_CHECKOUT src what out rc=0 state=0 key known
+# run_check_credentials: the push credential of the chosen mode is in place.
+run_check_credentials() {
+  local key known
   case "$PIPELINE_PUSH_AUTH" in
     token)
       [[ -n "$PL_PUSH_TOKEN" ]] || { run_push_fail "GH_TOKEN is empty; set it in pipeline.env (or PIPELINE_PUSH_AUTH=ssh)"; return 1; }
@@ -195,6 +220,16 @@ run_check_push() {
       [[ -s "$known" ]] || { run_push_fail "$known is missing; pin the GitHub host key (runbook)"; return 1; }
       ;;
   esac
+}
+
+# run_check_push: can this credential push to refs/heads/fallback? Proved without
+# writing: git push --dry-run --force of the current fallback commit to the same
+# ref, which sends nothing. It shows that origin is reachable and that the
+# credential is accepted for a push. It cannot show a branch rule that rejects the
+# real push; only a real publish does.
+run_check_push() {
+  local repo=$PIPELINE_CHECKOUT src what out rc=0 state=0
+  run_check_credentials || return 1
   if git -C "$repo" fetch -q origin '+refs/heads/fallback:refs/remotes/origin/fallback'; then
     src=refs/remotes/origin/fallback
     what="the current fallback commit $(git -C "$repo" rev-parse --short=12 "$src")"
@@ -251,13 +286,53 @@ run_b64d() {
   base64 -d 2>/dev/null || base64 -D
 }
 
+# Which jobs use Earth Engine, so which jobs need the Google key and GEE_PROJECT. By reading
+# what each job calls (live/jobs.py):
+#   now         NOW_LOCAL=1 (always set here) skips the Earth Engine path; the steps after it
+#               (R1-R4, nisar, places, history) use no Earth Engine either
+#   nisar       pipeline.fetch.nisar without --execute: an anonymous ASF metadata search
+#   validation  gee.opera and pipeline.fetch.swot (reads and creates Earth Engine assets)
+#   reference   pipeline.fetch.reference (creates Earth Engine table assets)
+# EARTHDATA_TOKEN is needed by every job.
+run_gcp_needed() { # job
+  case "$1" in
+    validation | reference) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+run_gcp_notice() { # job
+  pl_notice "GCP_SA_KEY_B64 is not set; the $1 job does not use Earth Engine, so it runs without it (only validation and reference need the key)"
+}
+
+# run_check_secrets JOB WARN: the secrets the job cannot run without, checked before it starts
+# (and by the preflight). WARN=1 prints the one-line notice for a missing optional key.
+run_check_secrets() {
+  local job=$1 warn=$2
+  [[ -n "${EARTHDATA_TOKEN:-}" ]] || pl_die "EARTHDATA_TOKEN is empty: every job needs it (runbook, settings)"
+  if [[ -n "${GCP_SA_KEY_B64:-}" ]]; then
+    # a key that is set must be good, for every job
+    printf '%s' "$GCP_SA_KEY_B64" | run_b64d | python3 -c 'import json, sys; json.load(sys.stdin)' 2>/dev/null ||
+      pl_die "GCP_SA_KEY_B64 is not base64 of a JSON key"
+  elif run_gcp_needed "$job"; then
+    pl_die "GCP_SA_KEY_B64 is empty: the $job job uses Earth Engine and cannot run without the Google key (runbook, settings)"
+  elif [[ "$warn" == 1 ]]; then
+    run_gcp_notice "$job"
+  fi
+  if run_gcp_needed "$job" && [[ -z "${GEE_PROJECT:-}" ]]; then
+    pl_die "GEE_PROJECT is empty: the $job job uses Earth Engine and cannot run without it (runbook, settings)"
+  fi
+}
+
 # The workflow writes GCP_SA_KEY to /tmp/sa.json and activates gcloud. The
 # python code reads GCP_SA_KEY and GOOGLE_APPLICATION_CREDENTIALS itself and
 # never calls gcloud, so no gcloud is needed here. The key arrives as
 # GCP_SA_KEY_B64 (one line, so the systemd EnvironmentFile can carry it).
+# run_gcp_credentials JOB: a missing key is only a notice for the jobs that do not use Earth Engine.
 run_gcp_credentials() {
   if [[ -z "${GCP_SA_KEY_B64:-}" ]]; then
-    pl_notice "GCP_SA_KEY_B64 is not set (only the nisar, validation and reference jobs need it)"
+    run_gcp_needed "$1" && pl_die "GCP_SA_KEY_B64 is empty: the $1 job uses Earth Engine and cannot run without the Google key"
+    run_gcp_notice "$1"
     return 0
   fi
   sa_file=$(mktemp "$TMPDIR/sa.XXXXXXXX")
@@ -387,7 +462,7 @@ nisar_stack() {
   # `be` runs this under ||, where errexit is off: stop here when the restore
   # failed, so the step never starts from an empty stack
   pl_restore_fallback data/now/nisar_stack || return 1
-  PYTHONPATH=".:pipeline" timeout 12m uv run python -m live.nisar_stack --now-dir data/now
+  PYTHONPATH=".:pipeline" timeout --kill-after=30 12m uv run python -m live.nisar_stack --now-dir data/now
 }
 
 nisar_tpi() {
@@ -421,7 +496,7 @@ job_now() {
   begin uv-sync
   uv sync --frozen
   begin gcp-credentials
-  run_gcp_credentials
+  run_gcp_credentials now
   begin earthdata-token
   uv run python -c "from live.fetch import check_earthdata_token; check_earthdata_token()"
   begin static-inputs
@@ -463,7 +538,7 @@ job_data() { # job
   begin uv-sync
   uv sync --frozen
   begin gcp-credentials
-  run_gcp_credentials
+  run_gcp_credentials "$job"
   begin earthdata-token
   uv run python -c "from live.fetch import check_earthdata_token; check_earthdata_token()"
   begin "$job-job"
@@ -511,12 +586,96 @@ run_is_fresh() {
   (( $(date +%s) - last < $2 ))
 }
 
+# --- by hand: what tipping-point-by-hand@.service runs ----------------------------
+
+# run_parse_by_hand ACTION: sets by_mode (preflight, dryrun or restore) and by_arg
+# (the job, or the commit). Anything else is a usage error.
+run_parse_by_hand() {
+  case "$1" in
+    preflight-now | preflight-nisar | preflight-validation | preflight-reference)
+      by_mode=preflight
+      by_arg=${1#preflight-}
+      ;;
+    dry-run-now | dry-run-nisar | dry-run-validation | dry-run-reference)
+      by_mode=dryrun
+      by_arg=${1#dry-run-}
+      ;;
+    restore-*)
+      by_mode=restore
+      by_arg=${1#restore-}
+      [[ "$by_arg" =~ ^[0-9a-f]{40}$ ]] || { run_usage; exit 2; }
+      ;;
+    *) run_usage; exit 2 ;;
+  esac
+}
+
+# run_lock_or_exit: the pipeline lock without waiting; 75 when another job has it.
+run_lock_or_exit() {
+  exec 9>"$PIPELINE_STATE_DIR/pipeline.lock"
+  flock -n 9 || { pl_log "another pipeline job is running; try again when it has finished"; exit 75; }
+}
+
+# run_dry_run JOB: print the step commands of live/jobs.py JOB, run none of them.
+# It holds the lock because uv may touch the shared Python environment.
+run_dry_run() {
+  run_lock_or_exit
+  cd "$PIPELINE_CHECKOUT"
+  uv run --frozen python live/jobs.py "$1" --dry-run
+}
+
+# run_restore_fallback SHA: put an earlier fallback commit back (the rollback of a bad
+# first publish). SHA is the line `git ls-remote` showed for refs/heads/fallback before
+# the cutover. GitHub moves the branch to a commit it still stores; nothing is uploaded.
+# When the commit can be fetched it must be a snapshot (no parent, has
+# data/now/manifest.json); when it cannot, GitHub itself refuses a commit it does not have.
+# Token mode only: the token goes to curl through a private config file, never the command line.
+run_restore_fallback() {
+  local sha=$1 repo=$PIPELINE_CHECKOUT slug=${GITHUB_REPOSITORY:-r2l2pj/tipping-point}
+  local api=${PIPELINE_GITHUB_API:-https://api.github.com} cfg body http rc=0 before after
+  [[ "$PIPELINE_PUSH_AUTH" == token && -n "$PL_PUSH_TOKEN" ]] ||
+    pl_die "restore needs GH_TOKEN in token mode; with the deploy key, re-enable the GitHub workflows instead (runbook, rollback)"
+  run_lock_or_exit
+  if git -C "$repo" fetch -q origin "$sha" 2>/dev/null; then
+    [[ "$(git -C "$repo" cat-file -t "$sha" 2>/dev/null || true)" == commit ]] || pl_die "$sha is not a commit"
+    [[ "$(git -C "$repo" rev-list --parents -n 1 "$sha")" == "$sha" ]] ||
+      pl_die "$sha has a parent: it is not a fallback snapshot; refusing"
+    [[ -n "$(git -C "$repo" ls-tree --name-only "$sha" -- data/now/manifest.json)" ]] ||
+      pl_die "$sha has no data/now/manifest.json: it is not a fallback snapshot; refusing"
+  else
+    pl_log "WARNING: cannot fetch $sha to inspect it; asking GitHub to move the branch anyway (it refuses an unknown commit)"
+  fi
+  before=$(git -C "$repo" ls-remote origin refs/heads/fallback | cut -f1 || true)
+  cfg=$(mktemp "$TMPDIR/restore.XXXXXXXX")
+  body="$cfg.out"
+  printf 'header = "Authorization: Bearer %s"\n' "$PL_PUSH_TOKEN" >"$cfg"
+  http=$(curl -sS --max-time 60 -o "$body" -w '%{http_code}' -X PATCH -K "$cfg" \
+    -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' \
+    -d "{\"sha\":\"$sha\",\"force\":true}" "$api/repos/$slug/git/refs/heads/fallback" 2>&1) || rc=$?
+  if (( rc )) || [[ "$http" != 200 ]]; then
+    pl_log "restore: FAIL (curl exit $rc, HTTP '$http'): $(head -c 300 "$body" 2>/dev/null | tr '\n' ' ')"
+    rm -f "$cfg" "$body"
+    return 1
+  fi
+  rm -f "$cfg" "$body"
+  after=$(git -C "$repo" ls-remote origin refs/heads/fallback | cut -f1 || true)
+  [[ "$after" == "$sha" ]] || pl_die "GitHub answered 200 but refs/heads/fallback is '${after:-absent}', not $sha"
+  pl_log "restore: fallback is $sha again (it was ${before:-absent}); nothing else was changed"
+}
+
 run_main() {
-  local mode=run job stale_max=""
+  local mode=run job="" stale_max="" sha="" by_hand=0 want_push
   while (( $# > 0 )); do
     case "$1" in
       --locked) mode=locked; shift ;;
       --preflight) mode=preflight; shift ;;
+      --by-hand)
+        [[ -n "${2:-}" ]] || { run_usage; exit 2; }
+        run_parse_by_hand "$2"
+        mode=$by_mode
+        by_hand=1
+        if [[ "$mode" == restore ]]; then sha=$by_arg; else job=$by_arg; fi
+        shift 2
+        ;;
       --if-stale)
         [[ "${2:-}" =~ ^[0-9]+$ ]] || { run_usage; exit 2; }
         stale_max=$2
@@ -526,28 +685,44 @@ run_main() {
       *) break ;;
     esac
   done
-  if (( $# != 1 )); then run_usage; exit 2; fi
-  job=$1
-  run_job_timeout_s "$job" >/dev/null || { run_usage; exit 2; }
+  if (( by_hand )); then
+    if (( $# != 0 )); then run_usage; exit 2; fi
+  else
+    if (( $# != 1 )); then run_usage; exit 2; fi
+    job=$1
+  fi
+  if [[ "$mode" != restore ]]; then
+    run_job_timeout_s "$job" >/dev/null || { run_usage; exit 2; }
+  fi
   run_check_not_root "$EUID"
-  run_uv_path
+  run_check_timeout_setting
+  pl_uv_path
   if [[ "$mode" == locked ]]; then
     run_locked "$job"
     return
   fi
-  local check_push=0
-  if [[ "$mode" == preflight ]]; then check_push=1; fi
-  run_check_tools $(( check_push || PIPELINE_PUBLISH == 1 ))
+  want_push=0
+  if [[ "$mode" == preflight || "$mode" == restore || "$PIPELINE_PUBLISH" == 1 ]]; then want_push=1; fi
+  run_check_tools "$want_push"
   run_setup
   if [[ -n "$stale_max" ]] && run_is_fresh "$job" "$stale_max"; then
     pl_log "$job succeeded less than ${stale_max}s ago; nothing to do"
     return 0
   fi
   pl_validate_checkout "$PIPELINE_CHECKOUT"
+  if [[ "$mode" == restore ]]; then
+    run_restore_fallback "$sha"
+    return
+  fi
+  if [[ "$mode" == dryrun ]]; then
+    run_dry_run "$job"
+    return
+  fi
   run_check_disk
-  run_publish_preflight "$job" "$check_push"
+  run_check_secrets "$job" "$([[ "$mode" == preflight ]] && echo 1 || echo 0)"
+  run_publish_preflight "$job" "$([[ "$mode" == preflight ]] && echo 1 || echo 0)"
   if [[ "$mode" == preflight ]]; then
-    pl_log "preflight ok for $job"
+    pl_log "preflight ok for $job (run limit $(run_job_limit_s "$job") s)"
     return 0
   fi
   # One pipeline job at a time: they share one checkout and one fallback branch.
@@ -564,8 +739,8 @@ run_main() {
   else
     flock -n 9 || { pl_log "another pipeline job is running; nothing to do"; exit 75; }
   fi
-  pl_log "$job: start (publishing is $([[ "$PIPELINE_PUBLISH" == 1 ]] && echo ON || echo OFF))"
-  exec timeout --kill-after=60 "$(run_job_timeout_s "$job")" "$BASH" "$run_script" --locked "$job"
+  pl_log "$job: start (publishing is $([[ "$PIPELINE_PUBLISH" == 1 ]] && echo ON || echo OFF), run limit $(run_job_limit_s "$job") s)"
+  exec timeout --kill-after=60 "$(run_job_limit_s "$job")" "$BASH" "$run_script" --locked "$job"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

@@ -11,6 +11,10 @@
 #
 #   watchdog.sh [MAX_AGE_S]        default $STALE_AFTER_S or 21600 (6 h)
 #
+# Exit 0 fresh, 1 stale or unreadable, 2 bad argument, 3 setup error (no uv).
+# The unit sets no PATH, so the script puts the pipeline's own uv directory first
+# (pl_uv_path in pipeline-lib.sh), like pipeline-run.sh.
+#
 # SAFETY: this host also runs unrelated services of another company ("FE
 # services"), currently stopped. This script only reads. It fetches the
 # fallback branch of the tipping-point repository into its own bare scratch
@@ -18,6 +22,10 @@
 # checkout, so it cannot disturb a running job) and starts no container, unit
 # or other service.
 set -Eeuo pipefail
+
+wd_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=deploy/vps/pipeline-lib.sh
+source "$wd_dir/pipeline-lib.sh"
 
 PIPELINE_STATE_DIR=${PIPELINE_STATE_DIR:-/var/lib/tipping-point-pipeline}
 PIPELINE_CHECKOUT=${PIPELINE_CHECKOUT:-/opt/tipping-point}
@@ -47,6 +55,9 @@ wd_main() {
   local max_age=${1:-${STALE_AFTER_S:-21600}}
   [[ "$max_age" =~ ^[0-9]+$ ]] || { echo "usage: watchdog.sh [MAX_AGE_S]" >&2; exit 2; }
   [[ -d "$PIPELINE_STATE_DIR" ]] || { wd_log "$PIPELINE_STATE_DIR does not exist"; exit 1; }
+  # the unit sets no PATH: uv lives in the pipeline's own directory
+  pl_uv_path
+  command -v uv >/dev/null 2>&1 || { wd_log "uv not found (looked in $PIPELINE_UV_DIR and on PATH); this is a setup error, not stale data"; exit 3; }
   export UV_CACHE_DIR=${UV_CACHE_DIR:-$PIPELINE_STATE_DIR/uv-cache}
   export UV_PYTHON_INSTALL_DIR=${UV_PYTHON_INSTALL_DIR:-$PIPELINE_STATE_DIR/uv-python}
   export GIT_TERMINAL_PROMPT=0

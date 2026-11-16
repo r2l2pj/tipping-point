@@ -66,4 +66,42 @@ tl_eq "$rc" 1 "scratch repository with another origin refused"
 # it never touches the pipeline checkout
 [[ -z "$(find "$PIPELINE_CHECKOUT" -mindepth 1 | head -n 1)" ]] || tl_fail "watchdog wrote into the pipeline checkout"
 
+# --- watchdog on a unit-like PATH: uv exists only in the pipeline's own directory --------------
+# The units set no PATH. Here PATH holds only symlinks to the system tools the script needs, no
+# uv, so a bare `uv` fails like it would under systemd; the private directory has the only uv.
+svc="$TL_TMP/svcbin"
+mkdir -p "$svc"
+for c in bash git mktemp rm dirname cat head tr cut sed; do ln -sf "$(command -v "$c")" "$svc/$c"; done
+privuv="$TL_TMP/privuv"
+mkdir -p "$privuv"
+cat >"$privuv/uv" <<'STUB'
+#!/usr/bin/env bash
+echo "private-uv $*" >>"$UV_LOG"
+exit "${UV_RC:-0}"
+STUB
+chmod 755 "$privuv/uv"
+real_bash=$(command -v bash)
+wd_svc() { env PATH="$svc" "$real_bash" "$here/watchdog.sh" "$@"; }
+git -C "$PIPELINE_STATE_DIR/watchdog.git" config remote.origin.url "$PIPELINE_REPO_URL"
+rm -f "$UV_LOG"
+PIPELINE_UV_DIR="$TL_TMP/no-such-uv-dir" tl_run out rc wd_svc
+tl_eq "$rc" 3 "no uv anywhere is a setup error, not staleness: $out"
+tl_has "$out" "uv not found" "the missing uv is named"
+tl_lacks "$out" "STALE" "a missing uv does not look like stale data"
+[[ ! -e "$UV_LOG" ]] || tl_fail "uv ran although it was not on PATH"
+PIPELINE_UV_DIR="$privuv" tl_run out rc wd_svc
+tl_eq "$rc" 0 "the private uv is found on a unit-like PATH: $out"
+tl_has "$(cat "$UV_LOG")" "private-uv run --no-project --python 3.12 python -m live.staleness --max-age-s 21600" "the private uv ran the checker"
+PIPELINE_UV_DIR="$privuv" UV_RC=1 tl_run out rc wd_svc
+tl_eq "$rc" 1 "a stale manifest still fails the unit through the private uv"
+tl_has "$out" "watchdog: STALE" "stale message through the private uv"
+# keepalive needs only curl, which is a system tool
+tl_stub curl <<'STUB'
+#!/usr/bin/env bash
+exit 0
+STUB
+ln -sf "$TL_BIN/curl" "$svc/curl"
+tl_run out rc env PATH="$svc" "$real_bash" "$here/keepalive.sh"
+tl_eq "$rc" 0 "keepalive runs on a unit-like PATH with curl only: $out"
+
 echo "keepalive and watchdog tests passed"

@@ -28,6 +28,10 @@ mkdir -p "$fx" "$PIPELINE_STATE_DIR"
 set_wf() { printf '{\n  "state": "%s"\n}\n' "$2" >"$fx/$1.yml"; }
 unset PIPELINE_PUBLISH GCP_SA_KEY_B64 GCP_SA_KEY GOOGLE_APPLICATION_CREDENTIALS NOW_P_TRIGGER UV_FAIL_ON \
   UV_WRITE_DATA STATIC_FAIL GH_TOKEN FALLBACK_KEEP FALLBACK_ALLOW_DROP PIPELINE_LOCK_WAIT_S PIPELINE_PUSH_AUTH || true
+# every job needs the Earthdata token; the Google key and GEE_PROJECT only validation and reference
+unset GEE_PROJECT || true
+export EARTHDATA_TOKEN=test-earthdata-token
+ee_key_b64=$(printf '%s' '{"client_email": "sa@example.invalid", "private_key": "x"}' | base64 | tr -d '\n')
 
 tl_stub uv <<'EOF'
 #!/usr/bin/env bash
@@ -414,7 +418,7 @@ tl_has "$out" "nothing to publish" "no data, no publish"
 tl_eq "$(tl_count "$UV_LOG" "live/publish_fallback.py")" 0 "published without changes"
 for job in nisar validation reference; do
   rm -f "$UV_LOG" "$UV_LOG.env"
-  UV_WRITE_DATA=1 run_job "$job"
+  GCP_SA_KEY_B64=$ee_key_b64 GEE_PROJECT=proj UV_WRITE_DATA=1 run_job "$job"
   tl_eq "$rc" 0 "$job with output rc: $out"
   tl_has "$(cat "$UV_LOG")" "live/jobs.py $job" "$job job ran"
   pub=$(grep -F "live/publish_fallback.py" "$UV_LOG")
@@ -428,13 +432,13 @@ PIPELINE_PUBLISH=1
 for job in nisar validation reference; do
   set_wf "$job" active
   rm -f "$UV_LOG" "$UV_LOG.env"
-  GH_TOKEN=$tok UV_WRITE_DATA=1 run_job "$job"
+  GCP_SA_KEY_B64=$ee_key_b64 GEE_PROJECT=proj GH_TOKEN=$tok UV_WRITE_DATA=1 run_job "$job"
   tl_eq "$rc" 1 "$job: publish refused while its workflow is active"
   tl_has "$out" "still active" "$job: single-writer message at publish time"
   tl_eq "$(tl_count "$UV_LOG" "live/publish_fallback.py")" 0 "$job: nothing published"
   set_wf "$job" disabled_manually
   rm -f "$UV_LOG" "$UV_LOG.env"
-  GH_TOKEN=$tok UV_WRITE_DATA=1 run_job "$job"
+  GCP_SA_KEY_B64=$ee_key_b64 GEE_PROJECT=proj GH_TOKEN=$tok UV_WRITE_DATA=1 run_job "$job"
   tl_eq "$rc" 0 "$job: publish with the workflow disabled: $out"
   tl_eq "$(grep -c '^publish TOK=set CFG=2$' "$UV_LOG.env" || true)" 1 "$job: the publish step gets the token"
 done
@@ -482,5 +486,250 @@ run_dir="$inst"
 tl_run out rc run_check_drift
 tl_has "$out" "installed pipeline-lib.sh differs" "drift warning"
 run_dir="$here"
+
+# --- 6. PIPELINE_TIMEOUT_S: the run limit can be raised for a cold first run; bad values are refused
+# A timeout stub that records its arguments and runs nothing shows the limit the runner asks for.
+export TIMEOUT_LOG="$TL_TMP/timeout.log"
+tl_stub timeout <<'EOF'
+#!/usr/bin/env bash
+echo "$*" >>"$TIMEOUT_LOG"
+exit 0
+EOF
+unset PIPELINE_TIMEOUT_S
+rm -f "$TIMEOUT_LOG"
+tl_run out rc bash "$here/pipeline-run.sh" now
+tl_eq "$rc" 0 "default run: $out"
+tl_has "$(cat "$TIMEOUT_LOG")" "--kill-after=60 2700 " "now keeps the workflow's 2700 s by default"
+tl_has "$out" "run limit 2700 s" "the log names the limit"
+rm -f "$TIMEOUT_LOG"
+tl_run out rc bash "$here/pipeline-run.sh" nisar
+tl_has "$(cat "$TIMEOUT_LOG")" "--kill-after=60 3600 " "nisar keeps 3600 s by default"
+rm -f "$TIMEOUT_LOG"
+PIPELINE_TIMEOUT_S=10800 tl_run out rc bash "$here/pipeline-run.sh" now
+tl_eq "$rc" 0 "raised limit run: $out"
+tl_has "$(cat "$TIMEOUT_LOG")" "--kill-after=60 10800 " "PIPELINE_TIMEOUT_S raises the limit of now"
+tl_has "$out" "run limit 10800 s" "the log names the raised limit"
+rm -f "$TIMEOUT_LOG"
+PIPELINE_TIMEOUT_S=60 GCP_SA_KEY_B64=$ee_key_b64 GEE_PROJECT=proj tl_run out rc bash "$here/pipeline-run.sh" validation
+tl_has "$(cat "$TIMEOUT_LOG")" "--kill-after=60 60 " "the setting applies to every job, 60 s is the lowest"
+rm -f "$TIMEOUT_LOG"
+PIPELINE_TIMEOUT_S=86400 tl_run out rc bash "$here/pipeline-run.sh" now
+tl_has "$(cat "$TIMEOUT_LOG")" "--kill-after=60 86400 " "86400 s is the highest"
+rm -f "$TIMEOUT_LOG"
+PIPELINE_TIMEOUT_S='' tl_run out rc bash "$here/pipeline-run.sh" now
+tl_has "$(cat "$TIMEOUT_LOG")" "--kill-after=60 2700 " "an empty setting means the default"
+PIPELINE_TIMEOUT_S=7200 GH_TOKEN=$tok tl_run out rc bash "$here/pipeline-run.sh" --preflight now
+tl_eq "$rc" 0 "preflight with a raised limit: $out"
+tl_has "$out" "preflight ok for now (run limit 7200 s)" "the preflight shows the limit that will apply"
+for bad in abc 0 59 86401 -5 1h "10 800" 007 1e3 0x10 99999999999 " "; do
+  rm -f "$TIMEOUT_LOG"
+  PIPELINE_TIMEOUT_S="$bad" tl_run out rc bash "$here/pipeline-run.sh" now
+  tl_eq "$rc" 1 "PIPELINE_TIMEOUT_S='$bad' is refused"
+  tl_has "$out" "PIPELINE_TIMEOUT_S must be a whole number of seconds from 60 to 86400" "message for '$bad'"
+  [[ ! -e "$TIMEOUT_LOG" ]] || tl_fail "a job started with PIPELINE_TIMEOUT_S='$bad'"
+done
+PIPELINE_TIMEOUT_S=abc GH_TOKEN=$tok tl_run out rc bash "$here/pipeline-run.sh" --preflight now
+tl_eq "$rc" 1 "the preflight refuses a bad PIPELINE_TIMEOUT_S too"
+rm -f "$TL_BIN/timeout"
+hash -r
+if ! command -v timeout >/dev/null 2>&1; then cp "$here/test-shims/timeout" "$TL_BIN/timeout"; fi
+
+# --- 7. by hand: what tipping-point-by-hand@.service runs ---------------------------------------
+for bad in "" bogus preflight-bogus preflight- dry-run-bogus restore- restore-xyz restore-0123456789abcdef0123456789abcdef0123456 \
+  restore-0123456789ABCDEF0123456789ABCDEF01234567 "restore-0123456789abcdef0123456789abcdef01234567 x"; do
+  tl_run out rc bash "$here/pipeline-run.sh" --by-hand "$bad"
+  tl_eq "$rc" 2 "--by-hand '$bad' is a usage error"
+done
+tl_run out rc bash "$here/pipeline-run.sh" --by-hand
+tl_eq "$rc" 2 "--by-hand without an action"
+tl_run out rc bash "$here/pipeline-run.sh" --by-hand preflight-now now
+tl_eq "$rc" 2 "--by-hand takes no job argument"
+tl_run out rc bash "$here/pipeline-run.sh" --by-hand preflight-now
+tl_eq "$rc" 1 "by-hand preflight without a token fails like the preflight"
+tl_has "$out" "push check: FAIL (auth=token): GH_TOKEN is empty" "by-hand preflight reports the missing token"
+before_sum=$(origin_sum)
+GH_TOKEN=$tok tl_run out rc bash "$here/pipeline-run.sh" --by-hand preflight-now
+tl_eq "$rc" 0 "by-hand preflight: $out"
+tl_has "$out" "push check: PASS (auth=token)" "by-hand preflight checks the push"
+tl_has "$out" "preflight ok for now" "by-hand preflight finishes"
+tl_eq "$(origin_sum)" "$before_sum" "by-hand preflight changed nothing in origin"
+set_wf validation active
+PIPELINE_PUBLISH=1 GH_TOKEN=$tok GCP_SA_KEY_B64=$ee_key_b64 GEE_PROJECT=proj tl_run out rc bash "$here/pipeline-run.sh" --by-hand preflight-validation
+tl_eq "$rc" 1 "by-hand preflight with publishing on sees the active workflow"
+tl_has "$out" "still active" "single-writer message from the by-hand preflight"
+set_wf validation disabled_manually
+# dry run: the step commands of live/jobs.py, none of them run, under the lock
+rm -f "$UV_LOG" "$UV_LOG.env"
+tl_run out rc bash "$here/pipeline-run.sh" --by-hand dry-run-validation
+tl_eq "$rc" 0 "by-hand dry run: $out"
+tl_has "$(head -n 1 "$UV_LOG")" "run --frozen python live/jobs.py validation --dry-run" "the dry run asks live/jobs.py for the commands only"
+tl_eq "$(wc -l <"$UV_LOG" | tr -d ' ')" 1 "the dry run starts one command"
+tl_eq "$(tl_count "$UV_LOG" "publish_fallback")" 0 "the dry run publishes nothing"
+mkdir -p "$TL_TMP/hold2"
+( exec 9>"$PIPELINE_STATE_DIR/pipeline.lock"; flock 9; : >"$TL_TMP/hold2/held"; exec sleep 30 ) &
+holder=$!
+for _ in $(seq 1 50); do [[ -e "$TL_TMP/hold2/held" ]] && break; sleep 0.1; done
+[[ -e "$TL_TMP/hold2/held" ]] || tl_fail "lock holder did not start"
+rm -f "$UV_LOG"
+tl_run out rc bash "$here/pipeline-run.sh" --by-hand dry-run-reference
+tl_eq "$rc" 75 "the dry run does not run while a job holds the lock"
+[[ ! -e "$UV_LOG" ]] || tl_fail "a dry run started while the lock was held"
+kill "$holder" 2>/dev/null || true
+wait "$holder" 2>/dev/null || true
+
+# --- 8. by hand: put an earlier fallback commit back (API, nothing uploaded) ---------------------
+f1=$(git -C "$origin" rev-parse refs/heads/fallback)
+tree=$(git -C "$origin" rev-parse "$f1^{tree}")
+f2=$(git -C "$origin" -c user.name=t -c user.email=t@example.invalid commit-tree "$tree" -m "fallback two")
+f3=$(git -C "$origin" -c user.name=t -c user.email=t@example.invalid commit-tree "$tree" -p "$f2" -m "fallback three")
+main_sha=$(git -C "$origin" rev-parse refs/heads/main)
+git -C "$origin" update-ref refs/heads/fallback "$f2"
+export CURL_LOG="$TL_TMP/curl.log" STUB_ORIGIN="$origin"
+tl_stub curl <<'EOF'
+#!/usr/bin/env bash
+# stands for the GitHub API: PATCH /git/refs/heads/fallback moves the branch (the stub moves it in the
+# local origin when it answers 200)
+out="" data="" cfg="" url="" all="$*"
+while (( $# > 0 )); do
+  case "$1" in
+    -o) out=$2; shift 2 ;;
+    -d) data=$2; shift 2 ;;
+    -K) cfg=$2; shift 2 ;;
+    -w | -X | -H | --max-time) shift 2 ;;
+    *) url=$1; shift ;;
+  esac
+done
+{ echo "ARGS $all"; echo "URL $url"; echo "DATA $data"; echo "CFG $(cat "$cfg")"; } >>"$CURL_LOG"
+code=${STUB_HTTP:-200}
+sha=$(printf '%s' "$data" | sed -n 's/.*"sha":"\([0-9a-f]*\)".*/\1/p')
+# GitHub answers 422 for a commit it does not have
+if ! git --git-dir="$STUB_ORIGIN" cat-file -e "$sha" 2>/dev/null; then code=422; fi
+if [[ "$code" == 200 ]]; then
+  if [[ -z "${STUB_NOAPPLY:-}" ]]; then git --git-dir="$STUB_ORIGIN" update-ref refs/heads/fallback "$sha"; fi
+  echo '{"ref":"refs/heads/fallback"}' >"$out"
+else
+  echo '{"message":"Object does not exist"}' >"$out"
+fi
+printf '%s' "$code"
+EOF
+rb() { rm -f "$CURL_LOG"; tl_run out rc bash "$here/pipeline-run.sh" --by-hand "restore-$1"; }
+export PIPELINE_PUBLISH=0
+unset GH_TOKEN
+rb "$f1"
+tl_eq "$rc" 1 "restore without a token"
+tl_has "$out" "restore needs GH_TOKEN" "restore without a token says why"
+[[ ! -e "$CURL_LOG" ]] || tl_fail "the API was called without a token"
+export GH_TOKEN=$tok
+PIPELINE_PUSH_AUTH=ssh rb "$f1"
+tl_eq "$rc" 1 "restore in ssh mode is refused"
+tl_has "$out" "restore needs GH_TOKEN in token mode" "ssh mode says why"
+rb "$f1"
+tl_eq "$rc" 0 "restore: $out"
+tl_eq "$(git -C "$origin" rev-parse refs/heads/fallback)" "$f1" "the branch is the recorded commit again"
+tl_has "$out" "restore: fallback is $f1 again (it was $f2)" "restore says what it did"
+curl_log=$(cat "$CURL_LOG")
+tl_has "$curl_log" "URL file://$TL_TMP/api/repos/o/r/git/refs/heads/fallback" "the ref of the fallback branch is updated"
+tl_has "$curl_log" "ARGS -sS --max-time 60 -o " "curl is called quietly with a time limit"
+tl_has "$curl_log" "-X PATCH" "the ref is updated with PATCH"
+tl_has "$curl_log" "DATA {\"sha\":\"$f1\",\"force\":true}" "the body names the commit and forces"
+tl_has "$curl_log" "CFG header = \"Authorization: Bearer $tok\"" "the token reaches curl through its config file"
+if grep '^ARGS ' "$CURL_LOG" | grep -q -F -- "$tok"; then tl_fail "the token is on the curl command line"; fi
+tl_lacks "$out" "$tok" "the token is not in the output"
+if find "$PIPELINE_STATE_DIR/tmp" -name 'restore.*' | grep -q .; then tl_fail "a restore config file was left behind"; fi
+# refusals before anything is sent
+git -C "$origin" update-ref refs/heads/fallback "$f2"
+rb "$f3"
+tl_eq "$rc" 1 "a commit with a parent is refused"
+tl_has "$out" "has a parent" "the parent message"
+rb "$main_sha"
+tl_eq "$rc" 1 "a commit that is not a snapshot is refused"
+tl_has "$out" "has no data/now/manifest.json" "the manifest message"
+rb 0123456789abcdef0123456789abcdef01234567
+tl_eq "$rc" 1 "an unknown commit is refused by GitHub: $out"
+tl_has "$out" "cannot fetch 0123456789abcdef0123456789abcdef01234567 to inspect it" "the warning for an uninspectable commit"
+tl_has "$out" "HTTP '422'" "GitHub's refusal is reported"
+tl_eq "$(git -C "$origin" rev-parse refs/heads/fallback)" "$f2" "an unknown commit changed nothing"
+STUB_HTTP=422 rb "$f1"
+tl_eq "$rc" 1 "GitHub refusing the update fails the restore"
+tl_has "$out" "restore: FAIL (curl exit 0, HTTP '422'): {\"message\":\"Object does not exist\"}" "the GitHub message is shown"
+tl_eq "$(git -C "$origin" rev-parse refs/heads/fallback)" "$f2" "a refused restore changed nothing"
+STUB_NOAPPLY=1 rb "$f1"
+tl_eq "$rc" 1 "a 200 answer that did not move the branch fails"
+tl_has "$out" "but refs/heads/fallback is" "the mismatch is named"
+# no overlap with a running job
+mkdir -p "$TL_TMP/hold3"
+( exec 9>"$PIPELINE_STATE_DIR/pipeline.lock"; flock 9; : >"$TL_TMP/hold3/held"; exec sleep 30 ) &
+holder=$!
+for _ in $(seq 1 50); do [[ -e "$TL_TMP/hold3/held" ]] && break; sleep 0.1; done
+[[ -e "$TL_TMP/hold3/held" ]] || tl_fail "lock holder did not start"
+rb "$f1"
+tl_eq "$rc" 75 "no restore while a job holds the lock"
+[[ ! -e "$CURL_LOG" ]] || tl_fail "the API was called while the lock was held"
+kill "$holder" 2>/dev/null || true
+wait "$holder" 2>/dev/null || true
+rm -f "$TL_BIN/curl"
+hash -r
+unset GH_TOKEN
+
+# --- 9. the Google key: optional for now and nisar, required for validation and reference --------
+# By reading the code: now (NOW_LOCAL=1) and nisar (ASF search only) never start Earth Engine;
+# validation (gee.opera, swot) and reference (reference tables) do. EARTHDATA_TOKEN is always needed.
+unset GCP_SA_KEY_B64 GEE_PROJECT || true
+export PIPELINE_PUBLISH=0 GH_TOKEN=$tok
+for ee_job in now nisar; do
+  # the preflight passes with no key and says so once
+  tl_run out rc bash "$here/pipeline-run.sh" --preflight "$ee_job"
+  tl_eq "$rc" 0 "preflight of $ee_job without a Google key: $out"
+  tl_has "$out" "GCP_SA_KEY_B64 is not set; the $ee_job job does not use Earth Engine" "$ee_job: the missing key is noticed"
+  tl_eq "$(printf '%s\n' "$out" | grep -c 'GCP_SA_KEY_B64 is not set')" 1 "$ee_job: the notice appears once"
+  tl_has "$out" "preflight ok for $ee_job" "$ee_job: preflight ok"
+  # the same through the by-hand unit's mode
+  tl_run out rc bash "$here/pipeline-run.sh" --by-hand "preflight-$ee_job"
+  tl_eq "$rc" 0 "by-hand preflight of $ee_job without a Google key: $out"
+  # the job itself runs, with one notice and no key exported to its steps
+  rm -f "$UV_LOG" "$UV_LOG.env"
+  run_job "$ee_job"
+  tl_eq "$rc" 0 "$ee_job runs without a Google key: $out"
+  tl_eq "$(printf '%s\n' "$out" | grep -c 'GCP_SA_KEY_B64 is not set')" 1 "$ee_job: one notice in the run"
+  tl_has "$(grep -F "live/jobs.py $ee_job" "$UV_LOG")" "GCP= CRED=" "$ee_job: no key reaches the steps"
+done
+# a key that is set is checked for every job, also where it is optional
+GCP_SA_KEY_B64="not base64 at all %%%" tl_run out rc bash "$here/pipeline-run.sh" --preflight now
+tl_eq "$rc" 1 "a bad Google key fails the preflight of now"
+tl_has "$out" "not base64 of a JSON key" "bad key message in the preflight"
+GCP_SA_KEY_B64=$ee_key_b64 tl_run out rc bash "$here/pipeline-run.sh" --preflight now
+tl_eq "$rc" 0 "a good Google key passes the preflight of now: $out"
+tl_lacks "$out" "GCP_SA_KEY_B64 is not set" "no notice when the key is there"
+# the jobs that use Earth Engine need the key and the project
+for ee_job in validation reference; do
+  tl_run out rc bash "$here/pipeline-run.sh" --preflight "$ee_job"
+  tl_eq "$rc" 1 "preflight of $ee_job without a Google key fails"
+  tl_has "$out" "GCP_SA_KEY_B64 is empty: the $ee_job job uses Earth Engine and cannot run without the Google key" "$ee_job: message"
+  GCP_SA_KEY_B64=$ee_key_b64 tl_run out rc bash "$here/pipeline-run.sh" --preflight "$ee_job"
+  tl_eq "$rc" 1 "preflight of $ee_job without GEE_PROJECT fails"
+  tl_has "$out" "GEE_PROJECT is empty: the $ee_job job uses Earth Engine" "$ee_job: project message"
+  GCP_SA_KEY_B64=$ee_key_b64 GEE_PROJECT=proj tl_run out rc bash "$here/pipeline-run.sh" --preflight "$ee_job"
+  tl_eq "$rc" 0 "preflight of $ee_job with the key and the project: $out"
+  tl_lacks "$out" "GCP_SA_KEY_B64 is not set" "$ee_job: no notice with a key"
+  # a real start refuses before it takes the lock or starts a step
+  rm -f "$UV_LOG" "$UV_LOG.env"
+  tl_run out rc bash "$here/pipeline-run.sh" "$ee_job"
+  tl_eq "$rc" 1 "$ee_job does not start without a Google key"
+  tl_lacks "$out" ": start" "$ee_job: no job start line"
+  # and the job body refuses on its own as well (it is also started by hand in tests)
+  rm -f "$UV_LOG" "$UV_LOG.env"
+  run_job "$ee_job"
+  tl_eq "$rc" 1 "$ee_job body without a Google key fails: $out"
+  tl_eq "$(tl_count "$UV_LOG" "live/jobs.py $ee_job")" 0 "$ee_job: no job step ran"
+done
+# the Earthdata token stays required for every job
+for ee_job in now nisar validation reference; do
+  EARTHDATA_TOKEN='' GCP_SA_KEY_B64=$ee_key_b64 GEE_PROJECT=proj tl_run out rc bash "$here/pipeline-run.sh" --preflight "$ee_job"
+  tl_eq "$rc" 1 "preflight of $ee_job without EARTHDATA_TOKEN fails"
+  tl_has "$out" "EARTHDATA_TOKEN is empty: every job needs it" "$ee_job: token message"
+done
+EARTHDATA_TOKEN='' tl_run out rc bash "$here/pipeline-run.sh" now
+tl_eq "$rc" 1 "a real now start without EARTHDATA_TOKEN fails before the lock"
+unset GH_TOKEN
 
 echo "pipeline-run tests passed"

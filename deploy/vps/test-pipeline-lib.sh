@@ -365,4 +365,20 @@ tl_eq "$rc" 1 "wrong static input fails the step"
 tl_has "$out" "sha256 mismatch" "mismatch message"
 cd "$TL_TMP"
 
+# --- 9. pl_uv_path: the pipeline's own uv first on PATH, nothing else changed ----------------
+mkdir -p "$TL_TMP/uvdir"
+printf '#!/usr/bin/env bash\necho "private uv"\n' >"$TL_TMP/uvdir/uv"
+chmod 755 "$TL_TMP/uvdir/uv"
+saved_path=$PATH
+PIPELINE_UV_DIR="$TL_TMP/uvdir" pl_uv_path
+tl_eq "${PATH%%:*}" "$TL_TMP/uvdir" "the pipeline's uv directory is first on PATH"
+tl_eq "${PATH#*:}" "$saved_path" "the rest of PATH is unchanged"
+tl_eq "$(uv)" "private uv" "uv resolves to the private copy"
+PATH=$saved_path
+PIPELINE_UV_DIR="$TL_TMP/no-such-uv-dir" pl_uv_path
+tl_eq "$PATH" "$saved_path" "a missing directory leaves PATH alone"
+mkdir -p "$TL_TMP/uvdir-empty"
+PIPELINE_UV_DIR="$TL_TMP/uvdir-empty" pl_uv_path
+tl_eq "$PATH" "$saved_path" "a directory without an executable uv leaves PATH alone"
+
 echo "pipeline-lib tests passed"

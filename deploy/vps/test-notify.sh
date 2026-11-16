@@ -115,4 +115,63 @@ tl_has "$out" "webhook POST failed" "delivery failure logged"
 n tipping-point-now.service
 [[ -e "$CURL_LOG" ]] || tl_fail "no retry after a failed delivery"
 
+# --- 7. the test notice has its own path: it never throttles a real notice -------------------
+export NOTIFY_WEBHOOK_URL="$hook"
+rm -f "$PIPELINE_STATE_DIR"/notify/*.last
+tn=tipping-point-notice-test.service
+n "$tn"
+tl_eq "$rc" 0 "test notice rc: $out"
+tl_has "$out" "TEST: tipping-point VPS: TEST notice" "test notice is marked as a test"
+tl_lacks "$out" "FAILED:" "a test notice is not a FAILED line"
+tl_has "$(cat "$CURL_BODY")" "No unit failed" "the posted text says no unit failed"
+[[ -e "$CURL_LOG" ]] || tl_fail "the test notice was not posted"
+[[ ! -e "$SYSTEMCTL_LOG" || "$(grep -c "$tn" "$SYSTEMCTL_LOG" || true)" == 0 ]] || tl_fail "the test notice asked systemd about a unit"
+tl_eq "$(find "$PIPELINE_STATE_DIR/notify" -name '*.last' | wc -l | tr -d ' ')" 0 "the test notice wrote no throttle stamp"
+# a second test notice goes out too (no throttle), and the real notice right after it is not delayed
+n "$tn"
+[[ -e "$CURL_LOG" ]] || tl_fail "a repeated test notice was throttled"
+n tipping-point-now.service
+tl_eq "$rc" 0 "real notice after a test notice rc"
+[[ -e "$CURL_LOG" ]] || tl_fail "a real notice was suppressed after a test notice"
+tl_has "$(cat "$CURL_BODY")" "tipping-point-now.service failed" "the real notice text"
+# a real stamp is left alone by a test notice
+before=$(cat "$PIPELINE_STATE_DIR/notify/tipping-point-now.service.last")
+n "$tn"
+tl_eq "$(cat "$PIPELINE_STATE_DIR/notify/tipping-point-now.service.last")" "$before" "the test notice leaves a real stamp alone"
+# no webhook: says so, sends nothing, still succeeds
+NOTIFY_WEBHOOK_URL='' n "$tn"
+tl_eq "$rc" 0 "test notice without a webhook rc"
+tl_has "$out" "nothing was sent" "no webhook is reported"
+[[ ! -e "$CURL_LOG" ]] || tl_fail "curl ran without a webhook URL"
+# a failed POST fails the test notice, so the operator sees it
+CURL_RC=7 n "$tn"
+tl_eq "$rc" 1 "a failed test post fails the unit"
+tl_has "$out" "webhook POST failed" "the failure is named"
+# other names that look similar are real units, throttled as before
+rm -f "$PIPELINE_STATE_DIR"/notify/*.last
+n tipping-point-notice-test2.service
+tl_has "$out" "FAILED:" "only the exact test name is a test notice"
+
+# --- 8. on a unit-like PATH: only system tools, no uv, no private directory -----------------------
+# The notify unit sets no PATH. PATH here holds symlinks to the tools the script needs (and the two
+# stubs for systemctl and curl), nothing else, so a command that lives only in a private directory
+# would fail here the way it would under systemd.
+svc="$TL_TMP/svcbin"
+mkdir -p "$svc"
+for c in bash head hostname date tr cut mkdir mktemp rm cat; do
+  if p=$(command -v "$c"); then ln -sf "$p" "$svc/$c"; fi
+done
+ln -sf "$TL_BIN/systemctl" "$svc/systemctl"
+ln -sf "$TL_BIN/curl" "$svc/curl"
+real_bash=$(command -v bash)
+rm -f "$PIPELINE_STATE_DIR"/notify/*.last "$CURL_LOG" "$CURL_BODY"
+tl_run out rc env PATH="$svc" "$real_bash" "$here/notify.sh" tipping-point-stale-alarm.service
+tl_eq "$rc" 0 "a real notice on a unit-like PATH: $out"
+tl_has "$out" "FAILED: tipping-point VPS: tipping-point-stale-alarm.service failed" "the real notice text on a unit-like PATH"
+tl_has "$(cat "$CURL_BODY")" "result=exit-code, exit=1" "systemctl answers reach the notice on a unit-like PATH"
+rm -f "$CURL_LOG" "$CURL_BODY"
+tl_run out rc env PATH="$svc" "$real_bash" "$here/notify.sh" "$tn"
+tl_eq "$rc" 0 "the test notice on a unit-like PATH: $out"
+[[ -e "$CURL_LOG" ]] || tl_fail "the test notice was not posted on a unit-like PATH"
+
 echo "notify tests passed"

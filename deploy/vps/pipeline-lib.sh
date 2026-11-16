@@ -35,6 +35,16 @@ PIPELINE_UV_DIR=${PIPELINE_UV_DIR:-/usr/local/lib/tipping-point-pipeline/uv}
 
 pl_log() { echo "pipeline: $*" >&2; }
 
+# pl_uv_path: put the pipeline's own uv first on PATH, for this process and its
+# children only. Every unit starts with a bare PATH (nothing of this pipeline is on it),
+# so a script that runs uv calls this first (pipeline-run.sh and watchdog.sh do).
+pl_uv_path() {
+  if [[ -x "$PIPELINE_UV_DIR/uv" ]]; then
+    PATH="$PIPELINE_UV_DIR:$PATH"
+    export PATH
+  fi
+}
+
 pl_die() {
   echo "pipeline: ERROR: $*" >&2
   exit 1
