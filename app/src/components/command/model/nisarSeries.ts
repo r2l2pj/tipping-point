@@ -7,6 +7,7 @@ import { assetUrl, fmtDate } from "@/lib/layers";
 import { canonicalCaseId } from "@/lib/contract";
 import type { CcBundle } from "./types";
 import { plainText } from "./plain";
+import { hiddenNisarFrames } from "./completePasses";
 
 type M = Record<string, unknown>;
 const isRecord = (v: unknown): v is M => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -101,8 +102,14 @@ export function nisarSeriesView(bundle: CcBundle): NisarSeriesView | undefined {
   // lead-ux (bug): the series lists HH AND HV frames for the same dates —
   // the card showed 8 thumbnails twice, unlabelled. One per date: HH, else
   // the date's only frame.
+  // L67: no thumbnail of a hidden (incomplete) pass — matched by layer id or
+  // png, dropped BEFORE the one-per-date pick.
+  const hidden = hiddenNisarFrames(bundle);
+  const hiddenIds = new Set(hidden.map((l) => String(l.id)));
+  const hiddenPngs = new Set(hidden.map((l) => String(l.png)));
+  const shown = (s.frames ?? []).filter((f) => !(f.layer_id && hiddenIds.has(f.layer_id)) && !(f.png && hiddenPngs.has(f.png)));
   const perDate = new Map<string, NonNullable<typeof s.frames>[number]>();
-  for (const f of s.frames ?? []) {
+  for (const f of shown) {
     const cur = perDate.get(f.date);
     if (!cur || (cur.pol === "HV" && f.pol !== "HV")) perDate.set(f.date, f);
   }

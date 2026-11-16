@@ -46,3 +46,31 @@ test("Uruguaiana-box frames replace the full-swath ones; the camera fits their b
   expect(radarPasses(uy).map((p) => `${p.date} ${p.track}`)).toEqual(["2026-09-30 010D", "2026-10-12 010D"]);
   expect(riverWindow(uy)).toEqual(box);
 });
+
+// lead-ux (L67 extend): one rule for the picker, the next-pass caption and
+// the series thumbnails.
+import { hiddenNisarFrames } from "./completePasses";
+import { nextNisarPass } from "./steps";
+const uy = { id: "rs_uruguai_2026", mode: "replay", manifest: { event: "rs_uruguai_2026", layers: [
+  f("2026-09-30", "010D", 40), f("2026-10-03", "132A", 60), f("2026-10-12", "010D", 40),
+] } } as unknown as CcBundle;
+
+test("Uruguaiana: the next-pass caption uses the box table (010D kept at 40 % of the case box, 132A hidden)", () => {
+  expect(nextNisarPass(uy, "2026-09-30")).toBe("2026-10-12");
+});
+test("hidden frames = passes with no usable frame (132A at Uruguaiana)", () => {
+  expect(hiddenNisarFrames(uy).map((l) => l.track)).toEqual(["132A"]);
+  expect(hiddenNisarFrames(swath).map((l) => l.date)).toEqual(["2026-09-30", "2026-10-05", "2026-10-12"]);
+});
+
+import { nisarSeriesView } from "./nisarSeries";
+test("series thumbnails: a hidden pass (132A) has no thumbnail; complete passes keep theirs", () => {
+  const dates = ["2026-09-30", "2026-10-03", "2026-10-12"];
+  const b = { ...uy, nisarSeries: { dates, areas: { flood_candidates: { hh_db: [-10, -12, -18] } },
+    frames: [
+      { date: "2026-09-30", layer_id: "nisar_hh_20260930_010D", pol: "HH" },
+      { date: "2026-10-03", layer_id: "nisar_hh_20261003_132A", pol: "HH" },
+      { date: "2026-10-12", layer_id: "nisar_hh_20261012_010D", pol: "HH" },
+    ] } } as unknown as CcBundle;
+  expect(nisarSeriesView(b)!.frames.map((f) => f.label)).toEqual(["Sep 30, 2026", "Oct 12, 2026"]);
+});

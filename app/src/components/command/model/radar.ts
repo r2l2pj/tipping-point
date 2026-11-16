@@ -149,35 +149,14 @@ export const otherGeometry = (l: Record<string, unknown>, role?: string): boolea
 
 export interface NisarStack { dates: string[]; frames: Record<string, { HH?: CompareSide; HV?: CompareSide }>; title: string }
 
-// L67 (Lucas): only COMPLETE NISAR passes are shown anywhere (picker, Play,
-// Compare, Change, river's-dance clicks): coverage_pct ≥ 90 % of the box.
-// lead-analysis's Uruguaiana-box frames (kind 'nisar_frame_uy', or a
-// nisar_frame with a 'box') replace the full-swath frames when published.
-export const MIN_NISAR_COVERAGE = 90;
+// L67 (Lucas): only COMPLETE NISAR passes are shown anywhere. The rule lives
+// in a leaf module (completePasses.ts) so steps.ts / nisarSeries.ts share it
+// without an import cycle; re-exported here for existing callers.
+export {
+  MIN_NISAR_COVERAGE, isBoxFrame, completeEnough, URUGUAIANA_BOX, URUGUAIANA_BOX_COVERAGE, isUruguaiana, usableNisarFrames,
+} from "./completePasses";
+import { isBoxFrame, completeEnough, URUGUAIANA_BOX_COVERAGE, isUruguaiana, usableNisarFrames, MIN_NISAR_COVERAGE } from "./completePasses";
 type Rec = Record<string, unknown>;
-export const isBoxFrame = (l: Rec): boolean => l.kind === "nisar_frame_uy" || (l.kind === "nisar_frame" && typeof l.box === "string" && l.box !== "");
-export const completeEnough = (l: Rec): boolean => typeof l.coverage_pct !== "number" || l.coverage_pct >= MIN_NISAR_COVERAGE;
-// Conductor FINAL L67 box (lead-nisar-uru, verified on the published 100 m
-// pixels): [-57.425, -29.97, -57.03, -29.20] around Uruguaiana. In it every
-// 010D / 082D / 060A pass is 100 %, every 132A pass 0 %. The full-swath
-// frames' coverage_pct is the share of the CASE box (010D 40 %), so until
-// lead-analysis publishes box frames with their own coverage, Uruguaiana
-// uses this per-track table.
-export const URUGUAIANA_BOX: [number, number, number, number] = [-57.425, -29.97, -57.03, -29.2];
-const URUGUAIANA_BOX_COVERAGE: Record<string, number> = { "010D": 100, "082D": 100, "060A": 100, "132A": 0 };
-export const isUruguaiana = (bundle: CcBundle): boolean =>
-  /uruguai/i.test(String(bundle.manifest?.event ?? bundle.id));
-export function usableNisarFrames(bundle: CcBundle): Rec[] {
-  const all = (bundle.manifest?.layers ?? []).map((x) => x as unknown as Rec)
-    .filter((l) => (l.kind === "nisar_frame" || l.kind === "nisar_frame_uy") && typeof l.date === "string" && typeof l.png === "string");
-  const box = all.filter(isBoxFrame);
-  if (box.length) return box.filter(completeEnough);
-  if (isUruguaiana(bundle)) {
-    // a frame without a track: unknown coverage, kept
-    return all.filter((l) => typeof l.track !== "string" || (URUGUAIANA_BOX_COVERAGE[l.track] ?? 0) >= MIN_NISAR_COVERAGE);
-  }
-  return all.filter(completeEnough);
-}
 
 export function nisarStack(bundle: CcBundle): NisarStack | undefined {
   const caseDir = canonicalCaseId(bundle.manifest?.event ?? bundle.id);

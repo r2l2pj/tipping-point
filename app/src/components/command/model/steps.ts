@@ -1,6 +1,7 @@
 import { manifestRaster } from "@/lib/layers";
 import { liveClasses } from "@/lib/contract";
 import { plainText } from "./plain";
+import { completeEnough, usableNisarFrames } from "./completePasses";
 // Timeline steps: from the daily series, or from the dates of the manifest
 // TPI frames when the case has no series (the live case has none).
 import { forecastSourceLabel } from "@/lib/contract";
@@ -544,11 +545,12 @@ export function nextNisarPass(bundle: CcBundle, date: string | undefined): strin
     : [];
   if (marked.length) return marked.filter((d) => d > day).sort()[0];
   const dates = new Set<string>();
+  // L67: complete passes only — the same rule as the picker (completePasses:
+  // box frames, else the Uruguaiana box table, else coverage_pct ≥ 90 %).
+  for (const l of usableNisarFrames(bundle)) if (typeof l.date === "string") dates.add(l.date.slice(0, 10));
   for (const raw of bundle.manifest?.layers ?? []) {
     const l = raw as unknown as Record<string, unknown>;
-    // L67: complete passes only (coverage_pct ≥ 90 % when published).
-    const complete = typeof l.coverage_pct !== "number" || l.coverage_pct >= 90;
-    if (typeof l.date === "string" && complete && (l.kind === "nisar_frame" || l.kind === "nisar_frame_uy" || /^(nisar|radar)_(pre|post)$/.test(String(l.id)))) dates.add(l.date.slice(0, 10));
+    if (typeof l.date === "string" && completeEnough(l) && /^(nisar|radar)_(pre|post)$/.test(String(l.id))) dates.add(l.date.slice(0, 10));
   }
   const dd = bundle.data_dates as Record<string, unknown> | undefined;
   for (const k of ["nisar_pre", "nisar_post"]) if (typeof dd?.[k] === "string") dates.add((dd[k] as string).slice(0, 10));
