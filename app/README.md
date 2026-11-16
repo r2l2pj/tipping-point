@@ -50,7 +50,7 @@ Full table with every n and caveat: [Validation](#validation).
 
 | Path | What |
 |---|---|
-| `src/app/` | Next.js routes: `/` (Command Center: Now + Replay), `/alerts` (public alerts), `api/` |
+| `src/app/` | Next.js routes: `/` (Command Center: opens on the Uruguaiana NISAR view; live Now at `/?case=now`; replays via `?case=`), `/alerts` (public alerts), `api/` |
 | `src/components/command/` | the Command Center UI (map, right-panel tabs, replay, NISAR swipe) |
 | `src/lib/` | data contract + loaders (reads the data repo's published files) |
 | `scripts/sync-data.mjs` | copies `../tipping-point-data/data` into `public/data` (bundled last-resort fallback) |
@@ -105,7 +105,7 @@ two explanatory diagrams were drawn as SVG by an AI assistant and are labelled
 | --- | --- |
 | `src/lib/data.ts` + `src/lib/types.ts` + `src/lib/contract.ts` | reader/normalizer for the data contract (`public/data`, see SCHEMA.md) |
 | `src/lib/tpi.ts` | TPI classes/palette + `mockTpiGrid` synthetic raster stand-in |
-| `src/app/page.tsx` + `src/components/command/` | `/` Command Center: opens on Now (Southern Brazil live, refreshed every 3 h); `?case=<id\|alias>&day=<offset>` deep-links a replay case and day. Right panel is response first ("Now on the ground"), then "Prediction"; evidence for replays ("How early? (in replay)", "Why radar") and the NISAR before/after compare |
+| `src/app/page.tsx` + `src/components/command/` | `/` Command Center: opens on the Uruguaiana NISAR view (Oct 12, 2026, NISAR "Water in red" over the flood index, the river's dance; since L64); live Now (Southern Brazil, refreshed every 3 h) at `/?case=now` or the "← Now" button; `?case=<id\|alias>&day=<offset>` deep-links a replay case and day. Right panel is response first ("Now on the ground"), then "Prediction"; evidence for replays ("How early? (in replay)", "Why radar") and the NISAR before/after compare |
 | `src/components/Map.tsx` + `MapLayers.tsx` | MapLibre dark basemap + v3 layer stack (hillshade → TPI → water → flood → landslide candidates → labels) |
 | `src/lib/layers.ts` | layer stack per tab and day, in doc order |
 | `src/app/alerts` | public alerts: the same Command Center screen with the public alert view in the right panel (in-app only) |
