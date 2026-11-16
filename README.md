@@ -384,7 +384,7 @@ source, threshold and reported number was reviewed by the team (several were
 withdrawn or corrected after review). AI-assisted commits carry a
 `Co-Authored-By` trailer. The app and the demo video show real app screens;
 two explanatory diagrams were drawn as SVG by an AI assistant and are labelled
-"AI-assisted diagram". Demo voiceover: [synthetic or recorded — Lucas].
+"AI-assisted diagram". Demo voiceover: none; the video is silent, with burned-in English captions.
 
 ## Rules
 
