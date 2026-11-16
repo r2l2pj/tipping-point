@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-11-15T23:52:04Z",
-  "version": "2026-11-15T23:52:04Z",
+  "updated_at": "2026-11-16T00:00:08Z",
+  "version": "2026-11-16T00:00:08Z",
   "version_note": "ISO UTC build time of this manifest; use as a cache key (?v=) for every data URL",
   "cases": {
     "rs_2024": {
@@ -10565,7 +10565,7 @@
           "sensor": "NISAR (GCOV)",
           "source": "NISAR GCOV (ASF)",
           "label": "radar darkening (not a flood map)",
-          "note": "ungated >3 dB HH darkening Oct 24 -> Nov 5 (per-scene Otsu never fired — no flood candidates); corridor 5.62 km² geodesic vs fields 11.88 km²"
+          "note": "ungated >3 dB HH darkening Oct 24 -> Nov 5 (per-scene Otsu never fired — no flood candidates); river corridor 1.76 km² vs fields 15.73 km² (fields: consistent with rice-paddy irrigation) — same numbers as metrics radar_darkening_corridor_km2 / radar_darkening_fields_km2"
         },
         {
           "id": "nisar_hh_20260810_132A",

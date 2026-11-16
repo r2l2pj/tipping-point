@@ -1867,7 +1867,7 @@
         "corridor darkening (>3 dB, <=3 km of channel)",
         "field darkening (>3 dB, possible irrigation (rice))"
       ],
-      "note": "ungated >3 dB HH darkening Oct 24 -> Nov 5 (per-scene Otsu never fired — no flood candidates); corridor 5.62 km² geodesic vs fields 11.88 km²"
+      "note": "ungated >3 dB HH darkening Oct 24 -> Nov 5 (per-scene Otsu never fired — no flood candidates); river corridor 1.76 km² vs fields 15.73 km² (fields: consistent with rice-paddy irrigation) — same numbers as metrics radar_darkening_corridor_km2 / radar_darkening_fields_km2"
     },
     {
       "id": "tpi_flood",
