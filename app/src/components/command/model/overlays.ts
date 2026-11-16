@@ -50,6 +50,8 @@ export interface MapLayerOptions {
   nisarWater?: { url: string; bounds?: [number, number, number, number] };
   // Opacity of the TPI raster when it sits under the NISAR image (0.35).
   tpiOpacity?: number;
+  // Conductor (Lucas): on NISAR views the risk index is a yellow hatch.
+  tpiHatch?: boolean;
 }
 
 export interface OverlayVisibility {

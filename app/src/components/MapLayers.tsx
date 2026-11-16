@@ -50,6 +50,7 @@ import {
 } from "./command/model/overlays";
 import { basemapPlan, BM_PREFIX, type Basemap } from "./command/model/basemap";
 import { floodShownOn } from "./command/model/steps";
+import { useRiskHatchUrl } from "./command/useRiskHatch";
 import { EMS_FILL, FLOODED_FILL, FLOODED_HALO, FLOODED_OPACITY, FLOODED_OUTLINE } from "./command/model/radar";
 import {
   bboxPolygon,
@@ -290,6 +291,7 @@ export function useMapLayers(
     wanted,
     bundle?.series?.reference_date ?? bundle?.reference_date
   );
+  const hatchedUrl = useRiskHatchUrl(assetUrl(caseDir, activePng?.png), !!options?.tpiHatch);
   // Forecast frames never look observed: the manifest flag or a *_d[1-3] id
   // marks a forecast PNG, or the timeline day itself is a forecast day.
   const isForecast =
@@ -555,6 +557,7 @@ export function useMapLayers(
     options?.probHorizon, options?.basemap, options?.imageryDate, options?.opacity,
     options?.changeImage?.key, // the pair + cyan flag the image was built for
     options?.changeOpacity, options?.radarFrame?.url, options?.nisarWater?.url, options?.tpiOpacity,
+    options?.tpiHatch, hatchedUrl,
   ].map((v) => (v === undefined || v === null ? "" : String(v))).join("|");
 
   // Mutate data + visibility when state changes. The whole effect is guarded
@@ -733,7 +736,11 @@ export function useMapLayers(
     // skipped outright; a fresh failure drops the source/layer and leaves a
     // "frame unavailable" note — never a throw.
     const img = map.getSource(SRC.tpiImg) as ImageSource | undefined;
-    const tpiUrl = assetUrl(caseDir, activePng?.png);
+    // Conductor (Lucas): on NISAR views the risk is a yellow hatch over the
+    // radar image (useRiskHatchUrl); until it is rendered the layer waits
+    // at opacity 0 instead of flashing the colour fill.
+    const hatchWait = !!options?.tpiHatch && !hatchedUrl;
+    const tpiUrl = options?.tpiHatch && hatchedUrl ? hatchedUrl : assetUrl(caseDir, activePng?.png);
     frameNote.current = null;
     let frameOk = false;
     if (activePng && tpiUrl && !frameFailed.current.has(tpiUrl)) {
@@ -765,8 +772,17 @@ export function useMapLayers(
         map.setPaintProperty(
           LYR.tpiRaster,
           "raster-opacity",
-          isForecast ? tpiOpacity * FORECAST_FADE : tpiOpacity
+          hatchWait ? 0 : isForecast ? tpiOpacity * FORECAST_FADE : tpiOpacity
         );
+        // Crisp hatch lines (linear resampling blurs yellow into the red radar).
+        map.setPaintProperty(LYR.tpiRaster, "raster-resampling", options?.tpiHatch ? "nearest" : "linear");
+        // Over the NISAR image (never under it) while a radar frame is shown;
+        // the hatch also goes over the red NISAR-water overlay (Lucas: yellow
+        // stays yellow), just under the NISAR flood polygons.
+        if (options?.radarFrame && map.getLayer(LYR.nisar)) {
+          const above = options?.tpiHatch && map.getLayer(LYR.floodFill) ? LYR.floodFill : LYR.waterFill;
+          try { if (map.getLayer(above)) map.moveLayer(LYR.tpiRaster, above); } catch { /* order is cosmetic */ }
+        }
       } catch {
         // A throw here says nothing about the file: drop the source and try
         // again the next time the frame is wanted.

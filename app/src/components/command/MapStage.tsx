@@ -25,6 +25,12 @@ import { activeView } from "./model/views";
 import { passLabel, passValue, radarFrame, radarPasses, swathEdgeNote, type Pol } from "./model/radarFrame";
 import { riverWindow, type LonLatBox } from "./model/riverWindow";
 import { setRadarLook, useRadarLook, useTintedUrl, useWaterUrl } from "./useWaterRed";
+import { setRiskLook, useRiskLook } from "./useRiskHatch";
+
+// Legend swatches of the risk hatch (riskHatch.ts: #facc15, High diagonal,
+// Critical cross-hatch).
+const HATCH_HIGH_CSS = "repeating-linear-gradient(45deg, #facc15 0 1.5px, transparent 1.5px 5px)";
+const HATCH_CRITICAL_CSS = "repeating-linear-gradient(45deg, #facc15 0 1.5px, transparent 1.5px 3.5px), repeating-linear-gradient(-45deg, #facc15 0 1.5px, transparent 1.5px 3.5px)";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
 import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
 import { useFloodNisar } from "./useFloodNisar";
@@ -140,6 +146,7 @@ export default function MapStage({
     setSeenReq(passReq.n);
     setRPick((p) => ({ date: passReq.date, track: passReq.track ?? "", pol: p.pol, ...(passReq.forDay ? { forDay: passReq.forDay } : {}) }));
   }
+  const riskLook = useRiskLook(); // conductor: risk as a hatch | fill on NISAR views
   const radarOn = !comparePair && (state.layers.includes("nisar") || activeView(state.layers) === "radar") && radarPassList.length > 0;
   const rFrame = useMemo(
     () => (radarOn ? radarFrame(radarPassList, step?.date, rPick) : undefined),
@@ -256,10 +263,12 @@ export default function MapStage({
       changeOpacity: state.changeOpacity,
       radarFrame: shownFrame && radarUrl ? { url: radarUrl, bounds: shownFrame.bounds } : undefined,
       nisarWater: fnWaterShown,
-      // Lucas: NISAR is the star — the risk index sits under it, more transparent.
-      tpiOpacity: radarOn && state.layers.includes("tpi") ? 0.55 : undefined,
+      // Lucas: NISAR is the star — the risk over it is a yellow hatch (lines at
+      // 85 %), or the colour fill at 55 % with 'Risk: Fill'.
+      tpiOpacity: radarOn && state.layers.includes("tpi") ? (riskLook === "hatch" ? 0.85 : 0.55) : undefined,
+      tpiHatch: radarOn && state.layers.includes("tpi") && riskLook === "hatch",
     }),
-    [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, radarUrl, fnFrame, fnWaterShown, radarOn, shownFrame]
+    [riskLook, step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, radarUrl, fnFrame, fnWaterShown, radarOn, shownFrame]
   );
   useMapLayers(map, bundle, state.dayIndex, layerState, false, undefined, options);
 
@@ -540,6 +549,24 @@ export default function MapStage({
                 className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${radarLook === k ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>{label}</button>
             ))}
           </div>
+          {/* Conductor (Lucas): the risk over the NISAR image — a yellow hatch
+              (default) or the colour fill. */}
+          {state.layers.includes("tpi") && (
+            <div role="group" aria-label="Risk look" data-risk-look className="flex flex-wrap items-center gap-1">
+              <span className="text-[11px] font-semibold text-cc-muted">Risk:</span>
+              {([["hatch", "Hatch"], ["fill", "Fill"]] as const).map(([k, label]) => (
+                <button key={k} type="button" aria-pressed={riskLook === k} data-risk-look-btn={k}
+                  onClick={() => setRiskLook(k)}
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${riskLook === k ? "bg-cc-accent text-white" : "border border-cc-line-strong"}`}>{label}</button>
+              ))}
+              {riskLook === "hatch" && (
+                <span className="flex items-center gap-2 text-[11px] font-medium text-cc-muted" data-hatch-legend>
+                  <span className="flex items-center gap-1"><span aria-hidden="true" className="inline-block h-2.5 w-5 rounded-sm bg-[#3a3a3a]" style={{ backgroundImage: HATCH_HIGH_CSS }} />High</span>
+                  <span className="flex items-center gap-1"><span aria-hidden="true" className="inline-block h-2.5 w-5 rounded-sm bg-[#3a3a3a]" style={{ backgroundImage: HATCH_CRITICAL_CSS }} />Critical risk (index)</span>
+                </span>
+              )}
+            </div>
+          )}
           <span className="flex items-center gap-1 text-[11px] font-medium text-cc-muted" data-footprint-legend>
             <span aria-hidden="true" className="inline-block h-2.5 w-6 rounded-sm border-2" style={{ borderColor: "#ff1f1f", boxShadow: "0 0 0 1px #141414" }} />
             {FOOTPRINT_LEGEND}
