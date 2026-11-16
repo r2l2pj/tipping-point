@@ -81,6 +81,10 @@ cleanup() {
   trap - EXIT
   if (( rc != 0 )); then
     if [[ "$state" == renamed || "$state" == new ]]; then
+      if [[ "$state" == new ]]; then
+        echo "Last log lines of the new $app:" >&2
+        docker logs --tail 40 "$app" >&2 2>&1 || true
+      fi
       docker rm -f "$app" >/dev/null 2>&1 || true
       docker rename "$previous" "$app" && docker start "$app" >/dev/null || \
         echo "URGENT: rollback failed; restore $previous manually." >&2
@@ -88,7 +92,13 @@ cleanup() {
       docker start "$app" >/dev/null || echo "URGENT: restart $app manually." >&2
     fi
   fi
-  if (( candidate_created )); then docker rm -f "$candidate" >/dev/null 2>&1 || true; fi
+  if (( candidate_created )); then
+    if (( rc != 0 )); then
+      echo "Last log lines of $candidate:" >&2
+      docker logs --tail 40 "$candidate" >&2 2>&1 || true
+    fi
+    docker rm -f "$candidate" >/dev/null 2>&1 || true
+  fi
   rm -rf -- "$workdir"
   exit "$rc"
 }
@@ -144,13 +154,16 @@ main() {
       ;;
   esac
 
+  # Health checks use /api/health?live=1 (the server answers). Plain
+  # /api/health also fails when the live data is older than 6 h, and a deploy
+  # must still work then.
   docker build -t "$image" "$workdir/repo"
+  candidate_created=1
   docker run -d --name "$candidate" --network caddy_proxy --memory 1g \
     --cap-drop ALL --security-opt no-new-privileges "$image" >/dev/null
-  candidate_created=1
   wait_healthy "$candidate"
   docker exec "$candidate" node -e \
-    "(async()=>{for(const p of ['/api/health','/api/events','/']){const r=await fetch('http://127.0.0.1:3000'+p);if(!r.ok||(p==='/api/health'&&!(await r.json()).ok))process.exitCode=1}})().catch(()=>process.exitCode=1)"
+    "(async()=>{for(const p of ['/api/health?live=1','/api/events','/']){const r=await fetch('http://127.0.0.1:3000'+p);if(!r.ok||(p.startsWith('/api/health')&&!(await r.json()).ok))process.exitCode=1}})().catch(()=>process.exitCode=1)"
   docker rm -f "$candidate" >/dev/null
   candidate_created=0
 
@@ -175,11 +188,11 @@ main() {
   state=new
   wait_healthy "$app"
   docker exec "$app" node -e \
-    "fetch('http://127.0.0.1:3000/api/health').then(async r=>process.exit(r.ok&&(await r.json()).ok?0:1)).catch(()=>process.exit(1))"
+    "fetch('http://127.0.0.1:3000/api/health?live=1').then(async r=>process.exit(r.ok&&(await r.json()).ok?0:1)).catch(()=>process.exit(1))"
   local i
   for (( i=0; i<10; i++ )); do
-    if curl -fsS -o /dev/null "https://$host/api/health" && \
-       curl -fsS -o /dev/null "https://$host/"; then
+    if curl -fsS -m 20 -o /dev/null "https://$host/api/health?live=1" && \
+       curl -fsS -m 20 -o /dev/null "https://$host/"; then
       state=deployed
       prune_images "$image"
       echo "Deployed $sha; previous container stopped for rollback."
