@@ -9,22 +9,17 @@ export const HATCH_YELLOW: readonly [number, number, number] = [250, 204, 21];
 // (both diagonals) every 5 px.
 export const HATCH_HIGH = { spacing: 6, width: 1 } as const; // Lucas pre-close: every 6 px
 export const HATCH_CRITICAL = { spacing: 5, width: 1 } as const; // both diagonals, every 5 px
-// Lucas (display only): Moderate is hatched too — sparse single-diagonal
-// lines, fainter (alpha 170 × the layer's 60 % ≈ 40 %). The index, its
-// classes and every number are unchanged.
-export const HATCH_MODERATE = { spacing: 10, width: 1, alpha: 170 } as const;
 
-// TPI class colours (places.ts CLASS_COLORS) → 0 none / 1 High / 2 Critical / 3 Moderate.
-export type HatchClass = 0 | 1 | 2 | 3;
-const PALETTE: readonly [number, number, number, HatchClass][] = [
+// TPI class colours (places.ts CLASS_COLORS) → 0 none / 1 High / 2 Critical.
+const PALETTE: readonly [number, number, number, 0 | 1 | 2][] = [
   [255, 255, 178, 0], // Low
-  [254, 204, 92, 3], // Moderate (display only: a sparse hatch)
+  [254, 204, 92, 0], // Moderate
   [253, 141, 60, 1], // High
   [189, 0, 38, 2], // Critical
 ];
-export function hatchClass(r: number, g: number, b: number, a: number): HatchClass {
+export function hatchClass(r: number, g: number, b: number, a: number): 0 | 1 | 2 {
   if (a < 128) return 0;
-  let best: HatchClass = 0;
+  let best: 0 | 1 | 2 = 0;
   let bd = Infinity;
   for (const [pr, pg, pb, c] of PALETTE) {
     const d = (r - pr) ** 2 + (g - pg) ** 2 + (b - pb) ** 2;
@@ -34,8 +29,7 @@ export function hatchClass(r: number, g: number, b: number, a: number): HatchCla
 }
 
 // Is output pixel (x, y) on a hatch line for this class?
-export function onHatch(cls: HatchClass, x: number, y: number): boolean {
-  if (cls === 3) return (x + y) % HATCH_MODERATE.spacing < HATCH_MODERATE.width;
+export function onHatch(cls: 0 | 1 | 2, x: number, y: number): boolean {
   if (cls === 1) return (x + y) % HATCH_HIGH.spacing < HATCH_HIGH.width;
   if (cls === 2) {
     const s = HATCH_CRITICAL.spacing, w = HATCH_CRITICAL.width;
@@ -58,10 +52,10 @@ export function hatchRgba(src: Uint8ClampedArray, w: number, h: number, scale = 
   for (let y = 0; y < H; y++) {
     const row = Math.floor(y / scale) * w;
     for (let x = 0; x < W; x++) {
-      const c = cls[row + Math.floor(x / scale)] as HatchClass;
+      const c = cls[row + Math.floor(x / scale)] as 0 | 1 | 2;
       if (c && onHatch(c, x, y)) {
         const o = 4 * (y * W + x);
-        out[o] = HATCH_YELLOW[0]; out[o + 1] = HATCH_YELLOW[1]; out[o + 2] = HATCH_YELLOW[2]; out[o + 3] = c === 3 ? HATCH_MODERATE.alpha : 255;
+        out[o] = HATCH_YELLOW[0]; out[o + 1] = HATCH_YELLOW[1]; out[o + 2] = HATCH_YELLOW[2]; out[o + 3] = 255;
       }
     }
   }
