@@ -17,7 +17,7 @@ test("UTM 21S → lon/lat: the central meridian and the river box corners", () =
 
 test("riverWindow: the conductor's FINAL L67 Uruguaiana box (no box frames yet), else none", () => {
   const uy = { id: "rs_uruguai_2026", manifest: { event: "rs_uruguai_2026", layers: [] } } as unknown as CcBundle;
-  expect(riverWindow(uy)).toEqual([-57.425, -29.97, -57.03, -29.2]);
+  expect(riverWindow(uy)).toBeUndefined(); // L67 override: the camera stays on the case box
   const wa = { id: "wa_2025", manifest: { event: "wa_2025", layers: [] } } as unknown as CcBundle;
   expect(riverWindow(wa)).toBeUndefined();
 });

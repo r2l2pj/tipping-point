@@ -45,15 +45,10 @@ export const URUGUAIANA_RIVER_BOX_UTM21S = [476000, 6700000, 506000, 6730000] as
 // Conductor FINAL L67 camera box (lead-nisar-uru, verified on the pixels).
 export const URUGUAIANA_CAMERA_BOX: LonLatBox = [-57.425, -29.97, -57.03, -29.2];
 
-export function riverWindow(bundle: CcBundle): LonLatBox | undefined {
-  // L67: the camera fits lead-analysis's Uruguaiana-box frames when published.
-  const boxes = (bundle.manifest?.layers ?? []).map((x) => x as unknown as Record<string, unknown>)
-    .filter((l) => (l.kind === "nisar_frame_uy" || (l.kind === "nisar_frame" && typeof l.box === "string" && l.box !== "")) && Array.isArray(l.bounds) && l.bounds.length === 4)
-    .map((l) => l.bounds as number[]);
-  if (boxes.length) return [Math.min(...boxes.map((b) => b[0])), Math.min(...boxes.map((b) => b[1])), Math.max(...boxes.map((b) => b[2])), Math.max(...boxes.map((b) => b[3]))];
-  const id = (bundle.manifest?.event ?? bundle.id) as string;
-  // L67 FINAL: the Uruguaiana box every shown pass fills (010D, 082D, 060A).
-  return /uruguai/i.test(id) ? [...URUGUAIANA_CAMERA_BOX] : undefined;
+export function riverWindow(_bundle: CcBundle): LonLatBox | undefined {
+  // L67 override (Lucas): the camera stays on the case box / the frames'
+  // footprints — no small-box fit. (Kept as a hook for a later opt-in.)
+  return undefined;
 }
 
 // The view is "zoomed out" past the window when it is more than 1.5× wider

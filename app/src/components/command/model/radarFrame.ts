@@ -6,7 +6,7 @@
 import { canonicalCaseId } from "@/lib/contract";
 import { assetUrl } from "@/lib/layers";
 import { fmtDate } from "./format";
-import { completeEnough, isUruguaiana, nisarTracks, sensorName, sensorOf } from "./radar";
+import { completeEnough, nisarTracks, sensorName, sensorOf } from "./radar";
 import { stretchOf, type Stretch } from "./changeComposite";
 import type { CcBundle } from "./types";
 
@@ -61,7 +61,7 @@ export function radarPasses(bundle: CcBundle): RadarPass[] {
     for (const raw of bundle.manifest?.layers ?? []) {
       const l = raw as unknown as Record<string, unknown>;
       const m = LEGACY.exec(String(l.id));
-      if (!m || typeof l.date !== "string" || typeof l.png !== "string" || (!isUruguaiana(bundle) && !completeEnough(l))) continue;
+      if (!m || typeof l.date !== "string" || typeof l.png !== "string" || !completeEnough(l)) continue;
       const url = assetUrl(caseDir, l.png);
       if (!url) continue;
       const pol: Pol = m[1] || String(l.polarization ?? "").toUpperCase() === "HV" ? "HV" : "HH";

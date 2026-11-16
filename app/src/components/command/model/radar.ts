@@ -201,7 +201,7 @@ export function nisarTracks(bundle: CcBundle): NisarTrackStack[] {
   const caseDir = canonicalCaseId(bundle.manifest?.event ?? bundle.id);
   const byTrack = new Map<string, NisarTrackStack>();
   const usable = usableNisarFrames(bundle);
-  const uyTable = isUruguaiana(bundle) && !usable.some(isBoxFrame);
+  const uyTable = false; // L67 override: labels show each pass's own case-box coverage
   for (const l of usable) {
     if (typeof l.date !== "string" || typeof l.png !== "string") continue;
     const url = assetUrl(caseDir, l.png);
@@ -256,8 +256,7 @@ export function nisarPairDays(bundle: CcBundle): string[] {
     .filter(
       // nisar_ref (WA Nov 10) is a pass too (conductor).
       (l) => /^(nisar|radar)_(hv_)?(pre|post|ref)$/.test(l.id) && typeof l.date === "string" && !!l.png
-        && (isUruguaiana(bundle) ? (URUGUAIANA_BOX_COVERAGE[String((l as unknown as Rec).track ?? "010D")] ?? 0) >= MIN_NISAR_COVERAGE
-          : completeEnough(l as unknown as Rec)) // L67: complete passes only
+        && completeEnough(l as unknown as Rec) // L67 override: ≥ 50 % of the case box
     )
     .map((l) => (l.date as string).slice(0, 10));
   return [...new Set(days)].sort();

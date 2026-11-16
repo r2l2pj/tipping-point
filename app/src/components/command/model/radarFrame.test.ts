@@ -23,10 +23,9 @@ const uy = {
 
 test("radarPasses: every pass of every track, sorted; main track = most passes", () => {
   const p = radarPasses(uy);
-  // L67: Uruguaiana passes carry the verified box coverage (100 %)
   expect(p.map(passLabel)).toEqual([
-    "Sep 18, 2026 · 010D · 100 % of area", "Sep 30, 2026 · 010D · 100 % of area", "Oct 5, 2026 · 082D · 100 % of area",
-    "Oct 12, 2026 · 010D · 100 % of area", "Oct 17, 2026 · 082D · 100 % of area", "Oct 24, 2026 · 010D · 100 % of area",
+    "Sep 18, 2026 · 010D", "Sep 30, 2026 · 010D", "Oct 5, 2026 · 082D",
+    "Oct 12, 2026 · 010D", "Oct 17, 2026 · 082D", "Oct 24, 2026 · 010D",
   ]);
   expect(mainTrack(p)).toBe("010D");
 });
