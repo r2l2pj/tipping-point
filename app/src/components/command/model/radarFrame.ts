@@ -6,7 +6,7 @@
 import { canonicalCaseId } from "@/lib/contract";
 import { assetUrl } from "@/lib/layers";
 import { fmtDate } from "./format";
-import { nisarTracks, sensorName, sensorOf } from "./radar";
+import { completeEnough, isUruguaiana, nisarTracks, sensorName, sensorOf } from "./radar";
 import { stretchOf, type Stretch } from "./changeComposite";
 import type { CcBundle } from "./types";
 
@@ -61,7 +61,7 @@ export function radarPasses(bundle: CcBundle): RadarPass[] {
     for (const raw of bundle.manifest?.layers ?? []) {
       const l = raw as unknown as Record<string, unknown>;
       const m = LEGACY.exec(String(l.id));
-      if (!m || typeof l.date !== "string" || typeof l.png !== "string") continue;
+      if (!m || typeof l.date !== "string" || typeof l.png !== "string" || (!isUruguaiana(bundle) && !completeEnough(l))) continue;
       const url = assetUrl(caseDir, l.png);
       if (!url) continue;
       const pol: Pol = m[1] || String(l.polarization ?? "").toUpperCase() === "HV" ? "HV" : "HH";
@@ -123,6 +123,12 @@ export function radarFrame(passes: readonly RadarPass[], day: string | undefined
   if (!passes.length) return undefined;
   const wantPol: Pol = pick?.pol ?? "HH";
   let pass = pick?.date ? passes.find((p) => p.date === pick.date && (pick.track === undefined || p.track === pick.track)) : undefined;
+  // L67: a picked pass that is not shown (incomplete coverage, e.g. a river's-
+  // dance bar) → the nearest complete pass (any track; the earlier on a tie).
+  if (pick?.date && !pass) {
+    const t = Date.parse(pick.date);
+    pass = [...passes].sort((a, b) => Math.abs(Date.parse(a.date) - t) - Math.abs(Date.parse(b.date) - t) || a.date.localeCompare(b.date))[0];
+  }
   let note: string | undefined;
   const pinned = !!pass;
   if (!pass) {

@@ -149,20 +149,49 @@ export const otherGeometry = (l: Record<string, unknown>, role?: string): boolea
 
 export interface NisarStack { dates: string[]; frames: Record<string, { HH?: CompareSide; HV?: CompareSide }>; title: string }
 
+// L67 (Lucas): only COMPLETE NISAR passes are shown anywhere (picker, Play,
+// Compare, Change, river's-dance clicks): coverage_pct ≥ 90 % of the box.
+// lead-analysis's Uruguaiana-box frames (kind 'nisar_frame_uy', or a
+// nisar_frame with a 'box') replace the full-swath frames when published.
+export const MIN_NISAR_COVERAGE = 90;
+type Rec = Record<string, unknown>;
+export const isBoxFrame = (l: Rec): boolean => l.kind === "nisar_frame_uy" || (l.kind === "nisar_frame" && typeof l.box === "string" && l.box !== "");
+export const completeEnough = (l: Rec): boolean => typeof l.coverage_pct !== "number" || l.coverage_pct >= MIN_NISAR_COVERAGE;
+// Conductor FINAL L67 box (lead-nisar-uru, verified on the published 100 m
+// pixels): [-57.425, -29.97, -57.03, -29.20] around Uruguaiana. In it every
+// 010D / 082D / 060A pass is 100 %, every 132A pass 0 %. The full-swath
+// frames' coverage_pct is the share of the CASE box (010D 40 %), so until
+// lead-analysis publishes box frames with their own coverage, Uruguaiana
+// uses this per-track table.
+export const URUGUAIANA_BOX: [number, number, number, number] = [-57.425, -29.97, -57.03, -29.2];
+const URUGUAIANA_BOX_COVERAGE: Record<string, number> = { "010D": 100, "082D": 100, "060A": 100, "132A": 0 };
+export const isUruguaiana = (bundle: CcBundle): boolean =>
+  /uruguai/i.test(String(bundle.manifest?.event ?? bundle.id));
+export function usableNisarFrames(bundle: CcBundle): Rec[] {
+  const all = (bundle.manifest?.layers ?? []).map((x) => x as unknown as Rec)
+    .filter((l) => (l.kind === "nisar_frame" || l.kind === "nisar_frame_uy") && typeof l.date === "string" && typeof l.png === "string");
+  const box = all.filter(isBoxFrame);
+  if (box.length) return box.filter(completeEnough);
+  if (isUruguaiana(bundle)) {
+    // a frame without a track: unknown coverage, kept
+    return all.filter((l) => typeof l.track !== "string" || (URUGUAIANA_BOX_COVERAGE[l.track] ?? 0) >= MIN_NISAR_COVERAGE);
+  }
+  return all.filter(completeEnough);
+}
+
 export function nisarStack(bundle: CcBundle): NisarStack | undefined {
   const caseDir = canonicalCaseId(bundle.manifest?.event ?? bundle.id);
   const frames: NisarStack["frames"] = {};
   let allNisar = true;
   // lead-analysis: every NISAR layer carries 'track'; the swipe stays on the
   // main track (the one with the most frames, 010D for Uruguaiana).
-  const tracks = (bundle.manifest?.layers ?? []).map((x) => (x as unknown as Record<string, unknown>))
-    .filter((x) => x.kind === "nisar_frame" && typeof x.track === "string").map((x) => x.track as string);
+  const usable = usableNisarFrames(bundle);
+  const tracks = usable.filter((x) => typeof x.track === "string").map((x) => x.track as string);
   const count = new Map<string, number>();
   for (const t of tracks) count.set(t, (count.get(t) ?? 0) + 1);
   const mainTrack = [...count.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
-  for (const raw of bundle.manifest?.layers ?? []) {
-    const l = raw as unknown as Record<string, unknown>;
-    if (l.kind !== "nisar_frame" || typeof l.date !== "string" || typeof l.png !== "string") continue;
+  for (const l of usable) {
+    if (typeof l.date !== "string" || typeof l.png !== "string") continue;
     const url = assetUrl(caseDir, l.png);
     if (!url) continue;
     const pol = String(l.polarization ?? "HH").toUpperCase() === "HV" ? "HV" : "HH";
@@ -192,9 +221,10 @@ export interface NisarTrackStack {
 export function nisarTracks(bundle: CcBundle): NisarTrackStack[] {
   const caseDir = canonicalCaseId(bundle.manifest?.event ?? bundle.id);
   const byTrack = new Map<string, NisarTrackStack>();
-  for (const raw of bundle.manifest?.layers ?? []) {
-    const l = raw as unknown as Record<string, unknown>;
-    if (l.kind !== "nisar_frame" || typeof l.date !== "string" || typeof l.png !== "string") continue;
+  const usable = usableNisarFrames(bundle);
+  const uyTable = isUruguaiana(bundle) && !usable.some(isBoxFrame);
+  for (const l of usable) {
+    if (typeof l.date !== "string" || typeof l.png !== "string") continue;
     const url = assetUrl(caseDir, l.png);
     if (!url) continue;
     const pol = String(l.polarization ?? "HH").toUpperCase() === "HV" ? "HV" : "HH";
@@ -213,7 +243,11 @@ export function nisarTracks(bundle: CcBundle): NisarTrackStack[] {
       mode: typeof mode === "string" ? mode : undefined,
       sensor: name,
       stretch: stretchOf(l),
-      ...(typeof l.coverage_pct === "number" ? { coverage: l.coverage_pct } : {}),
+      // Uruguaiana full-swath frames: the coverage of the L67 BOX (verified
+      // table), not their case-box share (010D '40 %' fills the box).
+      ...(uyTable && typeof l.track === "string" && URUGUAIANA_BOX_COVERAGE[l.track] !== undefined
+        ? { coverage: URUGUAIANA_BOX_COVERAGE[l.track] }
+        : typeof l.coverage_pct === "number" ? { coverage: l.coverage_pct } : {}),
     };
     byTrack.set(track, t);
   }
@@ -243,6 +277,8 @@ export function nisarPairDays(bundle: CcBundle): string[] {
     .filter(
       // nisar_ref (WA Nov 10) is a pass too (conductor).
       (l) => /^(nisar|radar)_(hv_)?(pre|post|ref)$/.test(l.id) && typeof l.date === "string" && !!l.png
+        && (isUruguaiana(bundle) ? (URUGUAIANA_BOX_COVERAGE[String((l as unknown as Rec).track ?? "010D")] ?? 0) >= MIN_NISAR_COVERAGE
+          : completeEnough(l as unknown as Rec)) // L67: complete passes only
     )
     .map((l) => (l.date as string).slice(0, 10));
   return [...new Set(days)].sort();

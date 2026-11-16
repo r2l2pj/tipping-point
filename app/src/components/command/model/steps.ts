@@ -546,7 +546,9 @@ export function nextNisarPass(bundle: CcBundle, date: string | undefined): strin
   const dates = new Set<string>();
   for (const raw of bundle.manifest?.layers ?? []) {
     const l = raw as unknown as Record<string, unknown>;
-    if (typeof l.date === "string" && (l.kind === "nisar_frame" || /^(nisar|radar)_(pre|post)$/.test(String(l.id)))) dates.add(l.date.slice(0, 10));
+    // L67: complete passes only (coverage_pct ≥ 90 % when published).
+    const complete = typeof l.coverage_pct !== "number" || l.coverage_pct >= 90;
+    if (typeof l.date === "string" && complete && (l.kind === "nisar_frame" || l.kind === "nisar_frame_uy" || /^(nisar|radar)_(pre|post)$/.test(String(l.id)))) dates.add(l.date.slice(0, 10));
   }
   const dd = bundle.data_dates as Record<string, unknown> | undefined;
   for (const k of ["nisar_pre", "nisar_post"]) if (typeof dd?.[k] === "string") dates.add((dd[k] as string).slice(0, 10));

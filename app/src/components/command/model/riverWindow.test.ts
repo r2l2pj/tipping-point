@@ -15,9 +15,9 @@ test("UTM 21S → lon/lat: the central meridian and the river box corners", () =
   expect(w[3]).toBeCloseTo(-29.5595, 3);
 });
 
-test("riverWindow: from river_dance box_utm21s, else the Uruguaiana constant, else none", () => {
+test("riverWindow: the conductor's FINAL L67 Uruguaiana box (no box frames yet), else none", () => {
   const uy = { id: "rs_uruguai_2026", manifest: { event: "rs_uruguai_2026", layers: [] } } as unknown as CcBundle;
-  expect(riverWindow(uy)![0]).toBeCloseTo(-57.2484, 3);
+  expect(riverWindow(uy)).toEqual([-57.425, -29.97, -57.03, -29.2]);
   const wa = { id: "wa_2025", manifest: { event: "wa_2025", layers: [] } } as unknown as CcBundle;
   expect(riverWindow(wa)).toBeUndefined();
 });

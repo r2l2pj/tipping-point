@@ -176,7 +176,10 @@ export default function MapStage({
   // ~6-day window) replaces the single pass while the view follows the
   // timeline; a pass picked in the picker pins that single pass.
   const mosaicList = useMemo(() => nisarMosaics(bundle), [bundle]);
-  const mosaic = radarOn && !rPick.date ? mosaicFor(mosaicList, step?.date, rPick.pol) : undefined;
+  // L67 (Lucas): the mosaic is NOT the default any more (it caused problems);
+  // the code stays for a later opt-in.
+  const MOSAIC_DEFAULT = false;
+  const mosaic = MOSAIC_DEFAULT && radarOn && !rPick.date ? mosaicFor(mosaicList, step?.date, rPick.pol) : undefined;
   const shownFrame = mosaic ? { url: mosaic.url, bounds: mosaic.bounds, stretch: mosaic.stretch } : rFrame;
   const [seams, setSeams] = useState(false);
   // The swath-edge note only when the visible map runs past the frame's
@@ -254,7 +257,7 @@ export default function MapStage({
       radarFrame: shownFrame && radarUrl ? { url: radarUrl, bounds: shownFrame.bounds } : undefined,
       nisarWater: fnWaterShown,
       // Lucas: NISAR is the star — the risk index sits under it, more transparent.
-      tpiOpacity: radarOn && state.layers.includes("tpi") ? 0.35 : undefined,
+      tpiOpacity: radarOn && state.layers.includes("tpi") ? 0.55 : undefined,
     }),
     [step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, radarUrl, fnFrame, fnWaterShown, radarOn, shownFrame]
   );
