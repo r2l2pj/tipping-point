@@ -79,7 +79,7 @@ Where: **P** = `project-page.md` (FORM fields 2 and 5 paste from it), **S** = `s
 | 0% on the pass day; 0% in NOAA GFS runs 1–3 d before | `cases.rs_uruguai_2026.nisar_agreement_obs_critical_hit_pct`, `_obs_hit_pct`, `_fc{1,2,3}d_hit_pct` = 0.0 | R A P S K |
 | 15% of the NISAR water off HAND ≤ 5 m | `cases.rs_uruguai_2026.nisar_agreement_outside_floodplain_pct` 14.8 | R A P S |
 | GFS window (published, not quoted): Critical run Oct 5 → Oct 8, 49.6%, lift 1.18 | `cases.rs_uruguai_2026.nisar_agreement_gfswin_critical_*` | — |
-| Now: 227 km² NISAR water on land, Nov 5 pass (010D), 10 d old; index flags 0% | `data/now/summary.json` `nisar_water.{water_km2 227.3, pass_date, pass_track, age_days}`; `data/now/nisar_agreement.json` `observed.*.hit_pct` 0.0 | P |
+| Now (snapshot Nov 15): 227 km² NISAR water on land = 12-day composite of the passes Nov 3 (154D), Nov 4 (161A), Nov 5 (010D); index flags 0%. Live value changes every run (Nov 16: 49.7 km², Nov 3 aged out), so the page's Live line carries no number | `data/now/summary.json` `nisar_water.{water_km2 227.3, pass_date, pass_track, age_days}`; `data/now/nisar_agreement.json` `observed.*.hit_pct` 0.0 | P |
 | Now: 88.8% of it off HAND ≤ 5 m | `data/now/summary.json` `nisar_water.outside_floodplain_pct` (NOT nisar_agreement.json, whose field is null) | P |
 | Rule: only floodplain (HAND ≤ 5 m) NISAR water raises the flood index (main 777aa88) | `summary.nisar_water.rule`, `.raised_km2`; per layer `nisar_raised_km2` | R A P |
 | Washington: 2.0 km² single-pass water, Dec 16, 172D; 9.9% off floodplain | `cases.wa_2025.nisar_agreement.{water_km2, pass, outside_floodplain_pct}` | R A P |
