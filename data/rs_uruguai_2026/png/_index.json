@@ -18027,18 +18027,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260813_010D_cc00f411.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260813_010D_e7bd41ce.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18090,18 +18090,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260813_010D_9a1edbc6.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260813_010D_0342decf.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18153,18 +18153,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260817_060A_9aaa3d29.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260817_060A_9b952577.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18216,18 +18216,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260817_060A_1a4f2bf3.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260817_060A_ce67b99f.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18279,18 +18279,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260818_082D_033efd08.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260818_082D_fd6e8708.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18320,7 +18320,7 @@
           }
         ]
       },
-      "coverage_pct": 98.3,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HH · track 082D · 2026-08-18 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -18342,18 +18342,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260818_082D_e3dacb4b.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260818_082D_3176eb42.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18383,7 +18383,7 @@
           }
         ]
       },
-      "coverage_pct": 98.1,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HV · track 082D · 2026-08-18 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -18405,18 +18405,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260825_010D_19c04b65.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260825_010D_517669d3.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18468,18 +18468,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260825_010D_dff10fa7.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260825_010D_2723deb9.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18531,18 +18531,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260918_010D_70a711e4.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260918_010D_0052d9ff.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18594,18 +18594,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260918_010D_d651351a.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260918_010D_64d5734d.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18657,18 +18657,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260922_060A_98984145.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260922_060A_152d39fb.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18720,18 +18720,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260923_082D_55985d0f.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260923_082D_d5ae3369.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18761,7 +18761,7 @@
           }
         ]
       },
-      "coverage_pct": 98.2,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HH · track 082D · 2026-09-23 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -18783,18 +18783,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260923_082D_bfb38568.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260923_082D_e4aae994.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18824,7 +18824,7 @@
           }
         ]
       },
-      "coverage_pct": 98.0,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HV · track 082D · 2026-09-23 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -18846,18 +18846,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260930_010D_94f1a8fd.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260930_010D_85342289.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18909,18 +18909,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260930_010D_ab556f61.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260930_010D_50125948.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -18972,18 +18972,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261004_060A_17a0f3fd.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261004_060A_5056704b.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19035,18 +19035,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261004_060A_6096a34f.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261004_060A_8fe038ba.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19098,18 +19098,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261005_082D_991b20f9.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261005_082D_fa53cbc9.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19139,7 +19139,7 @@
           }
         ]
       },
-      "coverage_pct": 98.3,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HH · track 082D · 2026-10-05 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -19161,18 +19161,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261005_082D_fe09ce1d.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261005_082D_0ad371d5.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19202,7 +19202,7 @@
           }
         ]
       },
-      "coverage_pct": 98.0,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HV · track 082D · 2026-10-05 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -19224,18 +19224,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261012_010D_95db39b6.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261012_010D_5c302a9a.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19287,18 +19287,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261012_010D_9d747898.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261012_010D_ef812993.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19350,18 +19350,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261016_060A_85574d16.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261016_060A_31b5a816.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19413,18 +19413,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261016_060A_df0a8b05.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261016_060A_7c14381e.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19476,18 +19476,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261017_082D_128b606e.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261017_082D_7b52f1b3.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19517,7 +19517,7 @@
           }
         ]
       },
-      "coverage_pct": 98.3,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HH · track 082D · 2026-10-17 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -19539,18 +19539,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261017_082D_15258e3e.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261017_082D_1a5d91b1.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19580,7 +19580,7 @@
           }
         ]
       },
-      "coverage_pct": 98.1,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HV · track 082D · 2026-10-17 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -19602,18 +19602,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261024_010D_a33959ba.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261024_010D_e539049d.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19665,18 +19665,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261024_010D_455783f6.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261024_010D_9a157904.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19728,18 +19728,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261028_060A_f627eef8.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261028_060A_3587e936.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19791,18 +19791,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261028_060A_e9fbae39.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261028_060A_a523eccb.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19854,18 +19854,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261029_082D_8003c86b.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261029_082D_b4542d33.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19895,7 +19895,7 @@
           }
         ]
       },
-      "coverage_pct": 98.2,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HH · track 082D · 2026-10-29 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -19917,18 +19917,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261029_082D_3a794ef9.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261029_082D_bd4edf8f.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -19958,7 +19958,7 @@
           }
         ]
       },
-      "coverage_pct": 98.0,
+      "coverage_pct": 100.0,
       "label": "NISAR radar HV · track 082D · 2026-10-29 (Uruguaiana box)",
       "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     },
@@ -19980,18 +19980,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HH",
-      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261105_010D_19f84f5d.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261105_010D_6104aef4.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
@@ -20043,18 +20043,18 @@
       "kind": "nisar_frame_uy",
       "box": "uruguaiana",
       "box_bounds": [
-        -57.48,
+        -57.425,
         -29.97,
         -57.03,
         -29.2
       ],
       "polarization": "HV",
-      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261105_010D_69a3054d.png",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261105_010D_1b2294a1.png",
       "cog": null,
       "bounds": [
-        -57.48,
-        -29.969936,
-        -57.030073,
+        -57.425,
+        -29.96968,
+        -57.029514,
         -29.2
       ],
       "stretch_db": {
