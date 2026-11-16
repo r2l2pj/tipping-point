@@ -46,8 +46,72 @@ Actions keepalive (`.github/workflows/keepalive.yml`, every 10 minutes,
 3-hourly runs) or unreadable. A failed ping fails the workflow run and GitHub
 emails the repo owner. The body never carries the timestamp or any data.
 
-Update: `git pull && docker build … && docker rm -f tp-app && docker run …`
-(a few seconds of downtime; fine for one instance).
+Manual updates: build and smoke-test the new image before replacing the existing
+`tipping-point-app` container. Keep the `tipping-point-data` volume and the old
+stopped container for rollback; never remove production first.
+
+### Automatic app deployment (opt-in)
+
+After a human-reviewed change reaches `main`, `app-ci` runs lint, tests, build
+and the deploy script's input checks. On successful CI, `app-deploy` can deploy
+the tested commit to the **same** `tipping-point-app` container. This does not
+replace the separate data workflow (`now.yml`, every three hours) or create a
+second Caddy route. The SQLite metrics mirror remains in `tipping-point-data`;
+no PostgreSQL is involved. The deploy job stays skipped until the repository
+variable `VPS_APP_DEPLOY_ENABLED=1` is set in **r2l2pj/tipping-point**.
+
+Before enabling it, a VPS administrator must install a dedicated SSH user
+outside the Docker group, the fixed deploy command owned by root, and a
+restricted sudo rule. Run these commands from a reviewed checkout on the VPS:
+
+```sh
+sudo useradd --create-home --shell /bin/bash tipping-deploy
+sudo passwd -l tipping-deploy
+sudo install -d -o root -g root -m 0700 /var/lib/tipping-point-app-deploy
+sudo install -o root -g root -m 0755 deploy/vps/deploy-app.sh \
+  /usr/local/sbin/tipping-point-app-deploy
+printf '%s\n' 'tipping-deploy ALL=(root) NOPASSWD: /usr/local/sbin/tipping-point-app-deploy' \
+  | sudo tee /etc/sudoers.d/tipping-point-app-deploy >/dev/null
+sudo chmod 0440 /etc/sudoers.d/tipping-point-app-deploy
+sudo visudo -cf /etc/sudoers.d/tipping-point-app-deploy
+```
+
+Install the public half of a **dedicated** SSH key in
+`/home/tipping-deploy/.ssh/authorized_keys` (owner `tipping-deploy`, mode
+0600), with the `restrict` key option. Do not give this user unrestricted
+Docker or sudo access. In this repository, configure Actions secrets
+`VPS_HOST`, `VPS_USER=tipping-deploy`, `VPS_DEPLOY_KEY`, `VPS_KNOWN_HOSTS`
+(the host key independently verified and pinned), and optionally
+`VPS_SSH_PORT`. Never put a private key in the repository, chat or logs.
+
+The fixed command proves the SHA is a commit on `main`, checks out only
+`app/`, `Dockerfile` and `.dockerignore` of that commit (git 2.27 or newer on
+the host), builds the image, smoke-tests a candidate without the production
+volume, then replaces only `tipping-point-app`. It checks container and public
+health and attempts rollback on failure. Existing `tipping-point-route` owns
+the hostname throughout.
+
+- A newer commit on `main` does not cancel a deploy: `main` also receives
+  commits that never run `app-ci`. The command skips only when the running
+  container was already built from the same or a newer commit.
+- The stopped `tipping-point-app-previous` container is kept for rollback and
+  removed by the next deploy, after the new image passed its smoke test. It
+  is removed only when it is stopped and mounts `tipping-point-data`.
+- Images of earlier deploys (`tipping-point-app:<commit>`) are removed after a
+  successful deploy, except the one the rollback container uses.
+- The command changes no other container, volume, network or route, and no
+  FE service.
+
+Once the variable is set, **every push to `main` that touches the app paths
+and passes `app-ci` is deployed**, reviewed or not. Protect `main` (pull
+request and review required) before enabling it if only reviewed commits may
+reach production.
+
+Do not enable the repository variable until the host command, SSH identity,
+secrets, and a manual test are verified; after activation, verify the first
+real run and public HTTPS yourself. Running `app-ci` alone is **not** proof of
+automatic deployment. After a change to `deploy/vps/deploy-app.sh` on `main`,
+install it on the host again: the host copy is not updated automatically.
 
 Podman works the same (`podman build --format docker …`: the default OCI
 format drops `HEALTHCHECK`).
