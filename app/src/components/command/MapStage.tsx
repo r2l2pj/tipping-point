@@ -29,6 +29,7 @@ import { setRiskLook, useRiskLook } from "./useRiskHatch";
 
 // Legend swatches of the risk hatch (riskHatch.ts: #facc15, High diagonal,
 // Critical cross-hatch).
+const HATCH_MODERATE_CSS = "repeating-linear-gradient(45deg, rgba(250,204,21,0.4) 0 1px, transparent 1px 10px)";
 const HATCH_HIGH_CSS = "repeating-linear-gradient(45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 6px)";
 const HATCH_CRITICAL_CSS = "repeating-linear-gradient(45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 5px), repeating-linear-gradient(-45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 5px)";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
@@ -561,8 +562,9 @@ export default function MapStage({
               ))}
               {riskLook === "hatch" && (
                 <span className="flex items-center gap-2 text-[11px] font-medium text-cc-muted" data-hatch-legend>
+                  <span className="flex items-center gap-1"><span aria-hidden="true" className="inline-block h-2.5 w-5 rounded-sm bg-[#3a3a3a]" style={{ backgroundImage: HATCH_MODERATE_CSS }} />Moderate</span>
                   <span className="flex items-center gap-1"><span aria-hidden="true" className="inline-block h-2.5 w-5 rounded-sm bg-[#3a3a3a]" style={{ backgroundImage: HATCH_HIGH_CSS }} />High</span>
-                  <span className="flex items-center gap-1"><span aria-hidden="true" className="inline-block h-2.5 w-5 rounded-sm bg-[#3a3a3a]" style={{ backgroundImage: HATCH_CRITICAL_CSS }} />Critical risk (index)</span>
+                  <span className="flex items-center gap-1"><span aria-hidden="true" className="inline-block h-2.5 w-5 rounded-sm bg-[#3a3a3a]" style={{ backgroundImage: HATCH_CRITICAL_CSS }} />Critical (index)</span>
                 </span>
               )}
             </div>

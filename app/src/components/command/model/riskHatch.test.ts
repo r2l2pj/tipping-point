@@ -5,7 +5,7 @@ import { HATCH_YELLOW, hatchClass, hatchRgba, hatchScale, onHatch } from "./risk
 
 test("TPI class colours → only High and Critical are hatched", () => {
   expect(hatchClass(255, 255, 178, 255)).toBe(0); // Low
-  expect(hatchClass(254, 204, 92, 255)).toBe(0); // Moderate
+  expect(hatchClass(254, 204, 92, 255)).toBe(3); // Moderate: a sparse hatch (display only)
   expect(hatchClass(253, 141, 60, 255)).toBe(1); // High
   expect(hatchClass(189, 0, 38, 255)).toBe(2); // Critical
   expect(hatchClass(189, 0, 38, 0)).toBe(0); // transparent
@@ -20,6 +20,13 @@ test("High = thin 45° lines (1 px every 6 px); Critical = thin cross-hatch ever
   const crit = Array.from({ length: 20 }, (_, x) => onHatch(2, x, 3)).filter(Boolean).length;
   expect(crit).toBe(8); // both diagonals, every 5 px: 4 + 4 in 20 px
   expect(onHatch(0, 0, 0)).toBe(false);
+});
+
+test("Moderate = sparse single diagonal (1 px every 10 px), fainter alpha", () => {
+  expect(Array.from({ length: 20 }, (_, x) => onHatch(3, x, 0)).filter(Boolean).length).toBe(2);
+  expect(onHatch(3, 9, 1)).toBe(true);
+  const out = hatchRgba(new Uint8ClampedArray([254, 204, 92, 255]), 1, 1, 10);
+  expect(out.data[3]).toBe(170); // pixel (0, 0) on a line, ~40 % with the 60 % layer
 });
 
 test("hatchRgba: transparent except yellow lines on High/Critical pixels, upscaled", () => {
