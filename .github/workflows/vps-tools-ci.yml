@@ -16,6 +16,8 @@ on:
       - ".github/workflows/reference.yml"
       - ".github/workflows/now-watchdog.yml"
       - ".github/workflows/app-keepalive.yml"
+      # the unit test reads the runbook section for the host jobs
+      - "docs/DEPLOY-VPS.md"
   pull_request:
     paths:
       - "deploy/vps/**"
@@ -27,6 +29,8 @@ on:
       - ".github/workflows/reference.yml"
       - ".github/workflows/now-watchdog.yml"
       - ".github/workflows/app-keepalive.yml"
+      # the unit test reads the runbook section for the host jobs
+      - "docs/DEPLOY-VPS.md"
 
 permissions:
   contents: read
@@ -42,6 +46,7 @@ jobs:
           sparse-checkout: |
             .github
             deploy
+            docs
             live
       - run: python3 deploy/vps/test_refresh_sqlite.py
       - name: shellcheck
