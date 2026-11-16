@@ -11,15 +11,14 @@ test("TPI class colours → only High and Critical are hatched", () => {
   expect(hatchClass(189, 0, 38, 0)).toBe(0); // transparent
 });
 
-test("High = thin 45° lines (1 px every 10 px); Critical = the same thin lines on both diagonals", () => {
-  const high = Array.from({ length: 20 }, (_, x) => onHatch(1, x, 0));
-  expect(high.filter(Boolean).length).toBe(2); // 1 of every 10
+test("High = thin 45° lines (1 px every 6 px); Critical = thin cross-hatch every 5 px", () => {
+  const high = Array.from({ length: 24 }, (_, x) => onHatch(1, x, 0));
+  expect(high.filter(Boolean).length).toBe(4); // 1 of every 6
   expect(onHatch(1, 0, 0)).toBe(true);
   expect(onHatch(1, 1, 0)).toBe(false);
-  expect(onHatch(1, 9, 1)).toBe(true); // diagonal: x + y = 10
+  expect(onHatch(1, 5, 1)).toBe(true); // diagonal: x + y = 6
   const crit = Array.from({ length: 20 }, (_, x) => onHatch(2, x, 3)).filter(Boolean).length;
-  const highRow = Array.from({ length: 20 }, (_, x) => onHatch(1, x, 3)).filter(Boolean).length;
-  expect(crit).toBe(2 * highRow); // a cross-hatch: both diagonals
+  expect(crit).toBe(8); // both diagonals, every 5 px: 4 + 4 in 20 px
   expect(onHatch(0, 0, 0)).toBe(false);
 });
 

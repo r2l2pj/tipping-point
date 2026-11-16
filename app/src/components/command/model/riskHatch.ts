@@ -5,10 +5,10 @@
 // 45° lines) and Critical (denser cross-hatch), both #facc15.
 export const HATCH_YELLOW: readonly [number, number, number] = [250, 204, 21];
 // Conductor (Lucas, 21:3x): THINNER lines so the NISAR red water shows
-// through and matches — 1 px every 10 px; Critical = the same thin lines on
-// both diagonals (a cross-hatch).
-export const HATCH_HIGH = { spacing: 10, width: 1 } as const;
-export const HATCH_CRITICAL = { spacing: 10, width: 1 } as const;
+// through and matches — 1 px lines; High every 6 px, Critical a cross-hatch
+// (both diagonals) every 5 px.
+export const HATCH_HIGH = { spacing: 6, width: 1 } as const; // Lucas pre-close: every 6 px
+export const HATCH_CRITICAL = { spacing: 5, width: 1 } as const; // both diagonals, every 5 px
 
 // TPI class colours (places.ts CLASS_COLORS) → 0 none / 1 High / 2 Critical.
 const PALETTE: readonly [number, number, number, 0 | 1 | 2][] = [

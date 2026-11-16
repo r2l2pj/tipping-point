@@ -30,7 +30,7 @@ import { setRiskLook, useRiskLook } from "./useRiskHatch";
 // Legend swatches of the risk hatch (riskHatch.ts: #facc15, High diagonal,
 // Critical cross-hatch).
 const HATCH_HIGH_CSS = "repeating-linear-gradient(45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 6px)";
-const HATCH_CRITICAL_CSS = "repeating-linear-gradient(45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 6px), repeating-linear-gradient(-45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 6px)";
+const HATCH_CRITICAL_CSS = "repeating-linear-gradient(45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 5px), repeating-linear-gradient(-45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 5px)";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
 import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
 import { useFloodNisar } from "./useFloodNisar";
