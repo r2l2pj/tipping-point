@@ -29,8 +29,8 @@ import { setRiskLook, useRiskLook } from "./useRiskHatch";
 
 // Legend swatches of the risk hatch (riskHatch.ts: #facc15, High diagonal,
 // Critical cross-hatch).
-const HATCH_HIGH_CSS = "repeating-linear-gradient(45deg, #facc15 0 1.5px, transparent 1.5px 5px)";
-const HATCH_CRITICAL_CSS = "repeating-linear-gradient(45deg, #facc15 0 1.5px, transparent 1.5px 3.5px), repeating-linear-gradient(-45deg, #facc15 0 1.5px, transparent 1.5px 3.5px)";
+const HATCH_HIGH_CSS = "repeating-linear-gradient(45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 6px)";
+const HATCH_CRITICAL_CSS = "repeating-linear-gradient(45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 6px), repeating-linear-gradient(-45deg, rgba(250,204,21,0.6) 0 1px, transparent 1px 6px)";
 import { WATER_RED_LEGEND } from "./model/waterRamp";
 import { floodNisarFrame, floodNisarNote, nisarWaterLayer } from "./model/floodNisar";
 import { useFloodNisar } from "./useFloodNisar";
@@ -265,7 +265,7 @@ export default function MapStage({
       nisarWater: fnWaterShown,
       // Lucas: NISAR is the star — the risk over it is a yellow hatch (lines at
       // 85 %), or the colour fill at 55 % with 'Risk: Fill'.
-      tpiOpacity: radarOn && state.layers.includes("tpi") ? (riskLook === "hatch" ? 0.85 : 0.55) : undefined,
+      tpiOpacity: radarOn && state.layers.includes("tpi") ? (riskLook === "hatch" ? 0.6 : 0.55) : undefined,
       tpiHatch: radarOn && state.layers.includes("tpi") && riskLook === "hatch",
     }),
     [riskLook, step?.date, state.layers, state.probHorizon, issued, hourFrame, state.basemap, state.overlayOpacity, bundle, changeImage, state.changeOpacity, radarUrl, fnFrame, fnWaterShown, radarOn, shownFrame]
