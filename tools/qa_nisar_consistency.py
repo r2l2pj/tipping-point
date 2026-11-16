@@ -46,7 +46,7 @@ SHOWN = [
     ("Uru pass-day hit (%)", "0", "metrics", "rs_uruguai_2026.nisar_agreement_obs_hit_pct", P0),
     ("WA NISAR water, single pass (km²)", "2.0", "metrics", "wa_2025.nisar_agreement_water_km2", F1),
     ("WA High+ hit, same day as Critical (%)", "79", "sameday", "wa_2025.alto_plus.hit_pct", P0),
-    ("WA Critical hit (%)", "50", "metrics", "wa_2025.nisar_agreement_win_critical_hit_pct", P0),
+    ("WA Critical hit (%)", "51", "metrics", "wa_2025.nisar_agreement_win_critical_hit_pct", P0),
     ("WA k days before (Critical best day)", "4", "metrics", "wa_2025.nisar_agreement_win_critical_days_before", I0),
     ("WA High+ land, same day (%)", "9", "sameday", "wa_2025.alto_plus.area_pct", P0),
     ("WA Critical land (%)", "6", "sameday", "wa_2025.critico.area_pct", P0),
