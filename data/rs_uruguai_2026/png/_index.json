@@ -18008,6 +18008,2085 @@
       "sensor": "NISAR",
       "label": "NISAR radar mosaic HV · 2026-11-02 → 2026-11-05",
       "note": "Merged NISAR radar mosaic: each pixel shows the pass closest to the reference date within the window (tie → later). Different tracks look at different incidence angles, so seams and brightness steps between passes are expected. Fixed −25..0 dB stretch. Backscatter, not a flood map."
+    },
+    {
+      "date": "2026-08-13",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_028_010_D_103_2005_DHDH_A_20260813T215847_20260813T215922_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_028_010_D_104_2005_DHDH_A_20260813T215921_20260813T215956_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20260813_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260813_010D_cc00f411.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 010D · 2026-08-13 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-08-13",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_028_010_D_103_2005_DHDH_A_20260813T215847_20260813T215922_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_028_010_D_104_2005_DHDH_A_20260813T215921_20260813T215956_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20260813_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260813_010D_9a1edbc6.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 010D · 2026-08-13 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-08-17",
+      "track": "060A",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_028_060_A_162_2005_DHDH_A_20260817T094649_20260817T094723_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_028_060_A_163_2005_DHDH_A_20260817T094722_20260817T094757_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20260817_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260817_060A_9aaa3d29.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 060A · 2026-08-17 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-08-17",
+      "track": "060A",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_028_060_A_162_2005_DHDH_A_20260817T094649_20260817T094723_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_028_060_A_163_2005_DHDH_A_20260817T094722_20260817T094757_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20260817_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260817_060A_1a4f2bf3.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 060A · 2026-08-17 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-08-18",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_028_082_D_103_2005_DHDH_A_20260818T215028_20260818T215102_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_028_082_D_104_2005_DHDH_A_20260818T215101_20260818T215136_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20260818_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260818_082D_033efd08.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.3,
+      "label": "NISAR radar HH · track 082D · 2026-08-18 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-08-18",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_028_082_D_103_2005_DHDH_A_20260818T215028_20260818T215102_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_028_082_D_104_2005_DHDH_A_20260818T215101_20260818T215136_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20260818_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260818_082D_e3dacb4b.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.1,
+      "label": "NISAR radar HV · track 082D · 2026-08-18 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-08-25",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_029_010_D_103_2005_DHDH_A_20260825T215847_20260825T215922_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_029_010_D_104_2005_DHDH_A_20260825T215921_20260825T215955_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20260825_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260825_010D_19c04b65.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 010D · 2026-08-25 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-08-25",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_029_010_D_103_2005_DHDH_A_20260825T215847_20260825T215922_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_029_010_D_104_2005_DHDH_A_20260825T215921_20260825T215955_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20260825_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260825_010D_dff10fa7.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 010D · 2026-08-25 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-09-18",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_031_010_D_103_2005_DHDH_A_20260918T215847_20260918T215922_P05023_F_F_J_001",
+        "NISAR_L2_PR_GCOV_031_010_D_104_2005_DHDH_A_20260918T215921_20260918T215955_P05023_F_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20260918_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260918_010D_70a711e4.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 010D · 2026-09-18 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-09-18",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_031_010_D_103_2005_DHDH_A_20260918T215847_20260918T215922_P05023_F_F_J_001",
+        "NISAR_L2_PR_GCOV_031_010_D_104_2005_DHDH_A_20260918T215921_20260918T215955_P05023_F_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20260918_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260918_010D_d651351a.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 010D · 2026-09-18 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-09-22",
+      "track": "060A",
+      "mode": "2005_SHSH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_031_060_A_162_2005_SHSH_A_20260922T094648_20260922T094723_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_031_060_A_163_2005_SHSH_A_20260922T094722_20260922T094757_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20260922_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260922_060A_98984145.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 060A · 2026-09-22 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-09-23",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_031_082_D_103_2005_DHDH_A_20260923T215027_20260923T215102_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_031_082_D_104_2005_DHDH_A_20260923T215101_20260923T215136_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20260923_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260923_082D_55985d0f.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.2,
+      "label": "NISAR radar HH · track 082D · 2026-09-23 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-09-23",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_031_082_D_103_2005_DHDH_A_20260923T215027_20260923T215102_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_031_082_D_104_2005_DHDH_A_20260923T215101_20260923T215136_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20260923_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260923_082D_bfb38568.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.0,
+      "label": "NISAR radar HV · track 082D · 2026-09-23 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-09-30",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_032_010_D_103_2005_DHDH_A_20260930T215847_20260930T215922_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_032_010_D_104_2005_DHDH_A_20260930T215921_20260930T215955_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20260930_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20260930_010D_94f1a8fd.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 010D · 2026-09-30 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-09-30",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_032_010_D_103_2005_DHDH_A_20260930T215847_20260930T215922_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_032_010_D_104_2005_DHDH_A_20260930T215921_20260930T215955_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20260930_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20260930_010D_ab556f61.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 010D · 2026-09-30 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-04",
+      "track": "060A",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_032_060_A_162_2005_DHDH_A_20261004T094649_20261004T094723_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_032_060_A_163_2005_DHDH_A_20261004T094722_20261004T094757_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20261004_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261004_060A_17a0f3fd.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 060A · 2026-10-04 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-04",
+      "track": "060A",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_032_060_A_162_2005_DHDH_A_20261004T094649_20261004T094723_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_032_060_A_163_2005_DHDH_A_20261004T094722_20261004T094757_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20261004_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261004_060A_6096a34f.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 060A · 2026-10-04 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-05",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_032_082_D_103_2005_DHDH_A_20261005T215028_20261005T215102_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_032_082_D_104_2005_DHDH_A_20261005T215101_20261005T215136_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20261005_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261005_082D_991b20f9.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.3,
+      "label": "NISAR radar HH · track 082D · 2026-10-05 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-05",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_032_082_D_103_2005_DHDH_A_20261005T215028_20261005T215102_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_032_082_D_104_2005_DHDH_A_20261005T215101_20261005T215136_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20261005_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261005_082D_fe09ce1d.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.0,
+      "label": "NISAR radar HV · track 082D · 2026-10-05 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-12",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_033_010_D_103_2005_DHDH_A_20261012T215847_20261012T215922_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_033_010_D_104_2005_DHDH_A_20261012T215921_20261012T215955_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20261012_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261012_010D_95db39b6.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 010D · 2026-10-12 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-12",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_033_010_D_103_2005_DHDH_A_20261012T215847_20261012T215922_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_033_010_D_104_2005_DHDH_A_20261012T215921_20261012T215955_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20261012_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261012_010D_9d747898.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 010D · 2026-10-12 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-16",
+      "track": "060A",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_033_060_A_162_2005_DHDH_A_20261016T094649_20261016T094723_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_033_060_A_163_2005_DHDH_A_20261016T094722_20261016T094757_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20261016_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261016_060A_85574d16.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 060A · 2026-10-16 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-16",
+      "track": "060A",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_033_060_A_162_2005_DHDH_A_20261016T094649_20261016T094723_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_033_060_A_163_2005_DHDH_A_20261016T094722_20261016T094757_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20261016_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261016_060A_df0a8b05.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 060A · 2026-10-16 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-17",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_033_082_D_103_2005_DHDH_A_20261017T215028_20261017T215102_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_033_082_D_104_2005_DHDH_A_20261017T215101_20261017T215136_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hh_20261017_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261017_082D_128b606e.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.3,
+      "label": "NISAR radar HH · track 082D · 2026-10-17 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-17",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_033_082_D_103_2005_DHDH_A_20261017T215028_20261017T215102_P05023_N_F_J_001",
+        "NISAR_L2_PR_GCOV_033_082_D_104_2005_DHDH_A_20261017T215101_20261017T215136_P05023_N_F_J_001"
+      ],
+      "sensor": "NISAR (GCOV provisional)",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_PROVISIONAL_V1)",
+      "id": "nisar_uy_hv_20261017_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261017_082D_15258e3e.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.1,
+      "label": "NISAR radar HV · track 082D · 2026-10-17 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-24",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_034_010_D_103_2005_DHDH_A_20261024T215847_20261024T215922_P05036_N_F_J_001",
+        "NISAR_L2_PR_GCOV_034_010_D_104_2005_DHDH_A_20261024T215921_20261024T215956_P05036_N_F_J_001"
+      ],
+      "sensor": "NISAR",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+      "id": "nisar_uy_hh_20261024_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261024_010D_a33959ba.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 010D · 2026-10-24 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-24",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_034_010_D_103_2005_DHDH_A_20261024T215847_20261024T215922_P05036_N_F_J_001",
+        "NISAR_L2_PR_GCOV_034_010_D_104_2005_DHDH_A_20261024T215921_20261024T215956_P05036_N_F_J_001"
+      ],
+      "sensor": "NISAR",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+      "id": "nisar_uy_hv_20261024_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261024_010D_455783f6.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 010D · 2026-10-24 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-28",
+      "track": "060A",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_034_060_A_162_2005_DHDH_A_20261028T094649_20261028T094724_P05036_N_F_J_001",
+        "NISAR_L2_PR_GCOV_034_060_A_163_2005_DHDH_A_20261028T094723_20261028T094757_P05036_N_F_J_001"
+      ],
+      "sensor": "NISAR",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+      "id": "nisar_uy_hh_20261028_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261028_060A_f627eef8.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 060A · 2026-10-28 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-28",
+      "track": "060A",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        162,
+        163
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_034_060_A_162_2005_DHDH_A_20261028T094649_20261028T094724_P05036_N_F_J_001",
+        "NISAR_L2_PR_GCOV_034_060_A_163_2005_DHDH_A_20261028T094723_20261028T094757_P05036_N_F_J_001"
+      ],
+      "sensor": "NISAR",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+      "id": "nisar_uy_hv_20261028_060A",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261028_060A_e9fbae39.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 060A · 2026-10-28 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-29",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_034_082_D_103_2005_DHDH_A_20261029T215028_20261029T215103_P05036_N_F_J_001",
+        "NISAR_L2_PR_GCOV_034_082_D_104_2005_DHDH_A_20261029T215102_20261029T215136_P05036_N_F_J_001"
+      ],
+      "sensor": "NISAR",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+      "id": "nisar_uy_hh_20261029_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261029_082D_8003c86b.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.2,
+      "label": "NISAR radar HH · track 082D · 2026-10-29 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-10-29",
+      "track": "082D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_034_082_D_103_2005_DHDH_A_20261029T215028_20261029T215103_P05036_N_F_J_001",
+        "NISAR_L2_PR_GCOV_034_082_D_104_2005_DHDH_A_20261029T215102_20261029T215136_P05036_N_F_J_001"
+      ],
+      "sensor": "NISAR",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+      "id": "nisar_uy_hv_20261029_082D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261029_082D_3a794ef9.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 98.0,
+      "label": "NISAR radar HV · track 082D · 2026-10-29 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-11-05",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_035_010_D_103_2005_DHDH_A_20261105T215848_20261105T215922_P05036_N_F_J_001",
+        "NISAR_L2_PR_GCOV_035_010_D_104_2005_DHDH_A_20261105T215921_20261105T215956_P05036_N_F_J_001"
+      ],
+      "sensor": "NISAR",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+      "id": "nisar_uy_hh_20261105_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HH",
+      "png": "rs_uruguai_2026/png/nisar_uy_hh_20261105_010D_19f84f5d.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HH · track 010D · 2026-11-05 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
+    },
+    {
+      "date": "2026-11-05",
+      "track": "010D",
+      "mode": "2005_DHDH_A",
+      "frames": [
+        103,
+        104
+      ],
+      "granules": [
+        "NISAR_L2_PR_GCOV_035_010_D_103_2005_DHDH_A_20261105T215848_20261105T215922_P05036_N_F_J_001",
+        "NISAR_L2_PR_GCOV_035_010_D_104_2005_DHDH_A_20261105T215921_20261105T215956_P05036_N_F_J_001"
+      ],
+      "sensor": "NISAR",
+      "source": "NISAR L2 GCOV (ASF, NISAR_L2_GCOV_V1)",
+      "id": "nisar_uy_hv_20261105_010D",
+      "kind": "nisar_frame_uy",
+      "box": "uruguaiana",
+      "box_bounds": [
+        -57.48,
+        -29.97,
+        -57.03,
+        -29.2
+      ],
+      "polarization": "HV",
+      "png": "rs_uruguai_2026/png/nisar_uy_hv_20261105_010D_69a3054d.png",
+      "cog": null,
+      "bounds": [
+        -57.48,
+        -29.969936,
+        -57.030073,
+        -29.2
+      ],
+      "stretch_db": {
+        "db_min": -25.0,
+        "db_max": 0.0
+      },
+      "legend": {
+        "unit": "dB",
+        "db_min": -25.0,
+        "db_max": 0.0,
+        "gray": "1 + (dB − db_min) / (db_max − db_min) × 254; alpha 0 = no data",
+        "stops": [
+          {
+            "v": -25,
+            "color": "#000000",
+            "label": "−25 dB · smooth (open water; HV: bare/water)"
+          },
+          {
+            "v": -12.5,
+            "color": "#808080",
+            "label": "−12.5 dB"
+          },
+          {
+            "v": 0,
+            "color": "#ffffff",
+            "label": "0 dB · bright (urban, flooded trees)"
+          }
+        ]
+      },
+      "coverage_pct": 100.0,
+      "label": "NISAR radar HV · track 010D · 2026-11-05 (Uruguaiana box)",
+      "note": "Single NISAR pass clipped to the Uruguaiana box (100 m, one grid for every pass); fixed −25..0 dB stretch; coverage_pct = share of the box imaged. Not a flood map."
     }
   ]
 }

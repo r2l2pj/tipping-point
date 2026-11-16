@@ -151,7 +151,9 @@ def _layer_entry(case_id: str, layer_id: str, ref_date, index_entry: dict | None
                   "nisar_passes", "nisar_water_km2", "nisar_outside_floodplain_pct", "nisar_raised_km2",
                   "pass_date", "pass_track", "age_days",
                   # merged NISAR mosaics (kind nisar_mosaic)
-                  "passes", "source_png", "source_legend", "footprints"):
+                  "passes", "source_png", "source_legend", "footprints",
+                  # L67 Uruguaiana-box single-pass frames (kind nisar_frame_uy)
+                  "box", "box_bounds"):
         if extra in index_entry:
             entry[extra] = index_entry[extra]
     if entry.get("forecast") and "forecast_source" not in entry:
