@@ -1,0 +1,13 @@
+# tipping-point Now backup run: hourly at :41 and :53 UTC
+# Replaces the schedule of .github/workflows/now-watchdog.yml. Installed disabled; enable it at cutover.
+[Unit]
+Description=tipping-point Now backup run: hourly at :41 and :53 UTC
+
+[Timer]
+OnCalendar=*-*-* *:41,53:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=tipping-point-now-backup.service
+
+[Install]
+WantedBy=timers.target

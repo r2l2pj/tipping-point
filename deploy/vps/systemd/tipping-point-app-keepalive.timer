@@ -1,0 +1,13 @@
+# tipping-point app keepalive: every 10 minutes
+# Replaces the schedule of .github/workflows/app-keepalive.yml. Installed disabled; enable it at cutover.
+[Unit]
+Description=tipping-point app keepalive: every 10 minutes
+
+[Timer]
+OnCalendar=*-*-* *:0/10:00 UTC
+Persistent=true
+AccuracySec=10s
+Unit=tipping-point-app-keepalive.service
+
+[Install]
+WantedBy=timers.target

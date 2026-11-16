@@ -1,11 +1,32 @@
 name: vps-tools-ci
 
-# Host-side VPS tools (deploy/vps): standard-library Python tests.
+# Host-side VPS tools (deploy/vps): standard-library Python tests, shell tests
+# with stub commands, shellcheck, and static checks of the systemd units. No
+# Docker, no network, no root, no bun, no uv sync: a few seconds.
 on:
   push:
-    paths: ["deploy/vps/**", ".github/workflows/vps-tools-ci.yml"]
+    paths:
+      - "deploy/vps/**"
+      - "live/publish_fallback.py"
+      - ".github/workflows/vps-tools-ci.yml"
+      # the unit and script tests read these workflows (schedules, limits, names)
+      - ".github/workflows/now.yml"
+      - ".github/workflows/nisar.yml"
+      - ".github/workflows/validation.yml"
+      - ".github/workflows/reference.yml"
+      - ".github/workflows/now-watchdog.yml"
+      - ".github/workflows/app-keepalive.yml"
   pull_request:
-    paths: ["deploy/vps/**", ".github/workflows/vps-tools-ci.yml"]
+    paths:
+      - "deploy/vps/**"
+      - "live/publish_fallback.py"
+      - ".github/workflows/vps-tools-ci.yml"
+      - ".github/workflows/now.yml"
+      - ".github/workflows/nisar.yml"
+      - ".github/workflows/validation.yml"
+      - ".github/workflows/reference.yml"
+      - ".github/workflows/now-watchdog.yml"
+      - ".github/workflows/app-keepalive.yml"
 
 permissions:
   contents: read
@@ -13,6 +34,39 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
+      # only what the tests read: no data/, no app/
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
+            deploy
+            live
       - run: python3 deploy/vps/test_refresh_sqlite.py
+      - name: shellcheck
+        run: shellcheck -x deploy/vps/*.sh
+      - name: shell tests (stub commands, local git repositories)
+        shell: bash
+        run: |
+          # independent tests, each in its own temporary directory: run them side by side
+          set -uo pipefail
+          logs=$(mktemp -d)
+          names=()
+          pids=()
+          for t in deploy/vps/test-*.sh; do
+            bash "$t" >"$logs/$(basename "$t").log" 2>&1 &
+            pids+=("$!")
+            names+=("$t")
+          done
+          fail=0
+          for i in "${!pids[@]}"; do
+            if wait "${pids[$i]}"; then
+              echo "ok   ${names[$i]}"
+            else
+              fail=1
+              echo "FAIL ${names[$i]}"
+              tail -n 30 "$logs/$(basename "${names[$i]}").log"
+            fi
+          done
+          exit "$fail"

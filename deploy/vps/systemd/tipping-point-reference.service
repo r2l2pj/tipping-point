@@ -1,0 +1,52 @@
+# tipping-point reference weekly job
+# Replaces .github/workflows/reference.yml.
+# SAFETY: this host also runs unrelated services of another company ("FE
+# services"), currently stopped. This unit and its script touch only
+# tipping-point things (see the script header). The unit has no [Install]
+# section; its timer is installed disabled and enabled at cutover (runbook:
+# docs/DEPLOY-VPS.md, "Running without GitHub Actions").
+[Unit]
+Description=tipping-point reference weekly job
+Documentation=file:///opt/tipping-point/docs/DEPLOY-VPS.md
+OnFailure=tipping-point-notify@%n.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=tipping-pipeline
+Group=tipping-pipeline
+EnvironmentFile=/etc/tipping-point/pipeline.env
+Environment=HOME=/var/lib/tipping-point-pipeline
+Environment=PIPELINE_STATE_DIR=/var/lib/tipping-point-pipeline
+Environment=PIPELINE_CHECKOUT=/opt/tipping-point
+WorkingDirectory=/var/lib/tipping-point-pipeline
+ExecStart=/usr/local/lib/tipping-point-pipeline/pipeline-run.sh reference
+# Outer limit. The run limit of the workflow is enforced inside the script
+# with timeout(1); this one also covers the wait for the shared lock.
+TimeoutStartSec=7200
+SyslogIdentifier=tipping-point-reference
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+CPUWeight=50
+CPUQuota=200%
+MemoryHigh=3500M
+MemoryMax=4G
+TasksMax=1024
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tipping-point-pipeline /opt/tipping-point
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+UMask=0027

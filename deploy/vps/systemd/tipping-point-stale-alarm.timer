@@ -1,0 +1,13 @@
+# tipping-point stale-data alarm: hourly at :41 UTC
+# Replaces the schedule of .github/workflows/now-watchdog.yml. Installed disabled; enable it at cutover.
+[Unit]
+Description=tipping-point stale-data alarm: hourly at :41 UTC
+
+[Timer]
+OnCalendar=*-*-* *:41:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=tipping-point-stale-alarm.service
+
+[Install]
+WantedBy=timers.target

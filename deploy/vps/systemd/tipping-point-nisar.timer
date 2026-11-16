@@ -1,0 +1,13 @@
+# tipping-point NISAR daily job: daily at 06:30 UTC
+# Replaces the schedule of .github/workflows/nisar.yml. Installed disabled; enable it at cutover.
+[Unit]
+Description=tipping-point NISAR daily job: daily at 06:30 UTC
+
+[Timer]
+OnCalendar=*-*-* 06:30:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=tipping-point-nisar.service
+
+[Install]
+WantedBy=timers.target

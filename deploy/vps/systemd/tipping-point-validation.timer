@@ -1,0 +1,13 @@
+# tipping-point validation daily job: daily at 07:00 UTC
+# Replaces the schedule of .github/workflows/validation.yml. Installed disabled; enable it at cutover.
+[Unit]
+Description=tipping-point validation daily job: daily at 07:00 UTC
+
+[Timer]
+OnCalendar=*-*-* 07:00:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=tipping-point-validation.service
+
+[Install]
+WantedBy=timers.target
