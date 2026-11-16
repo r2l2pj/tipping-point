@@ -1,0 +1,47 @@
+# tipping-point check or restore started by hand: tipping-point-by-hand@ACTION.service
+#   ACTION = preflight-<job> | dry-run-<job> | restore-<40 hex commit>
+# It runs the same script as the data jobs, as the same user, with the same environment
+# file, so a check by hand sees what the real job sees and no secret is ever typed on a
+# command line (runbook: docs/DEPLOY-VPS.md, "Running without GitHub Actions").
+# SAFETY: this host also runs unrelated services of another company ("FE
+# services"), currently stopped. This unit and its script touch only
+# tipping-point things (see the script header). It has no timer and no OnFailure=:
+# only the operator starts it, and the result is shown at once.
+[Unit]
+Description=tipping-point by-hand action %i
+Documentation=file:///opt/tipping-point/docs/DEPLOY-VPS.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=tipping-pipeline
+Group=tipping-pipeline
+EnvironmentFile=/etc/tipping-point/pipeline.env
+Environment=HOME=/var/lib/tipping-point-pipeline
+Environment=PIPELINE_STATE_DIR=/var/lib/tipping-point-pipeline
+Environment=PIPELINE_CHECKOUT=/opt/tipping-point
+WorkingDirectory=/var/lib/tipping-point-pipeline
+ExecStart=/usr/local/lib/tipping-point-pipeline/pipeline-run.sh --by-hand %i
+# Outer limit for one action (a dry run may start the Python environment).
+TimeoutStartSec=900
+SyslogIdentifier=tipping-point-by-hand
+Nice=10
+MemoryMax=2G
+TasksMax=256
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tipping-point-pipeline /opt/tipping-point
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+UMask=0027

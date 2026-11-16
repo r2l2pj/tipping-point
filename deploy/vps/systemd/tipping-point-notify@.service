@@ -1,0 +1,42 @@
+# Failure notice for the tipping-point unit named in the instance (%i).
+# Started by OnFailure= of the other tipping-point services. It writes a line
+# to the journal and, when NOTIFY_WEBHOOK_URL is set in its own small file
+# /etc/tipping-point/notify.env, sends one HTTPS POST. It does not read the
+# secrets of the data jobs.
+# SAFETY: this host also runs unrelated services of another company ("FE
+# services"), currently stopped. This unit and its script touch only
+# tipping-point things (see the script header). It has no timer: only
+# OnFailure= of the other units starts it.
+[Unit]
+Description=tipping-point failure notice for %i
+Documentation=file:///opt/tipping-point/docs/DEPLOY-VPS.md
+
+[Service]
+Type=oneshot
+User=tipping-pipeline
+Group=tipping-pipeline
+EnvironmentFile=-/etc/tipping-point/notify.env
+Environment=HOME=/var/lib/tipping-point-pipeline
+Environment=PIPELINE_STATE_DIR=/var/lib/tipping-point-pipeline
+ExecStart=/usr/local/lib/tipping-point-pipeline/notify.sh %i
+TimeoutStartSec=90
+SyslogIdentifier=tipping-point-notify
+Nice=10
+MemoryMax=128M
+TasksMax=64
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tipping-point-pipeline
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+UMask=0027

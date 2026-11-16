@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""flock(1) stand-in for hosts without it (macOS). Tests only.
+
+flock [-n] [-w SECONDS] FD       lock the inherited file descriptor FD
+Exit 0 locked, 1 busy (-n) or timed out (-w).
+"""
+import fcntl
+import sys
+import time
+
+
+def main(argv):
+    nonblock, wait, fd = False, None, None
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if a == "-n":
+            nonblock = True
+        elif a == "-w":
+            i += 1
+            wait = float(argv[i])
+        elif a.isdigit():
+            fd = int(a)
+        else:
+            sys.exit(f"flock shim: unsupported argument {a}")
+        i += 1
+    if fd is None:
+        sys.exit("flock shim: needs a file descriptor number")
+    deadline = None if wait is None else time.time() + wait
+    while True:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return 0
+        except OSError:
+            if nonblock or (deadline is not None and time.time() >= deadline):
+                return 1
+            time.sleep(0.05)
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

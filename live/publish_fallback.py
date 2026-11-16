@@ -2,11 +2,17 @@
 
 Manifest-last is guaranteed by the producers: export_fallback writes
 manifest.json last inside data/. This script only snapshots their output.
+
+Runs on a GitHub runner (fresh checkout, token credentials) or on the VPS
+(persistent checkout, token or deploy key; docs/DEPLOY-VPS.md). Settings for the VPS:
+FALLBACK_GIT_NAME / FALLBACK_GIT_EMAIL (commit identity) and --no-push (build
+and check the snapshot, never commit, push or upload a release asset).
 """
 from __future__ import annotations
 
 import argparse
 import datetime as dt
+import os
 import shutil
 import subprocess
 import tempfile
@@ -41,10 +47,19 @@ def _app_facing(path: Path, source: Path) -> bool:
             and path.suffix.lower() in APP_FACING_SUFFIXES)
 
 
+# Set by main(--no-push): nothing leaves this machine, release assets included.
+NO_PUSH = False
+
+
 def upload_release_assets(paths: list[Path], source: Path) -> None:
     """L26: >max_mb files go to a `fallback-assets` GitHub release instead
     of the branch. Best-effort: needs `gh` + a push-capable token."""
-    if not paths or not shutil.which("gh"):
+    if not paths:
+        return
+    if NO_PUSH:
+        print(f"no-push: {len(paths)} oversized file(s) not uploaded as release assets")
+        return
+    if not shutil.which("gh"):
         return
     subprocess.run(["gh", "release", "create", "fallback-assets", "--latest=false",
                     "--title", "fallback data assets", "--notes",
@@ -68,7 +83,6 @@ def _keep_always() -> tuple[str, ...]:
     current fallback even when this job's checkout has them. The non-Now jobs
     set FALLBACK_KEEP=now — their data/now is main's committed (stale) copy,
     and only the Now job may replace the live Now outputs."""
-    import os
     return tuple(os.environ.get("FALLBACK_KEEP", "").split())
 
 
@@ -146,7 +160,6 @@ def dropped_paths(worktree: Path, on_main: set[str]) -> list[str]:
     wipe a file that is committed on main). FALLBACK_ALLOW_DROP: space-
     separated globs for an intended removal."""
     import fnmatch
-    import os
     res = git("diff", "--cached", "--name-only", "--diff-filter=D", cwd=worktree,
               allowed=(0, 1))
     allow = os.environ.get("FALLBACK_ALLOW_DROP", "").split()
@@ -155,9 +168,42 @@ def dropped_paths(worktree: Path, on_main: set[str]) -> list[str]:
                   and not any(fnmatch.fnmatch(rel, g) for g in allow))
 
 
+def remote_fallback_exists() -> bool:
+    """Ask origin directly. `git ls-remote --exit-code` exits 2 only when the
+    server answered and has no such branch; any other failure (network,
+    credentials) means we cannot tell, and then nothing may be published."""
+    res = git("ls-remote", "--exit-code", "origin", "refs/heads/fallback",
+              allowed=tuple(range(256)))
+    if res.returncode == 0:
+        return True
+    if res.returncode == 2:
+        return False
+    raise SystemExit("ERROR: cannot tell whether origin has a fallback branch "
+                     f"(git ls-remote exit {res.returncode}); refusing to publish")
+
+
+def fetch_fallback() -> bool:
+    """Fetch origin/fallback. True: it is there. False: origin really has no
+    fallback branch (the first publish). A failed fetch is not "no branch":
+    building an orphan snapshot from this checkout then would force-push main's
+    stale copies over the good fallback, so the publish stops instead."""
+    fetched = git("fetch", "origin", "fallback", allowed=tuple(range(256)))
+    if (fetched.returncode == 0 and git("rev-parse", "--verify", "origin/fallback",
+                                        allowed=(0, 1, 128)).returncode == 0):
+        return True
+    if not remote_fallback_exists():
+        return False
+    raise SystemExit("ERROR: origin has a fallback branch but it could not be fetched "
+                     f"(git fetch exit {fetched.returncode}); refusing to publish a snapshot "
+                     "that would overwrite it")
+
+
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--no-push", action="store_true",
+                        help="build the snapshot and run the drop guard, then print what "
+                             "would change; never commit, push or upload")
     parser.add_argument("--max-mb", type=float, default=50)
     args = parser.parse_args(argv)
     if not 0 < args.max_mb < float("inf"):
@@ -165,15 +211,18 @@ def main(argv=None) -> None:
     if args.dry_run:
         print(f"dry-run: snapshot {DATA} to origin fallback (cap {args.max_mb:g} MB)")
         return
+    global NO_PUSH
+    NO_PUSH = args.no_push
     if not DATA.is_dir():
         raise SystemExit("ERROR: data/ directory is missing; refusing to publish")
-    git("fetch", "origin", "fallback", allowed=tuple(range(256)))
-    exists = git("rev-parse", "--verify", "origin/fallback", allowed=(0, 1, 128)).returncode == 0
+    exists = fetch_fallback()
     with tempfile.TemporaryDirectory(prefix="fallback-") as temp:
         worktree = Path(temp) / "wb"
         try:
             if exists:
-                git("worktree", "add", str(worktree), "fallback")
+                # -B: a persistent checkout may hold a stale local `fallback`;
+                # always start from the fetched origin/fallback
+                git("worktree", "add", "-B", "fallback", str(worktree), "origin/fallback")
             else:
                 git("worktree", "add", str(worktree), "--detach", "HEAD")
                 git("checkout", "--orphan", "fallback", cwd=worktree)
@@ -191,10 +240,24 @@ def main(argv=None) -> None:
             if git("diff", "--cached", "--quiet", cwd=worktree, allowed=(0, 1)).returncode == 0:
                 print("no changes")
                 return
+            if args.no_push:
+                changes = git("diff", "--cached", "--name-status", cwd=worktree,
+                              allowed=(0, 1)).stdout.splitlines()
+                counts = {k: sum(1 for c in changes if c.startswith(k)) for k in "AMD"}
+                print(f"no-push: snapshot differs from the current fallback: "
+                      f"{counts['A']} added, {counts['M']} modified, {counts['D']} deleted")
+                for line in changes[:60]:
+                    print(f"no-push:   {line}")
+                if len(changes) > 60:
+                    print(f"no-push:   ... {len(changes) - 60} more")
+                print("no-push: nothing committed, pushed or uploaded")
+                return
             timestamp = dt.datetime.now(dt.UTC).isoformat()
             amend = ["--amend", "--reset-author"] if exists else []
-            git("-c", "user.name=github-actions[bot]", "-c",
-                "user.email=41898282+github-actions[bot]@users.noreply.github.com",
+            name = os.environ.get("FALLBACK_GIT_NAME") or "github-actions[bot]"
+            email = (os.environ.get("FALLBACK_GIT_EMAIL")
+                     or "41898282+github-actions[bot]@users.noreply.github.com")
+            git("-c", f"user.name={name}", "-c", f"user.email={email}",
                 "commit", *amend, "-m", f"fallback: data snapshot {timestamp} [skip ci]",
                 cwd=worktree)
             git("push", "-f", "origin", "fallback", cwd=worktree)

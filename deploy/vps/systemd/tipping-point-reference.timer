@@ -1,0 +1,13 @@
+# tipping-point reference weekly job: Mondays at 08:00 UTC
+# Replaces the schedule of .github/workflows/reference.yml. Installed disabled; enable it at cutover.
+[Unit]
+Description=tipping-point reference weekly job: Mondays at 08:00 UTC
+
+[Timer]
+OnCalendar=Mon *-*-* 08:00:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=tipping-point-reference.service
+
+[Install]
+WantedBy=timers.target

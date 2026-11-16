@@ -10,6 +10,7 @@ from live import publish_fallback as publish
 @pytest.fixture(autouse=True)
 def no_rsync(monkeypatch):
     monkeypatch.setattr(publish.shutil, "which", lambda name: None)
+    monkeypatch.setattr(publish, "NO_PUSH", False)
 
 
 @pytest.fixture
@@ -42,7 +43,9 @@ def test_existing_snapshot(snapshot, monkeypatch):
     publish.main([])
     assert calls[0][-3:] == ["fetch", "origin", "fallback"]
     assert any(cmd[-3:] == ["rev-parse", "--verify", "origin/fallback"] for cmd in calls)
-    assert any("worktree" in cmd and "add" in cmd and cmd[-1] == "fallback" for cmd in calls)
+    # -B: a stale local `fallback` is reset to the fetched origin/fallback
+    assert any(cmd[-6:-2] == ["worktree", "add", "-B", "fallback"]
+               and cmd[-1] == "origin/fallback" for cmd in calls)
     assert any("commit" in cmd and "--amend" in cmd and "--reset-author" in cmd for cmd in calls)
     assert any(cmd[-4:] == ["push", "-f", "origin", "fallback"] for cmd in calls)
     assert calls[-1][-4:-1] == ["worktree", "remove", "--force"]
@@ -55,6 +58,8 @@ def test_new_orphan(snapshot, monkeypatch):
         result = run(cmd, **kwargs)
         if "fetch" in cmd or "rev-parse" in cmd:
             result.returncode = 1
+        if "ls-remote" in cmd:
+            result.returncode = 2          # the server answered: no such branch
         return result
 
     monkeypatch.setattr(publish.subprocess, "run", missing)
@@ -272,3 +277,159 @@ def test_fallback_keep_now_for_non_now_jobs(tmp_path, monkeypatch):
     assert (target / "now" / "nisar_stack" / "png" / "a.png").exists()
     assert not (target / "now" / "now").exists()
     assert (target / "wa_2025" / "x.json").read_text() == "new"
+
+
+def test_commit_identity_defaults_and_vps_override(snapshot, monkeypatch):
+    """Default stays the Actions bot; the VPS sets its own identity by env."""
+    _, calls, _ = snapshot
+    monkeypatch.delenv("FALLBACK_GIT_NAME", raising=False)
+    monkeypatch.delenv("FALLBACK_GIT_EMAIL", raising=False)
+    publish.main([])
+    commit = next(cmd for cmd in calls if "commit" in cmd)
+    assert "user.name=github-actions[bot]" in commit
+    assert "user.email=41898282+github-actions[bot]@users.noreply.github.com" in commit
+    calls.clear()
+    monkeypatch.setenv("FALLBACK_GIT_NAME", "tipping-point-vps")
+    monkeypatch.setenv("FALLBACK_GIT_EMAIL", "vps@example.invalid")
+    publish.main([])
+    commit = next(cmd for cmd in calls if "commit" in cmd)
+    assert "user.name=tipping-point-vps" in commit
+    assert "user.email=vps@example.invalid" in commit
+
+
+def test_no_push_reports_the_snapshot_and_changes_nothing(tmp_path, monkeypatch, capsys):
+    """VPS cutover: --no-push builds the snapshot against the real fallback,
+    prints what would change, and never commits, pushes or uploads."""
+    repo = _real_repo(tmp_path)
+    monkeypatch.setattr(publish, "ROOT", repo)
+    monkeypatch.setattr(publish, "DATA", repo / "data")
+    monkeypatch.delenv("FALLBACK_ALLOW_DROP", raising=False)
+    (repo / "data" / "now" / "new.json").write_text("{}")
+    before = _fallback_files(repo)
+    publish.main(["--no-push"])
+    out = capsys.readouterr().out
+    assert "no-push: snapshot differs from the current fallback" in out
+    assert "data/now/new.json" in out
+    assert "nothing committed, pushed or uploaded" in out
+    assert _fallback_files(repo) == before                      # origin untouched
+    publish.main([])                                            # a plain run still publishes
+    assert "data/now/new.json" in _fallback_files(repo)
+
+
+def test_no_push_still_runs_the_drop_guard(tmp_path, monkeypatch, capsys):
+    repo = _real_repo(tmp_path)
+    monkeypatch.setattr(publish, "ROOT", repo)
+    monkeypatch.setattr(publish, "DATA", repo / "data")
+    monkeypatch.delenv("FALLBACK_ALLOW_DROP", raising=False)
+    (repo / "data" / "wa_2025" / "scars.geojson").unlink()
+    with pytest.raises(SystemExit, match="drop 1 app-facing"):
+        publish.main(["--no-push"])
+
+
+def test_no_push_skips_release_asset_upload(tmp_path, monkeypatch, capsys):
+    calls = []
+    monkeypatch.setattr(publish.shutil, "which", lambda name: "/usr/bin/" + name)
+    monkeypatch.setattr(publish.subprocess, "run",
+                        lambda cmd, **kw: calls.append(cmd))
+    big = tmp_path / "big.tif"
+    big.write_bytes(b"x")
+    publish.upload_release_assets([big], tmp_path)
+    assert calls and calls[0][:3] == ["gh", "release", "create"]
+    calls.clear()
+    monkeypatch.setattr(publish, "NO_PUSH", True)
+    publish.upload_release_assets([big], tmp_path)
+    assert calls == []
+    assert "not uploaded as release assets" in capsys.readouterr().out
+
+
+def test_stale_local_fallback_branch_is_not_the_base(tmp_path, monkeypatch):
+    """A persistent checkout keeps a local `fallback` branch between runs. The
+    snapshot must start from the fetched origin/fallback, so state carried over
+    from it (now/history) is the newest, not the one from the last run."""
+    repo = _real_repo(tmp_path)                    # local `fallback` == origin/fallback
+    other = tmp_path / "other"
+    _git(tmp_path, "clone", "-q", "-b", "fallback", str(tmp_path / "origin.git"), str(other))
+    for k, v in (("user.name", "t"), ("user.email", "t@t")):
+        _git(other, "config", k, v)
+    (other / "data" / "now" / "history").mkdir(parents=True)
+    (other / "data" / "now" / "history" / "index.json").write_text('{"runs": [1]}')
+    _git(other, "add", "-A")
+    _git(other, "commit", "-q", "-m", "newer fallback")
+    _git(other, "push", "-q", "origin", "fallback")      # origin moves; repo's local branch is stale
+    monkeypatch.setattr(publish, "ROOT", repo)
+    monkeypatch.setattr(publish, "DATA", repo / "data")
+    monkeypatch.delenv("FALLBACK_ALLOW_DROP", raising=False)
+    publish.main([])
+    assert "data/now/history/index.json" in _fallback_files(repo)
+
+
+def _fetch_fails(monkeypatch, ls_remote=None):
+    """`git fetch origin fallback` fails (a network error) while everything
+    else, the push included, still works. ls_remote forces that answer too."""
+    real = publish.git
+
+    def git(*args, **kwargs):
+        if args[:3] == ("fetch", "origin", "fallback"):
+            return subprocess.CompletedProcess(
+                ["git", *args], 128, stdout="", stderr="simulated network failure")
+        if ls_remote is not None and args[:1] == ("ls-remote",):
+            return subprocess.CompletedProcess(["git", *args], ls_remote, stdout="", stderr="")
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(publish, "git", git)
+
+
+def _origin_fallback(repo):
+    out = subprocess.run(["git", "rev-parse", "refs/heads/fallback"], cwd=repo.parent / "origin.git",
+                         capture_output=True, text=True, check=True)
+    return out.stdout.strip()
+
+
+def test_failed_fetch_with_an_existing_branch_publishes_nothing(tmp_path, monkeypatch):
+    """The VPS drops origin/fallback before every run. A failed fetch must not be
+    read as "no fallback branch": an orphan snapshot of main's stale data/now
+    would be force-pushed over the good one."""
+    repo = _real_repo(tmp_path)
+    _git(repo, "update-ref", "-d", "refs/remotes/origin/fallback")
+    _git(repo, "branch", "-D", "fallback")
+    monkeypatch.setattr(publish, "ROOT", repo)
+    monkeypatch.setattr(publish, "DATA", repo / "data")
+    monkeypatch.delenv("FALLBACK_ALLOW_DROP", raising=False)
+    (repo / "data" / "now" / "stale_from_main.json").write_text("{}")
+    before = _origin_fallback(repo)
+    _fetch_fails(monkeypatch)                  # the real ls-remote finds the branch
+    with pytest.raises(SystemExit, match="could not be fetched"):
+        publish.main([])
+    assert _origin_fallback(repo) == before                      # origin untouched
+    assert "data/now/p_old.png" in _fallback_files(repo)         # the good snapshot is still there
+    assert "worktree" not in _git_out(repo, "worktree", "list").replace(str(repo), "")
+
+
+def test_failed_fetch_and_unreadable_origin_publishes_nothing(tmp_path, monkeypatch):
+    repo = _real_repo(tmp_path)
+    monkeypatch.setattr(publish, "ROOT", repo)
+    monkeypatch.setattr(publish, "DATA", repo / "data")
+    monkeypatch.delenv("FALLBACK_ALLOW_DROP", raising=False)
+    before = _origin_fallback(repo)
+    _fetch_fails(monkeypatch, ls_remote=128)   # cannot even ask: not "absent" either
+    with pytest.raises(SystemExit, match="cannot tell whether origin has a fallback branch"):
+        publish.main([])
+    assert _origin_fallback(repo) == before
+
+
+def test_first_publish_when_the_branch_is_really_absent(tmp_path, monkeypatch):
+    repo = _real_repo(tmp_path)
+    _git(repo.parent / "origin.git", "branch", "-D", "fallback")
+    _git(repo, "update-ref", "-d", "refs/remotes/origin/fallback")
+    _git(repo, "branch", "-D", "fallback")
+    monkeypatch.setattr(publish, "ROOT", repo)
+    monkeypatch.setattr(publish, "DATA", repo / "data")
+    monkeypatch.delenv("FALLBACK_ALLOW_DROP", raising=False)
+    publish.main([])                           # real git: fetch fails, ls-remote exits 2
+    assert "data/manifest.json" in _fallback_files(repo)
+    assert _git_out(repo.parent / "origin.git", "rev-list", "--count", "fallback").strip() == "1"
+
+
+def _git_out(cwd, *args):
+    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True,
+                          check=True).stdout

@@ -73,26 +73,7 @@ jobs:
           key: static-v1-response-4
 
       - name: Fetch static response inputs (cache miss only, sha256-checked)
-        run: |
-          set -euo pipefail
-          rel="https://github.com/r2l2pj/tipping-point/releases/download/static-v1"
-          get() {  # asset dest sha256
-            if [ ! -s "$2" ]; then
-              mkdir -p "$(dirname "$2")"
-              curl -fsSL --retry 3 -o "$2" "$rel/$1"
-            fi
-            echo "$3  $2" | sha256sum -c -
-          }
-          get gpw_popcount_2020_30sec.tif data/now/static/gpw/gpw_popcount_2020_30sec.tif 76dea7254b5b83147b9791fd2017df73ae8fb511eadaf00701b7dfa94dcbc203
-          get lc_type1_2025.tif data/now/static/mcd12q1/lc_type1_2025.tif 5606cd09ecf8ca00df62c1e9b39a89a5e1c4a9595c8f853555e324c497a1b68b
-          get gsw_occurrence_2021.tif data/now/static/jrc_gsw/gsw_occurrence_2021.tif a31b98c96856b1541b7a998bbbbcc00326d6bb61cdb8055245199d3ac9cf3c04
-          get gsw_seasonality_2021.tif data/now/static/jrc_gsw/gsw_seasonality_2021.tif 30cda153f75a687afd2421ef05337a5f392931a575431377bcf3ead65215c307
-          get hand_m.tif data/static/south_brazil/terrain/hand_m.tif 5445278f146e65dca6cfae21bf6d31a97dbaf79cac3fb8230a22eb39635a993d
-          # IBGE API is unreachable from GitHub runners: static copy
-          get municipalities_now.geojson data/now/static/ibge/municipalities_now.geojson 7a003eb3aac3e52985152134c32bd4a35398ae015e8c58a220a7fb1593b33d1f
-          # R2 90 m HAND (falls back to hand_m.tif) and R4 steep-slope mask
-          get hand_90m.tif data/static/south_brazil/terrain/hand_90m.tif 40bc5963e6fc2d727364f8b198837402098c965d545345c478705fd2c5f7bca1
-          get steep15_1as.tif data/now/static/nasadem/steep15_1as.tif 32bab1f708743854997773bef0d345f9fbaa2eee63fd20074c46ad9dc29711c9
+        run: bash deploy/vps/pipeline-lib.sh static-inputs response
 
       # R1 rolling state ("changed since last pass"): restore the newest
       # snapshot, save a new one after R1 (cache entries are immutable).
@@ -203,16 +184,9 @@ jobs:
           PYTHONPATH: pipeline
         run: |
           set -euo pipefail
-          rel="https://github.com/r2l2pj/tipping-point/releases/download/static-v1"
-          mkdir -p ml/models data/static/south_brazil/ml
-          get() {  # asset dest sha256 (lead-ml real model, 2026-11-15)
-            [ -s "$2" ] || curl -fsSL --retry 3 -o "$2" "$rel/$1"
-            echo "$3  $2" | sha256sum -c -
-          }
-          # ML v2 (L40, 2026-11-15): T_ML retrained without RS (L32) + serve_combine in the meta
-          get p_trigger_xgb_v2.json ml/models/p_trigger_xgb.json a342d61698d60590d3e0e4d8b19fb0a0daf56a938bcf92958311fb2493e3b595
-          get p_trigger_xgb_v2.meta.json ml/models/p_trigger_xgb.meta.json 6b84d5729bf3daf7730770ce17d563d5ff2331ce4a718e2e9290265bc3c79f31
-          get ml_static_now_v2.tif data/static/south_brazil/ml/ml_static_now.tif a0070babee891e38e69d80ce148ec13884c51ab2e87abca24f0b460786b5cda7
+          # lead-ml real model, ML v2 (L40, 2026-11-15): the asset table and its
+          # sha256 values are in deploy/vps/pipeline-lib.sh
+          bash deploy/vps/pipeline-lib.sh static-inputs p-trigger
           uv run python -m live.p_trigger
 
       # L43: expected next NISAR pass per track/frame — last observed CMR
@@ -241,10 +215,7 @@ jobs:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
           PYTHONPATH: ".:pipeline"
         run: |
-          if git fetch -q --depth=1 origin fallback; then
-            git archive FETCH_HEAD data/now/nisar_stack | tar -x \
-              || echo "::notice::no NISAR stack on fallback yet - starts here"
-          fi
+          bash deploy/vps/pipeline-lib.sh restore-fallback data/now/nisar_stack
           uv run python -m live.nisar_stack --now-dir data/now
 
       # L61: NISAR inside the flood index — tpi_flood_nisar_d0..d3 =
@@ -279,10 +250,7 @@ jobs:
         continue-on-error: true
         run: |
           set -euo pipefail
-          if git fetch -q --depth=1 origin fallback; then
-            git archive FETCH_HEAD data/now/history | tar -x \
-              || echo "::notice::no history on fallback yet - starts here"
-          fi
+          bash deploy/vps/pipeline-lib.sh restore-fallback data/now/history
           uv run python -m live.now_history --now-dir data/now
           uv run python tools/build_manifest.py
 
@@ -305,9 +273,7 @@ jobs:
         run: |
           # runs history: start from the published database so its 'runs'
           # table keeps one row per Now run (fallback is a single orphan commit)
-          curl -fsSL -o data/tipping_point.sqlite \
-            "https://raw.githubusercontent.com/${{ github.repository }}/fallback/data/tipping_point.sqlite" \
-            || echo "no previous sqlite on fallback - runs history starts here"
+          bash deploy/vps/pipeline-lib.sh prev-sqlite   # uses GITHUB_REPOSITORY, set by Actions
           uv run python tools/build_sqlite.py
 
       # L26: GitHub 'fallback' branch is the primary data host (one

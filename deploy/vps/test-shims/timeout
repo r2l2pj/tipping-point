@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""timeout(1) stand-in for hosts without it (macOS). Tests only.
+
+timeout [--kill-after=SECONDS] DURATION COMMAND [ARG]...
+DURATION is a number with an optional s, m or h suffix. Exit 124 on timeout.
+"""
+import os
+import signal
+import subprocess
+import sys
+
+
+def seconds(text):
+    unit = {"s": 1, "m": 60, "h": 3600}
+    if text and text[-1] in unit:
+        return float(text[:-1]) * unit[text[-1]]
+    return float(text)
+
+
+def main(argv):
+    while argv and argv[0].startswith("--"):
+        argv = argv[1:]
+    if len(argv) < 2:
+        sys.exit("timeout shim: needs DURATION and COMMAND")
+    limit, cmd = seconds(argv[0]), argv[1:]
+    proc = subprocess.Popen(cmd, preexec_fn=os.setsid)
+    try:
+        return proc.wait(timeout=limit)
+    except subprocess.TimeoutExpired:
+        os.killpg(proc.pid, signal.SIGKILL)
+        proc.wait()
+        return 124
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
