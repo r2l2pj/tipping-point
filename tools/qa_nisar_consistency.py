@@ -139,7 +139,7 @@ def main(argv=None) -> int:
         if nd:
             fails.append(f"[ids] {case}: repeated nisar ids {nd[:8]}")
         for e in layers:
-            if e.get("kind") == "nisar_frame":
+            if str(e.get("kind", "")).startswith("nisar_frame"):   # incl. nisar_frame_uy (L67 box)
                 fid = f"{case}:{e.get('id')}"
                 b = e.get("bounds")
                 if not (isinstance(b, list) and len(b) == 4 and b[0] < b[2] and b[1] < b[3]):
