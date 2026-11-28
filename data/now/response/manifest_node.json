@@ -1,0 +1,113 @@
+{
+  "_merge": "data/now/manifest.json \u2014 merge data_dates/products/_null_reasons key-wise; set 'response'",
+  "data_dates": {
+    "opera-dswx-s1": "2026-11-27T08:57:48Z",
+    "tpi_critical": "2026-11-29",
+    "response": "2026-11-28T14:37:38Z"
+  },
+  "products": {
+    "priority_zones": "geojson/priority_zones.geojson",
+    "response_summary": "response/summary.json",
+    "flood_dswx": "response/flood_dswx.geojson",
+    "flood_nisar": null
+  },
+  "_null_reasons": {
+    "flood_nisar": "response/flood_nisar.geojson not published",
+    "opera-dswx-s1.latency_h": "no granules ingested this run",
+    "nisar-gcov.latest_acquired": "latest_acquired absent in nisar_meta.json",
+    "nisar-gcov.latency_h": "latency_h absent in nisar_meta.json"
+  },
+  "response": {
+    "schema": "tipping-point/response@1",
+    "generated_at": "2026-11-28T14:37:38Z",
+    "bbox": [
+      -58.0,
+      -34.0,
+      -48.0,
+      -22.5
+    ],
+    "people_flooded": 97,
+    "people_flooded_lower": 280,
+    "people_critical": 58737,
+    "people_alert": 333482,
+    "people_exposed": 333579,
+    "flooded_km2": 34.828,
+    "flooded_km2_lower": 88.187,
+    "critical_km2": 353.37,
+    "alert_km2": 1170.082,
+    "critical_km2_def": "Cr\u00edtico only (TPI > 0.6, A8); alert_km2 = Alto or Cr\u00edtico (TPI > 0.4)",
+    "exposed_km2": 1204.911,
+    "overlap_km2": null,
+    "sources": {
+      "opera-dswx-s1": {
+        "geojson": "response/flood_dswx.geojson",
+        "meta": "response/dswx_meta.json",
+        "features": 231,
+        "features_lower": 148,
+        "flooded_km2": 34.828,
+        "flooded_km2_lower": 88.187,
+        "people_flooded": 97,
+        "people_flooded_lower": 280,
+        "meta_flooded_km2": 34.876,
+        "latest_acquired": "2026-11-27T08:57:48Z",
+        "latency_h": null,
+        "n_granules": 0,
+        "new_km2": 0.0,
+        "receded_km2": 0.0,
+        "status": "ok"
+      },
+      "nisar-gcov": {
+        "geojson": null,
+        "meta": "response/nisar_meta.json",
+        "features": null,
+        "features_lower": null,
+        "flooded_km2": null,
+        "flooded_km2_lower": null,
+        "people_flooded": null,
+        "people_flooded_lower": null,
+        "meta_flooded_km2": null,
+        "latest_acquired": null,
+        "latency_h": null,
+        "n_granules": 250,
+        "new_km2": null,
+        "receded_km2": null,
+        "status": "missing"
+      },
+      "tpi-critical": {
+        "geojson": "geojson/critical_areas.geojson",
+        "features": 41,
+        "days": [
+          "2026-11-29"
+        ],
+        "classes": {
+          "Alto": 29,
+          "Cr\u00edtico": 12
+        },
+        "critical_km2": 353.37,
+        "alert_km2": 1170.082,
+        "people_critical": 58737,
+        "people_alert": 333482,
+        "status": "ok"
+      }
+    },
+    "nisar": null,
+    "priority_zones": {
+      "geojson": "geojson/priority_zones.geojson",
+      "municipalities": 55
+    },
+    "people_source": "GPW v4.11 2020 population count (unadjusted), 30 arc-sec (data/now/static/gpw/gpw_popcount_2020_30sec.tif)",
+    "people_method": "GPW v4.11 2020 population count (unadjusted) on its native 30 arc-sec grid, each cell weighted by the fraction of its area covered by the mapped polygons (exact polygon-cell intersection); unions deduplicate overlaps",
+    "method": {
+      "area": "geodesic polygon area (shapely union, pyproj.Geod WGS84)",
+      "people": "GPW v4.11 2020 population count (unadjusted) on its native 30 arc-sec grid, each cell weighted by the fraction of its area covered by the mapped polygons (exact polygon-cell intersection); unions deduplicate overlaps",
+      "confidence": "headline = standard confidence (absent = standard); *_lower = lower-confidence not covered by standard"
+    },
+    "res_deg": 0.0025,
+    "_null_reasons": {
+      "flood_nisar": "response/flood_nisar.geojson missing \u2014 nisar-gcov candidates absent",
+      "opera-dswx-s1.latency_h": "no granules ingested this run",
+      "nisar-gcov.latest_acquired": "latest_acquired absent in nisar_meta.json",
+      "nisar-gcov.latency_h": "latency_h absent in nisar_meta.json"
+    }
+  }
+}

@@ -1,0 +1,5727 @@
+{
+  "generated_at": "2026-11-28T14:34:20.036726Z",
+  "quiet_hours": false,
+  "rule": "upgrade to Alto/Crítico today or D+1; quiet 23h-6h unless Crítico",
+  "candidates": [],
+  "notifications": [],
+  "active": [
+    {
+      "class": 3,
+      "label": "Crítico",
+      "hazard": "flood",
+      "pixels": 1427,
+      "critical_pixels": 513,
+      "area_km2": 1583.86,
+      "class_today": 0,
+      "when": "d1",
+      "centroid": [
+        -48.6906,
+        -26.1452
+      ],
+      "bbox": [
+        -49.01,
+        -26.78,
+        -48.29,
+        -25.47
+      ],
+      "last_confirmed_at": "2026-11-28T14:34:20.036726Z",
+      "municipality": "Itapoá",
+      "uf": "SC",
+      "kind": "tpi",
+      "basis": "observed+forecast",
+      "obs_days": [
+        "2026-11-27"
+      ],
+      "forecast_days": [
+        "2026-11-28",
+        "2026-11-29"
+      ],
+      "obs_through": "2026-11-27",
+      "gfs_issued": "2026-11-28T00:00:00Z",
+      "basis_label": "observed to Nov 27 + NOAA GFS forecast for Nov 28, Nov 29 (issued 2026-11-28 00:00 UTC)",
+      "certainty": "medium",
+      "basis_note": "based on forecast rain (NOAA GFS, issued 2026-11-28 00:00 UTC)",
+      "first_issued_at": "2026-11-28T05:02:08.131411Z",
+      "id": "flood|SC|Itapoá|0",
+      "next_nisar_pass_utc": "2026-11-29T09:15:53Z",
+      "next_nisar_track": 2
+    },
+    {
+      "class": 3,
+      "label": "Crítico",
+      "hazard": "landslide",
+      "pixels": 55,
+      "critical_pixels": 10,
+      "area_km2": 61.25,
+      "class_today": 0,
+      "when": "d1",
+      "centroid": [
+        -48.6161,
+        -25.7517
+      ],
+      "bbox": [
+        -48.66,
+        -25.85,
+        -48.56,
+        -25.66
+      ],
+      "last_confirmed_at": "2026-11-28T14:34:20.036726Z",
+      "municipality": "Matinhos",
+      "uf": "PR",
+      "kind": "tpi",
+      "basis": "observed+forecast",
+      "obs_days": [
+        "2026-11-27"
+      ],
+      "forecast_days": [
+        "2026-11-28",
+        "2026-11-29"
+      ],
+      "obs_through": "2026-11-27",
+      "gfs_issued": "2026-11-28T00:00:00Z",
+      "basis_label": "observed to Nov 27 + NOAA GFS forecast for Nov 28, Nov 29 (issued 2026-11-28 00:00 UTC)",
+      "certainty": "medium",
+      "basis_note": "based on forecast rain (NOAA GFS, issued 2026-11-28 00:00 UTC)",
+      "first_issued_at": "2026-11-28T05:02:08.131411Z",
+      "id": "landslide|PR|Matinhos|0",
+      "next_nisar_pass_utc": "2026-12-04T09:07:52Z",
+      "next_nisar_track": 74
+    },
+    {
+      "class": 3,
+      "label": "Crítico",
+      "hazard": "landslide",
+      "pixels": 51,
+      "critical_pixels": 1,
+      "area_km2": 56.62,
+      "class_today": 0,
+      "when": "d1",
+      "centroid": [
+        -48.7281,
+        -26.1164
+      ],
+      "bbox": [
+        -48.77,
+        -26.22,
+        -48.63,
+        -25.96
+      ],
+      "last_confirmed_at": "2026-11-28T14:34:20.036726Z",
+      "municipality": "Itapoá",
+      "uf": "SC",
+      "kind": "tpi",
+      "basis": "observed+forecast",
+      "obs_days": [
+        "2026-11-27"
+      ],
+      "forecast_days": [
+        "2026-11-28",
+        "2026-11-29"
+      ],
+      "obs_through": "2026-11-27",
+      "gfs_issued": "2026-11-28T00:00:00Z",
+      "basis_label": "observed to Nov 27 + NOAA GFS forecast for Nov 28, Nov 29 (issued 2026-11-28 00:00 UTC)",
+      "certainty": "medium",
+      "basis_note": "based on forecast rain (NOAA GFS, issued 2026-11-28 00:00 UTC)",
+      "first_issued_at": "2026-11-28T05:02:08.131411Z",
+      "id": "landslide|SC|Itapoá|0",
+      "next_nisar_pass_utc": "2026-11-29T09:15:53Z",
+      "next_nisar_track": 2
+    },
+    {
+      "class": 2,
+      "label": "Alto",
+      "hazard": "landslide",
+      "pixels": 175,
+      "critical_pixels": 0,
+      "area_km2": 194.23,
+      "class_today": 0,
+      "when": "d1",
+      "centroid": [
+        -48.9509,
+        -26.1465
+      ],
+      "bbox": [
+        -49.04,
+        -26.42,
+        -48.81,
+        -25.92
+      ],
+      "last_confirmed_at": "2026-11-28T14:34:20.036726Z",
+      "municipality": "Joinville",
+      "uf": "SC",
+      "kind": "tpi",
+      "basis": "observed+forecast",
+      "obs_days": [
+        "2026-11-27"
+      ],
+      "forecast_days": [
+        "2026-11-28",
+        "2026-11-29"
+      ],
+      "obs_through": "2026-11-27",
+      "gfs_issued": "2026-11-28T00:00:00Z",
+      "basis_label": "observed to Nov 27 + NOAA GFS forecast for Nov 28, Nov 29 (issued 2026-11-28 00:00 UTC)",
+      "certainty": "medium",
+      "basis_note": "based on forecast rain (NOAA GFS, issued 2026-11-28 00:00 UTC)",
+      "first_issued_at": "2026-11-28T05:02:08.131411Z",
+      "id": "landslide|SC|Joinville|0",
+      "next_nisar_pass_utc": "2026-11-29T09:15:53Z",
+      "next_nisar_track": 2
+    },
+    {
+      "class": 2,
+      "label": "Alto",
+      "hazard": "landslide",
+      "pixels": 2,
+      "critical_pixels": 0,
+      "area_km2": 2.22,
+      "class_today": 0,
+      "when": "d1",
+      "centroid": [
+        -48.665,
+        -26.3
+      ],
+      "bbox": [
+        -48.67,
+        -26.31,
+        -48.66,
+        -26.29
+      ],
+      "last_confirmed_at": "2026-11-28T14:34:20.036726Z",
+      "municipality": "São Francisco do Sul",
+      "uf": "SC",
+      "kind": "tpi",
+      "basis": "observed+forecast",
+      "obs_days": [
+        "2026-11-27"
+      ],
+      "forecast_days": [
+        "2026-11-28",
+        "2026-11-29"
+      ],
+      "obs_through": "2026-11-27",
+      "gfs_issued": "2026-11-28T00:00:00Z",
+      "basis_label": "observed to Nov 27 + NOAA GFS forecast for Nov 28, Nov 29 (issued 2026-11-28 00:00 UTC)",
+      "certainty": "medium",
+      "basis_note": "based on forecast rain (NOAA GFS, issued 2026-11-28 00:00 UTC)",
+      "first_issued_at": "2026-11-28T05:02:08.131411Z",
+      "id": "landslide|SC|São Francisco do Sul|0",
+      "next_nisar_pass_utc": "2026-11-29T09:15:53Z",
+      "next_nisar_track": 2
+    }
+  ],
+  "candidates_note": "deprecated alias of notifications",
+  "paused": false,
+  "observed": [
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Santa Margarida do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 5.878,
+      "people": 22,
+      "polygons": 4,
+      "centroid": [
+        -54.1337,
+        -30.2237
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Vale do Sol",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.737,
+      "people": 22,
+      "polygons": 1,
+      "centroid": [
+        -52.6425,
+        -29.7125
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "São Vicente do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 10.651,
+      "people": 20,
+      "polygons": 13,
+      "centroid": [
+        -54.5138,
+        -29.7362
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Santa Cruz do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.603,
+      "people": 20,
+      "polygons": 2,
+      "centroid": [
+        -52.3425,
+        -29.6525
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Cachoeira do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 5.879,
+      "people": 16,
+      "polygons": 13,
+      "centroid": [
+        -53.09,
+        -30.2275
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Cacequi",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 2.08,
+      "people": 16,
+      "polygons": 5,
+      "centroid": [
+        -55.0538,
+        -29.9288
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Candelária",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.206,
+      "people": 15,
+      "polygons": 3,
+      "centroid": [
+        -52.9188,
+        -29.7875
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Viamão",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 4.137,
+      "people": 13,
+      "polygons": 10,
+      "centroid": [
+        -50.7758,
+        -30.0112
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Glorinha",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 1.47,
+      "people": 13,
+      "polygons": 3,
+      "centroid": [
+        -50.8188,
+        -29.9588
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Restinga Sêca",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 2.344,
+      "people": 11,
+      "polygons": 5,
+      "centroid": [
+        -53.2488,
+        -29.8687
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "São Francisco de Assis",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 5.582,
+      "people": 9,
+      "polygons": 3,
+      "centroid": [
+        -54.895,
+        -29.6537
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "São Gabriel",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 4.675,
+      "people": 9,
+      "polygons": 9,
+      "centroid": [
+        -54.3481,
+        -30.3075
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Cacequi",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 4.966,
+      "people": 8,
+      "polygons": 7,
+      "centroid": [
+        -54.7888,
+        -29.8588
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Barra do Ribeiro",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 1.732,
+      "people": 8,
+      "polygons": 4,
+      "centroid": [
+        -51.365,
+        -30.2438
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Santa Isabel do Ivaí",
+      "uf": "PR",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.347,
+      "people": 8,
+      "polygons": 3,
+      "centroid": [
+        -53.2254,
+        -23.23
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "São Sepé",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 4.914,
+      "people": 7,
+      "polygons": 7,
+      "centroid": [
+        -53.1864,
+        -30.0012
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Formigueiro",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.874,
+      "people": 7,
+      "polygons": 4,
+      "centroid": [
+        -53.4881,
+        -29.9
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Formigueiro",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.602,
+      "people": 7,
+      "polygons": 2,
+      "centroid": [
+        -53.3762,
+        -30.0125
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Nova Santa Rita",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.335,
+      "people": 7,
+      "polygons": 1,
+      "centroid": [
+        -51.3362,
+        -29.8562
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Sant'Ana do Livramento",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 3.591,
+      "people": 6,
+      "polygons": 8,
+      "centroid": [
+        -55.1838,
+        -31.1562
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Tapes",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 2.718,
+      "people": 6,
+      "polygons": 4,
+      "centroid": [
+        -51.5091,
+        -30.8237
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Rio Pardo",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.335,
+      "people": 6,
+      "polygons": 1,
+      "centroid": [
+        -52.3525,
+        -29.885
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Ourizona",
+      "uf": "PR",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.283,
+      "people": 6,
+      "polygons": 1,
+      "centroid": [
+        -52.1762,
+        -23.385
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Arambaré",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 2.05,
+      "people": 5,
+      "polygons": 5,
+      "centroid": [
+        -51.548,
+        -31.0938
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Novo Cabrais",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.402,
+      "people": 5,
+      "polygons": 1,
+      "centroid": [
+        -53.0481,
+        -29.7825
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Balneário Camboriú",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 5,
+      "polygons": 1,
+      "centroid": [
+        -48.6429,
+        -26.9638
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Camaquã",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 2.973,
+      "people": 4,
+      "polygons": 5,
+      "centroid": [
+        -51.6575,
+        -31.0112
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Viamão",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 1.999,
+      "people": 4,
+      "polygons": 3,
+      "centroid": [
+        -50.74,
+        -30.1888
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "São Vicente do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.209,
+      "people": 4,
+      "polygons": 3,
+      "centroid": [
+        -54.7306,
+        -29.7725
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Pedras Altas",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.049,
+      "people": 4,
+      "polygons": 2,
+      "centroid": [
+        -53.8631,
+        -31.975
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Santo Ângelo",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.409,
+      "people": 4,
+      "polygons": 1,
+      "centroid": [
+        -54.5187,
+        -28.2875
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Taquara",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.268,
+      "people": 4,
+      "polygons": 1,
+      "centroid": [
+        -50.7013,
+        -29.7012
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Corumbataí do Sul",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.005,
+      "people": 4,
+      "polygons": 1,
+      "centroid": [
+        -52.1174,
+        -24.1041
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Rosário do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 2.274,
+      "people": 3,
+      "polygons": 4,
+      "centroid": [
+        -55.0175,
+        -30.2163
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Tupanciretã",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.755,
+      "people": 3,
+      "polygons": 4,
+      "centroid": [
+        -53.9719,
+        -29.1375
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Dilermando de Aguiar",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.477,
+      "people": 3,
+      "polygons": 2,
+      "centroid": [
+        -54.2703,
+        -29.7425
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Jaguari",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.875,
+      "people": 3,
+      "polygons": 2,
+      "centroid": [
+        -54.8563,
+        -29.535
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Aceguá",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.79,
+      "people": 3,
+      "polygons": 2,
+      "centroid": [
+        -54.02,
+        -31.7162
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Rio Grande",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.783,
+      "people": 3,
+      "polygons": 2,
+      "centroid": [
+        -52.5288,
+        -32.4825
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Charqueadas",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.735,
+      "people": 3,
+      "polygons": 2,
+      "centroid": [
+        -51.5125,
+        -29.9462
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Sede Nova",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.616,
+      "people": 3,
+      "polygons": 2,
+      "centroid": [
+        -53.9225,
+        -27.61
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Campo Novo",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.479,
+      "people": 3,
+      "polygons": 1,
+      "centroid": [
+        -53.8331,
+        -27.61
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Canoas",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.401,
+      "people": 3,
+      "polygons": 1,
+      "centroid": [
+        -51.205,
+        -29.8675
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Novo Cabrais",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.268,
+      "people": 3,
+      "polygons": 1,
+      "centroid": [
+        -52.9375,
+        -29.7337
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Rosário do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 2.538,
+      "people": 2,
+      "polygons": 3,
+      "centroid": [
+        -54.904,
+        -30.09
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Jari",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 2.225,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -54.2031,
+        -29.2675
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Santa Vitória do Palmar",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 2.037,
+      "people": 2,
+      "polygons": 3,
+      "centroid": [
+        -53.0913,
+        -33.0988
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Santa Vitória do Palmar",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 2.034,
+      "people": 2,
+      "polygons": 4,
+      "centroid": [
+        -53.1869,
+        -33.2112
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Quevedos",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.889,
+      "people": 2,
+      "polygons": 3,
+      "centroid": [
+        -54.03,
+        -29.1887
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "São Francisco de Assis",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.547,
+      "people": 2,
+      "polygons": 4,
+      "centroid": [
+        -54.9106,
+        -29.66
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Jaguarão",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 1.433,
+      "people": 2,
+      "polygons": 2,
+      "centroid": [
+        -53.0662,
+        -32.4275
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Camaquã",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 1.32,
+      "people": 2,
+      "polygons": 2,
+      "centroid": [
+        -51.665,
+        -31.235
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Cachoeira do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.069,
+      "people": 2,
+      "polygons": 3,
+      "centroid": [
+        -53.2563,
+        -30.1087
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Dom Pedrito",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.93,
+      "people": 2,
+      "polygons": 3,
+      "centroid": [
+        -55.0175,
+        -30.7587
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Rio Grande",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.589,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -52.2306,
+        -31.9525
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Glorinha",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.468,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -50.7425,
+        -29.9737
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Vila Nova do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.468,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -53.9412,
+        -30.2175
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Tapira",
+      "uf": "PR",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.425,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -53.1425,
+        -23.3012
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Maringá",
+      "uf": "PR",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.424,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -51.9862,
+        -23.3362
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Sete Barras",
+      "uf": "SP",
+      "acquired": "2026-11-23T08:00:00Z",
+      "area_km2": 0.352,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -48.0872,
+        -24.3188
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Santo Augusto",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.342,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -53.7641,
+        -27.7838
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Candelária",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.335,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -52.8675,
+        -29.8875
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "São Jerônimo",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.334,
+      "people": 2,
+      "polygons": 1,
+      "centroid": [
+        -51.6869,
+        -30.0
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Uruguaiana",
+      "uf": "RS",
+      "acquired": "2026-11-26T09:00:00Z",
+      "area_km2": 1.078,
+      "people": 1,
+      "polygons": 2,
+      "centroid": [
+        -57.0938,
+        -30.0475
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Arroio Grande",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.98,
+      "people": 1,
+      "polygons": 3,
+      "centroid": [
+        -52.9481,
+        -32.3125
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Piratini",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.529,
+      "people": 1,
+      "polygons": 1,
+      "centroid": [
+        -53.1744,
+        -31.055
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Planaltina do Paraná",
+      "uf": "PR",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.496,
+      "people": 1,
+      "polygons": 1,
+      "centroid": [
+        -52.9825,
+        -23.2313
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Encruzilhada do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.331,
+      "people": 1,
+      "polygons": 1,
+      "centroid": [
+        -52.5181,
+        -30.87
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Pontão",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.273,
+      "people": 1,
+      "polygons": 1,
+      "centroid": [
+        -52.57,
+        -27.965
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "São Luiz Gonzaga",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.272,
+      "people": 1,
+      "polygons": 1,
+      "centroid": [
+        -54.7638,
+        -28.5337
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Pinto Bandeira",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.032,
+      "people": 1,
+      "polygons": 4,
+      "centroid": [
+        -51.4773,
+        -29.0337
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Palmitinho",
+      "uf": "RS",
+      "acquired": "2026-10-31",
+      "area_km2": 0.023,
+      "people": 1,
+      "polygons": 6,
+      "centroid": [
+        -53.6242,
+        -27.3184
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Vila Flores",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.022,
+      "people": 1,
+      "polygons": 4,
+      "centroid": [
+        -51.5067,
+        -28.8369
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Farroupilha",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.019,
+      "people": 1,
+      "polygons": 2,
+      "centroid": [
+        -51.4032,
+        -29.1125
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Braço do Norte",
+      "uf": "SC",
+      "acquired": "2026-11-19",
+      "area_km2": 0.015,
+      "people": 1,
+      "polygons": 2,
+      "centroid": [
+        -49.1069,
+        -28.3323
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Bento Gonçalves",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.011,
+      "people": 1,
+      "polygons": 3,
+      "centroid": [
+        -51.5577,
+        -29.1822
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Seara",
+      "uf": "SC",
+      "acquired": "2026-11-05",
+      "area_km2": 0.007,
+      "people": 1,
+      "polygons": 2,
+      "centroid": [
+        -52.3374,
+        -27.1192
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Campo Bom",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.005,
+      "people": 1,
+      "polygons": 1,
+      "centroid": [
+        -51.0853,
+        -29.6542
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Maracajá",
+      "uf": "SC",
+      "acquired": "2026-11-19",
+      "area_km2": 0.004,
+      "people": 1,
+      "polygons": 1,
+      "centroid": [
+        -49.443,
+        -28.8494
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Santa Maria do Herval",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.003,
+      "people": 1,
+      "polygons": 1,
+      "centroid": [
+        -50.984,
+        -29.5063
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Lavras do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 1.895,
+      "people": 0,
+      "polygons": 5,
+      "centroid": [
+        -54.5694,
+        -30.6712
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Dom Pedrito",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.729,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -54.6381,
+        -31.1575
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Santo Antônio da Patrulha",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.669,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.6875,
+        -29.9037
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "São Gabriel",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.602,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -54.5894,
+        -30.0925
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Tapes",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.598,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.3637,
+        -30.5912
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Sant'Ana do Livramento",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.597,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -55.1833,
+        -31.0837
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Uruguaiana",
+      "uf": "RS",
+      "acquired": "2026-11-26T09:00:00Z",
+      "area_km2": 0.539,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -56.965,
+        -29.8762
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Lavras do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.532,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -54.5763,
+        -30.6613
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Quevedos",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.472,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.0516,
+        -29.1987
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Santo Antônio da Patrulha",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.468,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.6269,
+        -29.8975
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Aceguá",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.461,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.3175,
+        -31.5887
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Bagé",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.396,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.4059,
+        -31.3912
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Bossoroca",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.339,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.8519,
+        -28.7625
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Jari",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.337,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.1275,
+        -29.2425
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Boa Vista do Cadeado",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.271,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.8244,
+        -28.6725
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Santa Maria",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.268,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.9734,
+        -29.9813
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "lower",
+      "municipality": "Capão do Leão",
+      "uf": "RS",
+      "acquired": "2026-11-22T08:00:00Z",
+      "area_km2": 0.262,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.6112,
+        -31.8987
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "flood",
+      "label": "observed flood candidate",
+      "status": "candidate",
+      "source": "opera-dswx-s1",
+      "confidence": "standard",
+      "municipality": "Jaguarão",
+      "uf": "RS",
+      "acquired": "2026-11-27T08:00:00Z",
+      "area_km2": 0.261,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.5206,
+        -32.4675
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Bom Jesus",
+      "uf": "RS",
+      "acquired": "2026-11-15",
+      "area_km2": 0.075,
+      "people": 0,
+      "polygons": 8,
+      "centroid": [
+        -50.296,
+        -28.4819
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São José do Cerrito",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.075,
+      "people": 0,
+      "polygons": 14,
+      "centroid": [
+        -50.5412,
+        -27.5628
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Jaguariaíva",
+      "uf": "PR",
+      "acquired": "2026-11-12",
+      "area_km2": 0.045,
+      "people": 0,
+      "polygons": 5,
+      "centroid": [
+        -49.8681,
+        -24.2833
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Piratini",
+      "uf": "RS",
+      "acquired": "2026-11-21",
+      "area_km2": 0.042,
+      "people": 0,
+      "polygons": 7,
+      "centroid": [
+        -53.3073,
+        -31.2754
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Francisco de Assis",
+      "uf": "RS",
+      "acquired": "2026-11-10",
+      "area_km2": 0.041,
+      "people": 0,
+      "polygons": 7,
+      "centroid": [
+        -54.967,
+        -29.5041
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Lebon Régis",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.036,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -50.6223,
+        -26.7621
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Campos Novos",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.035,
+      "people": 0,
+      "polygons": 6,
+      "centroid": [
+        -51.0896,
+        -27.2645
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Jaquirana",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.031,
+      "people": 0,
+      "polygons": 5,
+      "centroid": [
+        -50.3825,
+        -28.8377
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Jerônimo",
+      "uf": "RS",
+      "acquired": "2026-11-12",
+      "area_km2": 0.028,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -51.8663,
+        -30.3725
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Manfrinópolis",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.027,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -53.2949,
+        -26.1108
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Lages",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.027,
+      "people": 0,
+      "polygons": 6,
+      "centroid": [
+        -50.6197,
+        -27.7651
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Guaíba",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.025,
+      "people": 0,
+      "polygons": 6,
+      "centroid": [
+        -51.4467,
+        -30.2323
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Fontoura Xavier",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.023,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -52.2441,
+        -28.9838
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Flor da Serra do Sul",
+      "uf": "PR",
+      "acquired": "2026-11-12",
+      "area_km2": 0.023,
+      "people": 0,
+      "polygons": 5,
+      "centroid": [
+        -53.3465,
+        -26.2268
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Concórdia",
+      "uf": "SC",
+      "acquired": "2026-11-12",
+      "area_km2": 0.022,
+      "people": 0,
+      "polygons": 5,
+      "centroid": [
+        -52.17,
+        -27.2835
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Palma Sola",
+      "uf": "SC",
+      "acquired": "2026-11-10",
+      "area_km2": 0.022,
+      "people": 0,
+      "polygons": 5,
+      "centroid": [
+        -53.3546,
+        -26.3721
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "União do Oeste",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.021,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.9259,
+        -26.7933
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Campo Belo do Sul",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.021,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -50.7186,
+        -27.6803
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Vacaria",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.021,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -50.8432,
+        -28.1455
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Riozinho",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.019,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -50.3875,
+        -29.6641
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São José dos Ausentes",
+      "uf": "RS",
+      "acquired": "2026-11-15",
+      "area_km2": 0.018,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -49.9704,
+        -28.5183
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Jorge",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.018,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.7435,
+        -28.4975
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Bofete",
+      "uf": "SP",
+      "acquired": "2026-11-14",
+      "area_km2": 0.017,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -48.3408,
+        -23.2522
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Sengés",
+      "uf": "PR",
+      "acquired": "2026-11-14",
+      "area_km2": 0.017,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -49.3418,
+        -24.1521
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ibiam",
+      "uf": "SC",
+      "acquired": "2026-11-06",
+      "area_km2": 0.017,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -51.1928,
+        -27.205
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Dom Feliciano",
+      "uf": "RS",
+      "acquired": "2026-11-12",
+      "area_km2": 0.017,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -52.1084,
+        -30.7757
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Mato Rico",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.016,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.3898,
+        -24.7234
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Dois Lajeados",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.016,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -51.842,
+        -28.9995
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Coronel Vivida",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.015,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.5939,
+        -26.0404
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Roca Sales",
+      "uf": "RS",
+      "acquired": "2026-11-22",
+      "area_km2": 0.015,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.754,
+        -29.2244
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Tijucas do Sul",
+      "uf": "PR",
+      "acquired": "2026-11-14",
+      "area_km2": 0.015,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -49.1208,
+        -25.9472
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Cristóvão do Sul",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.015,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -50.4254,
+        -27.3257
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Serra Alta",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.015,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -53.0254,
+        -26.6517
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Guaporé",
+      "uf": "RS",
+      "acquired": "2026-11-22",
+      "area_km2": 0.015,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -51.9513,
+        -28.7754
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Pinheiro Machado",
+      "uf": "RS",
+      "acquired": "2026-11-21",
+      "area_km2": 0.015,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -53.3554,
+        -30.9813
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Campo Alegre",
+      "uf": "SC",
+      "acquired": "2026-11-14",
+      "area_km2": 0.015,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -49.1904,
+        -26.087
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Caxias do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.014,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -50.9767,
+        -28.807
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Marcos",
+      "uf": "RS",
+      "acquired": "2026-11-16",
+      "area_km2": 0.014,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.0558,
+        -28.9278
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Cambará do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-15",
+      "area_km2": 0.014,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -50.0731,
+        -28.9449
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Flores da Cunha",
+      "uf": "RS",
+      "acquired": "2026-11-16",
+      "area_km2": 0.014,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -51.3158,
+        -29.0763
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Agudos do Sul",
+      "uf": "PR",
+      "acquired": "2026-11-14",
+      "area_km2": 0.014,
+      "people": 0,
+      "polygons": 4,
+      "centroid": [
+        -49.32,
+        -26.1053
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Sertão Santana",
+      "uf": "RS",
+      "acquired": "2026-10-29",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.5835,
+        -30.488
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Bom Jardim da Serra",
+      "uf": "SC",
+      "acquired": "2026-11-15",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.7021,
+        -28.2475
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Itararé",
+      "uf": "SP",
+      "acquired": "2026-11-14",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.3378,
+        -24.1502
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Dionísio Cerqueira",
+      "uf": "SC",
+      "acquired": "2026-11-10",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -53.3693,
+        -26.3188
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ipê",
+      "uf": "RS",
+      "acquired": "2026-11-16",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.2301,
+        -28.7704
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Bernardino",
+      "uf": "SC",
+      "acquired": "2026-11-05",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.9867,
+        -26.5199
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Itatinga",
+      "uf": "SP",
+      "acquired": "2026-11-04",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -48.522,
+        -23.157
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Francisco Beltrão",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -53.2405,
+        -26.0374
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Santana da Boa Vista",
+      "uf": "RS",
+      "acquired": "2026-11-21",
+      "area_km2": 0.013,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -53.1527,
+        -30.7964
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Doutor Ricardo",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.012,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.9143,
+        -29.1294
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Rosário do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-10",
+      "area_km2": 0.012,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -55.2558,
+        -30.2595
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Taquari",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.012,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.742,
+        -29.7302
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Alpestre",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.012,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -52.9962,
+        -27.1876
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Soledade",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.011,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.5622,
+        -28.9729
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Relvado",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.011,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.0503,
+        -29.1451
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Barros Cassal",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.011,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -52.6905,
+        -29.12
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Laranjeiras",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.011,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -52.6816,
+        -25.389
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Protásio Alves",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.01,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.5106,
+        -28.6632
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Renascença",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.01,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.9559,
+        -26.3544
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Brochier",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.01,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.5977,
+        -29.5774
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Westfália",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.7647,
+        -29.4068
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Godoy Moreira",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.9001,
+        -24.2041
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Campo Erê",
+      "uf": "SC",
+      "acquired": "2026-11-10",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.953,
+        -26.3583
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Francisco de Paula",
+      "uf": "RS",
+      "acquired": "2026-11-22",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -50.6237,
+        -29.535
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Rolante",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -50.4778,
+        -29.5579
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Pinhal de São Bento",
+      "uf": "PR",
+      "acquired": "2026-10-31",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -53.5122,
+        -25.9748
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Santa Cecília",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -50.4849,
+        -26.8317
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Maçambará",
+      "uf": "RS",
+      "acquired": "2026-11-19",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -55.999,
+        -28.9601
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Gravatal",
+      "uf": "SC",
+      "acquired": "2026-11-15",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -49.0902,
+        -28.3524
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Joaquim",
+      "uf": "SC",
+      "acquired": "2026-11-15",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -49.8217,
+        -28.2707
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Xavantina",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.009,
+      "people": 0,
+      "polygons": 3,
+      "centroid": [
+        -52.3571,
+        -27.0232
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Pinhal da Serra",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.008,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.151,
+        -27.8439
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Três Forquilhas",
+      "uf": "RS",
+      "acquired": "2026-11-19",
+      "area_km2": 0.008,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.1444,
+        -29.392
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Rio Negrinho",
+      "uf": "SC",
+      "acquired": "2026-11-14",
+      "area_km2": 0.008,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -49.5893,
+        -26.2919
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Alto Feliz",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.008,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.2712,
+        -29.327
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Travesseiro",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.008,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.1428,
+        -29.2309
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Veranópolis",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.008,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.5042,
+        -28.9316
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Treze de Maio",
+      "uf": "SC",
+      "acquired": "2026-11-19",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.1136,
+        -28.5731
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Butiá",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.1558,
+        -30.2724
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Quinta do Sol",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.1572,
+        -23.9227
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Jardinópolis",
+      "uf": "SC",
+      "acquired": "2026-11-05",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.8367,
+        -26.7074
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Mondaí",
+      "uf": "SC",
+      "acquired": "2026-10-31",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.4458,
+        -27.0391
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Urubici",
+      "uf": "SC",
+      "acquired": "2026-11-15",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -49.5054,
+        -28.0544
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Pouso Novo",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.2134,
+        -29.1872
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Barra do Ribeiro",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.2398,
+        -30.4078
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Campina da Lagoa",
+      "uf": "PR",
+      "acquired": "2026-10-31",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.772,
+        -24.7364
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Bom Jesus do Sul",
+      "uf": "PR",
+      "acquired": "2026-10-31",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -53.4802,
+        -26.1405
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Trindade do Sul",
+      "uf": "RS",
+      "acquired": "2026-10-31",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -53.0032,
+        -27.5407
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Santiago",
+      "uf": "RS",
+      "acquired": "2026-10-31",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -54.5968,
+        -29.3354
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Caçapava do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-12",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -53.5963,
+        -30.764
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Encruzilhada do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-05",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.3431,
+        -30.6514
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Bela Vista da Caroba",
+      "uf": "PR",
+      "acquired": "2026-10-31",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -53.6363,
+        -25.8593
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Quitandinha",
+      "uf": "PR",
+      "acquired": "2026-11-14",
+      "area_km2": 0.007,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -49.4856,
+        -25.8092
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Santa Rosa de Lima",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.1705,
+        -28.0461
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Antônio Prado",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.3789,
+        -28.9186
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Esperança do Sudoeste",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.211,
+        -25.9096
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Erechim",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.8984,
+        -26.9181
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Mariano Moro",
+      "uf": "RS",
+      "acquired": "2026-11-05",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.1705,
+        -27.3316
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Piraí do Sul",
+      "uf": "PR",
+      "acquired": "2026-11-14",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.8685,
+        -24.5166
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Roma do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.4593,
+        -29.0376
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Valentim do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.777,
+        -29.0876
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Paverama",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.767,
+        -29.621
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Campina",
+      "uf": "SP",
+      "acquired": "2026-11-15",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -48.9854,
+        -24.2801
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Quedas do Iguaçu",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.9701,
+        -25.523
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ivorá",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.006,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -53.5196,
+        -29.4727
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Capinzal",
+      "uf": "SC",
+      "acquired": "2026-11-06",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.545,
+        -27.3648
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Esmeralda",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.0794,
+        -27.9235
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Piraju",
+      "uf": "SP",
+      "acquired": "2026-11-14",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.4811,
+        -23.1628
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ortigueira",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.9101,
+        -24.3715
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Três Barras do Paraná",
+      "uf": "PR",
+      "acquired": "2026-11-12",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.1661,
+        -25.4323
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Salgado Filho",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.3921,
+        -26.1394
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Quilombo",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.837,
+        -26.6889
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Esperança do Sul",
+      "uf": "RS",
+      "acquired": "2026-10-31",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.0428,
+        -27.2808
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Araquari",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -48.7182,
+        -26.5816
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Massaranduba",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -48.872,
+        -26.618
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ilhota",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -48.8239,
+        -26.8222
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ibicaré",
+      "uf": "SC",
+      "acquired": "2026-11-06",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.3372,
+        -27.1272
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Alto Bela Vista",
+      "uf": "SC",
+      "acquired": "2026-11-05",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -51.972,
+        -27.377
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Lagoão",
+      "uf": "RS",
+      "acquired": "2026-11-05",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -52.7547,
+        -29.2829
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Arapoti",
+      "uf": "PR",
+      "acquired": "2026-11-12",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -49.9985,
+        -24.0714
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Marmeleiro",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.005,
+      "people": 0,
+      "polygons": 2,
+      "centroid": [
+        -53.0907,
+        -26.1405
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Araranguá",
+      "uf": "SC",
+      "acquired": "2026-11-19",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.385,
+        -28.8613
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Herval d'Oeste",
+      "uf": "SC",
+      "acquired": "2026-11-06",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.3987,
+        -27.2178
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "José Boiteux",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.6491,
+        -26.9421
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Videira",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.9984,
+        -27.0648
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Putinga",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.1752,
+        -29.0761
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Montenegro",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.545,
+        -29.6456
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Rosário do Ivaí",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.2529,
+        -24.4109
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Enéas Marques",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.1361,
+        -25.9519
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Novo Horizonte",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.858,
+        -26.4668
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Tenente Portela",
+      "uf": "RS",
+      "acquired": "2026-11-10",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.703,
+        -27.3353
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Miraguaí",
+      "uf": "RS",
+      "acquired": "2026-10-31",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.8112,
+        -27.4432
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Santo Cristo",
+      "uf": "RS",
+      "acquired": "2026-11-03",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.8507,
+        -27.7852
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Pinhal Grande",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.3132,
+        -29.4113
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Barra do Turvo",
+      "uf": "SP",
+      "acquired": "2026-11-15",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -48.5271,
+        -24.7191
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Cerro Negro",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.9852,
+        -27.8477
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ouro",
+      "uf": "SC",
+      "acquired": "2026-11-05",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.7127,
+        -27.2908
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Lagoa Vermelha",
+      "uf": "RS",
+      "acquired": "2026-11-05",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.5164,
+        -28.4408
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Jaborá",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.8055,
+        -27.1163
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São José do Herval",
+      "uf": "RS",
+      "acquired": "2026-11-05",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.2669,
+        -29.0953
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Forquetinha",
+      "uf": "RS",
+      "acquired": "2026-11-12",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.1797,
+        -29.3631
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Monte Belo do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.636,
+        -29.1497
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Coronel Pilar",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.742,
+        -29.2375
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Boa Vista do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.6688,
+        -29.3333
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Carlos Barbosa",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.6221,
+        -29.3556
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Imigrante",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.7544,
+        -29.3665
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Tabaí",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.7515,
+        -29.6335
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Cristal",
+      "uf": "RS",
+      "acquired": "2026-10-29",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.2249,
+        -30.9504
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Rio Branco do Ivaí",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.2535,
+        -24.412
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Guaraniaçu",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.8246,
+        -25.2325
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Catanduvas",
+      "uf": "PR",
+      "acquired": "2026-10-31",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.2278,
+        -25.1837
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Saudade do Iguaçu",
+      "uf": "PR",
+      "acquired": "2026-11-10",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.6388,
+        -25.6754
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Chopinzinho",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.5268,
+        -25.9113
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Mariópolis",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.5354,
+        -26.2649
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Jupiá",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.6851,
+        -26.3636
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Romelândia",
+      "uf": "SC",
+      "acquired": "2026-10-31",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.314,
+        -26.6289
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Santa Helena",
+      "uf": "SC",
+      "acquired": "2026-10-31",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.6287,
+        -26.8862
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São João do Oeste",
+      "uf": "SC",
+      "acquired": "2026-11-10",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.6517,
+        -27.1328
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Jari",
+      "uf": "RS",
+      "acquired": "2026-10-31",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.2826,
+        -29.3886
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Iporanga",
+      "uf": "SP",
+      "acquired": "2026-11-15",
+      "area_km2": 0.004,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -48.6903,
+        -24.6684
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Grão-Pará",
+      "uf": "SC",
+      "acquired": "2026-11-15",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.2758,
+        -28.2416
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Erval Velho",
+      "uf": "SC",
+      "acquired": "2026-11-06",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.5275,
+        -27.2985
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Zortéa",
+      "uf": "SC",
+      "acquired": "2026-11-06",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.487,
+        -27.4008
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Monte Alegre dos Campos",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.8277,
+        -28.5749
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Anta Gorda",
+      "uf": "RS",
+      "acquired": "2026-11-05",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.9664,
+        -28.935
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Mafra",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.6168,
+        -26.243
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Itaiópolis",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.8697,
+        -26.6289
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Doutor Pedrinho",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.5147,
+        -26.6517
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Porto União",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.9381,
+        -26.3355
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Canela",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -50.822,
+        -29.4014
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Coqueiro Baixo",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.0797,
+        -29.1626
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Tunas",
+      "uf": "RS",
+      "acquired": "2026-11-05",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.9159,
+        -29.1679
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Venâncio Aires",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.2536,
+        -29.4695
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Barão",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.498,
+        -29.3567
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Petrópolis",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.0269,
+        -29.4265
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Linha Nova",
+      "uf": "RS",
+      "acquired": "2026-11-16",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.1962,
+        -29.4498
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Teutônia",
+      "uf": "RS",
+      "acquired": "2026-11-06",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.7478,
+        -29.5013
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Canguçu",
+      "uf": "RS",
+      "acquired": "2026-11-21",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.7644,
+        -31.4198
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Minas do Leão",
+      "uf": "RS",
+      "acquired": "2026-10-29",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.0555,
+        -30.1865
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Mariana Pimentel",
+      "uf": "RS",
+      "acquired": "2026-11-02",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.5204,
+        -30.2839
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Esperança do Sul",
+      "uf": "RS",
+      "acquired": "2026-11-10",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.8685,
+        -29.3462
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Botucatu",
+      "uf": "SP",
+      "acquired": "2026-11-04",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -48.5281,
+        -23.0033
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Rio Bom",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.4518,
+        -23.8
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Faxinal",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.2298,
+        -23.9858
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ariranha do Ivaí",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -51.5683,
+        -24.3948
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Roncador",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.4138,
+        -24.6882
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Laranjal",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.4484,
+        -25.0093
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Honório Serpa",
+      "uf": "PR",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.5272,
+        -26.16
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Capitão Leônidas Marques",
+      "uf": "PR",
+      "acquired": "2026-10-31",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.6338,
+        -25.4428
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Prata do Iguaçu",
+      "uf": "PR",
+      "acquired": "2026-10-31",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.4892,
+        -25.5431
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Coronel Martins",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.6715,
+        -26.5887
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Irati",
+      "uf": "SC",
+      "acquired": "2026-11-05",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.8905,
+        -26.6059
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Santiago do Sul",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.7032,
+        -26.663
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Itaberaba",
+      "uf": "SC",
+      "acquired": "2026-10-31",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.8087,
+        -26.9631
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Ipumirim",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.1616,
+        -27.0477
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Arabutã",
+      "uf": "SC",
+      "acquired": "2026-11-05",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -52.1905,
+        -27.1666
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Tigrinhos",
+      "uf": "SC",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.15,
+        -26.6461
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Iporã do Oeste",
+      "uf": "SC",
+      "acquired": "2026-11-10",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.4964,
+        -27.0301
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Itapiranga",
+      "uf": "SC",
+      "acquired": "2026-10-31",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.5614,
+        -27.158
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Erval Seco",
+      "uf": "RS",
+      "acquired": "2026-11-10",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.5595,
+        -27.4327
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Nova Palma",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.3658,
+        -29.4034
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Jaguari",
+      "uf": "RS",
+      "acquired": "2026-10-31",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -54.5411,
+        -29.3589
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "São Sepé",
+      "uf": "RS",
+      "acquired": "2026-11-09",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -53.6971,
+        -29.9977
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Barra do Chapéu",
+      "uf": "SP",
+      "acquired": "2026-11-15",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -48.9695,
+        -24.4753
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Cerro Azul",
+      "uf": "PR",
+      "acquired": "2026-11-14",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.087,
+        -25.0507
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Rio Branco do Sul",
+      "uf": "PR",
+      "acquired": "2026-11-14",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.0948,
+        -25.1228
+      ]
+    },
+    {
+      "kind": "observed",
+      "hazard": "landslide",
+      "label": "observed landslide scar candidate",
+      "status": "candidate",
+      "source": "opera-dist-alert-hls",
+      "confidence": "standard",
+      "municipality": "Contenda",
+      "uf": "PR",
+      "acquired": "2026-11-14",
+      "area_km2": 0.003,
+      "people": 0,
+      "polygons": 1,
+      "centroid": [
+        -49.4455,
+        -25.7604
+      ]
+    }
+  ],
+  "observed_note": "satellite candidates - flood water (OPERA DSWx-S1, NISAR GCOV) and landslide scars (OPERA DIST-ALERT-HLS): observations, not TPI alerts"
+}
